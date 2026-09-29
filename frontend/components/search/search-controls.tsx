@@ -15,6 +15,7 @@ import {
   Sheet,
   type SelectOptionItem,
 } from '../ui';
+import { cn } from '@/lib/cn';
 import type { SetDto } from '@/types/api';
 
 export type SearchMode = 'name' | 'number' | 'artist';
@@ -123,6 +124,7 @@ export function SearchControls({
   setsLoading = false,
   setsError = null,
   onClearFilters,
+  className,
 }: SearchControlsProps) {
   const generatedId = useId();
   const inputId = `${generatedId}-q`;
@@ -157,38 +159,15 @@ export function SearchControls({
     .filter((value): value is string => Boolean(value))
     .join(' · ');
 
-  /*
-   * Un fragment, y no un `<div>`: el `position: sticky` de la barra se mueve
-   * **dentro de su padre**, así que si la barra estuviera envuelta en una caja
-   * que mide lo mismo que ella, no tendría dónde viajar. Medido: el padre daba
-   * 73 px y la barra 73 px, y con `scrollTo(0, 1500)` la barra subía con el
-   * contenido en vez de quedar pegada. Sin el wrapper, la barra pasa a ser
-   * hija directa del contenedor de la pantalla —que mide toda la grilla— y ahí
-   * sí se pega.
-   *
-   * El `Sheet` no se ve afectado: va por portal a `document.body`.
-   */
   return (
-    <>
+    <div className={cn('flex flex-col gap-3', className)}>
       {/*
-        La barra es **la** cabecera de la pantalla: se pegó arriba, con el
-        mismo tratamiento que la `BottomNav` (`bg-surface/90` + `backdrop-blur`),
-        y el `ScreenHeader` con el título "Buscar" desapareció.
-
-        Eso no es una cuestión de espacio: el título repetía la etiqueta de la
-        pestaña que ya está marcada en la `BottomNav` más abajo, sin botón de
-        volver ni acción al lado. Era chrome que no informaba nada y empujaba
-        la grilla 56 px hacia abajo.
-
-        Pegarla, en cambio, no es decoración: `/buscar` es una grilla larga, y
-        sin barra fija hay que subir 300 cartas hasta el input para cambiar una
-        letra de la búsqueda. El `z-sticky` es el que usaba el header, así que
-        no hay colisión nueva con la nav.
-
-        El `env(safe-area-inset-top)` va acá porque el `ScreenHeader` era el
-        que lo daba. Sin él, en iPhone con notch la barra queda bajo la muesca.
+        Una sola fila. El input crece y el botón no, así que en 320 px —el
+        ancho más chico que todavía se usa— el botón conserva su ancho y el
+        placeholder se recorta, que es el recorte correcto: el texto de ejemplo
+        se lee entero en el primer scroll.
       */}
-      <div className="sticky top-0 z-sticky -mx-4 flex items-stretch gap-2 border-b border-line-subtle bg-surface/90 px-4 pb-3 pt-[calc(0.75rem+env(safe-area-inset-top))] backdrop-blur-lg sm:-mx-6 sm:px-6">
+      <div className="flex items-stretch gap-2">
         <form
           role="search"
           aria-label="Buscar cartas"
@@ -345,6 +324,6 @@ export function SearchControls({
           </div>
         </div>
       </Sheet>
-    </>
+    </div>
   );
 }

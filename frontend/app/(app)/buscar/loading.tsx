@@ -1,3 +1,4 @@
+import { ScreenHeader } from '@/components/layout/screen-header';
 import { ScreenContainer } from '@/components/layout/screen-container';
 import { SearchFallback } from '@/components/search/search-fallback';
 
@@ -17,8 +18,11 @@ import { SearchFallback } from '@/components/search/search-fallback';
  */
 export default function Loading() {
   return (
-    <ScreenContainer aria-busy="true">
-      <SearchFallback />
-    </ScreenContainer>
+    <>
+      <ScreenHeader title="Buscar" />
+      <ScreenContainer aria-busy="true">
+        <SearchFallback />
+      </ScreenContainer>
+    </>
   );
 }
