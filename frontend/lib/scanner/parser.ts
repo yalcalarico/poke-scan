@@ -366,6 +366,9 @@ export function parseOcrText(text: string, lines?: OcrLine[]): ParsedScan {
     nameGuess,
     numberGuess: numberCandidates[0]?.value ?? null,
     setHint: setHints[0] ?? null,
+    // El backend ya acepta `setCode` y lo bonusifica; queda en null hasta que
+    // haya una banda medida para leerlo (fase 8.1). Ver `ParsedScan.setCode`.
+    setCode: null,
     confidence: Math.min(1, Math.max(0, confidence)),
   };
 }

@@ -17,13 +17,14 @@ function attempt(confidence: number, nameGuess: string | null): ScanAttempt {
     nameGuess,
     numberGuess: null,
     setHint: null,
+    setCode: null,
     confidence,
   };
   return { variant: 'grayscale', ocr, parsed };
 }
 
 function parse(over: Partial<ParsedScan> = {}): ParsedScan {
-  return { lines: [], nameGuess: null, numberGuess: null, setHint: null, confidence: 0.5, ...over };
+  return { lines: [], nameGuess: null, numberGuess: null, setHint: null, setCode: null, confidence: 0.5, ...over };
 }
 
 describe('scoreAttempt', () => {
@@ -71,7 +72,7 @@ describe('mergeBandAttempts', () => {
   const band = (lines: string[], nameGuess: string | null, confidence: number): ScanAttempt => ({
     variant: 'nameband',
     ocr: { text: lines.join('\n'), lines: [], confidence },
-    parsed: { lines, nameGuess, numberGuess: null, setHint: null, confidence },
+    parsed: { lines, nameGuess, numberGuess: null, setHint: null, setCode: null, confidence },
   });
 
   it('devuelve la pasada única sin tocarla', () => {

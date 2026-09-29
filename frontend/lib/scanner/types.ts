@@ -25,6 +25,15 @@ export interface ParsedScan {
   nameGuess: string | null;
   numberGuess: string | null;
   setHint: string | null;
+  /**
+   * Código de set impreso abajo a la izquierda, ej `"30C"`.
+   *
+   * Siempre `null`: depende de medir la banda primero (fase 8.1 de
+   * `docs/files/08-VERSION-DISAMBIGUATION.md`). No se deduce de `lines` a
+   * propósito — medido sobre las fixtures reales, buscar cualquier token de 3
+   * caracteres que sea un código de set da 22 falsos positivos y 0 verdaderos.
+   */
+  setCode: string | null;
   /** 0..1 */
   confidence: number;
 }

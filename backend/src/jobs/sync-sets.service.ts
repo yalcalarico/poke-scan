@@ -87,6 +87,7 @@ export class SyncSetsService {
           releaseDate: parseReleaseDate(set.releaseDate),
           logoUrl: set.logoUrl,
           symbolUrl: set.symbolUrl,
+          ptcgoCode: set.ptcgoCode,
           rawJson: set.raw as Prisma.InputJsonValue,
           syncedAt: new Date(),
         };

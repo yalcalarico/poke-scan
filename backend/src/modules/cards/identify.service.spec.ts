@@ -278,3 +278,116 @@ describe('IdentifyService — nombres cortos', () => {
     expect(result.candidates[0]!.score).toBeLessThan(1);
   });
 });
+
+/**
+ * El código de 3 caracteres impreso abajo a la izquierda ("30C").
+ *
+ * Es la señal de set más barata que existe: texto contra vocabulario cerrado, sin
+ * comparar imágenes ni banco de plantillas (08-VERSION-DISAMBIGUATION.md §4.3
+ * propose la versión cara; esta la reemplaza cuando se pueda medir la banda).
+ *
+ * El que lo manda es el cliente, y no se extrae de `lines`: medido sobre las 8
+ * fixtures reales de OCR, buscar cualquier token de 3 caracteres que sea un
+ * código de set dio 22 falsos positivos y 0 verdaderos.
+ */
+describe('IdentifyService — código de set', () => {
+  it('el código elige el set cuando el nombre solo no alcanza', async () => {
+    // "Unown" está en decenas de sets y sin código gana el más nuevo por el
+    // orden de desempate, no por señal. "UF" es Unseen Forces.
+    const sinCodigo = await identify({ lines: ['Unown'], limit: 5 });
+    const conCodigo = await identify({ lines: ['Unown'], setCode: 'UF', limit: 5 });
+
+    expect(sinCodigo.candidates[0]!.card.set?.name).not.toBe('Unseen Forces');
+    expect(conCodigo.candidates[0]!.card.set?.name).toBe('Unseen Forces');
+    expect(conCodigo.candidates[0]!.signals.setCode).toBe(true);
+  });
+
+  it('el código acepta minúsculas (el OCR no distingue mayúsculas)', async () => {
+    const result = await identify({ lines: ['Unown'], setCode: 'uf', limit: 5 });
+
+    expect(result.candidates[0]!.signals.setCode).toBe(true);
+  });
+
+  it('un código que no es de ningún set hace que la señal no vote en ningún lado', async () => {
+    const result = await identify({ lines: ['Unown'], setCode: 'ZZZ', limit: 5 });
+
+    expect(result.candidates.length).toBeGreaterThan(0);
+    for (const candidate of result.candidates) {
+      expect(candidate.signals.setCode).toBe(false);
+    }
+  });
+
+  it('sin `setCode` la señal viene en null, no en false', async () => {
+    // No es lo mismo "el set no es este" que "no sabemos qué set es": la
+    // diferencia decide si la UI puede culpar al ranking o al OCR.
+    const result = await identify({ lines: ['Unown'], limit: 5 });
+
+    for (const candidate of result.candidates) {
+      expect(candidate.signals.setCode).toBeNull();
+    }
+  });
+
+  it('resuelve el caso que motivó la señal: Umbreon ex del 30th', async () => {
+    // me55-92: Umbreon ex, 270 HP, 30th Celebration ("30C"). El mismo nombre y
+    // el mismo HP existen en Prismatic Evolutions, así que sin la señal del set
+    // gana la impresión por orden de release, no por evidencia.
+    const result = await identify({ lines: ['Umbreon ex', '270 HP'], setCode: '30C', limit: 5 });
+
+    expect(result.candidates[0]!.card.id).toBe('me55-92');
+    expect(result.candidates[0]!.signals.setCode).toBe(true);
+  });
+});
+
+/**
+ * El denominador del número impreso se acepta contra los dos totales que expone
+ * la fuente, no solo contra `printedTotal`.
+ */
+describe('IdentifyService — denominador del número impreso', () => {
+  it('matchea contra `total` cuando el número impreso no es el `printedTotal`', async () => {
+    // ex4-96 tiene printedTotal 95 y total 97, como 106 de los 176 sets.
+    const result = await identify({ lines: ['Absol', '96/97'], limit: 5 });
+
+    expect(result.candidates[0]!.card.id).toBe('ex4-96');
+    expect(result.candidates[0]!.signals.printedNumber).toBe(true);
+  });
+
+  it('un denominador que no es ninguno de los dos totales no vota', async () => {
+    // me55 imprime "092/120" y la fuente no tiene 120: ni printedTotal (128),
+    // ni total (161), ni las 158 cartas espejadas. La señal del set en ese caso
+    // es el código, no el denominador.
+    const result = await identify({ lines: ['Absol', '96/94'], limit: 5 });
+
+    for (const candidate of result.candidates) {
+      expect(candidate.signals.printedNumber).toBe(false);
+    }
+  });
+});
+
+/**
+ * `score` viene saturado a 1 por compatibilidad, así que dos candidatos legítimos
+ * pueden salir ambos en 1.00 sin que se vea el margen. `rawScore` lo expone.
+ */
+describe('IdentifyService — score crudo y razones', () => {
+  it('`rawScore` deja ver el margen que `score` satura', async () => {
+    const result = await identify({ lines: ['Unown'], setCode: 'UF', limit: 5 });
+    const top = result.candidates[0]!;
+
+    expect(top.score).toBe(1);
+    expect(top.rawScore).toBeGreaterThan(1);
+  });
+
+  it('cada señal dice si votó a favor, en contra, o no votó', async () => {
+    // hgss4-91 es el único Absol con 80 HP.
+    const result = await identify({ lines: ['Absol', '80 HP'], limit: 5 });
+    const top = result.candidates[0]!;
+
+    expect(top.signals.hp).toBe(true);
+    // Se leyó HP y se leyó, pero ningún "N/M" ni código ni nombre de set: no
+    // votaron, no fallaron.
+    expect(top.signals.printedNumber).toBeNull();
+    expect(top.signals.setCode).toBeNull();
+    expect(top.signals.setName).toBeNull();
+    // El texto no menciona al ilustrador, así que la señal sí votó en contra.
+    expect(top.signals.artist).toBe(false);
+  });
+});

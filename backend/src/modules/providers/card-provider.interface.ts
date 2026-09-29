@@ -9,6 +9,8 @@ export interface RemoteSet {
   releaseDate: string | null;
   logoUrl: string | null;
   symbolUrl: string | null;
+  /** Código impreso de 3 caracteres ("30C"). Null en los sets que no lo imprimen. */
+  ptcgoCode: string | null;
   raw: unknown;
 }
 

@@ -168,6 +168,7 @@ export function mergeParsed(band: ParsedScan | null, full: ParsedScan): ParsedSc
     nameGuess: band.nameGuess ?? full.nameGuess,
     numberGuess: full.numberGuess ?? band.numberGuess,
     setHint: full.setHint ?? band.setHint,
+    setCode: full.setCode ?? band.setCode,
     confidence: Math.max(band.confidence, full.confidence),
   };
 }
@@ -198,6 +199,7 @@ export function mergeBandAttempts(attempts: ScanAttempt[]): ScanAttempt | null {
       nameGuess: best.parsed.nameGuess,
       numberGuess: best.parsed.numberGuess,
       setHint: best.parsed.setHint,
+      setCode: best.parsed.setCode,
       confidence: Math.max(...attempts.map((a) => a.parsed.confidence)),
     },
   };

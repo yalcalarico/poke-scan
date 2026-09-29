@@ -44,6 +44,7 @@
 27. [`LATERAL` con `LIMIT` gana a `row_number()`](#27-lateral-con-limit-gana-a-row_number-cuando-se-quiere-el-top-n-por-grupo)
 28. [El `DISTINCT ON` de `card_prices` es lo que hace barato el delta de 30 días](#28-el-distinct-on-de-card_prices-es-lo-que-hace-que-el-delta-de-30-días-sea-barato)
 29. [El `orderBy` de Prisma no llega a `card_prices`, y un filtro escrito dos veces diverge](#29-el-orderby-de-prisma-no-llega-a-card_prices-y-un-filtro-escrito-dos-veces-diverge)
+30. [`printedTotal` y `total` no son lo que la carta imprime](#30-printedtotal-y-total-no-son-lo-que-la-carta-imprime)
 
 ---
 
@@ -1125,6 +1126,39 @@ justo donde el usuario mira si hay más.
 **Regla**: cuando agregues un filtro a `ListItemsDto`, agregalo en los dos
 lugares. Si algún día duele, el arreglo es una query de items completa en SQL (con
 `toItemDto` hecho a mano), no dejar que los dos filtros se separen.
+
+## 30. `printedTotal` y `total` no son lo que la carta imprime
+
+`card_sets` tiene dos totales y pokemontcg.io los llena distinto: `printedTotal`
+es el número regular y `total` suma las variants raras y secretas. Difieren en
+**106 de 176 sets**:
+
+| Set | `printedTotal` | `total` |
+|---|---|---|
+| `me5` (Pitch Black) | 84 | 120 |
+| `me3` (Perfect Order) | 88 | 124 |
+| `me1` (Mega Evolution) | 132 | 188 |
+| `me55` (30th Celebration) | 128 | 161 |
+
+El `identify` usaba igualdad exacta contra `printedTotal` para el "N/M" del OCR,
+que es el bonus más fuerte del ranking (0,25, el único que identifica set *y*
+carta). Con la fuente dividiendo el set en dos números, esa señal se perdía
+para más de la mitad del catálogo sin que nadie lo notara: no tira error, la
+carta simplemente deja de tener esa evidencia y el ranking se apoya en el
+nombre.
+
+Ahora matchea contra los dos (`printedTotal` OR `total`).
+
+**Y ojo al caso que los dos no cubren**: hay sets donde la carta imprime un
+número que la fuente no tiene en ningún campo. `me55` (30th Celebration) imprime
+`092/120`, y sus 128 y 161 no son 120; TCGdex dice que el set tiene 158 cartas.
+Ahí el denominador no matchea nada y no hay forma de arreglarlo con datos: la
+señal del set tiene que venir de otro lado, y por ahora viene del código
+impreso (`ptcgoCode`, ver `api.md` → "El código de set").
+
+**Regla**: un dato de la fuente que se usa para matchear contra algo que el
+usuario tiene en la mano físico hay que contrastarlo contra la realidad antes de
+confiar en él. Acá se detectó con una foto, no con un test.
 
 ## Cross-references
 

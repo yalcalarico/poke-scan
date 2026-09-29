@@ -705,6 +705,7 @@ Body `IdentifyDto` (`cards/dto/identify.dto.ts`):
 | `name` | Opcional, `@MaxLength(80)` — mejor guess del cliente, máxima prioridad | — |
 | `number` | Opcional, `@MaxLength(20)` — número impreso; **bonus chico** (0.06) | — |
 | `setHint` | Opcional, `@MaxLength(80)` — ej `"Base"`; bonus 0.2 | — |
+| `setCode` | Opcional, `@MaxLength(8)`, `@Matches(/^[A-Za-z0-9-]+$/)` — código impreso de 3 caracteres, ej `"30C"`; bonus 0.2. **Hoy no lo manda nadie**: depende de medir la banda (§"el código de set" más abajo) | — |
 | `limit` | Opcional, `@IsInt()`, 1..20 | `8` (`DEFAULT_IDENTIFY_LIMIT`) |
 
 **200** → `IdentifyResultDto`:
@@ -718,12 +719,63 @@ interface IdentifyResultDto {
 
 interface IdentifiedCandidateDto {
   card: CardDto;
-  score: number;         // 0..1, redondeado a 2 decimales
+  score: number;         // 0..1, redondeado a 2 decimales, saturado en 1
+  rawScore: number;      // el mismo score SIN saturar (ver abajo)
+  signals: CandidateSignalsDto;
   matchedText: string;   // la línea/ventana del OCR que matched
   prices: CardPriceDto[];// siempre en USD, sin priceArs
   price: CardPriceDto | null;  // la variante de mayor market
 }
+
+interface CandidateSignalsDto {
+  numberHint: boolean | null;     // el `number` del request coincide con la carta
+  setName: boolean | null;        // el `setHint` del request coincide con el set
+  setCode: boolean | null;        // el `setCode` del request coincide con el set
+  printedNumber: boolean | null;  // el "N/M" del OCR es de esta impresión
+  hp: boolean | null;
+  artist: boolean | null;
+  rarity: boolean | null;
+}
 ```
+
+`signals` distingue tres estados, y la diferencia es la que sirve: `true` votó a
+favor, `false` se leyó y no coincidió, `null` **no votó** porque la señal no se
+pudo leer. Con eso se separa "el ranking se equivocó" de "el OCR no leyó nada de
+esto", que antes había que adivinarlo desde el síntoma en pantalla.
+
+`score` viene **saturado en 1** por compatibilidad, así que varios candidatos
+legítimos empatan en `1.00` y el margen real no se ve. `rawScore` lo expone: con
+el bonus de `setCode` un match bueno da 1.17-1.29, y esa diferencia entre el
+primero y el segundo es la que estaba invisible.
+
+#### El código de set (`setCode`)
+
+Es la señal de set más barata que hay: la carta imprime 3 caracteres en la
+esquina inferior izquierda (`30C`) y `card_sets.ptcgoCode` los tiene. Match
+exacto contra vocabulario cerrado, sin comparar imágenes ni banco de
+plantillas. Está en 151 de 176 sets (142 valores distintos); las únicas
+colisiones son set ↔ sub-producto (`me55` y `me55c` comparten `"30C"`), que el
+número impreso igual separa.
+
+**No se extrae de `lines` a propósito.** Medido sobre las 8 fixtures reales de
+OCR (`frontend/lib/scanner/__fixtures__/ocr-samples.json`), buscar cualquier
+token de 3 caracteres que sea un código de set dio **22 falsos positivos y 0
+verdaderos**: `EVO` sale de "Evolves from", `PAR`/`CRE`/`FLI` de basura del OCR,
+`MEW` de una carta que se llama Mew. El backend no tiene con qué filtrar por
+posición, así que la señal llega como hint del cliente; hasta que haya banda
+medida (fase 8.1 de `docs/files/08-VERSION-DISAMBIGUATION.md`) el campo se manda
+ausente y no vota.
+
+#### El denominador del número impreso
+
+El "N/M" del OCR matchea el numerador contra `cards.number` y el denominador
+contra **`printedTotal` o `total`**, no solo contra `printedTotal`. Difieren en
+106 de 176 sets (me55: 128 vs 161) y con igualdad exacta el bonus de 0.25 —el
+más fuerte del ranking— se perdía para más de la mitad del catálogo.
+
+Ojo: hay sets donde **ninguno** de los dos es lo impreso. `me55` imprime
+"092/120" y la fuente no tiene 120 en ningún campo. Para esos, la señal del set
+es el código, no el denominador.
 
 Reglas de ranking (todo en `identify.service.ts`): máximo 3 cartas por nombre,
 `MIN_SCORE = 0.25`, penaliza boilerplate (`STOPWORDS`), penaliza nombres de
@@ -744,7 +796,11 @@ curl -X POST http://localhost:3001/api/cards/identify \
 {
   "candidates": [
     { "card": { "id": "base1-4", "name": "Charizard", "...": "..." },
-      "score": 0.95, "matchedText": "4 Charizard",
+      "score": 0.95, "rawScore": 0.95,
+      "signals": { "numberHint": null, "setName": null, "setCode": null,
+                   "printedNumber": false, "hp": null,
+                   "artist": true, "rarity": true },
+      "matchedText": "4 Charizard",
       "prices": [ { "cardId": "base1-4", "variant": "holofoil", "low": 1200,
                     "mid": 1500, "high": 4000, "market": 1800,
                     "currency": "USD", "source": "tcgplayer",

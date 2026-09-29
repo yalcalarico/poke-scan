@@ -347,6 +347,34 @@ en una carta un número desnudo es casi siempre daño, HP o un número de Pokéd
 **del más largo al más corto** para que la alternancia del regex pruebe
 `Sword & Shield` antes que `Sword`.
 
+Es una lista **hardcodeada y vieja**: llega hasta "Surprising Fates" y "Stellar
+Crown", así que un set nuevo (30th Celebration, y) no llega nunca como hint. Es
+la razón por la que el ranking no sabe de qué set es una carta nueva aunque el
+nombre y el HP sí los lea bien.
+
+### `setCode`: por qué está en `ParsedScan` y vale `null`
+
+`ParsedScan.setCode` es el código de 3 caracteres que la carta imprime en la
+esquina inferior izquierda (`"30C"`), y el backend ya lo bonusifica contra
+`card_sets.ptcgoCode`. Es la señal de set más barata que existe: texto contra
+vocabulario cerrado, sin comparar imágenes.
+
+Volvió `null` a propósito, y **no** se deduce de `lines`. Medido sobre las 8
+fixtures de `__fixtures__/ocr-samples.json`: buscar cualquier token de 3
+caracteres que sea un código de set dio **22 falsos positivos y 0 verdaderos**.
+
+| Código | De dónde sale el falso positivo | Set real |
+|---|---|---|
+| `EVO` | "**Evo**lves from Eevee" | xy12 (Evolutions) |
+| `PAR` `CRE` `FLI` `MEG` | basura del OCR en el cuerpo de la carta | varios |
+| `MEW` | la carta se llama **MEW** y va en mayúsculas | sv3pt5 (151) |
+
+El problema es que el backend no sabe dónde está esa caja: `identify` recibe
+`lines: string[]` sin coordenadas, así que cualquier token de 3 letras es
+candidato. La señal es válida **con una banda medida**, que es la fase 8.1 de
+`docs/files/08-VERSION-DISAMBIGUATION.md`, igual que `NAME_BAND_BOX`. Cuando
+exista, se lee en el `mergeParsed` y se manda; hasta entonces, `null`.
+
 ### `parseOcrText(text, lines?)`
 
 Arma el `ParsedScan`:
@@ -612,14 +640,26 @@ await identifyCard({
   name: parsed.nameGuess ?? undefined,
   number: parsed.numberGuess ?? undefined,
   setHint: parsed.setHint ?? undefined,
+  setCode: parsed.setCode ?? undefined,   // siempre undefined por ahora
   limit: IDENTIFY_LIMIT,
 });
 ```
 
-`lines` es la señal principal; `name`/`number`/`setHint` son candidatos extra con
-bonuses chicos. El DTO (`IdentifyDto`) valida con `class-validator`:
+`lines` es la señal principal; `name`/`number`/`setHint`/`setCode` son candidatos
+extra con bonuses chicos. El DTO (`IdentifyDto`) valida con `class-validator`:
 `@ArrayMaxSize(60)` en `lines`, `@MaxLength(80)` en `name` y `setHint`,
-`@MaxLength(20)` en `number`, y `limit` entre 1 y 20 (default 8).
+`@MaxLength(20)` en `number`, `@MaxLength(8)` + `@Matches(/^[A-Za-z0-9-]+$/)` en
+`setCode`, y `limit` entre 1 y 20 (default 8).
+
+La respuesta trae dos cosas nuevas que hacen falta para depurar:
+
+- **`rawScore`**: `score` viene saturado en 1, así que el top-1 y el top-2 salen
+  los dos en `1.00` y no se ve el margen. `rawScore` lo expone (con `setCode` un
+  match bueno da 1.17-1.29).
+- **`signals`**: por señal, si votó a favor (`true`), si se leyó y no coincidió
+  (`false`) o si no votó porque no se pudo leer (`null`). Es lo que separa "el
+  ranking se equivocó" de "el OCR no leyó esto", que antes se adivinaba desde el
+  síntoma en pantalla.
 
 Del lado del backend (`identify.service.ts`) lo fuerte del matching:
 

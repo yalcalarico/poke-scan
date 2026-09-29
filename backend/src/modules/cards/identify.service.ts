@@ -38,6 +38,20 @@ const HP_BONUS = 0.12;
 const ARTIST_BONUS = 0.12;
 /** "Rare Holo", "Secret Rare"... en la esquina inferior derecha. */
 const RARITY_BONUS = 0.08;
+/**
+ * El código de 3 caracteres impreso abajo a la izquierda ("30C").
+ *
+ * Vale lo mismo que `SET_BONUS` y por la misma razón: identifica el SET, no la
+ * carta. La diferencia es que este match es exacto contra un vocabulario
+ * cerrado, así que no necesita la tolerancia del trigram de `setBonus`. Cuando
+ * hay colisión (el par set/sub-producto, p.ej. `me55` y `me55c` comparten
+ * "30C") el bonus reparte entre los dos y no decide: por eso no sube.
+ *
+ * Sin calibrar con `eval:diff` todavía: es el mismo número que una señal que ya
+ * está en producción, no uno inventado. Cuando haya dataset de Ola 0 se ajusta
+ * junto con los demás, mirando si el código se lee o no.
+ */
+const SET_CODE_BONUS = 0.2;
 // Bonus por coincidencia de cantidad de palabras: si el OCR leyó una ventana de
 // 2-3 palabras ("polan Marowak"), debe preferir un nombre de carta de 2-3
 // palabras ("Alolan Marowak") por sobre el match parcial de 1 palabra ("Marowak").
@@ -109,6 +123,20 @@ const STOPWORDS = new Set([
 export interface IdentifiedCandidateDto {
   card: CardDto;
   score: number;
+  /**
+   * El score sin clampear, para diagnóstico y para que la UI pueda ordenar por
+   * margen real. `score` va saturado a 1 por compatibilidad: varios candidatos
+   * legítimos empatan en 1.00 y sin esto no hay forma de ver que el segundo tuvo
+   * 0,97.
+   */
+  rawScore: number;
+  /**
+   * Qué señales votaron y si coincidieron. `null` = la señal no se pudo leer y
+   * por lo tanto no vota (ni a favor ni en contra); `false` = se leyó y no
+   * coincidió. La diferencia importa: no es lo mismo "el set no es este" que
+   "no sabemos qué set es".
+   */
+  signals: CandidateSignalsDto;
   matchedText: string;
   /**
    * Precios en USD. Sin `priceArs` a propósito: identify es público y sin
@@ -118,6 +146,20 @@ export interface IdentifiedCandidateDto {
   prices: CardPriceDto[];
   /** Variante más barata/reciente: la que consume hoy `IdentifiedCandidateDto`. */
   price: CardPriceDto | null;
+}
+
+export interface CandidateSignalsDto {
+  /** `number` del cliente coincidió con el número de la carta. */
+  numberHint: boolean | null;
+  /** `setHint` del cliente coincidió con el nombre del set. */
+  setName: boolean | null;
+  /** `setCode` del cliente coincidió con el código impreso del set. */
+  setCode: boolean | null;
+  /** El "N/M" leído por el OCR es el de esta impresión. */
+  printedNumber: boolean | null;
+  hp: boolean | null;
+  artist: boolean | null;
+  rarity: boolean | null;
 }
 
 export interface ExtractedDto {
@@ -162,6 +204,14 @@ interface MatchRow {
   setLogoUrl: string | null;
   setSymbolUrl: string | null;
   score: number;
+  /** Bonus de cada señal, proyectado aparte para armar `signals` de la respuesta. */
+  sigNumberHint: number;
+  sigSetName: number;
+  sigSetCode: number;
+  sigPrinted: number;
+  sigHp: number;
+  sigArtist: number;
+  sigRarity: number;
   matchedText: string;
   hasPrice: boolean;
 }
@@ -362,13 +412,27 @@ export class IdentifyService {
       };
     }
 
-    const rows = await this.match(candidates, this.buildTokens(lines, preEvolution), dto, {
+    const signals = {
       ...extractSignals(lines),
       // Para rareza y artista no hace falta vocabulario: se busca el valor que
       // tiene la carta dentro del texto del OCR. Así el bonus funciona con
       // cualquier rareza o firmante que la fuente tenga.
       text: lines.join(' \n ').toLowerCase(),
-    });
+    };
+    // Qué señales están disponibles, para poder distinguir "no coincidió" de
+    // "no se pudo leer". Es lo que hace `signals` en la respuesta.
+    const votan = {
+      numberHint: firstInteger(dto.number) !== null,
+      setName: Boolean(dto.setHint?.trim()),
+      setCode: Boolean(dto.setCode?.trim()),
+      printed: signals.printed !== null,
+      hp: signals.hp !== null,
+      // Rareza y artista siempre "votan": son búsquedas de substring sobre el
+      // texto. Sin texto no hay nada que leer, y ahí no.startswith tampoco.
+      text: signals.text.trim().length > 0,
+    };
+
+    const rows = await this.match(candidates, this.buildTokens(lines, preEvolution), dto, signals);
     const prices = new Map<string, CardPriceDto[]>();
     const picked = this.rank(rows, limit);
     this.debug('respondiendo', {
@@ -390,6 +454,8 @@ export class IdentifyService {
       return {
         card: toCardDto(row),
         score: round2(Math.min(1, Math.max(0, row.score))),
+        rawScore: round2(row.score),
+        signals: toSignalsDto(row, votan),
         matchedText: row.matchedText,
         prices: cardPrices,
         price: bestPrice(cardPrices),
@@ -494,6 +560,7 @@ export class IdentifyService {
     const wordCounts = candidates.map((c) => String(c.wordCount));
     const number = firstInteger(dto.number);
     const setHint = dto.setHint?.trim() || undefined;
+    const setCode = dto.setCode?.trim().toUpperCase() || undefined;
 
     // `base` = trigram + bonus de prefijo + bonus de coincidencia de palabras,
     // con piso de 1.0 cuando el OCR leyó el nombre como una palabra exacta. El
@@ -564,9 +631,11 @@ export class IdentifyService {
           END
       )`;
 
-    const numberBonus = this.numberBonus(number);
-    const setBonus = this.setBonus(setHint);
-    const signalBonus = this.signalBonus(signals);
+    const parts = this.bonusParts({ number, setHint, setCode }, signals);
+    const total = Prisma.sql`(
+      ${parts.numberHint} + ${parts.setName} + ${parts.setCode}
+      + ${parts.printedNumber} + ${parts.hp} + ${parts.rarity} + ${parts.artist}
+    )::float8`;
 
     return this.prisma.$transaction(async (tx) => {
       // `set_config(..., true)` es local a la transacción: el mismo connection
@@ -632,7 +701,14 @@ export class IdentifyService {
           s."releaseDate" AS "setReleaseDate",
           s."logoUrl" AS "setLogoUrl",
           s."symbolUrl" AS "setSymbolUrl",
-          (b.base + ${numberBonus} + ${setBonus} + ${signalBonus})::float8 AS score,
+          (b.base + ${total})::float8 AS score,
+          ${parts.numberHint}::float8 AS "sigNumberHint",
+          ${parts.setName}::float8 AS "sigSetName",
+          ${parts.setCode}::float8 AS "sigSetCode",
+          ${parts.printedNumber}::float8 AS "sigPrinted",
+          ${parts.hp}::float8 AS "sigHp",
+          ${parts.artist}::float8 AS "sigArtist",
+          ${parts.rarity}::float8 AS "sigRarity",
           b.raw AS "matchedText",
           EXISTS (SELECT 1 FROM card_prices cp WHERE cp."cardId" = c.id) AS "hasPrice"
         FROM best b
@@ -644,59 +720,79 @@ export class IdentifyService {
     });
   }
 
-  private numberBonus(number: number | null): Prisma.Sql {
-    if (number === null) return Prisma.sql`0::float8`;
-    return Prisma.sql`
-      CASE
-        WHEN NULLIF(regexp_replace(c.number, '\\D', '', 'g'), '') ~ '^[0-9]{1,9}$'
-          AND NULLIF(regexp_replace(c.number, '\\D', '', 'g'), '')::bigint = ${number}::bigint
-        THEN ${NUMBER_BONUS}::float8
-        ELSE 0::float8
-      END`;
-  }
-
-  private setBonus(setHint: string | undefined): Prisma.Sql {
-    if (!setHint) return Prisma.sql`0::float8`;
-    const pattern = escapeLike(setHint);
-    return Prisma.sql`
-      CASE
-        WHEN s.name IS NULL THEN 0::float8
-        ELSE GREATEST(
-          CASE WHEN s.name ILIKE ${pattern} || '%' ESCAPE '\\' THEN ${SET_BONUS}::float8 ELSE 0 END,
-          CASE WHEN s.name ILIKE '%' || ${pattern} || '%' ESCAPE '\\' THEN ${SET_BONUS}::float8 ELSE 0 END,
-          CASE WHEN similarity(s.name, ${setHint}) >= ${SET_SIMILARITY_MIN}::float8
-            THEN ${SET_BONUS}::float8 ELSE 0 END
-        )
-      END`;
-  }
-
   /**
-   * Bonus por los atributos que la carta imprime y el OCR puede leer.
+   * Los siete bonuses, sueltos.
    *
-   * El nombre solo no desempata: "Charizard" está en ~40 sets y todas las
-   * impresiones se llaman igual. Estos cuatro sí son únicos por impresión:
+   * Se devuelven por separado y no ya sumados porque se usan dos veces: una para
+   * sumar al `base` del score, y otra para proyectar cada uno en la respuesta,
+   * que es lo que arma `signals` (si la señal votó a favor, en contra, o no
+   * votó porque no se pudo leer).
    *
-   * - **Número impreso "4/102"**: el denominador es el total del set, así que
-   *   el par identifica set *y* carta. Es la señal más fuerte.
-   * - **HP**: la caja de arriba a la derecha.
-   * - **Artista**: el pie de la carta, casi siempre legible.
-   * - **Rareza**: la esquina inferior derecha.
-   *
-   * Todos son bonuses chicos y ninguno resta: una señal que el OCR no leyó
-   * simplemente no aparece en el texto y no suma nada. Se calculan una sola vez
-   * por carta (en el SELECT final, no en el CTE de hits).
+   * Todos son chicos y ninguno resta: una señal que el OCR no leyó no aparece en
+   * el texto y no suma nada. Se calculan una sola vez por carta, en el SELECT
+   * final y no en el CTE de hits.
    */
-  private signalBonus(signals: CardSignals & { text: string }): Prisma.Sql {
+  private bonusParts(
+    hints: { number: number | null; setHint: string | undefined; setCode: string | undefined },
+    signals: CardSignals & { text: string },
+  ): Record<keyof CandidateSignalsDto, Prisma.Sql> {
+    const { number, setHint, setCode } = hints;
     const { hp, printed, text } = signals;
 
-    const printedSql =
+    const numberHint =
+      number === null
+        ? Prisma.sql`0::float8`
+        : Prisma.sql`
+            CASE
+              WHEN NULLIF(regexp_replace(c.number, '\\D', '', 'g'), '') ~ '^[0-9]{1,9}$'
+                AND NULLIF(regexp_replace(c.number, '\\D', '', 'g'), '')::bigint = ${number}::bigint
+              THEN ${NUMBER_BONUS}::float8
+              ELSE 0::float8
+            END`;
+
+    const setName =
+      setHint === undefined
+        ? Prisma.sql`0::float8`
+        : Prisma.sql`
+            CASE
+              WHEN s.name IS NULL THEN 0::float8
+              ELSE GREATEST(
+                CASE WHEN s.name ILIKE ${escapeLike(setHint)} || '%' ESCAPE '\\' THEN ${SET_BONUS}::float8 ELSE 0 END,
+                CASE WHEN s.name ILIKE '%' || ${escapeLike(setHint)} || '%' ESCAPE '\\' THEN ${SET_BONUS}::float8 ELSE 0 END,
+                CASE WHEN similarity(s.name, ${setHint}) >= ${SET_SIMILARITY_MIN}::float8
+                  THEN ${SET_BONUS}::float8 ELSE 0 END
+              )
+            END`;
+
+    // El código va por `ptcgoCode` y no por el nombre: es exacto contra un
+    // vocabulario cerrado, así que no necesita la tolerancia de trigram. En
+    // mayúsculas porque el cliente lo manda tal cual lo leyó.
+    const setCodeSql =
+      setCode === undefined
+        ? Prisma.sql`0::float8`
+        : Prisma.sql`
+            CASE
+              WHEN upper(s."ptcgoCode") = ${setCode} THEN ${SET_CODE_BONUS}::float8
+              ELSE 0::float8
+            END`;
+
+    // El denominador se acepta contra los DOS totales que expone la fuente, no
+    // solo contra `printedTotal`. Difieren en 106 de 176 sets (me55: 128 vs 161)
+    // y la carta imprime el que corresponde a su producto, así que con igualdad
+    // exacta el bonus se perdía para más de la mitad del catálogo.
+    //
+    // Ojo: hay sets donde NO ninguno de los dos es lo impreso. me55 imprime
+    // "092/120" y la fuente no tiene 120 en ningún campo (ni `printedTotal`=128,
+    // ni `total`=161, ni las 158 cartas espejadas). Para esos, la señal del set
+    // es el código, no el denominador.
+    const printedNumber =
       printed === null
         ? Prisma.sql`0::float8`
         : Prisma.sql`
             CASE
               WHEN NULLIF(regexp_replace(c.number, '\\D', '', 'g'), '') ~ '^[0-9]{1,9}$'
                 AND NULLIF(regexp_replace(c.number, '\\D', '', 'g'), '')::bigint = ${printed.n}::bigint
-                AND s."printedTotal" = ${printed.m}
+                AND (s."printedTotal" = ${printed.m} OR s."total" = ${printed.m})
               THEN ${PRINTED_NUMBER_BONUS}::float8
               ELSE 0::float8
             END`;
@@ -715,21 +811,29 @@ export class IdentifyService {
     // `c.rarity` / `c.artist` se buscan dentro del texto del OCR ya en minúsculas.
     // Se exige que el valor tenga letras y un largo razonable para no dar bonus
     // por una rareza de una palabra que matchee ruido ("Common").
-    const raritySql = Prisma.sql`
+    const rarity = Prisma.sql`
       CASE
         WHEN c.rarity IS NULL OR char_length(c.rarity) < 4 THEN 0::float8
         WHEN position(lower(c.rarity) in ${text}) > 0 THEN ${RARITY_BONUS}::float8
         ELSE 0::float8
       END`;
 
-    const artistSql = Prisma.sql`
+    const artist = Prisma.sql`
       CASE
         WHEN c.artist IS NULL OR char_length(c.artist) < 4 THEN 0::float8
         WHEN position(lower(c.artist) in ${text}) > 0 THEN ${ARTIST_BONUS}::float8
         ELSE 0::float8
       END`;
 
-    return Prisma.sql`(${printedSql} + ${hpSql} + ${raritySql} + ${artistSql})::float8`;
+    return {
+      numberHint,
+      setName,
+      setCode: setCodeSql,
+      printedNumber,
+      hp: hpSql,
+      rarity,
+      artist,
+    };
   }
 
   // ─── (e) ranking ────────────────────────────────────────────────────────
@@ -791,6 +895,31 @@ export class IdentifyService {
 
     return result;
   }
+}
+
+/** Señal que el bonus proyecta, con si estaba disponible para votar. */
+interface SignalPresence {
+  numberHint: boolean;
+  setName: boolean;
+  setCode: boolean;
+  printed: boolean;
+  hp: boolean;
+  text: boolean;
+}
+
+function toSignalsDto(row: MatchRow, votan: SignalPresence): CandidateSignalsDto {
+  const voted = (bonus: number, available: boolean): boolean | null =>
+    available ? bonus > 0 : null;
+  return {
+    numberHint: voted(row.sigNumberHint, votan.numberHint),
+    setName: voted(row.sigSetName, votan.setName),
+    setCode: voted(row.sigSetCode, votan.setCode),
+    printedNumber: voted(row.sigPrinted, votan.printed),
+    hp: voted(row.sigHp, votan.hp),
+    // Rareza y artista comparten disponibilidad: ambas se leen del mismo texto.
+    artist: voted(row.sigArtist, votan.text),
+    rarity: voted(row.sigRarity, votan.text),
+  };
 }
 
 function round2(value: number): number {

@@ -72,6 +72,7 @@ function mapSet(raw: any): RemoteSet {
     releaseDate: toNullableString(raw.releaseDate),
     logoUrl: toNullableString(raw.images?.logo),
     symbolUrl: toNullableString(raw.images?.symbol),
+    ptcgoCode: toNullableString(raw.ptcgoCode),
     raw,
   };
 }

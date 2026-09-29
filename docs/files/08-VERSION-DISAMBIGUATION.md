@@ -34,33 +34,43 @@ genérico.
 |---|---|---|---|---|
 | Número impreso (`025/198`) | Sí (OCR banda inferior) | siempre que se lea | Alta cuando se lee | Ya pagado |
 | `setHint` / código de set | Parcial | — | Media | Ya pagado |
+| **Código impreso del set** (`30C`, 3 caracteres) | Sí, ya implementado | 151/176 sets, 142 distintos | Alta — exacto sobre vocabulario cerrado | **Lo más barato que hay**: OCR de 3 caracteres, sin plantillas |
 | **Símbolo del set** (ícono pequeño junto al número) | No | 176/176 sets con `symbolUrl` | Alta — es determinístico | ROI + comparación contra 176 referencias, no contra 20.670 cartas |
 | **Regulation mark** (letra en pentágono, SWSH+) | No | **40,6%** de las cartas (8.395/20.670) | Alta cuando aplica y cuando existe | ROI + OCR de 1 carácter, whitelist `DEFGHIJ` |
 | Rareza (símbolo círculo/diamante/estrella) | Parcial (texto) | — | Baja sola, útil como desempate | Ya tenés el dato del catálogo |
 | Coseno del embedding | Sí | — | Alta para "qué Pokémon", **nula** para desambiguar reimpresiones idénticas | Ya pagado |
 | Textura holo/reverse | No | — | — | Fuera de v1, ver §7 |
 
-La clave del diseño: **el símbolo del set y el regulation mark son datos que
-ya tenés por carta** (vienen de pokemontcg.io / TCGdex, igual que el símbolo
-que ya mostrás en la ficha). El trabajo no es conseguir el dato — es leerlo de
-la foto y compararlo contra lo que cada candidato del top-200 dice que debería
+La clave del diseño: **el código, el símbolo y el regulation mark son datos que
+ya tenés por set** (vienen de pokemontcg.io / TCGdex, igual que el símbolo que
+ya mostrás en la ficha). El trabajo no es conseguir el dato — es leerlo de la
+foto y compararlo contra lo que cada candidato del top-200 dice que debería
 tener ahí. Mismo patrón que ya usás con el número: leer y comparar, no inventar
 una fuente nueva.
 
-**El símbolo de set es la señal primaria, no el desempate.** La cobertura lo
-manda: el regulation mark no existe en el 59,4% del catálogo (todo lo anterior
-a Sun & Moon, más las cartas sin marca), y las únicas letras que aparecen en
+**La señal de set es primaria, no el desempate.** La cobertura lo manda: el
+regulation mark no existe en el 59,4% del catálogo (todo lo anterior a Sun &
+Moon, más las cartas sin marca), y las únicas letras que aparecen en
 `regulationMark` son **D, E, F, G, H, I, J** (7, no 8: no hay A, B ni C). La
-letra sirve cuando el símbolo falla; nunca al revés.
+letra sirve cuando la señal de set falla; nunca al revés.
+
+Y dentro de "la señal de set", la más confiable y la más barata es el **código
+impreso** (`ptcgoCode`), no el símbolo: es texto contra un vocabulario cerrado, y
+un código inventado no le suma a nadie (§4.3).
 
 ## 3. Lo que las APIs ya te dan (confirmado, no supuesto)
 
 | Campo | pokemontcg.io | TCGdex | Verificado en tu catálogo |
 |---|---|---|---|
+| **Código impreso del set** (`ptcgoCode`) | `set.ptcgoCode` | — | `card_sets.ptcgoCode` en 151/176 sets, 142 distintos, 9 colisiones set/sub-producto |
 | Símbolo del set (imagen) | `set.images.symbol` | símbolo por set | `card_sets.symbolUrl` poblado en 176/176 |
 | Regulation mark | `regulationMark` (por carta) | — (no confirmado; si falta, se infiere por rango de sets, ver §4.2) | presente en 40,6% de las cartas, letras `D`–`J` |
 | Variantes físicas que existen para ese print | no expone esto explícito | `variants.normal/reverse/holo/firstEdition` (booleanos) | — |
-| Total impreso del set | `set.printedTotal` | equivalente | — |
+| Total impreso del set | `set.printedTotal` | equivalente | **difiere de `total` en 106 de 176 sets, y hay sets donde ninguno de los dos es lo que la carta imprime** |
+
+`ptcgoCode` es el único de esta tabla que es texto. Ya está modelado, ya se
+sincroniza y ya bonusifica en `identify()` (`IdentifyDto.setCode`); lo que
+falta es la banda de la que leerlo (§4.3).
 
 No hay endpoint que te devuelva "la plantilla visual para reconocer este
 símbolo": eso lo armás vos, una sola vez, recortando el símbolo de la imagen
@@ -128,40 +138,84 @@ Son el ceiling del problema y el upper bound de lo que 8.2 tiene que
 encontrar. Sirven para dos cosas: medir (8.0) y, si el backfill de embeddings
 se demora, tener una lista de pares a los que mirar de cerca.
 
-### 4.3 ROIs nuevos y su lectura
+### 4.3 Qué leer, y en qué orden
 
-Agregar a `rois.json` (mismo mecanismo que `name`/`number`, medido igual que
-el resto, **no puesto a ojo**):
+El plan original decía: comparar **el símbolo del set por imagen** contra ~176
+plantillas. Antes de construir eso, hay una señal más barata que ya está en la
+base y que resuelve el mismo problema.
+
+**`card_sets.ptcgoCode` es el código de 3 caracteres que la carta imprime en la
+esquina inferior izquierda** (`30C`), y pokemontcg.io lo expone. Es texto, no
+imagen: match exacto contra vocabulario cerrado.
+
+| | Símbolo del set | `ptcgoCode` |
+|---|---|---|
+| Dato | `symbolUrl` (imagen) | `ptcgoCode` (texto) |
+| Cobertura | 176/176 sets | 151/176 sets, 142 valores distintos |
+| Lectura | comparar imagen contra N plantillas | OCR de 3 caracteres con whitelist |
+| Trabajo | banco de plantillas, backfill, perceptual hash, ROI por era | un ROI y un `psm` |
+| Colisiones | ninguna (un símbolo por set) | 9 códigos compartidos por un par set/sub-producto (`me55`/`me55c`) |
+| Riesgo | que el ícono sea muy chico en la foto | que el OCR lea basura en vez de el código |
+
+El caso que motivó el trabajo lo confirma: `me55-92` es Umbreon ex del 30th
+Celebration, la foto dice `092/120` con `30C` al lado, y sin el código el
+ranking gana la impresión **por orden de release, no por evidencia** — hay tres
+Umbreon ex con 280 HP y dos con 270 en el catálogo.
+
+**Verificado contra la API**: con `setCode: "30C"` el Umbreon ex de 270 HP pasa de
+`0.97` (empate con cinco impostores, ganado por `setReleaseDate DESC`) a `1.29`
+con `signals.setCode === true`.
+
+> **Por qué el backend NO la saca de `lines`.** Medido sobre las 8 fixtures
+> reales de OCR: buscar cualquier token de 3 caracteres que sea un código de set
+> dio **22 falsos positivos y 0 verdaderos**. `EVO` sale de "Evolves from", `MEW`
+> de una carta que se llama Mew, `PAR`/`CRE`/`FLI` de basura del OCR. El backend
+> recibe `lines: string[]` sin coordenadas, así que no tiene con qué filtrar por
+> posición. Por eso `setCode` es un **hint del cliente** (`IdentifyDto.setCode`)
+> y el campo viene en `null` hasta que haya banda medida.
+
+**Entonces, el orden de 8.1 es:**
+
+1. **Medir la banda del `ptcgoCode`.** Mismo método que `NAME_BAND_BOX`: banda
+   medida, no puesta a ojo, y tasa de lectura sobre el dataset de Ola 0. Si se
+   lee bien, la señal de set está resuelta y el símbolo del set **no hace falta
+   en v1**.
+2. Recién si la banda no rinde, medir la del símbolo y hacer el backfill de
+   plantillas (§8.2).
+
+El resto de §4.3 aplica igual, con el ROI del código en lugar del símbolo:
 
 ```json
 {
-  "sv":       { "setSymbol": [x, y, w, h], "regulationMark": [x, y, w, h] },
-  "sm_swsh":  { "setSymbol": [x, y, w, h], "regulationMark": [x, y, w, h] },
-  "bw_xy":    { "setSymbol": [x, y, w, h] },
-  "ex":       { "setSymbol": [x, y, w, h] },
-  "classic":  { "setSymbol": [x, y, w, h] }
+  "sv":       { "setCode": [x, y, w, h], "regulationMark": [x, y, w, h] },
+  "sm_swsh":  { "setCode": [x, y, w, h], "regulationMark": [x, y, w, h] },
+  "bw_xy":    { "setCode": [x, y, w, h] },
+  "ex":       { "setCode": [x, y, w, h] },
+  "classic":  { "setCode": [x, y, w, h] }
 }
 ```
 
 - **`regulationMark`** solo existe desde Sun & Moon (2017) en adelante, y en el
-  catálogo solo en el 40,6% de las cartas. En eras anteriores el campo no
-  aplica: si el candidato no tiene `regulationMark` cargado, esta señal
-  simplemente no vota (ni a favor ni en contra).
-- **Lectura del símbolo**: no es OCR. Es comparación de imagen: recortar el
-  ROI, normalizar tamaño, y comparar contra las **176** referencias de símbolo
-  (una por set, precomputadas como embedding chico o incluso hash perceptual
-  — es un problema mucho más chico que identificar la carta). Reusa
-  `EmbedderService` si el modelo generaliza bien a íconos pequeños; si no,
-  un hash perceptual (`sharp` + DCT) alcanza y es mucho más barato.
+  catálogo solo en el 40,6% de las cartas. Donde el candidato no tiene
+  `regulationMark` cargado, la señal no vota (ni a favor ni en contra).
+- **Lectura del código**: OCR con whitelist de los 142 valores que hay en
+  `card_sets.ptcgoCode`. El backend ya valida el hint contra esa columna
+  (`upper(s."ptcgoCode") = setCode`), así que un código inventado no suma nada:
+  es imposible que un token equivocado bonusifique a un set.
 - **Lectura de la letra**: OCR de un solo carácter, whitelist `DEFGHIJ` (las
   que existen en el catálogo, no el alfabeto completo), `psm 10` (carácter
   único). Es la pasada de OCR más barata y más confiable de todo el pipeline.
+- **El símbolo del set**, si llegara a hacer falta, se lee como está planeado
+  abajo: recorte, normalizar tamaño, comparar contra las 176 referencias
+  (embedding chico o hash perceptual con `sharp` + DCT).
 
 ### 4.4 Cómo desempata (dentro del grupo, no como fusión global)
 
 ```
 Para cada candidato del grupo:
-  score_set    = 1 si el símbolo leído matchea el set del candidato, 0 si no,
+  score_code   = 1 si el código leído matchea el set del candidato, 0 si no,
+                 null si no se pudo leer
+  score_symbol = 1 si el símbolo leído matchea el set del candidato, 0 si no,
                  0.5 si no se pudo leer
   score_reg    = 1 si la letra leída matchea regulationMark del candidato,
                  0 si no coincide, null si el candidato no tiene regulationMark
@@ -180,9 +234,12 @@ peores casos (coseno ≈ 1,0) son casi siempre reimpresiones con **número
 distinto** — `col1-79` ↔ `hgss2-77`, `xy1-117` ↔ `xy10-100`, `swsh1-9` ↔
 `swsh45-9`, `dp1-107` ↔ `dp7-84`. Ahí el número impreso no desambigua entre
 candidatos: no hay coincidencia que comparar, el score de texto queda neutral
-o directamente contraproducente. El símbolo de set es la señal que resuelve
-esos casos; la letra y el número son corroboración. Conviene que el desempate
-no los pese igual.
+o directamente contraproducente. La señal de set es la que resuelve esos
+casos; la letra y el número son corroboración. Conviene que el desempate no los pese igual.
+
+Y dentro de la señal de set, el **código va antes que el símbolo** por lo de
+§4.3: es exacto, es texto, y un código mal leído no le suma al set equivocado
+mientras que un símbolo parecido sí.
 
 Esto **no es** una fusión ponderada nueva: es un desempate categórico dentro
 de un grupo ya acotado. Coherente con la decisión de `01-CONTRACTS.md §4` de
@@ -235,14 +292,15 @@ CREATE TABLE identification_feedback (
 
 **Por qué esto mejora la detección de verdad, y no es solo logging:**
 
-1. **Plantillas de símbolo reales en vez de solo la referencia oficial.** La
-   imagen de referencia del símbolo (bajada de la API) es perfecta y
-   limpia. Un recorte real, confirmado por el usuario, sacado con celular y
-   con la luz que sea, es lo que de verdad se va a encontrar en producción.
-   Cuando `imageStored=true`, ese recorte del ROI de símbolo se agrega como
-   **plantilla adicional** de ese set (no reemplaza la oficial, se suma).
-   Con ~20-30 confirmaciones por set empezás a tener plantillas robustas a
-   condiciones reales, algo que ninguna API te da.
+1. **Whitelist de códigos leídos de verdad.** La referencia del set (el código
+   de la API, o el símbolo si se llega a usar) es un dato de la fuente: limpio y
+   sin objeciones. Una lectura real, confirmada por el usuario, sacada con
+   celular y con la luz que sea, es lo que de verdad se va a encontrar en
+   producción. Cuando `imageStored=true`, ese recorte se agrega como **ejemplo
+   adicional** de ese set (no reemplaza al de la fuente, se suma). Con ~20-30
+   confirmaciones por set empezás a tener evidencia robusta a condiciones
+   reales, algo que ninguna API te da. Con el código esto es todavía más
+   simple: no hay nada que comparar, se cuenta la frecuencia de las lecturas.
 2. **Detectar grupos de casi-duplicados que confunden mucho.** Un query
    simple sobre esta tabla (`wasCorrect=false GROUP BY nearDuplicateGroupId`)
    te dice exactamente qué reimpresiones hay que reforzar primero. Es
@@ -269,8 +327,8 @@ calibración. Coherente con "nada se calibra sin `eval:diff`".
   Cuando hay más de una variante posible para el mismo print, se le pregunta
   al usuario (selector en la UI), no se adivina. No hay presupuesto para
   clasificador de holo en v1.
-- **Cartas de distinto idioma con el mismo grupo visual.** El regulation
-  mark y el símbolo de set son iguales entre idiomas; lo que cambia es el
+- **Cartas de distinto idioma con el mismo grupo visual.** El regulation mark,
+  el código y el símbolo de set son iguales entre idiomas; lo que cambia es el
   texto, que ya está fuera del alcance del embedding. Se resuelve con
   `setHint`/idioma si el usuario lo da, si no, `ambiguous`.
 
@@ -279,9 +337,9 @@ calibración. Coherente con "nada se calibra sin `eval:diff`".
 | Fase | Qué | Depende de | Gate |
 |---|---|---|---|
 | 8.0 | **CERRADA.** Medir cuántos grupos de casi-duplicados existen en el catálogo | sólo del catálogo (no de embeddings) | Resultado en §8.1: el problema es real, no se pospone |
-| 8.1 | Definir y medir ROIs de símbolo y regulation mark (mismo método que la banda del nombre) | 8.0 | Reporte de banda, no valores a ojo |
-| 8.2 | Backfill de plantillas de símbolo (oficiales) + `near_duplicate_group_id` | 8.1 | Auto-recuperación: cada carta de referencia reconoce su propio símbolo |
-| 8.3 | Verificadores en `identify()`, solo dentro de grupos | 8.2 | `eval:diff`: los casos de reimpresión conocidos (armar 10-15 en el dataset de Ola 0, a propósito) mejoran sin bajar el resto |
+| 8.1 | **Medir primero la banda del `ptcgoCode`** (§4.3) y, solo si no rinde, la del símbolo. En paralelo, la de `regulationMark` | 8.0 | Reporte de banda + tasa de lectura, no valores a ojo |
+| 8.2 | Backfill de `near_duplicate_group_id`, y de plantillas de símbolo **solo si 8.1 dice que hacen falta** | 8.1 | Auto-recuperación: cada carta de referencia reconoce su propio símbolo |
+| 8.3 | Verificadores en `identify()`, solo dentro de grupos (el de `setCode` **ya está hecho**, ver §4.3) | 8.2 | `eval:diff`: los casos de reimpresión conocidos (armar 10-15 en el dataset de Ola 0, a propósito) mejoran sin bajar el resto |
 | 8.4 | Tabla de feedback + script de recalibración | 8.3 | — |
 | 8.5 | Plantillas locales sumadas a las oficiales | 8.4, con volumen real de uso | Medir antes/después con el mismo `eval:diff` |
 

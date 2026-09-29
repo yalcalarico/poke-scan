@@ -65,6 +65,11 @@ model CardSet {
   releaseDate  DateTime?
   logoUrl      String?
   symbolUrl    String?
+  // Código de 3 caracteres impreso en la esquina inferior izquierda de la carta
+  // ("30C"). Es lo más barato que hay para saber de qué set es: texto contra
+  // vocabulario cerrado, sin comparar imágenes. Solo los sets modernos lo
+  // imprimen, y un par set/sub-producto lo comparte (me55 y me55c, "30C").
+  ptcgoCode    String?
   rawJson      Json?
   syncedAt     DateTime  @default(now())
 
@@ -75,6 +80,7 @@ model CardSet {
   cards Card[]
 
   @@index([name])
+  @@index([ptcgoCode])
   @@map("card_sets")
 }
 

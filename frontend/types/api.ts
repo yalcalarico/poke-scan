@@ -315,12 +315,43 @@ export interface IdentifyRequestDto {
   name?: string;
   number?: string;
   setHint?: string;
+  /**
+   * Código de set impreso abajo a la izquierda, ej `"30C"`.
+   *
+   * Todavía no lo manda nadie: depende de medir la banda (fase 8.1 de
+   * `docs/files/08-VERSION-DISAMBIGUATION.md`). El backend ya lo acepta y lo
+   * bonusifica; sin él, la señal no vota.
+   */
+  setCode?: string;
   limit?: number;
+}
+
+/**
+ * Qué señales votaron en el ranking de `identify`, y si coincidieron.
+ *
+ * `null` = la señal no se pudo leer y por lo tanto no votó (ni a favor ni en
+ * contra). `false` = se leyó y no coincidió. La diferencia es la que permite
+ * distinguir "el ranking se equivocó" de "el OCR no leyó nada de esto".
+ */
+export interface CandidateSignalsDto {
+  numberHint: boolean | null;
+  setName: boolean | null;
+  setCode: boolean | null;
+  printedNumber: boolean | null;
+  hp: boolean | null;
+  artist: boolean | null;
+  rarity: boolean | null;
 }
 
 export interface IdentifiedCandidateDto {
   card: CardDto;
-  score: number; // 0..1
+  score: number; // 0..1, saturado
+  /**
+   * El score sin saturar. `score` llega topado en 1 y varios candidatos
+   * legítimos empatan ahí, así que el margen real solo se ve acá.
+   */
+  rawScore: number;
+  signals: CandidateSignalsDto;
   price: PriceDto | null;
   prices?: PriceDto[];
   matchedText?: string | null;

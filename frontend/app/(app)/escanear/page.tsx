@@ -255,6 +255,9 @@ export default function ScanPage() {
           name: parsed.nameGuess ?? undefined,
           number: parsed.numberGuess ?? undefined,
           setHint: parsed.setHint ?? undefined,
+          // Siempre `undefined` por ahora: el backend ya lo acepta, pero sin
+          // banda medida no hay de dónde sacarlo. Ver `ParsedScan.setCode`.
+          setCode: parsed.setCode ?? undefined,
           limit: IDENTIFY_LIMIT,
         }),
         IDENTIFY_TIMEOUT_MS,
