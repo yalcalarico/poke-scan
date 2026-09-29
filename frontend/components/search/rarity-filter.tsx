@@ -56,6 +56,18 @@ export interface RarityFilterProps {
  * lugar de quedar a medio camino entre dos. Sin snap, el último chip visible
  * siempre queda cortado y parece un error de layout.
  *
+ * ─── El `scroll-pl-4` va con el snap, no es decoración ───
+ *
+ * `snap-x` es `scroll-snap-type: x mandatory`, y `mandatory` **ajusta la
+ * posición en el layout**, no solo cuando alguien scrollea. El punto de anclaje
+ * de un `snap-start` es el **borde del puerto de scroll**, no el del contenido:
+ * sin `scroll-pl-4`, el primer chip se ancla en `x=0` del scroller, el padding
+ * lateral se scrollea hacia afuera y "Todas" queda pegado al borde de la
+ * pantalla, con la mitad de la cortada. Medido: `scrollLeft: 16` apenas montado,
+ * con el chip en `x=0` en vez de `x=16`. El `scroll-padding` le dice al
+ * navegador que el puerto arranca 16 px adentro, que es lo que el `px-4` ya
+ * dibujó.
+ *
  * ─── El `py-1` es estructural, no un margen ───
  *
  * El scroller es `overflow-x-auto` y el padding vertical es lo único que
@@ -75,7 +87,7 @@ export function RarityFilter({ value, onChange, className }: RarityFilterProps) 
       role="group"
       aria-label="Filtros por rareza"
       className={cn(
-        '-mx-4 flex snap-x gap-2 overflow-x-auto px-4 py-1 sm:-mx-6 sm:px-6',
+        '-mx-4 flex snap-x gap-2 overflow-x-auto px-4 py-1 scroll-pl-4 sm:-mx-6 sm:px-6 sm:scroll-pl-6',
         NO_SCROLLBAR,
         className,
       )}

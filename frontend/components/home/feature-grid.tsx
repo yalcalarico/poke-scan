@@ -33,7 +33,11 @@ const FEATURES: readonly Feature[] = [
     href: `/colecciones`,
     icon: Layers,
     title: 'Coleccioná',
-    description: 'Armá tus colecciones y compartí tu progreso.',
+    // "tu progreso" era una promesa genérica que no decía dónde se miraba. El
+    // progreso por set es lo que hay detrás de "Progreso por set" en
+    // `/colecciones`, y nombrarlo acá es lo que hace que alguien entre a
+    // buscarlo.
+    description: 'Armá tus colecciones, seguí cuánto completaste de cada set y compartí.',
   },
 ] as const;
 

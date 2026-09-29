@@ -24,6 +24,17 @@ function CardSkeleton() {
         <Skeleton variant="text" className="w-1/3" />
         <Skeleton variant="text" className="mt-2 w-2/5" />
       </div>
+      {/*
+        La franja del link "Progreso por set" que la `CollectionCard` real
+        agrega abajo. Sin esta línea el skeleton mide 60 px menos que la tarjeta
+        y la grilla salta justo cuando llegan los datos, que es lo que §9.1
+        prohíbe. Mismo `p-2` que el link real; el alto va fijo en 44 y no en el
+        `min-h-11` del link porque acá no hay texto que pueda partirse en dos
+        líneas, y `h-11` además pisa el `h-24` del `variant="block"`.
+      */}
+      <div className="border-t border-line-subtle p-2">
+        <Skeleton variant="block" className="h-11 w-full rounded-control" />
+      </div>
     </Surface>
   );
 }

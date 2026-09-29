@@ -1,14 +1,22 @@
 'use client';
 
-import { Search, X } from 'lucide-react';
-import { useId } from 'react';
-
-import { Chip, IconButton, Input } from '@/components/ui';
-import { cn } from '@/lib/cn';
-import type { SetDto } from '@/types/api';
+import { Search, SlidersHorizontal, X } from 'lucide-react';
+import { useId, useMemo, useState } from 'react';
 
 import { RarityFilter } from './rarity-filter';
-import { SetFilterSheet } from './set-filter-sheet';
+
+import {
+  Badge,
+  Button,
+  IconButton,
+  Input,
+  SegmentedControl,
+  Select,
+  Sheet,
+  type SelectOptionItem,
+} from '../ui';
+import { cn } from '@/lib/cn';
+import type { SetDto } from '@/types/api';
 
 export type SearchMode = 'name' | 'number' | 'artist';
 
@@ -21,9 +29,9 @@ export type SearchMode = 'name' | 'number' | 'artist';
  * campo queda igual porque es el que evita tener que tocar la pantalla entera
  * si uno vuelve a quedar deshabilitado.
  *
- * Antes de que el backend tuviera los tres campos, `number` y `artist`
- * estaban `available: false` con un chip visible, tabulable y deshabilitado, y
- * un hint que decía que faltaban. Era preferible a un chip que fingiera
+ * Antes de que el backend tuviera los tres campos, `number` y `artist` estaban
+ * `available: false` con un chip visible, tabulable y deshabilitado, y un
+ * hint que decía que faltaban. Era preferible a un chip que fingiera
  * filtrar y devolviera resultados por nombre — pero ahora que el backend
  * responde de verdad, mostrar un control apagado es un defecto: la función
  * existe y la app no la ofrece.
@@ -58,35 +66,49 @@ export interface SearchControlsProps {
   onValueChange: (value: string) => void;
   /** Enter en el input o submit del form: empuja la query ya, sin esperar el debounce. */
   onSubmit: () => void;
-
-  /** Campo contra el que matchea `q`. */
   searchBy: SearchMode;
-  onSearchByChange: (searchBy: SearchMode) => void;
-
-  /** `setId` activo, o `''`. */
+  onSearchByChange: (value: SearchMode) => void;
   setId: string;
-  onSetIdChange: (setId: string) => void;
-  /** Rareza activa, o `''`. */
+  onSetIdChange: (value: string) => void;
   rarity: string;
-  onRarityChange: (rarity: string) => void;
-
-  sets: readonly SetDto[];
+  onRarityChange: (value: string) => void;
+  sets: SetDto[];
   setsLoading?: boolean;
   setsError?: string | null;
+  /** Limpia los tres filtros del `Sheet`. Lo provee `catalog-search`. */
+  onClearFilters: () => void;
   className?: string;
 }
 
 /**
- * El bloque de controles de `/buscar`: input grande, modo de búsqueda y los
- * dos filtros. Antes eran dos `<select>` nativos.
+ * La barra del buscador, y **una sola fila**.
  *
- * ## El input no se borra al navegar
+ * ## Por qué los filtros viven en un `Sheet` y no acá arriba
  *
- * `value` es estado controlado y vive en `catalog-search`, con debounce de
- * 300 ms y un ref que marca "este cambio de la URL es mío" (`docs/gotchas.md`
- * #3). Acá no hay ningún efecto que sincronice nada: el componente pinta
- * exactamente lo que le pasaron. Toda la sincronización está en un solo lugar,
- * que es donde se puede romper y donde se puede testear.
+ * Antes esta pantalla apilaba cuatro cosas en vertical: el input, tres chips de
+ * modo, un chip de set y una fila de doce rarezas. Medido en 390 px, eso son
+ * unos 200 px de controles antes de la primera carta — más de la mitad de la
+ * primera pantalla, y el usuario que ya conoce la app paga ese costo en cada
+ * búsqueda.
+ *
+ * El precio de eso no es solo altura: es que el filtro **parece** el contenido.
+ * Un bloque de controles del alto de media pantalla hace que la grilla —que es
+ * lo que la gente vino a ver— parezca un afterthought debajo de un formulario.
+ *
+ * La salida es tratar la búsqueda como lo que es: **una barra con un input y un
+ * botón**, y los filtros detrás de ese botón, que es además el patrón que ya
+ * usa el resto de la app para lo que no cabe en pantalla (`ItemSheet`,
+ * `SetFilterSheet`, `AddToCollectionSheet`). En mobile el `Sheet` entra desde
+ * abajo, que es el gesto que ya está en el pulgar de cualquiera que use la app.
+ *
+ * El input **no** entra al `Sheet`: escribir es la acción principal y tiene que
+ * quedar a la vista, con el teclado abierto y sin un tap de por medio.
+ *
+ * ## Lo que se ve sin abrir nada
+ *
+ * El botón dice cuántos filtros hay activos. Un filtro invisible es un filtro
+ * que el usuario olvida que puso y después se pregunta por qué la grilla no
+ * muestra lo que busca.
  */
 export function SearchControls({
   value,
@@ -101,155 +123,207 @@ export function SearchControls({
   sets,
   setsLoading = false,
   setsError = null,
+  onClearFilters,
   className,
 }: SearchControlsProps) {
   const generatedId = useId();
   const inputId = `${generatedId}-q`;
-  const hintId = `${generatedId}-hint`;
+  const filtersId = `${generatedId}-filters`;
+  const [isFiltersOpen, setIsFiltersOpen] = useState(false);
 
   const unavailableModes = SEARCH_MODES.filter((mode) => !mode.available);
 
+  const setOptions = useMemo<SelectOptionItem<string>[]>(
+    () => [
+      { value: '', label: 'Todos los sets' },
+      ...sets.map((set) => ({ value: set.id, label: set.name, description: set.series ?? undefined })),
+    ],
+    [sets],
+  );
+
+  /**
+   * Cuántos filtros están puestos. El modo `name` no cuenta: es el estado sin
+   * filtro, igual que "Todas" en la lista de rarezas, y contarlo haría que el
+   * badge dijera "1" en una búsqueda pelada.
+   */
+  const activeCount =
+    (setId !== '' ? 1 : 0) + (rarity !== '' ? 1 : 0) + (searchBy !== 'name' ? 1 : 0);
+
+  const setName = setId !== '' ? (sets.find((set) => set.id === setId)?.name ?? null) : null;
+
+  const activeSummary = [
+    searchBy !== 'name' ? MODE_LABELS[searchBy] : null,
+    setName,
+    rarity !== '' ? rarity : null,
+  ]
+    .filter((value): value is string => Boolean(value))
+    .join(' · ');
+
   return (
     <div className={cn('flex flex-col gap-3', className)}>
-      <form
-        role="search"
-        aria-label="Buscar cartas"
-        onSubmit={(event) => {
-          event.preventDefault();
-          onSubmit();
-        }}
-      >
-        <label htmlFor={inputId} className="sr-only">
-          Buscar cartas por {MODE_LABELS[searchBy].toLowerCase()}
-        </label>
+      {/*
+        Una sola fila. El input crece y el botón no, así que en 320 px —el
+        ancho más chico que todavía se usa— el botón conserva su ancho y el
+        placeholder se recorta, que es el recorte correcto: el texto de ejemplo
+        se lee entero en el primer scroll.
+      */}
+      <div className="flex items-stretch gap-2">
+        <form
+          role="search"
+          aria-label="Buscar cartas"
+          className="min-w-0 flex-1"
+          onSubmit={(event) => {
+            event.preventDefault();
+            onSubmit();
+          }}
+        >
+          <label htmlFor={inputId} className="sr-only">
+            Buscar cartas por {MODE_LABELS[searchBy].toLowerCase()}
+          </label>
 
-        {/*
-          `type="search"` por la semántica y por el teclado virtual, con el
-          botón de limpiar de WebKit escondido: el nuestro va en el
-          `trailingSlot`, y tener dos "x" en el mismo input es un bug, no una
-          consecuencia de usar la plataforma.
-        */}
-        <Input
-          id={inputId}
-          size="lg"
-          type="search"
-          value={value}
-          onChange={(event) => onValueChange(event.target.value)}
-          placeholder={SEARCH_PLACEHOLDERS[searchBy]}
-          leadingIcon={Search}
-          enterKeyHint="search"
-          autoComplete="off"
-          autoCorrect="off"
-          spellCheck={false}
-          maxLength={80}
-          className="[&_input::-webkit-search-cancel-button]:appearance-none"
-          trailingSlot={
-            value ? (
-              <IconButton
-                icon={X}
-                label="Limpiar búsqueda"
-                size="sm"
-                onClick={() => onValueChange('')}
-              />
-            ) : null
-          }
-        />
-      </form>
-
-      <div role="group" aria-label="Campo de búsqueda" className="flex flex-wrap gap-2">
-        {SEARCH_MODES.map((mode) => (
-          <SearchModeChip
-            key={mode.id}
-            label={mode.label}
-            selected={mode.id === searchBy}
-            available={mode.available}
-            hintId={hintId}
-            onSelect={() => onSearchByChange(mode.id)}
+          {/*
+            `type="search"` por la semántica y por el teclado virtual, con el
+            botón de limpiar de WebKit escondido: el nuestro va en el
+            `trailingSlot`, y tener dos "x" en el mismo input es un bug, no una
+            consecuencia de usar la plataforma.
+          */}
+          <Input
+            id={inputId}
+            size="lg"
+            type="search"
+            value={value}
+            onChange={(event) => onValueChange(event.target.value)}
+            placeholder={SEARCH_PLACEHOLDERS[searchBy]}
+            leadingIcon={Search}
+            enterKeyHint="search"
+            autoComplete="off"
+            autoCorrect="off"
+            spellCheck={false}
+            maxLength={80}
+            className="[&_input::-webkit-search-cancel-button]:appearance-none"
+            trailingSlot={
+              value ? (
+                <IconButton
+                  icon={X}
+                  label="Limpiar búsqueda"
+                  size="sm"
+                  onClick={() => onValueChange('')}
+                />
+              ) : null
+            }
           />
-        ))}
+        </form>
+
+        <Button
+          id={filtersId}
+          type="button"
+          variant="secondary"
+          size="lg"
+          aria-haspopup="dialog"
+          onClick={() => setIsFiltersOpen(true)}
+          className="shrink-0"
+        >
+          <SlidersHorizontal aria-hidden="true" focusable="false" strokeWidth={1.75} className="h-5 w-5" />
+          <span className="hidden min-[380px]:inline">Filtros</span>
+          {activeCount > 0 ? (
+            /*
+              El badge va con `aria-hidden` porque el nombre accesible del botón
+              lo arma el `aria-label` de abajo: sin eso, un lector de pantalla
+              anunciaría "Filtros 2 dos" y el número dos veces.
+            */
+            <Badge tone="brand" aria-hidden="true" className="tabular-nums">
+              {activeCount}
+            </Badge>
+          ) : null}
+          <span className="sr-only">
+            {activeCount > 0 ? `Filtros: ${activeCount} activos (${activeSummary})` : 'Filtros'}
+          </span>
+        </Button>
       </div>
 
       {/*
-        El hint solo aparece cuando hay algo que avisar. Con los tres campos
-        disponibles no dice nada: una línea de texto que reitera lo que el chip
-        activo ya muestra, en cada carga, es ruido.
+        Los modos no disponibles no se anuncian acá: viven en el `Sheet`, y el
+        hint solo se escribe cuando hay algo que avisar. Con los tres campos
+        disponibles no dice nada, y una línea que reitera lo que el control
+        activo ya muestra es ruido en cada carga.
       */}
-      {unavailableModes.length > 0 ? (
-        <p id={hintId} className="text-caption text-tertiary">
-          Buscar por {unavailableModes.map((m) => m.label.toLowerCase()).join(' y por ')}{' '}
-          llega más adelante.
-        </p>
-      ) : null}
 
-      <div className="flex flex-col gap-3">
-        <SetFilterSheet
-          sets={sets}
-          value={setId}
-          onChange={onSetIdChange}
-          isLoading={setsLoading}
-          error={setsError}
-        />
-        <RarityFilter value={rarity} onChange={onRarityChange} />
-      </div>
+      <Sheet
+        open={isFiltersOpen}
+        onClose={() => setIsFiltersOpen(false)}
+        title="Filtros"
+        subtitle={activeCount > 0 ? activeSummary : 'Sin filtros activos'}
+        size="lg"
+        footer={
+          activeCount > 0 ? (
+            <Button variant="ghost" size="md" onClick={onClearFilters} className="w-full">
+              Limpiar filtros
+            </Button>
+          ) : null
+        }
+      >
+        <div className="flex flex-col gap-6">
+          {/*
+            `SegmentedControl` y no chips: los tres modos son excluyentes y
+            encajan en tres segmentos, que es exactamente para lo que existe.
+            Los chips de filtro se reservan para las rarezas, que sí son un
+            conjunto que se puede dejar en "Todas" o no.
+          */}
+          <fieldset className="flex min-w-0 flex-col gap-2">
+            <legend className="text-overline text-tertiary">Buscá por</legend>
+            <SegmentedControl
+              label="Campo de búsqueda"
+              value={searchBy}
+              options={SEARCH_MODES.map((mode) => ({ value: mode.id, label: mode.label }))}
+              onChange={onSearchByChange}
+            />
+            {unavailableModes.length > 0 ? (
+              <p className="text-caption text-tertiary">
+                Buscar por {unavailableModes.map((m) => m.label.toLowerCase()).join(' y por ')}{' '}
+                llega más adelante.
+              </p>
+            ) : null}
+          </fieldset>
+
+          <div className="flex min-w-0 flex-col gap-2">
+            {/*
+              `Select` y no otro `Sheet`: el `Sheet` es una capa y no se anida
+              (`registerLayer` cierra el que está abierto), así que un `Sheet`
+              de sets adentro de este cerraría los filtros y tiraría al usuario
+              de vuelta al `Sheet` anterior a dos toques. El `Select` es un
+              popover, y con 176 sets se vuelve buscable solo (`> 12` opciones).
+            */}
+            <p className="text-overline text-tertiary" id={`${filtersId}-set`}>
+              Set
+            </p>
+            <Select
+              options={setOptions}
+              value={setId === '' ? '' : setId}
+              onChange={onSetIdChange}
+              disabled={setsLoading || setsError !== null}
+              aria-labelledby={`${filtersId}-set`}
+              placeholder="Todos los sets"
+            />
+            {setsError !== null ? (
+              <p className="text-caption text-tertiary">
+                No pudimos cargar los sets. Podés seguir buscando por nombre y por rareza.
+              </p>
+            ) : null}
+          </div>
+
+          <div className="flex min-w-0 flex-col gap-2">
+            <p className="text-overline text-tertiary">Rareza</p>
+            {/*
+              Sin clase de sangría propia: `RarityFilter` **ya** trae
+              `-mx-4 px-4`, que es lo que compensa el `px-4` del `SheetBody` para
+              que la fila llegue al borde y el corte se lea como "hay más a la
+              derecha". Agregar otro `-mx-4` acá suma los negativos y deja el
+              primer chip a la mitad de la pantalla.
+            */}
+            <RarityFilter value={rarity} onChange={onRarityChange} />
+          </div>
+        </div>
+      </Sheet>
     </div>
-  );
-}
-
-/**
- * Un chip del modo de búsqueda.
- *
- * Los no disponibles usan `aria-disabled` y **no** el atributo `disabled`: un
- * botón con `disabled` no es tabulable, así que el usuario de teclado no
- * llegaría nunca al chip ni al hint que explica por qué. Con `aria-disabled`
- * sigue siendo alcanzable, se anuncia como deshabilitado y el `Enter` no hace
- * nada, que es exactamente el contrato de un control deshabilitado.
- *
- * ─── Por qué NO se usa el `disabled` nuevo del `Chip` ───
- *
- * El `Chip` ganó una apariencia real de apagado, y podría parecer que este
- * call site quedó viejo. No: el `disabled` del `Chip` trae `pointer-events-none`
- * y el atributo nativo, o sea **justo las dos cosas que este chip no puede
- * tener** —dejarse de hover y perder el tab order—. Por eso el apagado de acá
- * está escrito a mano con `className`, que es lo que el `Chip` deja pasar al
- * final del `cn()` y por lo tanto gana.
- *
- * Lo que sí queda es que el apagado real del `Chip` nunca se activa en esta
- * pantalla, porque `disabled` es `false`. Revisado: no hay doble tratamiento.
- * El `onClick` sigue siendo un no-op y el `hover` está neutralizado, así que el
- * chip se ve y se anuncia como no disponible sin hacer nada.
- *
- * Un detalle que sí queda, y es preexistente: el `Chip` en modo `filter` le
- * pone `aria-pressed`, así que el chip announces "no disponible, no
- * seleccionado". Es correcto —`aria-pressed="false"` en un toggle apagado— y no
- * se toca.
- */
-function SearchModeChip({
-  label,
-  selected,
-  available,
-  hintId,
-  onSelect,
-}: {
-  label: string;
-  selected: boolean;
-  available: boolean;
-  hintId: string;
-  onSelect: () => void;
-}) {
-  return (
-    <Chip
-      active={selected}
-      onClick={available ? onSelect : () => undefined}
-      aria-disabled={available ? undefined : true}
-      aria-describedby={available ? undefined : hintId}
-      title={available ? undefined : 'Todavía no está disponible'}
-      className={
-        available
-          ? undefined
-          : 'cursor-not-allowed text-disabled hover:bg-surface hover:text-disabled'
-      }
-    >
-      {label}
-    </Chip>
   );
 }

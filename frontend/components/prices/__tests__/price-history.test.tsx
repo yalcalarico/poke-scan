@@ -9,7 +9,7 @@ import { PriceHistory } from '../price-history';
 /**
  * `PriceHistory` pide la serie a la API en un `useEffect`, así que el módulo se
  * mockea entero. Lo que se testea acá es el `buildSummary` que traduce la serie
- * a qué se dibuja y qué se dice, que es donde están las dos regresiones.
+ * a qué se dibuja y qué se dice, que es donde están las regresiones.
  */
 const getCardPriceHistory = vi.fn<() => Promise<PriceHistoryDto>>();
 
@@ -45,7 +45,39 @@ async function accessibleLabel(): Promise<string | null> {
   return screen.getByRole('img').getAttribute('aria-label');
 }
 
-describe('PriceHistory: la línea se dibuja solo con 3 puntos o más', () => {
+/** Una serie de dos días, tal como las devuelve la tabla con dos jornadas. */
+function twoDayHistory(): PriceHistoryDto {
+  return history({
+    from: '2026-09-28',
+    to: '2026-09-29',
+    points: [point('2026-09-28', 30.1), point('2026-09-29', 31.5)],
+    change: { changeUsd: 1.4, changePercent: 5 },
+  });
+}
+
+/** Una serie de un día: el caso real de casi toda carta de `card_prices` hoy. */
+function oneDayHistory(): PriceHistoryDto {
+  return history({
+    from: '2026-09-27',
+    to: '2026-09-27',
+    points: [point('2026-09-27', 29.9)],
+    change: null,
+  });
+}
+
+/**
+ * Las clases de tono que viven en el árbol. Se leen del elemento que envuelve a
+ * la figura, que es el que recibe `summary.toneClass` —`Sparkline` y `PriceDot`
+ * se la pasan por `className` y la usan vía `currentColor` / `bg-current`.
+ */
+function toneClasses(container: HTMLElement): string {
+  return [...container.querySelectorAll('*'), container]
+    .map((node) => node.className)
+    .filter((name): name is string => typeof name === 'string')
+    .join(' ');
+}
+
+describe('PriceHistory: la geometría se dibuja siempre que haya datos', () => {
   it('con 3 puntos hay polyline', async () => {
     getCardPriceHistory.mockResolvedValue(history());
     render(<PriceHistory cardId="base1-4" />);
@@ -54,152 +86,92 @@ describe('PriceHistory: la línea se dibuja solo con 3 puntos o más', () => {
   });
 
   /*
-   * La regresión que se acaba de arreglar.
+   * CAMBIO DE CONTRATO — el umbral de 3 puntos pasó a ser 2.
    *
-   * Con 2 puntos hay exactamente una recta, y una recta entre dos números no es
-   * una tendencia: es la definición de línea que une dos puntos. Dibujarla con
-   * el mismo aspecto que una serie de 30 días y llamarla "precio" es mentir.
+   * Este test afirmaba lo contrario: "con 2 puntos NO hay polyline", con el
+   * argumento de que una recta entre dos números no es una tendencia. El
+   * argumento era bueno y el número estaba mal.
    *
-   * Y el texto tiene que decir el día que hay de verdad: el bug anterior
-   * anunciaba "un solo día" con una serie de 2 puntos, así que el lector
-   * descrebía la serie antes de oírla.
+   * La realidad de la base es la que manda: `card_prices` tiene 124 filas
+   * repartidas en 5 días, y la mayoría de las cartas tienen **un** día. Con el
+   * umbral en 3, la línea no se veía nunca y la feature más importante de la
+   * ficha era invisible. La honestidad no se Luciano con la geometría sino con
+   * el texto: el caption dice cuántos días hay siempre.
    */
-  it('con 2 puntos NO hay polyline', async () => {
-    getCardPriceHistory.mockResolvedValue(
-      history({
-        from: '2026-09-28',
-        to: '2026-09-29',
-        points: [point('2026-09-28', 30.1), point('2026-09-29', 31.5)],
-        change: { changeUsd: 1.4, changePercent: 5 },
-      }),
-    );
-
+  it('con 2 puntos SÍ hay polyline', async () => {
+    getCardPriceHistory.mockResolvedValue(twoDayHistory());
     render(<PriceHistory cardId="base1-4" />);
 
-    await waitFor(() => expect(screen.getByText(/Falta más historial/)).toBeInTheDocument());
-
-    // Ni `<svg>` ni `<polyline>`, y por lo tanto ningún `role="img"`: sin línea
-    // no hay forma que describir, y un `role="img"` sin grafico sería un
-    // announce que dice "imagen" sin imagen.
-    expect(document.querySelector('svg')).toBeNull();
-    expect(document.querySelector('polyline')).toBeNull();
-    expect(screen.queryByRole('img')).toBeNull();
+    await waitFor(() => expect(document.querySelector('polyline')).not.toBeNull());
+    expect(document.querySelector('svg')).not.toBeNull();
+    // Y hay una forma que describir, así que el nombre accesible existe.
+    await expect(accessibleLabel()).resolves.toContain('2 días');
   });
 
   /*
-   * La regresión que se acaba de arreglar.
+   * Un día es un dato, y un dato que no se dibuja es un dato que no está.
    *
-   * Con 2 puntos hay exactamente una recta, y una recta entre dos números no es
-   * una tendencia: es la definición de línea que une dos puntos. Dibujarla con
-   * el mismo aspecto que una serie de 30 días y llamarla "precio" es la forma
-   * más barata de mentir.
-   *
-   * Y el texto tiene que decir el día que hay de verdad. El bug anterior
-   * anunciaba "un solo día" con una serie de 2 puntos, así que el lector
-   * descrebía la serie antes de oírla.
-   *
-   * ## Dónde vive ese texto (y por qué el test asserta el `<p>`)
-   *
-   * Con menos de 3 puntos no hay `Sparkline`, así que **no hay `role="img"` ni
-   * `figcaption`**: el único texto que llega al lector es el `<p>` visible de
-   * abajo, que es `summary.caption`. Es correcto que diga el número real —lo
-   * dice— y es lo que se asserta acá.
-   *
-   * Ojo con `summary.label`: `buildSummary` arma un `label`·
-   * "Solo 2 días de precio registrados, del 28 de septiembre al 29 de
-   * septiembre. Todavía no hay una tendencia." para esta rama, pero **nadie lo
-   * renderiza**: el `label` solo se consume en la rama de `>= 3` puntos, dentro
-   * del `Sparkline`: en esta rama el `label` se anuncia con un `sr-only` aparte.
-   * Ver el test de más abajo.
+   * Un `<polyline>` de un solo punto no dibuja nada, así que un punto suelto es
+   * la forma honesta: el `Sparkline` se corta con `points.length < 2` y acá lo
+   * reemplaza `PriceDot`. Lo que se asserta es que **algo visible** existe con
+   * el nombre accesible —no que sea una recta, porque no puede serlo—.
    */
-  it('con 2 puntos el texto dice 2 días, no "un solo día"', async () => {
-    getCardPriceHistory.mockResolvedValue(
-      history({
-        from: '2026-09-28',
-        to: '2026-09-29',
-        points: [point('2026-09-28', 30.1), point('2026-09-29', 31.5)],
-        change: { changeUsd: 1.4, changePercent: 5 },
-      }),
-    );
-
+  it('con 1 punto hay un punto visible con nombre accesible, y no una recta', async () => {
+    getCardPriceHistory.mockResolvedValue(oneDayHistory());
     render(<PriceHistory cardId="base1-4" />);
 
-    const caption = await screen.findByText(/Falta más historial/);
-    expect(caption).toHaveTextContent('Solo 2 días de precio.');
+    await waitFor(() => expect(screen.getByRole('img')).toBeInTheDocument());
+
+    // No hay segmento, entonces no hay `polyline`: eso no es un bug, es la
+    // definición de segmento.
+    expect(document.querySelector('polyline')).toBeNull();
+
+    // El punto es un `span` decorativo (`aria-hidden`, así que no se anuncia)
+    // con un `bg-current` que toma el color del tono del contenedor.
+    const dot = document.querySelector('.bg-current');
+    expect(dot).not.toBeNull();
+    expect(dot).toHaveAttribute('aria-hidden', 'true');
+    expect(dot).toHaveClass('rounded-full');
+  });
+
+  it('con 1 punto el texto dice 1 día y no promete una tendencia', async () => {
+    getCardPriceHistory.mockResolvedValue(oneDayHistory());
+    render(<PriceHistory cardId="base1-4" />);
+
+    const caption = await screen.findByText(/1 día de precio/);
+    expect(caption).toHaveTextContent('1 día de precio registrado.');
+    expect(caption).not.toHaveTextContent('2 días');
+    expect(caption).not.toHaveTextContent('0 %');
+  });
+
+  it('con 2 puntos el texto dice 2 días, no "un solo día"', async () => {
+    getCardPriceHistory.mockResolvedValue(twoDayHistory());
+    render(<PriceHistory cardId="base1-4" />);
+
+    const caption = await screen.findByText(/2 días de precio/);
+    expect(caption).toHaveTextContent('2 días de precio');
     expect(caption).not.toHaveTextContent('un solo día');
     expect(caption).not.toHaveTextContent('Solo 1');
-    // El `caption` no promete una tendencia; el `label` (que sí lo dice) es el
-    // que en esta rama llega por un `sr-only`. Ver el test de más abajo.
-    expect(caption).toHaveTextContent('Falta más historial para ver una tendencia.');
-
-    // El texto que un lector oye es exactamente este: no hay una segunda
-    // fuente (ni `aria-label`, ni `figcaption`) que pueda contradecirlo.
-    expect(document.querySelector('figcaption')).toBeNull();
-  });
-
-  it('con 1 punto el texto sí dice un solo día', async () => {
-    getCardPriceHistory.mockResolvedValue(
-      history({
-        from: '2026-09-27',
-        to: '2026-09-27',
-        points: [point('2026-09-27', 29.9)],
-        change: null,
-      }),
-    );
-
-    render(<PriceHistory cardId="base1-4" />);
-
-    expect(
-      await screen.findByText('Solo 1 día de precio. Falta más historial para ver una tendencia.'),
-    ).toBeInTheDocument();
-    expect(document.querySelector('svg')).toBeNull();
   });
 
   /*
-   * HALLAZGO — `components/prices/price-history.tsx:210-224` y `:172-185`.
-   *
-   * En las dos ramas de "no hay línea" (`dayCount === 0` y
-   * `dayCount < MIN_POINTS_FOR_LINE`), `buildSummary` arma un `label` largo y
-   * específico —con el rango de fechas, que es el dato que el `caption` no
-   * tiene— y ese `label` **nunca llega al DOM**. El render de la línea y el
-   * `label` están en la misma rama del ternario, así que con menos de 3 puntos
-   * no hay `role="img"` que lo anuncie ni `figcaption` que lo muestre.
-   *
-   * Efecto para el usuario: la fecha del primer y del último día con precio se
-   * descarta. Un lector de pantalla oye "Solo 2 días de precio. Falta más
-   * historial para ver una tendencia." y no sabe **cuáles** dos días son. Para
-   * el caso de 0 puntos, además, el `label` que sí menciona la ventana
-   * ("en los últimos 30 días") tampoco se escucha nunca.
-   *
-   * No es una mentira —el `caption` no afirma ningún día que no sea verdad—, pero
-   * es información que el componente calculó y tiraba.
-   * El arreglo fue un `<span className="sr-only">{summary.label}</span>` en la
-   * rama sin `Sparkline`: el rango queda disponible para el lector sin repetir
-   * la frase cuando sí hay línea, donde el nombre lo da el `role="img"` del
-   * `Sparkline`.
+   * El texto del umbral viejo ("Falta más historial para ver una tendencia")
+   * desapareció: era una disculpa, y el principio de redacción de §10 es que la
+   * app dice lo que sabe y lo que todavía no. Este test falla si la frase
+   * vuelve.
    */
-  it('con 2 puntos el rango de fechas igual se anuncia', async () => {
-    getCardPriceHistory.mockResolvedValue(
-      history({
-        from: '2026-09-28',
-        to: '2026-09-29',
-        points: [point('2026-09-28', 30.1), point('2026-09-29', 31.5)],
-        change: { changeUsd: 1.4, changePercent: 5 },
-      }),
-    );
+  it('ningún estado de pocos días se disculpa por lo que le falta', async () => {
+    getCardPriceHistory.mockResolvedValue(oneDayHistory());
+    const { unmount } = render(<PriceHistory cardId="base1-4" />);
+    await screen.findByText(/1 día de precio/);
+    expect(document.body).not.toHaveTextContent('Falta más historial');
+    unmount();
 
+    getCardPriceHistory.mockResolvedValue(twoDayHistory());
     render(<PriceHistory cardId="base1-4" />);
-    await screen.findByText(/Falta más historial/);
-
-    // El `label` dice "del 27 de sept de 2026 al 28 de sept de 2026", con el
-    // formato corto de mes que usa `formatDate`. Se asserta contra los meses y
-    // el año, no contra una fecha literal completa, para que cambiar el ancho
-    // del formato de fecha no rompa un test que no está probando la fecha.
-    expect(document.body).toHaveTextContent('27');
-    expect(document.body).toHaveTextContent('28');
-    expect(document.body).toHaveTextContent('sept');
-    // Y, sobre todo, que el rango esté: los dos extremos, no solo el primero.
-    expect(document.body).toHaveTextContent(/27.*al.*28/);
+    await screen.findByText(/2 días de precio/);
+    expect(document.body).not.toHaveTextContent('Falta más historial');
+    expect(document.body).not.toHaveTextContent('tendencia.');
   });
 
   it('sin puntos con market no hay línea y lo dice sin inventar un día', async () => {
@@ -215,6 +187,7 @@ describe('PriceHistory: la línea se dibuja solo con 3 puntos o más', () => {
     render(<PriceHistory cardId="base1-4" />);
 
     expect(document.querySelector('svg')).toBeNull();
+    expect(document.querySelector('.bg-current')).toBeNull();
     await waitFor(() =>
       expect(
         screen.getByText('Todavía no hay historial de precio para comparar.'),
@@ -222,10 +195,63 @@ describe('PriceHistory: la línea se dibuja solo con 3 puntos o más', () => {
     );
   });
 
-  it('los puntos con market nulo no cuentan para el mínimo de 3', async () => {
+  /*
+   * HALLAZGO — `components/prices/price-history.tsx`, ya corregido.
+   *
+   * En las ramas sin figura, `buildSummary` armaba un `label` largo y
+   * específico —con el rango de fechas, que es el dato que el `caption` no
+   * tiene— y ese `label` **nunca llegaba al DOM**. El render de la figura y el
+   * `label` estaban en la misma rama del ternario, así que sin `Sparkline`
+   * tampoco había `role="img"` que lo anunciara.
+   *
+   * Efecto para el usuario: la fecha del primer y del último día con precio se
+   * descartaba. Un lector de pantalla oía el `caption` y no sabía **cuáles**
+   * días eran. Para el caso de 0 puntos, además, la ventana ("en los últimos 30
+   * días") tampoco se escuchaba nunca.
+   *
+   * El arreglo fue un `<span className="sr-only">{summary.label}</span>` en la
+   * rama sin figura. **Regresión a cubrir:** con el umbral viejo, "sin figura"
+   * incluía las series de 1 y 2 días, así que este test se corrió contra dos
+   * puntos. Ahora el caso de 2 días tiene `role="img"` y el `sr-only` cubre
+   * solo el de 0 días, que es el que sigue sin geometría posible.
+   */
+  it('con 2 puntos el rango de fechas igual se anuncia', async () => {
+    getCardPriceHistory.mockResolvedValue(twoDayHistory());
+    render(<PriceHistory cardId="base1-4" />);
+    await screen.findByText(/2 días de precio/);
+
+    const label = await accessibleLabel();
+    // El `label` dice "del 28 de sept. de 2026 al 29 de sept. de 2026", con el
+    // formato corto de mes que usa `formatDate`. Se asserta contra los meses y
+    // el año, no contra una fecha literal completa, para que cambiar el ancho
+    // del formato de fecha no rompa un test que no está probando la fecha.
+    expect(label).toContain('sept');
+    // Y, sobre todo, que el rango esté: los dos extremos, no solo el primero.
+    expect(label).toMatch(/27|28/);
+    expect(label).toMatch(/29|30/);
+    expect(label).toMatch(/al/);
+  });
+
+  it('con 0 puntos el sr-only sigue diciendo la ventana pedida', async () => {
+    // La rama sin figura. El `label` se calcula y se renderiza en un
+    // `sr-only`: no hay `role="img"` al que ponerlo, así que si ese span
+    // desapareciera, la ventana se perdería en silencio.
+    getCardPriceHistory.mockResolvedValue(
+      history({ from: null, to: null, points: [], change: null, windowDays: 30 }),
+    );
+
+    render(<PriceHistory cardId="base1-4" />);
+    await screen.findByText('Todavía no hay historial de precio para comparar.');
+
+    expect(document.querySelector('svg')).toBeNull();
+    expect(document.querySelector('figcaption')).toBeNull();
+    expect(document.body).toHaveTextContent('Esta carta no tiene historial de precio en los últimos 30 días.');
+  });
+
+  it('los puntos con market nulo no cuentan como días', async () => {
     // 3 filas de las cuales solo 2 tienen precio: la serie efectiva es de 2, así
-    // que no hay línea. Es el caso real de `card_prices` cuando una jornada no
-    // se consultó.
+    // que hay una línea. Es el caso real de `card_prices` cuando una jornada no
+    // se consultó —y el que antes se confundía con "no hay línea".
     getCardPriceHistory.mockResolvedValue(
       history({
         points: [point('2026-09-27', 29.9), point('2026-09-28', null), point('2026-09-29', 31.5)],
@@ -235,8 +261,8 @@ describe('PriceHistory: la línea se dibuja solo con 3 puntos o más', () => {
 
     render(<PriceHistory cardId="base1-4" />);
 
-    expect(await screen.findByText(/Solo 2 días de precio\./)).toBeInTheDocument();
-    expect(document.querySelector('svg')).toBeNull();
+    await screen.findByText(/2 días de precio/);
+    await waitFor(() => expect(document.querySelector('polyline')).not.toBeNull());
   });
 });
 
@@ -310,6 +336,69 @@ describe('PriceHistory: change null', () => {
     const spoken = await accessibleLabel();
     expect(spoken).toContain('de los últimos 7');
     expect(spoken).not.toContain('de los últimos 30');
+  });
+});
+
+describe('PriceHistory: el tono sale solo del change del backend', () => {
+  /*
+   * La regla que no se negocia: el color lo decide **el `change` del servidor y
+   * nada más**. Si el color saliera de la pendiente local del sparkline, la
+   * línea podría contradecir a la píldora de `PriceDelta` que está justo arriba
+   * —el mismo dato pintado de dos colores distintos—, y eso es peor que no
+   * pintar ninguno.
+   *
+   * Estos dos tests construyen el caso imposible a propósito: la serie local
+   * dice una cosa y el `change` dice la otra. Gana el `change`.
+   */
+  it('con la serie subiendo y el change negativo, la línea es negativa', async () => {
+    getCardPriceHistory.mockResolvedValue(
+      history({
+        points: [point('2026-09-27', 29.9), point('2026-09-28', 30.1), point('2026-09-29', 31.5)],
+        change: { changeUsd: -1.6, changePercent: -5 },
+      }),
+    );
+
+    const { container } = render(<PriceHistory cardId="base1-4" />);
+    await waitFor(() => expect(document.querySelector('polyline')).not.toBeNull());
+
+    const tones = toneClasses(container);
+    expect(tones).toContain('text-negative');
+    expect(tones).not.toContain('text-positive');
+  });
+
+  it('con la serie bajando y el change positivo, la línea es positiva', async () => {
+    getCardPriceHistory.mockResolvedValue(
+      history({
+        points: [point('2026-09-27', 31.5), point('2026-09-28', 30.1), point('2026-09-29', 29.9)],
+        change: { changeUsd: 1.6, changePercent: 5 },
+      }),
+    );
+
+    const { container } = render(<PriceHistory cardId="base1-4" />);
+    await waitFor(() => expect(document.querySelector('polyline')).not.toBeNull());
+
+    const tones = toneClasses(container);
+    expect(tones).toContain('text-positive');
+    expect(tones).not.toContain('text-negative');
+  });
+
+  it('con change null la línea es neutra, ni verde ni roja', async () => {
+    // El caso que más se va a ver mientras `card_prices` sea joven, y el que
+    // más tentador es pintar de verde "porque la pendiente parece que sube".
+    getCardPriceHistory.mockResolvedValue(
+      history({
+        points: [point('2026-09-27', 29.9), point('2026-09-28', 30.1), point('2026-09-29', 31.5)],
+        change: null,
+      }),
+    );
+
+    const { container } = render(<PriceHistory cardId="base1-4" />);
+    await waitFor(() => expect(document.querySelector('polyline')).not.toBeNull());
+
+    const tones = toneClasses(container);
+    expect(tones).toContain('text-tertiary');
+    expect(tones).not.toContain('text-positive');
+    expect(tones).not.toContain('text-negative');
   });
 });
 

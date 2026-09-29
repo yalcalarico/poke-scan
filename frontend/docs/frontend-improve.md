@@ -46,6 +46,65 @@
 >   así que el arreglo del `theme-color` —tal como estaba especificado— nunca se
 >   hubiera ejecutado en la primera carga, que es el caso común.
 >
+> ### Ajuste posterior a P6.1 — la línea se muestra siempre
+>
+> El sparkline de P6.1 se aplicó con un umbral de **3 puntos** para dibujar la
+> línea, y con menos de eso se mostraba solo un descarte. El resultado fue que la
+> feature no se veía: `card_prices` tiene 124 filas en 5 días y la mayoría de las
+> cartas tienen **un** día, así que casi todas caían en el descarte. El umbral
+> escondía la cosa, no la protegía.
+>
+> Ahora se dibuja **siempre que haya geometría**: 2 o más puntos dan línea, 1
+> punto da un punto suelto (`PriceDot`, porque un `<polyline>` de un punto no
+> dibuja nada), y 0 días sigue sin dibujar. La honestidad se quedó en la capa del
+> **caption** y no a la geometría: el texto siempre dice cuántos días hay, nunca
+> dice "0 %" cuando el backend devuelve `change: null`, y el color de la línea
+> sale **solo** del `change` del servidor para que el sparkline no pueda
+> contradecir a la píldora de `PriceDelta` de arriba. El umbral de 3 días quedó
+> únicamente como el corte entre "esto es una tendencia" y "esto son dos
+> consultas y crece con cada una".
+>
+> ### El hallazgo de esta tanda: la Fase 4 entró sin entradas
+>
+> La Fase 4 se aplicó **entera** —P6.1 a P6.6— y el resultado en pantalla fue
+> *"no hay ninguna opción que me lleve a las pantallas nuevas"*. El motivo no es
+> que las features estuvieran mal: es que **no se agregó ninguna ruta**. Siguen
+> siendo las mismas 11 pantallas de siempre; lo que cambió es que las existentes
+>comsumieron capacidades nuevas:
+>
+> | Capacidad de la Fase 4 | Dónde quedó | Cómo se llegaba |
+> |---|---|---|
+> | P6.1 · sparkline + `PriceDelta` real | `/carta/[id]` | Se ve solo, al abrir la carta |
+> | P6.2 · waffle 9×3 | `/colecciones/[id]/sets?set=<id>` | **Solo** desde el chip "Sets", adentro de una colección ya abierta |
+> | P6.3 · acciones masivas | `/colecciones/[id]` | Solo con una colección con cartas |
+> | P6.4 · orden por precio | `/colecciones/[id]`, `/buscar` | Solo con una colección con cartas |
+> | P6.5 · sesión de escaneo | `/` | Solo si hay una sesión guardada |
+> | P6.6 · señal de rareza | `/carta/[id]`, grids | Se ve solo |
+>
+> Tres huecos concretos, y los tres son de **entrada**, no de código:
+>
+> 1. **P6.2 no tenía entrada de primer nivel.** `/colecciones/[id]/sets` era
+>    alcanzable únicamente desde adentro de `/colecciones/[id]`. Alguien que no
+>    supiera que la ruta existía no la encontraba nunca. Se resolvió **dentro de
+>    las rutas existentes**: la `CollectionCard` de `/colecciones` ahora tiene una
+>    franja de pie con el link "Progreso por set". No se agregó una quinta tab a
+>    la `BottomNav` (son cuatro por `nav.ts` y §0.1 es mobile-first) ni una ruta
+>    nueva, que sería una decisión de producto y no un fix de UI.
+> 2. **Sin sesión no se veía nada y no se decía por qué.** `/colecciones` con un
+>    `EmptyState` de "Iniciá sesión" nombra un bloqueo, no una capacidad. Ahora
+>    los dos estados sin colecciones —sin sesión y con sesión pero vacía— listan
+>    las cuatro cosas que una colección abre. Son cuatro afirmaciones
+>    verificables contra el código, no copy de venta.
+> 3. **Sin colección no se veían las features nuevas.** El estado vacío es el
+>    lugar legítimo para decir qué va a hacer la pantalla una vez poblada, y es
+>    el mismo `CollectionCapabilities` de (2).
+>
+> Lo que **sigue** sin entrada, y es honesto: el filtro "para intercambio"
+> server-side (B6) y la búsqueda por número y artista (B1) son de `/buscar` y de
+> `collection-detail.tsx`, y ese filtro solo se pone a "tan alto" como el aviso
+> `Alert` que ya tenía. Un usuario nuevo no lo descubre, y no se fingió lo
+> contrario.
+>
 > ### Lo que quedó afuera, a propósito
 >
 > - **`share_target`**: se **sacó** del manifest en vez de arreglarlo. El

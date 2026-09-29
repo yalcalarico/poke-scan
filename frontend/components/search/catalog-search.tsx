@@ -201,6 +201,19 @@ export function CatalogSearch() {
     updateUrl({ q: null, setId: null, rarity: null, page: null });
   }, [updateUrl]);
 
+  /**
+   * Limpiar **solo** los filtros, sin tocar lo que la persona escribió.
+   *
+   * Es el botón del `Sheet` de filtros, y son dos cosas distintas: la query es
+   * lo que alguien tecleó para encontrar algo concreto, y vaciarla desde un
+   * botón que dice "limpiar filtros" tira el trabajo de tipeo sin avisar. El
+   * `q` tampoco se marca, porque acá no se toca el input y no hay carrera entre
+   * el efecto URL → input y un estado local recién escrito.
+   */
+  const clearFilterParams = useCallback(() => {
+    updateUrl({ searchBy: null, setId: null, rarity: null, page: null });
+  }, [updateUrl]);
+
   const sets = useAsync<SetDto[]>(() => getSets(), []);
 
   const listKey = `${urlSearchBy}|${urlQuery}|${urlSetId}|${urlRarity}|${urlPage}`;
@@ -241,6 +254,7 @@ export function CatalogSearch() {
         sets={sets.data ?? []}
         setsLoading={sets.status === 'loading'}
         setsError={sets.status === 'error' ? sets.error : null}
+        onClearFilters={clearFilterParams}
       />
 
       <CardResults
