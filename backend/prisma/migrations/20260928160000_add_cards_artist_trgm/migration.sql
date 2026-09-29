@@ -1,0 +1,11 @@
+-- Raw SQL a propósito: Prisma no modela `gin_trgm_ops`, igual que los de cards
+-- y card_sets en add_pg_trgm. NO lo agregues al schema.prisma, o el próximo
+-- `prisma migrate dev` lo dropea (ver gotchas.md §2).
+--
+-- Existe por el modo de búsqueda `searchBy=artist` de `GET /api/cards/search`:
+-- sin este índice, `artist ILIKE '%sugim%' OR artist % 'sugim'` es un seq scan
+-- sobre las 20.670 cartas (~72 ms medido). Con el GIN trigram baja a ~2 ms.
+--
+-- El modo `searchBy=number` NO necesita índice trigram: matchea por igualdad y
+-- lo resuelve el `@@index([number])` del schema (Bitmap Index Scan, ~2 ms).
+CREATE INDEX IF NOT EXISTS cards_artist_trgm_idx ON cards USING GIN (artist gin_trgm_ops);

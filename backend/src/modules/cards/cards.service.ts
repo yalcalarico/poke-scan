@@ -1,0 +1,816 @@
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
+import { SyncPricesService, PRICE_MAX_AGE_MS } from '../../jobs/sync-prices.service.js';
+import { PrismaService } from '../../prisma/index.js';
+import { CurrencyService, type RateView } from '../currency/currency.service.js';
+import type { RateType } from '../currency/currency.constants.js';
+import { CardPricesQueryDto } from './dto/card-prices-query.dto.js';
+import { type CardSearchField, SearchCardsDto } from './dto/search-cards.dto.js';
+
+const DEFAULT_PAGE = 1;
+const DEFAULT_PAGE_SIZE = 20;
+const TRIGRAM_MIN_LENGTH = 3;
+const TRIGRAM_THRESHOLD = '0.2';
+const PREFIX_SCORE = 1;
+const SUBSTRING_SCORE = 0.8;
+
+/**
+ * Ventana del delta de precio, en días. Es la que muestra el diseño ("en los
+ * últimos 30 días") y la que pide la ficha de carta.
+ */
+const CHANGE_WINDOW_DAYS = 30;
+/**
+ * Cuánto puede tener el precio de referencia para que el delta se muestre.
+ *
+ * Sin tope, una carta cuyo último dato es de hace 8 meses devuelve un delta
+ * "de 30 días" que en realidad mide medio año. Como la UI lo rotula con la
+ * ventana, un número tan viejo sería falso: preferimos no mostrar nada.
+ */
+const CHANGE_MAX_REFERENCE_AGE_DAYS = 90;
+
+const NUMERIC_NUMBER = Prisma.sql`CAST(NULLIF(regexp_replace(c.number, '\\D', '', 'g'), '') AS INTEGER)`;
+
+/**
+ * Último precio de mercado por carta, para `sort=price`.
+ *
+ * Es un `DISTINCT ON ("cardId", variant)` **global** a propósito, y por eso
+ * **no** es el `latestMarketPriceJoin` de `common/sql/latest-price.ts` (que usa
+ * un `LATERAL` anclado en el item, porque ahí sí se sabe qué carta se va a
+ * usar). Acá el filtro de precio es justamente lo que todavía no está decidido,
+ * así que no hay a qué anclarse: hay que mirar todas las cartas que matchean.
+ *
+ * Tres diferencias a propósito respecto de "el último precio por variante":
+ *
+ * 1. El `DISTINCT ON` no lleva `WHERE` (Postgres no lo permite: gotcha 16), así
+ *    que el filtro de `market IS NOT NULL` va en el subselect externo, ya
+ *    desduplicado.
+ * 2. Arriba se agrega `MAX(market)` por carta para colapsar las variantes a **un**
+ *    precio. Elegimos el **mejor disponible** y no la `holofoil`:
+ *
+ *    - No hay una "variante de la carta" en el catálogo: la holofoil es la más
+ *      cara casi siempre, pero hay cartas que solo tienen `reverseHolofoil` o
+ *      `firstEdition`, y con una preferencia fija quedaría sin precio — que es
+ *      justo lo que el orden tiene que evitar.
+ *    - `MAX` es determinista y no depende del orden físico de las filas, así que
+ *      dos requests seguidos devuelven el mismo `ORDER BY` (importante porque
+ *      esto pagina).
+ *
+ * Es un `LEFT JOIN` a propósito: las cartas sin precio tienen que seguir
+ * apareciendo en la búsqueda.
+ */
+const LATEST_PRICE_JOIN = Prisma.sql`
+  LEFT JOIN (
+    SELECT best."cardId" AS "cardId", MAX(best.market) AS "price"
+    FROM (
+      SELECT DISTINCT ON (p."cardId", p.variant)
+        p."cardId" AS "cardId",
+        p.variant AS "variant",
+        p.market AS "market"
+      FROM card_prices p
+      ORDER BY p."cardId", p.variant, p."fetchedAt" DESC
+    ) best
+    WHERE best.market IS NOT NULL
+    GROUP BY best."cardId"
+  ) cp ON cp."cardId" = c.id
+`;
+
+export interface SetDto {
+  id: string;
+  name: string;
+  series: string | null;
+  printedTotal: number | null;
+  total: number | null;
+  releaseDate: string | null;
+  logoUrl: string | null;
+  symbolUrl: string | null;
+}
+
+export interface CardDto {
+  id: string;
+  name: string;
+  supertype: string;
+  subtypes: string[];
+  hp: string | null;
+  types: string[];
+  number: string;
+  rarity: string | null;
+  artist: string | null;
+  setId: string;
+  set?: SetDto;
+  imageSmall: string;
+  imageLarge: string;
+}
+
+export interface CardPriceDto {
+  cardId: string;
+  variant: string;
+  low: number | null;
+  mid: number | null;
+  high: number | null;
+  market: number | null;
+  currency: string;
+  source: string;
+  fetchedAt: string;
+  /** Solo con `?currency=ARS`. `null` si no hay rate cacheado. */
+  priceArs?: PriceArsDto | null;
+  /**
+   * Variación contra la ventana de 30 días. **Opcional**: solo lo calculan los
+   * endpoints que aceptan el costo extra de leer el histórico
+   * (`GET /cards/:id/prices`); los demás lo omiten y el cliente cae a la fecha
+   * de actualización. Ver `priceChange()` para las reglas de cuándo es `null`.
+   */
+  change?: PriceChangeDto | null;
+}
+
+/**
+ * Cuánto cambió el precio de referencia en la ventana.
+ *
+ * `usd` va **con signo** (`-2839.31` es una caída) y en USD: la conversión a
+ * ARS la hace el cliente, igual que con todos los demás precios.
+ *
+ * `windowDays` es la ventana **pedida** (30). `from` es la verdad: el `fetchedAt`
+ * de la fila que se usó de referencia, que puede ser más viejo que la ventana.
+ * El cliente puede mostrar `from` para no mentir cuando no había dato exacto.
+ */
+export interface PriceChangeDto {
+  usd: number;
+  percent: number;
+  windowDays: number;
+  from: string;
+}
+
+/** Espejo en pesos de un precio USD. */
+export interface PriceArsDto {
+  low: number | null;
+  mid: number | null;
+  high: number | null;
+  market: number | null;
+}
+
+export interface ConversionMeta {
+  rate: number;
+  rateType: RateType;
+  fetchedAt: string;
+  stale: boolean;
+}
+
+export interface CardWithPricesDto {
+  card: CardDto;
+  prices: CardPriceDto[];
+  /** Metadata del rate usado, para que el cliente muestre "≈" si está viejo. */
+  conversion?: ConversionMeta | null;
+}
+
+/**
+ * `GET /sets/:id/cards` (B8): la lista completa de un set.
+ *
+ * El binder la necesita entera para poder dibujar los slots vacíos. Sin esto
+ * hay que paginar `/cards/search?setId=` de a 100 y el set más grande del
+ * catálogo (`swshp`, 304 cartas) son 3 requests encadenados. Sin paginación a
+ * propósito: la alternativa (un `/cards/:id` por carta) sería el N+1 que
+ * `AGENTS.md` §7 prohíbe.
+ *
+ * Cada carta sale de `toCardDto`, o sea que **trae su `set` embebido** igual
+ * que en `/cards/search`. Para `swshp` eso son 181 kB, de los cuales 79 kB son
+ * el mismo `SetDto` repetido 304 veces. Es el precio de que una carta sea
+ * auto-descriptiva como en el resto de la API; si llegara a molestar, el
+ * arreglo es dejar de seleccionar las columnas `s.*` de la fila (el `LEFT JOIN`
+ * entero) y `toCardDto` las omite solo cuando `setIdSet` viene `null`.
+ */
+export interface SetCardsResponseDto {
+  set: SetDto;
+  cards: CardDto[];
+  /**
+   * El conteo **real** de filas en `cards` para ese set, que puede diferir de
+   * `SetDto.total` (el que declara la fuente). El binder cuenta slots con este
+   * número, no con el de la fuente.
+   */
+  total: number;
+}
+
+export interface Paginated<T> {
+  data: T[];
+  page: number;
+  pageSize: number;
+  total: number;
+  totalPages: number;
+}
+
+interface CardSearchRow {
+  id: string;
+  name: string;
+  supertype: string;
+  subtypes: string[];
+  hp: string | null;
+  types: string[];
+  number: string;
+  rarity: string | null;
+  artist: string | null;
+  setId: string;
+  imageSmall: string;
+  imageLarge: string;
+  setIdSet: string | null;
+  setName: string | null;
+  setSeries: string | null;
+  setPrintedTotal: number | null;
+  setTotal: number | null;
+  setReleaseDate: Date | null;
+  setLogoUrl: string | null;
+  setSymbolUrl: string | null;
+}
+
+/**
+ * Una fila de `getSetCards`. `cardCount` es el `COUNT(*) OVER ()`: el total real
+ * del set sin pagar una segunda query de conteo.
+ */
+interface SetCardRow extends CardSearchRow {
+  cardCount: number;
+}
+
+/**
+ * Una fila de `referencePrices`: la última cotización **anterior** a la ventana,
+ * de esa variante.
+ */
+interface ReferencePriceRow {
+  variant: string;
+  market: Prisma.Decimal | null;
+  mid: Prisma.Decimal | null;
+  fetchedAt: Date;
+}
+
+function escapeLike(value: string): string {
+  return value.replace(/[\\%_]/g, (match) => `\\${match}`);
+}
+
+function toIso(value: Date | null | undefined): string | null {
+  if (value === null || value === undefined) return null;
+  const date = value instanceof Date ? value : new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date.toISOString();
+}
+
+function toNumber(value: unknown): number | null {
+  if (value === null || value === undefined) return null;
+  if (typeof value === 'number') return Number.isFinite(value) ? value : null;
+  const numeric = Number(value as { toString(): string });
+  return Number.isFinite(numeric) ? numeric : null;
+}
+
+function toArs(usd: number | null, rate: number): number | null {
+  if (usd === null) return null;
+  return Math.round(usd * rate * 100) / 100;
+}
+
+function round2(value: number): number {
+  return Math.round((value + Number.EPSILON) * 100) / 100;
+}
+
+/**
+ * El precio de referencia de una fila: `market` y, si no hay, `mid`.
+ *
+ * Es la **misma** precedencia que usa el cliente para elegir la cifra del hero
+ * (`heroPriceUsd` en `components/v2/prices/card-price-section.tsx`): el número
+ * que se muestra arriba es el `market` de la primera variante que lo tenga, y
+ * el `mid` es el respaldo. Comparar otra cosa que no sea el número en pantalla
+ * haría que la píldora "-73 %" y la cifra no se puedan discutir entre sí.
+ */
+function referenceValue(price: {
+  market: number | null;
+  mid: number | null;
+}): { field: 'market' | 'mid'; value: number } | null {
+  if (price.market !== null && Number.isFinite(price.market)) {
+    return { field: 'market', value: price.market };
+  }
+  if (price.mid !== null && Number.isFinite(price.mid)) {
+    return { field: 'mid', value: price.mid };
+  }
+  return null;
+}
+
+/**
+ * El delta de la ventana, o `null` cuando no hay nada honesto que decir.
+ *
+ * ## Las reglas, una por una
+ *
+ * 1. **Misma columna en los dos extremos.** El extremo "ahora" se resuelve con
+ *    `market ?? mid`; el de referencia tiene que ser **el mismo campo** de la
+ *    fila vieja. Comparar el `market` de hoy contra el `mid` de hace 30 días
+ *    mide un cambio de método de valuación, no de precio.
+ * 2. **La referencia es la última fila anterior a la ventana**, no una
+ *    interpolación. Si no hay ninguna, no hay delta.
+ * 3. **Referencia demasiado vieja → `null`.** Una carta cuyo último dato es de
+ *    hace 8 meses no tiene un delta "de 30 días" que mostrar.
+ * 4. **Precio actual viejo → `null`.** El cliente marca como viejo lo que pasa
+ *    de 24 h (`PRICE_MAX_AGE_MS`) y muestra un aviso; acompañar ese aviso con
+ *    una variación precisa de 30 días sería decir dos cosas distintas sobre el
+ *    mismo número en la misma pantalla.
+ * 5. **División por cero → `null`**, no `0`. Un `0 %` afirma que el precio no se
+ *    movió, que es un dato; un `null` dice que no se puede saber.
+ *
+ * El `percent` sale con **cero decimales** (lo que muestra la referencia) y con
+ * redondeo simétrico: `Math.round(-72.5)` da `-72` en JS, y "cayó 73 %" con un
+ * -72.5 exacto debería decir -73.
+ */
+function priceChange(
+  current: CardPriceDto,
+  reference: ReferencePriceRow | null,
+): PriceChangeDto | null {
+  const now = referenceValue(current);
+  if (now === null || reference === null) return null;
+
+  const fetchedAt = current.fetchedAt ? Date.parse(current.fetchedAt) : Number.NaN;
+  if (!Number.isFinite(fetchedAt)) return null;
+  if (Date.now() - fetchedAt > PRICE_MAX_AGE_MS) return null;
+
+  const referenceDate = new Date(reference.fetchedAt).getTime();
+  if (!Number.isFinite(referenceDate)) return null;
+  if (Date.now() - referenceDate > CHANGE_MAX_REFERENCE_AGE_DAYS * 24 * 60 * 60 * 1000) {
+    return null;
+  }
+
+  const previous = toNumber(
+    now.field === 'market' ? reference.market : reference.mid,
+  );
+  if (previous === null || previous === 0) return null;
+
+  const usd = now.value - previous;
+  const percent = (usd / previous) * 100;
+
+  return {
+    usd: round2(usd),
+    percent: percent < 0 ? -Math.round(-percent) : Math.round(percent),
+    windowDays: CHANGE_WINDOW_DAYS,
+    from: new Date(referenceDate).toISOString(),
+  };
+}
+
+function toSetDto(row: {
+  id: string;
+  name: string;
+  series: string | null;
+  printedTotal: number | null;
+  total: number | null;
+  releaseDate: Date | null;
+  logoUrl: string | null;
+  symbolUrl: string | null;
+}): SetDto {
+  return {
+    id: row.id,
+    name: row.name,
+    series: row.series,
+    printedTotal: row.printedTotal,
+    total: row.total,
+    releaseDate: toIso(row.releaseDate),
+    logoUrl: row.logoUrl,
+    symbolUrl: row.symbolUrl,
+  };
+}
+
+@Injectable()
+export class CardsService {
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly syncPrices: SyncPricesService,
+    private readonly currency: CurrencyService,
+  ) {}
+
+  async search(dto: SearchCardsDto): Promise<Paginated<CardDto>> {
+    const page = dto.page ?? DEFAULT_PAGE;
+    const pageSize = dto.pageSize ?? DEFAULT_PAGE_SIZE;
+    const offset = (page - 1) * pageSize;
+    const query = dto.q?.trim() ? dto.q.trim() : undefined;
+    const searchBy = dto.searchBy ?? 'name';
+    // El modo `number` no usa trigram: matchea por igualdad (ver
+    // `buildNumberCondition`), y un `set_config` en una transacción que no lo
+    // necesita es solo overhead.
+    const useTrigram = searchBy !== 'number' && query !== undefined && query.length >= TRIGRAM_MIN_LENGTH;
+    const byPrice = this.wantsPriceOrder(dto, query !== undefined);
+
+    const conditions = this.buildFilters(dto);
+    if (query) conditions.unshift(this.buildTextCondition(query, useTrigram, searchBy));
+    const where =
+      conditions.length > 0
+        ? Prisma.sql` WHERE ${Prisma.join(conditions, ' AND ')}`
+        : Prisma.empty;
+
+    const run = async (client: Prisma.TransactionClient) => {
+      const rows = await client.$queryRaw<CardSearchRow[]>(Prisma.sql`
+        SELECT
+          c.id,
+          c.name,
+          c.supertype,
+          c.subtypes,
+          c.hp,
+          c.types,
+          c.number,
+          c.rarity,
+          c.artist,
+          c."setId" AS "setId",
+          c."imageSmall" AS "imageSmall",
+          c."imageLarge" AS "imageLarge",
+          s.id AS "setIdSet",
+          s.name AS "setName",
+          s.series AS "setSeries",
+          s."printedTotal" AS "setPrintedTotal",
+          s.total AS "setTotal",
+          s."releaseDate" AS "setReleaseDate",
+          s."logoUrl" AS "setLogoUrl",
+          s."symbolUrl" AS "setSymbolUrl"
+        ${query ? Prisma.sql`, ${this.buildScore(query, useTrigram, searchBy)} AS score` : Prisma.empty}
+        FROM cards c
+        LEFT JOIN card_sets s ON s.id = c."setId"
+        ${byPrice ? LATEST_PRICE_JOIN : Prisma.empty}
+        ${where}
+        ORDER BY ${this.buildOrderBy(dto, query !== undefined, searchBy)}
+        LIMIT ${pageSize} OFFSET ${offset}
+      `);
+
+      const counts = await client.$queryRaw<{ count: number }[]>(Prisma.sql`
+        SELECT COUNT(*)::int AS count
+        FROM cards c
+        ${where}
+      `);
+
+      return { rows, total: counts[0]?.count ?? 0 };
+    };
+
+
+    const { rows, total } = useTrigram
+      ? await this.prisma.$transaction(async (tx) => {
+          await tx.$executeRaw(
+            Prisma.sql`SELECT set_config('pg_trgm.similarity_threshold', ${TRIGRAM_THRESHOLD}, true)`,
+          );
+          return run(tx);
+        })
+      : await run(this.prisma);
+
+    return {
+      data: rows.map((row) => this.toCardDto(row)),
+      page,
+      pageSize,
+      total,
+      totalPages: Math.ceil(total / pageSize),
+    };
+  }
+
+  async getById(id: string): Promise<CardDto> {
+    const card = await this.prisma.card.findUnique({
+      where: { id },
+      include: { set: true },
+    });
+
+    if (!card) {
+      throw new NotFoundException(`Carta no encontrada: ${id}`);
+    }
+
+    return {
+      id: card.id,
+      name: card.name,
+      supertype: card.supertype,
+      subtypes: card.subtypes,
+      hp: card.hp,
+      types: card.types,
+      number: card.number,
+      rarity: card.rarity,
+      artist: card.artist,
+      setId: card.setId,
+      set: toSetDto(card.set),
+      imageSmall: card.imageSmall,
+      imageLarge: card.imageLarge,
+    };
+  }
+
+  /**
+   * `GET /cards/:id/prices`.
+   *
+   * Si viene `?currency=ARS`, agrega `priceArs` a cada precio usando el rate
+   * que ya está en Redis (`getCachedRate`, que JAMÁS llama a DolarApi). Es
+   * público y sin usuario, así que pegarle a la API externa por request
+   * multiplicaría la latencia sin necesidad: la conversión normal la hace el
+   * cliente con el rate de `GET /currency/usd-ars`.
+   */
+  async getCardWithPrices(
+    id: string,
+    query: CardPricesQueryDto = {},
+  ): Promise<CardWithPricesDto> {
+    const card = await this.getById(id);
+    // El histórico y los precios actuales son independientes: el primero solo
+    // lee `card_prices` y el segundo puede pegarle a tcgdex. Van en paralelo
+    // para que el delta no sume una ida y vuelta a la latencia.
+    const [prices, reference] = await Promise.all([
+      this.syncPrices.getPricesForCard(id),
+      this.referencePrices(id),
+    ]);
+
+    const rate = await this.resolveRate(query);
+    const view = prices.map((price) => {
+      const dto: CardPriceDto = {
+        cardId: price.cardId,
+        variant: price.variant,
+        low: toNumber(price.low),
+        mid: toNumber(price.mid),
+        high: toNumber(price.high),
+        market: toNumber(price.market),
+        currency: price.currency,
+        source: price.source,
+        fetchedAt: toIso(price.fetchedAt) ?? new Date(0).toISOString(),
+      };
+
+      dto.change = priceChange(dto, reference.get(price.variant) ?? null);
+
+      // Espejo de los campos USD: un precio tiene 4 valores, no 1.
+      if (rate) {
+        dto.priceArs = {
+          low: toArs(dto.low, rate.rate),
+          mid: toArs(dto.mid, rate.rate),
+          high: toArs(dto.high, rate.rate),
+          market: toArs(dto.market, rate.rate),
+        };
+      }
+
+      return dto;
+    });
+
+    const result: CardWithPricesDto = { card, prices: view };
+    if (rate) {
+      result.conversion = {
+        rate: rate.rate,
+        rateType: rate.rateType,
+        fetchedAt: rate.fetchedAt,
+        stale: rate.stale,
+      };
+    }
+
+    return result;
+  }
+
+  /**
+   * El precio de referencia de la ventana, por variante: **la fila más reciente
+   * que ya era más vieja que la ventana**.
+   *
+   * No se interpola ni se usa la fila actual: si la carta solo tiene precios
+   * de esta semana, no hay referencia y el delta es `null`. Devolver el precio
+   * actual como si fuera el de hace 30 días convertiría "cayó 73 %" en "cayó
+   * 0 %" sin que nadie entienda por qué.
+   *
+   * El filtro por `fetchedAt < cutoff` es lo que garantiza que la fila elegida
+   * sea **otra** fila y no la actual, y de paso es lo que le permite al índice
+   * `card_prices(cardId, variant, fetchedAt)` cortar por la ventana en vez de
+   * recorrer todo el histórico de la variante.
+   */
+  private async referencePrices(
+    cardId: string,
+  ): Promise<Map<string, ReferencePriceRow>> {
+    const cutoff = new Date(
+      Date.now() - CHANGE_WINDOW_DAYS * 24 * 60 * 60 * 1000,
+    );
+    const rows = await this.prisma.$queryRaw<ReferencePriceRow[]>(Prisma.sql`
+      SELECT DISTINCT ON (p.variant)
+        p.variant AS "variant",
+        p.market AS "market",
+        p.mid AS "mid",
+        p."fetchedAt" AS "fetchedAt"
+      FROM card_prices p
+      WHERE p."cardId" = ${cardId}
+        AND p."fetchedAt" < ${cutoff}
+      ORDER BY p.variant, p."fetchedAt" DESC
+    `);
+
+    const result = new Map<string, ReferencePriceRow>();
+    for (const row of rows) result.set(row.variant, row);
+    return result;
+  }
+
+  /** Rate desde Redis, o `null` si ARS está deshabilitado / no está cacheado. */
+  private async resolveRate(query: CardPricesQueryDto): Promise<RateView | null> {
+    if (query.currency !== 'ARS') return null;
+    return this.currency.getCachedRate(query.rateType ?? 'blue');
+  }
+
+  async findAllSets(): Promise<SetDto[]> {
+    const sets = await this.prisma.cardSet.findMany({
+      orderBy: [{ releaseDate: 'desc' }, { name: 'asc' }],
+      select: {
+        id: true,
+        name: true,
+        series: true,
+        printedTotal: true,
+        total: true,
+        releaseDate: true,
+        logoUrl: true,
+        symbolUrl: true,
+      },
+    });
+
+    return sets.map(toSetDto);
+  }
+
+  /**
+   * `GET /sets/:id/cards` (B8), público como `GET /sets`.
+   *
+   * El catálogo ya está expuesto por `/cards/search?setId=`, así que no agrega
+   * superficie pública nueva: solo deja de obligar al binder a paginar de a 100.
+   *
+   * El orden es el mismo `NUMERIC_NUMBER` que usa `sort: 'number'` en la
+   * búsqueda, para que los slots salgan en el orden impreso en vez de por
+   * nombre. Va `NULLS LAST` porque los números no numéricos (`TM01`) no se
+   * pueden ordenar numéricamente, y `c.name` desempata los que empatan.
+   *
+   * El set y las cartas van en paralelo: el set es una lectura por PK y las
+   * cartas usan el índice de `cards."setId"`, así que las dos se resuelven en
+   * una ida y vuelta.
+   */
+  async getSetCards(setId: string): Promise<SetCardsResponseDto> {
+    const [set, rows] = await Promise.all([
+      this.prisma.cardSet.findUnique({ where: { id: setId } }),
+      this.prisma.$queryRaw<SetCardRow[]>(Prisma.sql`
+        SELECT
+          c.id,
+          c.name,
+          c.supertype,
+          c.subtypes,
+          c.hp,
+          c.types,
+          c.number,
+          c.rarity,
+          c.artist,
+          c."setId" AS "setId",
+          c."imageSmall" AS "imageSmall",
+          c."imageLarge" AS "imageLarge",
+          s.id AS "setIdSet",
+          s.name AS "setName",
+          s.series AS "setSeries",
+          s."printedTotal" AS "setPrintedTotal",
+          s.total AS "setTotal",
+          s."releaseDate" AS "setReleaseDate",
+          s."logoUrl" AS "setLogoUrl",
+          s."symbolUrl" AS "setSymbolUrl",
+          COUNT(*) OVER ()::int AS "cardCount"
+        FROM cards c
+        LEFT JOIN card_sets s ON s.id = c."setId"
+        WHERE c."setId" = ${setId}
+        ORDER BY ${NUMERIC_NUMBER} ASC NULLS LAST, c.name ASC
+      `),
+    ]);
+
+    if (!set) {
+      throw new NotFoundException(`Set no encontrado: ${setId}`);
+    }
+
+    return {
+      set: toSetDto(set),
+      cards: rows.map((row) => this.toCardDto(row)),
+      total: rows[0]?.cardCount ?? 0,
+    };
+  }
+
+  private toCardDto(row: CardSearchRow): CardDto {
+    const card: CardDto = {
+      id: row.id,
+      name: row.name,
+      supertype: row.supertype,
+      subtypes: row.subtypes ?? [],
+      hp: row.hp,
+      types: row.types ?? [],
+      number: row.number,
+      rarity: row.rarity,
+      artist: row.artist,
+      setId: row.setId,
+      imageSmall: row.imageSmall,
+      imageLarge: row.imageLarge,
+    };
+
+    if (row.setIdSet !== null && row.setName !== null) {
+      card.set = toSetDto({
+        id: row.setIdSet,
+        name: row.setName,
+        series: row.setSeries,
+        printedTotal: row.setPrintedTotal,
+        total: row.setTotal,
+        releaseDate: row.setReleaseDate,
+        logoUrl: row.setLogoUrl,
+        symbolUrl: row.setSymbolUrl,
+      });
+    }
+
+    return card;
+  }
+
+  private buildFilters(dto: SearchCardsDto): Prisma.Sql[] {
+    const conditions: Prisma.Sql[] = [];
+
+    if (dto.setId) {
+      conditions.push(Prisma.sql`c."setId" = ${dto.setId}`);
+    }
+    if (dto.rarity) {
+      conditions.push(Prisma.sql`c.rarity ILIKE ${dto.rarity}`);
+    }
+    if (dto.supertype) {
+      conditions.push(Prisma.sql`c.supertype ILIKE ${dto.supertype}`);
+    }
+    if (dto.type) {
+      conditions.push(Prisma.sql`c.types @> ARRAY[${dto.type}]::text[]`);
+    }
+
+    return conditions;
+  }
+
+  private buildTextCondition(
+    query: string,
+    useTrigram: boolean,
+    searchBy: CardSearchField,
+  ): Prisma.Sql {
+    if (searchBy === 'number') {
+      return this.buildNumberCondition(query);
+    }
+
+    const column = searchBy === 'artist' ? Prisma.sql`c.artist` : Prisma.sql`c.name`;
+    const contains = Prisma.sql`${column} ILIKE ${`%${escapeLike(query)}%`} ESCAPE '\\'`;
+
+    if (!useTrigram) {
+      return contains;
+    }
+
+    return Prisma.sql`(${contains} OR ${column} % ${query})`;
+  }
+
+  /**
+   * Modo `number`: **igualdad** sobre el token entero, no substring.
+   *
+   * `cards.number` es un token corto y repetido (`"4"` aparece en 163 sets), no
+   * un texto. Un `ILIKE '%4%'` devolvería el 4, el 40, el 104 y el 4a, que es
+   * exactamente lo que el usuario no pidió; y `similarity('4','40')` es altísimo,
+   * así que el trigram tampoco ayuda. La igualdad también es la única forma de
+   * que el `total` del resultado signifique algo ("cuántas cartas se llaman 4").
+   *
+   * Se normaliza el input (trim y `#` inicial, que la gente escribe) y se
+   * compara con `ILIKE` sin comodines, o sea igualdad case-insensitive: así
+   * `"tg02"` encuentra `"TG02"` y `"4A"` encuentra `"4a"`. El `@@index([number])`
+   * del schema lo resuelve con un Bitmap Index Scan (2 ms sobre 20.670 cartas),
+   * así que no hace falta un índice trigram acá.
+   */
+  private buildNumberCondition(query: string): Prisma.Sql {
+    const token = query.trim().replace(/^#/, '').trim();
+    return Prisma.sql`c.number ILIKE ${token}`;
+  }
+
+  private buildScore(
+    query: string,
+    useTrigram: boolean,
+    searchBy: CardSearchField,
+  ): Prisma.Sql {
+    // Todos los resultados de `number` son matcheos exactos: no hay nada que
+    // rankear y un score derivado del nombre sería ruido.
+    if (searchBy === 'number') {
+      return Prisma.sql`1::float8`;
+    }
+
+    const column = searchBy === 'artist' ? Prisma.sql`c.artist` : Prisma.sql`c.name`;
+    const prefix = `${escapeLike(query)}%`;
+    const contains = `%${escapeLike(query)}%`;
+
+    return Prisma.sql`GREATEST(
+      CASE WHEN ${column} ILIKE ${prefix} ESCAPE '\\' THEN ${PREFIX_SCORE}::float8 ELSE 0 END,
+      CASE WHEN ${column} ILIKE ${contains} ESCAPE '\\' THEN ${SUBSTRING_SCORE}::float8 ELSE 0 END,
+      ${useTrigram ? Prisma.sql`similarity(${column}, ${query})` : Prisma.sql`0::float8`}
+    )`;
+  }
+
+  /** `sort=price` solo aplica sin texto: con `q` manda el score de relevancia. */
+  private wantsPriceOrder(dto: SearchCardsDto, hasQuery: boolean): boolean {
+    return !hasQuery && dto.sort === 'price';
+  }
+
+  private buildOrderBy(
+    dto: SearchCardsDto,
+    hasQuery: boolean,
+    searchBy: CardSearchField,
+  ): Prisma.Sql {
+    if (hasQuery) {
+      // Buscar por número no es rankear: todas las filas matchean igual, así que
+      // el score es constante y lo útil es agrupar por set y ordenar por número
+      // (Base 4, Jungle 4, Fossil 4...) en vez de alfabética por nombre.
+      if (searchBy === 'number') {
+        return Prisma.sql`s.name ASC, ${NUMERIC_NUMBER} ASC NULLS LAST, c.id ASC`;
+      }
+      return Prisma.sql`score DESC, c.name ASC, c.id ASC`;
+    }
+
+    const dir: Prisma.Sql = dto.direction === 'desc' ? Prisma.sql`DESC` : Prisma.sql`ASC`;
+
+    switch (dto.sort) {
+      case 'rarity':
+        return Prisma.sql`c.rarity ${dir} NULLS LAST, c.name ASC`;
+      case 'number':
+        return Prisma.sql`${NUMERIC_NUMBER} ${dir} NULLS LAST, c.name ASC`;
+      case 'price':
+        // `NULLS LAST` explícito en las dos direcciones: sin precio son ~20.600
+        // cartas y en `DESC` el default de Postgres (NULLS FIRST) las pondría
+        // arriba, que es lo opuesto de "más caras primero". Al final siempre:
+        // la lista ordena por un criterio, no muestra quién no tiene dato.
+        return Prisma.sql`cp."price" ${dir} NULLS LAST, c.name ASC, c.id ASC`;
+      case 'name':
+      default:
+        return Prisma.sql`c.name ${dir}, c.id ASC`;
+    }
+  }
+}

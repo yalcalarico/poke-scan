@@ -1,0 +1,49 @@
+{
+  "name": "pokemon-cards-scanner-app",
+  "version": "0.1.0",
+  "private": true,
+  "description": "PWA para escanear cartas Pokemon, ver su valor de mercado y gestionar colecciones",
+  "packageManager": "pnpm@10.17.1",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "help": "node scripts/help.mjs",
+    "setup": "pnpm run install:all && pnpm run infra:up && pnpm run db:migrate && node scripts/setup-done.mjs",
+    "dev": "./scripts/dev.sh",
+    "dev:api": "pnpm --dir backend run start:dev",
+    "dev:web": "pnpm --dir frontend run dev",
+    "stop": "for p in ${API_PORT:-3001} ${WEB_PORT:-3000}; do ids=$(lsof -ti:$p 2>/dev/null); [ -n \"$ids\" ] && kill $ids 2>/dev/null; done; echo 'puertos liberados'",
+    "install:all": "pnpm install && pnpm --dir backend install && pnpm --dir frontend install",
+    "infra:up": "docker compose up -d db redis",
+    "infra:down": "docker compose down",
+    "infra:logs": "docker compose logs -f",
+    "infra:reset": "node scripts/infra-reset.mjs",
+    "db:migrate": "pnpm --dir backend exec prisma migrate deploy && pnpm --dir backend exec prisma generate",
+    "db:push": "pnpm --dir backend exec prisma db push && pnpm --dir backend exec prisma generate",
+    "db:generate": "pnpm --dir backend exec prisma generate",
+    "db:studio": "pnpm --dir backend exec prisma studio",
+    "db:stats": "node scripts/db-stats.mjs",
+    "db:reset": "node scripts/db-reset.mjs",
+    "seed": "pnpm --dir backend run db:seed",
+    "sync": "pnpm --dir backend run db:sync",
+    "user:dev": "pnpm --dir backend run db:dev-user",
+    "cache:clear": "docker exec pokemon-scanner-redis redis-cli FLUSHDB && echo 'caché vaciada'",
+    "check": "pnpm run lint && pnpm run typecheck && pnpm run test && pnpm run build",
+    "test": "pnpm run test:backend && pnpm run test:frontend",
+    "test:backend": "pnpm --dir backend run test",
+    "test:frontend": "pnpm --dir frontend run test",
+    "test:watch": "pnpm --dir backend run test:watch",
+    "lint": "pnpm --dir backend run lint && pnpm --dir frontend run lint",
+    "typecheck": "pnpm --dir frontend exec tsc --noEmit",
+    "build": "pnpm run build:backend && pnpm run build:frontend",
+    "build:backend": "pnpm --dir backend run build",
+    "build:frontend": "pnpm --dir frontend run build",
+    "build:docker": "docker compose --profile deploy build",
+    "doctor": "node scripts/doctor.mjs",
+    "clean": "rm -rf backend/dist backend/dist-seed frontend/.next && echo 'builds borrados'"
+  },
+  "dependencies": {
+    "ui-ux-pro-max-cli": "^2.15.0"
+  }
+}

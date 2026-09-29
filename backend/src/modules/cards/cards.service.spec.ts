@@ -1,0 +1,872 @@
+import { NotFoundException } from '@nestjs/common';
+import { Test, type TestingModule } from '@nestjs/testing';
+import { Prisma, PrismaClient } from '@prisma/client';
+import { SyncPricesService } from '../../jobs/sync-prices.service.js';
+import { PrismaService } from '../../prisma/index.js';
+import { CurrencyService } from '../currency/currency.service.js';
+import { CardsService } from './cards.service.js';
+import { SearchCardsDto } from './dto/search-cards.dto.js';
+
+const search = (dto: SearchCardsDto) => dto;
+
+describe('CardsService', () => {
+  const prismaClient = new PrismaClient();
+  let moduleRef: TestingModule;
+  let service: CardsService;
+  /** Mock del rate cacheado: estos tests no pegan a DolarApi. */
+  let cachedRate: { rate: number; rateType: 'blue' | 'oficial'; fetchedAt: string; stale: boolean } | null;
+
+  beforeAll(async () => {
+    moduleRef = await Test.createTestingModule({
+      providers: [
+        CardsService,
+        { provide: PrismaService, useValue: prismaClient },
+        {
+          provide: SyncPricesService,
+          useValue: {
+            getPricesForCard: async (cardId: string) => [
+              {
+                cardId,
+                variant: 'holofoil',
+                low: new Prisma.Decimal('1.15'),
+                mid: new Prisma.Decimal('9.87'),
+                high: new Prisma.Decimal('45.50'),
+                market: new Prisma.Decimal('7.25'),
+                source: 'tcgplayer',
+                currency: 'USD',
+                fetchedAt: new Date('2024-05-01T12:00:00.000Z'),
+              },
+            ],
+          },
+        },
+        {
+          provide: CurrencyService,
+          useValue: { getCachedRate: async () => cachedRate },
+        },
+      ],
+    }).compile();
+
+    service = moduleRef.get(CardsService);
+  });
+
+  afterAll(async () => {
+    await prismaClient.$disconnect();
+    await moduleRef.close();
+  });
+
+  beforeEach(() => {
+    cachedRate = null;
+  });
+
+  it('busca por nombre con q="pikachu" y devuelve la paginación correcta', async () => {
+    const result = await service.search(search({ q: 'pikachu', pageSize: 5 }));
+
+    expect(result.total).toBeGreaterThan(0);
+    expect(result.data.length).toBeGreaterThan(0);
+    expect(result.data.length).toBeLessThanOrEqual(5);
+    expect(result.page).toBe(1);
+    expect(result.pageSize).toBe(5);
+    expect(result.totalPages).toBe(Math.ceil(result.total / 5));
+
+    for (const card of result.data) {
+      expect(card.name.toLowerCase()).toContain('pikachu');
+      expect(card.setId).toEqual(expect.any(String));
+      expect(Array.isArray(card.types)).toBe(true);
+    }
+  });
+
+  it('resuelve prefijos: q="Pika" trae Pikachu y lo rankea primero', async () => {
+    const result = await service.search(search({ q: 'Pika', pageSize: 10 }));
+
+    expect(result.data.length).toBeGreaterThan(0);
+    expect(result.data[0]!.name.toLowerCase()).toContain('pikachu');
+    expect(result.data.map((card) => card.name.toLowerCase())).toContain(
+      'pikachu',
+    );
+  });
+
+  it('tolera typos vía trigram: q="pikacu" trae Pikachu', async () => {
+    const result = await service.search(search({ q: 'pikacu', pageSize: 5 }));
+
+    expect(result.total).toBeGreaterThan(0);
+    expect(result.data[0]!.name.toLowerCase()).toContain('pikachu');
+  });
+
+  it('no trae nada para un texto sin coincidencias', async () => {
+    const result = await service.search(
+      search({ q: 'zzzqqqxxnotfound', pageSize: 5 }),
+    );
+
+    expect(result).toEqual({
+      data: [],
+      page: 1,
+      pageSize: 5,
+      total: 0,
+      totalPages: 0,
+    });
+  });
+
+  it('página correctamente: la segunda página no repite la primera', async () => {
+    const first = await service.search(search({ q: 'pika', pageSize: 2 }));
+    const second = await service.search(search({ q: 'pika', page: 2, pageSize: 2 }));
+
+    expect(second.page).toBe(2);
+    expect(second.total).toBe(first.total);
+    expect(second.totalPages).toBe(first.totalPages);
+
+    const firstIds = first.data.map((card) => card.id);
+    const secondIds = second.data.map((card) => card.id);
+    for (const id of secondIds) {
+      expect(firstIds).not.toContain(id);
+    }
+  });
+
+  it('filtra por setId y todos los resultados pertenecen a ese set', async () => {
+    const sample = await prismaClient.card.findFirst({
+      orderBy: { id: 'asc' },
+      select: { setId: true },
+    });
+    expect(sample).not.toBeNull();
+
+    const result = await service.search(
+      search({ setId: sample!.setId, pageSize: 10 }),
+    );
+
+    expect(result.data.length).toBeGreaterThan(0);
+    for (const card of result.data) {
+      expect(card.setId).toBe(sample!.setId);
+    }
+  });
+
+  it('filtra por tipo de energía y por supertype', async () => {
+    const fireCard = await prismaClient.card.findFirst({
+      where: { types: { has: 'Fire' } },
+      select: { types: true },
+    });
+    expect(fireCard).not.toBeNull();
+
+    const result = await service.search(search({ type: 'Fire', pageSize: 5 }));
+    expect(result.data.length).toBeGreaterThan(0);
+    for (const card of result.data) {
+      expect(card.types).toContain('Fire');
+    }
+
+    const trainers = await service.search(
+      search({ supertype: 'Trainer', pageSize: 5 }),
+    );
+    for (const card of trainers.data) {
+      expect(card.supertype).toBe('Trainer');
+    }
+  });
+
+  it('ordena por número usando CAST (10 va después de 9)', async () => {
+    const result = await service.search(
+      search({ setId: 'base1', sort: 'number', pageSize: 100 }),
+    );
+
+    const numbers = result.data
+      .map((card) => Number.parseInt(card.number, 10))
+      .filter((value) => Number.isFinite(value));
+
+    const sorted = [...numbers].sort((a, b) => a - b);
+    expect(numbers).toEqual(sorted);
+  });
+
+  it('getById devuelve la carta con su set incluido', async () => {
+    const sample = await prismaClient.card.findFirst({
+      select: { id: true },
+      orderBy: { id: 'asc' },
+    });
+    expect(sample).not.toBeNull();
+
+    const card = await service.getById(sample!.id);
+
+    expect(card.id).toBe(sample!.id);
+    expect(card.set).toBeDefined();
+    expect(card.set?.id).toBe(card.setId);
+    expect(card.set?.name).toEqual(expect.any(String));
+    expect(card.set?.releaseDate === null || typeof card.set.releaseDate === 'string').toBe(true);
+  });
+
+  it('getById lanza NotFoundException con un id inexistente', async () => {
+    await expect(service.getById('no-existe-este-id')).rejects.toBeInstanceOf(
+      NotFoundException,
+    );
+  });
+
+  it('getCardWithPrices convierte los Decimal de Prisma a number', async () => {
+    const sample = await prismaClient.card.findFirst({
+      select: { id: true },
+      orderBy: { id: 'asc' },
+    });
+
+    const result = await service.getCardWithPrices(sample!.id);
+
+    expect(result.card.id).toBe(sample!.id);
+    expect(result.prices.length).toBeGreaterThan(0);
+
+    for (const price of result.prices) {
+      expect(typeof price.market).toBe('number');
+      expect(typeof price.mid).toBe('number');
+      expect(price.market).toBeCloseTo(7.25, 5);
+      expect(price.mid).toBeCloseTo(9.87, 5);
+      expect(JSON.parse(JSON.stringify(price)).market).toBe(7.25);
+      expect(price.fetchedAt).toBe('2024-05-01T12:00:00.000Z');
+    }
+  });
+
+  it('getCardWithPrices sin ?currency=ARS no agrega priceArs ni consulta el rate', async () => {
+    const sample = await prismaClient.card.findFirst({
+      select: { id: true },
+      orderBy: { id: 'asc' },
+    });
+
+    const result = await service.getCardWithPrices(sample!.id);
+
+    expect(result.prices[0]!.priceArs).toBeUndefined();
+    expect(result.conversion).toBeUndefined();
+  });
+
+  it('getCardWithPrices?currency=ARS agrega priceArs usando el rate cacheado', async () => {
+    const sample = await prismaClient.card.findFirst({
+      select: { id: true },
+      orderBy: { id: 'asc' },
+    });
+    cachedRate = {
+      rate: 1000,
+      rateType: 'blue',
+      fetchedAt: '2026-09-25T20:58:00.000Z',
+      stale: false,
+    };
+
+    const result = await service.getCardWithPrices(sample!.id, { currency: 'ARS' });
+
+    const price = result.prices[0]!;
+    expect(price.priceArs).toEqual({ low: 1150, mid: 9870, high: 45500, market: 7250 });
+    expect(result.conversion).toEqual({
+      rate: 1000,
+      rateType: 'blue',
+      fetchedAt: '2026-09-25T20:58:00.000Z',
+      stale: false,
+    });
+  });
+
+  it('?currency=ARS sin rate cacheado devuelve priceArs undefined sin fallar', async () => {
+    const sample = await prismaClient.card.findFirst({
+      select: { id: true },
+      orderBy: { id: 'asc' },
+    });
+    cachedRate = null;
+
+    const result = await service.getCardWithPrices(sample!.id, { currency: 'ARS' });
+
+    expect(result.prices[0]!.priceArs).toBeUndefined();
+    expect(result.conversion).toBeUndefined();
+  });
+
+  describe('getSetCards (B8)', () => {
+    const EMPTY_SET_ID = 'test-empty-set-cards';
+
+    beforeEach(async () => {
+      await prismaClient.cardSet.deleteMany({ where: { id: EMPTY_SET_ID } });
+    });
+
+    afterAll(async () => {
+      await prismaClient.cardSet.deleteMany({ where: { id: EMPTY_SET_ID } });
+    });
+
+    /** El set más poblado del catálogo: es el peor caso del binder. */
+    async function biggestSet(): Promise<{ id: string; count: number }> {
+      const rows = await prismaClient.$queryRaw<{ id: string; count: number }[]>(
+        Prisma.sql`
+          SELECT c."setId" AS id, COUNT(*)::int AS count
+          FROM cards c
+          GROUP BY c."setId"
+          ORDER BY count DESC, c."setId" ASC
+          LIMIT 1
+        `,
+      );
+      return rows[0]!;
+    }
+
+    it('devuelve el set, todas sus cartas y el conteo real de la tabla', async () => {
+      const { id: setId, count } = await biggestSet();
+
+      const result = await service.getSetCards(setId);
+
+      expect(result.set.id).toBe(setId);
+      expect(result.set.name).not.toBe('');
+      expect(result.total).toBe(count);
+      expect(result.cards).toHaveLength(count);
+      expect(count).toBeGreaterThan(100);
+
+      for (const card of result.cards) {
+        expect(card.setId).toBe(setId);
+        expect(card.id).toEqual(expect.any(String));
+        expect(card.number).toEqual(expect.any(String));
+      }
+    });
+
+    it('ordena por número de carta, no por nombre', async () => {
+      const { id: setId } = await biggestSet();
+      const result = await service.getSetCards(setId);
+      const numbers = result.cards.map((card) => card.number);
+
+      // El mismo NUMERIC_NUMBER que usa sort:'number' en /cards/search.
+      const numeric = (value: string): number | null => {
+        const digits = value.replace(/\D/g, '');
+        return digits === '' ? null : Number.parseInt(digits, 10);
+      };
+      const sorted = [...numbers].sort((a, b) => {
+        const left = numeric(a);
+        const right = numeric(b);
+        if (left === null && right === null) return a.localeCompare(b);
+        if (left === null) return 1;
+        if (right === null) return -1;
+        return left - right || a.localeCompare(b);
+      });
+      expect(numbers).toEqual(sorted);
+
+      // Y de verdad hay números de dos dígitos después de los de un dígito.
+      const firstDoubleDigit = numbers.findIndex((n) => /^\d{2,}$/.test(n));
+      if (firstDoubleDigit > 0) {
+        expect(numbers.slice(0, firstDoubleDigit).every((n) => /^\d$/.test(n))).toBe(true);
+      }
+    });
+
+    it('coincide con el total de /cards/search?setId= y pagina al mismo conjunto', async () => {
+      const { id: setId, count } = await biggestSet();
+      const paged = await service.search(search({ setId, pageSize: 100 }));
+      const binder = await service.getSetCards(setId);
+
+      expect(binder.total).toBe(paged.total);
+      expect(binder.total).toBe(count);
+      expect(new Set(binder.cards.map((c) => c.id)).size).toBe(count);
+    });
+
+    it('un set sin cartas devuelve cards: [] y total 0, sin 404', async () => {
+      const empty = await prismaClient.cardSet.create({
+        data: { id: EMPTY_SET_ID, name: 'Set vacío de prueba' },
+      });
+
+      const result = await service.getSetCards(empty.id);
+
+      expect(result.set.id).toBe(empty.id);
+      expect(result.cards).toEqual([]);
+      expect(result.total).toBe(0);
+    });
+
+    it('un set inexistente devuelve 404', async () => {
+      await expect(service.getSetCards('no-existe-el-set')).rejects.toBeInstanceOf(
+        NotFoundException,
+      );
+    });
+  });
+
+  it('findAllSets devuelve los sets ordenados por releaseDate descendente', async () => {    const sets = await service.findAllSets();
+    const expected = await prismaClient.cardSet.count();
+
+    expect(sets.length).toBe(expected);
+    expect(sets.length).toBeGreaterThan(0);
+
+    const dates = sets.map((set) => set.releaseDate);
+    for (let index = 1; index < dates.length; index += 1) {
+      const previous = dates[index - 1];
+      const current = dates[index];
+      if (previous && current) {
+        expect(new Date(previous).getTime()).toBeGreaterThanOrEqual(
+          new Date(current).getTime(),
+        );
+      }
+    }
+  });
+
+  // Un set propio con precios conocidos: el catálogo real tiene 44 cartas con
+  // precio y sus valores cambian con cada sync, así que un test de `sort=price`
+  // sobre él sería o frágil o imposible de afirmar.
+  describe('searchBy / sort=price / direction (B1, B2, B3)', () => {
+    const SET = 'test-cards-queries';
+    const A = `${SET}-a`; // número 4, holofoil 10 + normal 250 → el mejor es 250
+    const B = `${SET}-b`; // número 40, fila con market null
+    const C = `${SET}-c`; // número 104, sin filas de precio
+    const D = `${SET}-d`; // número 4a, holofoil 5
+    const E = `${SET}-e`; // número TG02, sin precio
+    const CARD = {
+      supertype: 'Pokémon',
+      subtypes: [],
+      types: ['Fire'],
+      rarity: 'Common',
+      imageSmall: 'https://example.test/small.png',
+      imageLarge: 'https://example.test/large.png',
+      rawJson: {},
+    } as const;
+
+    beforeAll(async () => {
+      await prismaClient.card.deleteMany({ where: { id: { startsWith: SET } } });
+      await prismaClient.cardSet.deleteMany({ where: { id: SET } });
+      await prismaClient.cardSet.create({
+        data: { id: SET, name: 'Set de pruebas de queries' },
+      });
+
+      const cards = [
+        { id: A, name: 'Alfa', number: '4', artist: 'Ken Sugimori' },
+        { id: B, name: 'Bravo', number: '40', artist: 'Ken Sugimori' },
+        { id: C, name: 'Charlie', number: '104', artist: 'Naoki Takahashi' },
+        { id: D, name: 'Delta', number: '4a', artist: 'Naoki Takahashi' },
+        { id: E, name: 'Eco', number: 'TG02', artist: 'Naoki Takahashi' },
+      ];
+      for (const card of cards) {
+        await prismaClient.card.create({ data: { ...card, setId: SET, ...CARD } });
+      }
+
+      const prices = [
+        { cardId: A, variant: 'holofoil', market: '10.00' },
+        { cardId: A, variant: 'normal', market: '250.00' },
+        { cardId: B, variant: 'holofoil', market: null },
+        { cardId: D, variant: 'holofoil', market: '5.00' },
+      ];
+      for (const price of prices) {
+        await prismaClient.cardPrice.create({
+          data: {
+            ...price,
+            market: price.market === null ? null : new Prisma.Decimal(price.market),
+            source: 'test',
+            currency: 'USD',
+            fetchedAt: new Date('2024-01-01T00:00:00.000Z'),
+          },
+        });
+      }
+    });
+
+    afterAll(async () => {
+      await prismaClient.card.deleteMany({ where: { id: { startsWith: SET } } });
+      await prismaClient.cardSet.deleteMany({ where: { id: SET } });
+    });
+
+    describe('searchBy', () => {
+      it('number matchea el token exacto: 4 no trae 40, 104 ni 4a', async () => {
+        const result = await service.search(
+          search({ setId: SET, q: '4', searchBy: 'number', pageSize: 50 }),
+        );
+
+        expect(result.total).toBe(1);
+        expect(result.data.map((card) => card.number)).toEqual(['4']);
+        expect(result.data[0]!.id).toBe(A);
+      });
+
+      it('number normaliza el input: "#4" y espacios son el mismo 4', async () => {
+        for (const q of ['#4', '  4  ']) {
+          const result = await service.search(
+            search({ setId: SET, q, searchBy: 'number', pageSize: 50 }),
+          );
+          expect(result.data.map((card) => card.id)).toEqual([A]);
+        }
+      });
+
+      it('number es igualdad case-insensitive: tg02 encuentra TG02', async () => {
+        const result = await service.search(
+          search({ setId: SET, q: 'tg02', searchBy: 'number', pageSize: 50 }),
+        );
+
+        expect(result.total).toBe(1);
+        expect(result.data[0]!.id).toBe(E);
+      });
+
+      it('number ordena por set y número, no por score ni alfabética', async () => {
+        const result = await service.search(
+          search({ setId: SET, q: '4', searchBy: 'number', pageSize: 50 }),
+        );
+
+        // Todas empatan en score (1.0), así que el orden lo define el set y el
+        // número: sin esto el único criterio sería el nombre.
+        expect(result.data.map((card) => card.id)).toEqual([A]);
+      });
+
+      it('artist matchea por nombre de artista, con trigram', async () => {
+        const byName = await service.search(
+          search({ setId: SET, q: 'sugimor', searchBy: 'artist', pageSize: 50 }),
+        );
+        // Typo a propósito: con trigram 0.2 sigue matcheando "Ken Sugimori".
+        expect(byName.data.map((card) => card.id).sort()).toEqual([A, B]);
+
+        const exact = await service.search(
+          search({ setId: SET, q: 'Naoki', searchBy: 'artist', pageSize: 50 }),
+        );
+        expect(exact.data.map((card) => card.id).sort()).toEqual([C, D, E]);
+      });
+
+      it('name sigue siendo el default y no matchea números ni artistas', async () => {
+        const byNumber = await service.search(
+          search({ setId: SET, q: '4', pageSize: 50 }),
+        );
+        expect(byNumber.total).toBe(0);
+
+        const byArtist = await service.search(
+          search({ setId: SET, q: 'Sugimori', pageSize: 50 }),
+        );
+        expect(byArtist.total).toBe(0);
+
+        const byName = await service.search(
+          search({ setId: SET, q: 'Alfa', pageSize: 50 }),
+        );
+        expect(byName.data.map((card) => card.id)).toEqual([A]);
+      });
+    });
+
+    describe('sort=price', () => {
+      it('desc ordena de más caro a más barato', async () => {
+        const result = await service.search(
+          search({ setId: SET, sort: 'price', direction: 'desc', pageSize: 50 }),
+        );
+
+        expect(result.total).toBe(5);
+        expect(result.data.map((card) => card.id)).toEqual([A, D, B, C, E]);
+      });
+
+      it('asc ordena de más barato a más caro', async () => {
+        const result = await service.search(
+          search({ setId: SET, sort: 'price', direction: 'asc', pageSize: 50 }),
+        );
+
+        expect(result.data.map((card) => card.id)).toEqual([D, A, B, C, E]);
+      });
+
+      it('el precio de la carta es el mejor de sus variantes, no el de la holofoil', async () => {
+        const result = await service.search(
+          search({ setId: SET, sort: 'price', direction: 'desc', pageSize: 50 }),
+        );
+
+        // A tiene holofoil 10 y normal 250. El criterio es "el mejor precio
+        // disponible", no "el de la holofoil": si fuera la holofoil, A valdría
+        // 10 y el orden por precio no distinguiría las variantes.
+        const prices = await prismaClient.$queryRaw<{ id: string; price: number }[]>(
+          Prisma.sql`
+            SELECT best."cardId" AS id, MAX(best.market)::float8 AS price
+            FROM (
+              SELECT DISTINCT ON (p."cardId", p.variant)
+                p."cardId" AS "cardId", p.variant AS "variant", p.market AS "market"
+              FROM card_prices p
+              WHERE p."cardId" LIKE ${`${SET}%`}
+              ORDER BY p."cardId", p.variant, p."fetchedAt" DESC
+            ) best
+            WHERE best.market IS NOT NULL
+            GROUP BY best."cardId"
+          `,
+        );
+        const expected = new Map(prices.map((row) => [row.id, row.price]));
+        expect(expected.get(A)).toBe(250);
+
+        // El orden del service es el mismo que el de la query de referencia.
+        const order = result.data
+          .map((card) => card.id)
+          .filter((id) => expected.has(id));
+        const sorted = [...order].sort(
+          (left, right) => expected.get(right)! - expected.get(left)!,
+        );
+        expect(order).toEqual(sorted);
+      });
+
+      it('las cartas sin precio van al final en las DOS direcciones', async () => {
+        const desc = await service.search(
+          search({ setId: SET, sort: 'price', direction: 'desc', pageSize: 50 }),
+        );
+        const asc = await service.search(
+          search({ setId: SET, sort: 'price', direction: 'asc', pageSize: 50 }),
+        );
+
+        // B tiene fila pero con market null, C y E no tienen fila: los tres
+        // empatan en "sin precio" y se desempatan por nombre.
+        expect(desc.data.slice(2).map((card) => card.id)).toEqual([B, C, E]);
+        expect(asc.data.slice(2).map((card) => card.id)).toEqual([B, C, E]);
+      });
+
+      it('sort=price pagina sin repetidos', async () => {
+        const first = await service.search(
+          search({ setId: SET, sort: 'price', direction: 'desc', page: 1, pageSize: 2 }),
+        );
+        const second = await service.search(
+          search({ setId: SET, sort: 'price', direction: 'desc', page: 2, pageSize: 2 }),
+        );
+
+        expect(first.data.map((c) => c.id)).toEqual([A, D]);
+        expect(second.data.map((c) => c.id)).toEqual([B, C]);
+        expect(first.total).toBe(second.total);
+      });
+    });
+
+    describe('direction', () => {
+      it('aplica a sort=name en los dos sentidos', async () => {
+        const asc = await service.search(
+          search({ setId: SET, sort: 'name', pageSize: 50 }),
+        );
+        const desc = await service.search(
+          search({ setId: SET, sort: 'name', direction: 'desc', pageSize: 50 }),
+        );
+
+        expect(asc.data.map((card) => card.id)).toEqual([A, B, C, D, E]);
+        expect(desc.data.map((card) => card.id)).toEqual([E, D, C, B, A]);
+      });
+
+      it('aplica a sort=number y a sort=rarity', async () => {
+        const numbers = await service.search(
+          search({ setId: SET, sort: 'number', direction: 'desc', pageSize: 50 }),
+        );
+        // 104 > 40 > 4, y "4" y "4a" vale 4 los dos: desempata el nombre
+        // ("Alfa" antes que "Delta"). "TG02" no tiene dígitos, va al final.
+        expect(numbers.data.map((card) => card.number)).toEqual([
+          '104',
+          '40',
+          '4',
+          '4a',
+          'TG02',
+        ]);
+
+        const rarity = await service.search(
+          search({ setId: SET, rarity: 'Common', sort: 'rarity', direction: 'desc', pageSize: 50 }),
+        );
+        expect(rarity.total).toBe(5);
+      });
+
+      it('se ignora con q: el score de relevancia no es invertible', async () => {
+        const withDirection = await service.search(
+          search({ setId: SET, q: 'a', sort: 'price', direction: 'desc', pageSize: 50 }),
+        );
+        const without = await service.search(
+          search({ setId: SET, q: 'a', pageSize: 50 }),
+        );
+
+        // Todos matchean "a" (prefijo o substring), así que el score empata y
+        // manda el desempate por nombre. `direction` no invierte nada.
+        expect(withDirection.data.map((card) => card.id)).toEqual(
+          without.data.map((card) => card.id),
+        );
+        expect(withDirection.data[0]!.id).toBe(A);
+      });
+    });
+  });
+});
+
+describe('CardsService · change de 30 días (B10)', () => {
+  const prismaClient = new PrismaClient();
+  const PREFIX = 'test-b10-';
+  const CARD = `${PREFIX}card`;
+  const DAY = 24 * 60 * 60 * 1000;
+
+  /** Precio actual que devuelve el mock de SyncPrices, por test. */
+  let current: {
+    variant: string;
+    market: Prisma.Decimal | null;
+    mid: Prisma.Decimal | null;
+    fetchedAt: Date;
+  }[] = [];
+
+  let moduleRef: TestingModule;
+  let service: CardsService;
+
+  const daysAgo = (days: number): Date => new Date(Date.now() - days * DAY);
+
+  beforeAll(async () => {
+    moduleRef = await Test.createTestingModule({
+      providers: [
+        CardsService,
+        { provide: PrismaService, useValue: prismaClient },
+        {
+          provide: SyncPricesService,
+          useValue: {
+            getPricesForCard: async (cardId: string) =>
+              current.map((price) => ({
+                cardId,
+                variant: price.variant,
+                low: new Prisma.Decimal('1.00'),
+                mid: price.mid,
+                high: new Prisma.Decimal('99.00'),
+                market: price.market,
+                source: 'test',
+                currency: 'USD',
+                fetchedAt: price.fetchedAt,
+              })),
+          },
+        },
+        { provide: CurrencyService, useValue: { getCachedRate: async () => null } },
+      ],
+    }).compile();
+
+    service = moduleRef.get(CardsService);
+  });
+
+  afterAll(async () => {
+    await prismaClient.card.deleteMany({ where: { id: { startsWith: PREFIX } } });
+    await prismaClient.$disconnect();
+    await moduleRef.close();
+  });
+
+  beforeEach(async () => {
+    await prismaClient.card.deleteMany({ where: { id: { startsWith: PREFIX } } });
+    const set = await prismaClient.cardSet.findFirst({
+      orderBy: { id: 'asc' },
+      select: { id: true },
+    });
+    await prismaClient.card.create({
+      data: {
+        id: CARD,
+        name: 'Charizard B10',
+        supertype: 'Pokémon',
+        subtypes: [],
+        types: ['Fire'],
+        number: '4',
+        rarity: 'Rare',
+        setId: set!.id,
+        imageSmall: 'https://example.test/s.png',
+        imageLarge: 'https://example.test/l.png',
+        rawJson: {},
+      },
+    });
+    current = [];
+  });
+
+  /** Inserta una fila de referencia: una por llamada. */
+  async function seedReference(
+    variant: string,
+    fetchedAt: Date,
+    price: { market?: string | null; mid?: string | null },
+  ): Promise<void> {
+    const decimal = (value: string | null | undefined) =>
+      value === undefined || value === null ? null : new Prisma.Decimal(value);
+
+    await prismaClient.cardPrice.create({
+      data: {
+        cardId: CARD,
+        variant,
+        market: decimal(price.market),
+        mid: decimal(price.mid),
+        source: 'test',
+        currency: 'USD',
+        fetchedAt,
+      },
+    });
+  }
+
+  const changeOf = async (variant: string) => {
+    const result = await service.getCardWithPrices(CARD);
+    return result.prices.find((price) => price.variant === variant)?.change;
+  };
+
+  it('compara contra la última cotización anterior a la ventana', async () => {
+    const old31 = daysAgo(31);
+    await seedReference('holofoil', daysAgo(40), { market: '10.00' });
+    // Una fila más nueva que la ventana no debe ganar: la referencia es la
+    // última **anterior** a los 30 días, no la última disponible.
+    await seedReference('holofoil', old31, { market: '8.00' });
+    current = [
+      {
+        variant: 'holofoil',
+        market: new Prisma.Decimal('5.00'),
+        mid: new Prisma.Decimal('99.00'),
+        fetchedAt: daysAgo(0),
+      },
+    ];
+
+    expect(await changeOf('holofoil')).toEqual({
+      usd: -3,
+      // -37,5 exacto con redondeo simétrico: -38, no el -37 de Math.round.
+      percent: -38,
+      windowDays: 30,
+      from: old31.toISOString(),
+    });
+  });
+
+  it('sin fila anterior a la ventana devuelve null, no 0', async () => {
+    await seedReference('holofoil', daysAgo(3), { market: '10.00' });
+    current = [
+      {
+        variant: 'holofoil',
+        market: new Prisma.Decimal('5.00'),
+        mid: new Prisma.Decimal('99.00'),
+        fetchedAt: daysAgo(0),
+      },
+    ];
+
+    expect(await changeOf('holofoil')).toBeNull();
+  });
+
+  it('una referencia de más de 90 días devuelve null', async () => {
+    await seedReference('holofoil', daysAgo(120), { market: '10.00' });
+    current = [
+      {
+        variant: 'holofoil',
+        market: new Prisma.Decimal('5.00'),
+        mid: new Prisma.Decimal('99.00'),
+        fetchedAt: daysAgo(0),
+      },
+    ];
+
+    expect(await changeOf('holofoil')).toBeNull();
+  });
+
+  it('un precio actual de más de 24 h devuelve null (el cliente ya lo marca viejo)', async () => {
+    await seedReference('holofoil', daysAgo(40), { market: '10.00' });
+    current = [
+      {
+        variant: 'holofoil',
+        market: new Prisma.Decimal('5.00'),
+        mid: new Prisma.Decimal('99.00'),
+        fetchedAt: daysAgo(2),
+      },
+    ];
+
+    expect(await changeOf('holofoil')).toBeNull();
+  });
+
+  it('sin market usa mid, y compara mid contra mid', async () => {
+    await seedReference('holofoil', daysAgo(40), { market: null, mid: '20.00' });
+    current = [
+      {
+        variant: 'holofoil',
+        market: null,
+        mid: new Prisma.Decimal('15.00'),
+        fetchedAt: daysAgo(0),
+      },
+    ];
+
+    const change = await changeOf('holofoil');
+    expect(change?.usd).toBe(-5);
+    expect(change?.percent).toBe(-25);
+  });
+
+  it('market hoy contra una referencia sin market devuelve null (no cambia de columna)', async () => {
+    await seedReference('holofoil', daysAgo(40), { market: null, mid: '20.00' });
+    current = [
+      {
+        variant: 'holofoil',
+        market: new Prisma.Decimal('15.00'),
+        mid: null,
+        fetchedAt: daysAgo(0),
+      },
+    ];
+
+    expect(await changeOf('holofoil')).toBeNull();
+  });
+
+  it('una referencia de 0 devuelve null, no Infinity ni 0 %', async () => {
+    await seedReference('holofoil', daysAgo(40), { market: '0.00' });
+    current = [
+      {
+        variant: 'holofoil',
+        market: new Prisma.Decimal('15.00'),
+        mid: null,
+        fetchedAt: daysAgo(0),
+      },
+    ];
+
+    expect(await changeOf('holofoil')).toBeNull();
+  });
+
+  it('sin market ni mid no hay precio de referencia y no hay delta', async () => {
+    await seedReference('holofoil', daysAgo(40), { market: '10.00' });
+    current = [
+      { variant: 'holofoil', market: null, mid: null, fetchedAt: daysAgo(0) },
+    ];
+
+    expect(await changeOf('holofoil')).toBeNull();
+  });
+});

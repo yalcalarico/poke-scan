@@ -1,0 +1,406 @@
+@import "tailwindcss";
+
+/*
+ * Design system (docs/design-system.md). Los tokens semánticos viven FUERA de
+ * `@theme` porque cambian con el tema, y `@theme inline` los re-expone adentro:
+ * es el mecanismo de Tailwind 4 para eso. Los valores son los del §2.1 del
+ * documento.
+ */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/*
+ * El tema se resuelve con una clase en `<html>`, no con la preferencia del
+ * sistema sola: la preferencia del usuario tiene que poder ganarle. Tailwind 4
+ * decide el dark por `prefers-color-scheme` y hay que declarar la variante a
+ * mano.
+ */
+:root {
+  /* Superficies — de menos a más elevado */
+  --canvas: #f4f4f6;
+  --surface: #ffffff;
+  --surface-2: #f8f8fa;
+  --surface-3: #eeeef2;
+  --overlay: rgb(11 11 15 / 0.55);
+
+  /* Texto */
+  --text-primary: #0b0b0f;
+  --text-secondary: #5c5c68;
+  --text-tertiary: #86868f;
+  --text-disabled: #b4b4bd;
+  --text-inverse: #ffffff;
+
+  /* Bordes */
+  --border-subtle: #eeeef2;
+  --border-default: #e4e4e9;
+  --border-strong: #d0d0d8;
+
+  /* Marca: rojo. Es el acento de navegación y de acción primaria. */
+  --brand: #e01f26;
+  --brand-hover: #c2161c;
+  --brand-press: #9e1217;
+  --brand-soft: #fff0f0;
+  --brand-border: #ffc9c9;
+  --on-brand: #ffffff;
+
+  /* Semánticos */
+  --positive: #12804a;          /* valor, dinero, éxito, precio subiendo */
+  --positive-soft: #e7f6ee;
+  --positive-border: #b7e3cb;
+  --negative: #d01a21;          /* precio bajando, error de acción */
+  --negative-soft: #fdeeee;
+  --negative-border: #f5c2c2;
+  --warning: #b45309;           /* "algo está viejo o no seguro". NUNCA error. */
+  --warning-soft: #fdf4e3;
+  --warning-border: #f0d9ae;
+  --info: #1d4ed8;
+  --info-soft: #eef2fe;
+  --info-border: #c9d5fa;
+
+  /* El scanner siempre vuela sobre la foto: superficies oscuras fijas. */
+  --on-media: rgb(11 11 15 / 0.72);
+  --on-media-text: #ffffff;
+
+  /* Paradas del degradado del `Skeleton`. Viven acá y no en el componente
+     porque el shimmer es un token del sistema, no una decisión de una pantalla:
+     un skeleton written a mano con un gris fijo se ve distinto del de otra
+     pantalla y eso se nota al scrollear. */
+  --shimmer-from: #eeeef2;
+  --shimmer-to: #f8f8fa;
+}
+
+.dark {
+  --canvas: #0b0b0f;
+  --surface: #15151b;
+  --surface-2: #1d1d24;
+  --surface-3: #26262f;
+  --overlay: rgb(0 0 0 / 0.7);
+
+  --text-primary: #f5f5f7;
+  --text-secondary: #a1a1ae;
+  --text-tertiary: #75757f;
+  --text-disabled: #4a4a54;
+  --text-inverse: #0b0b0f;
+
+  --border-subtle: #1d1d24;
+  --border-default: #2a2a33;
+  --border-strong: #3c3c48;
+
+  --brand: #ff4a4f;             /* más saturado para tener contraste sobre #15151b */
+  --brand-hover: #ff6a6e;
+  --brand-press: #e01f26;
+  --brand-soft: rgb(255 74 79 / 0.14);
+  --brand-border: rgb(255 74 79 / 0.32);
+  --on-brand: #1a0506;
+
+  --positive: #34d399;
+  --positive-soft: rgb(52 211 153 / 0.14);
+  --positive-border: rgb(52 211 153 / 0.3);
+  --negative: #ff6a6e;
+  --negative-soft: rgb(255 106 110 / 0.14);
+  --negative-border: rgb(255 106 110 / 0.3);
+  --warning: #fbbf24;
+  --warning-soft: rgb(251 191 36 / 0.14);
+  --warning-border: rgb(251 191 36 / 0.3);
+  --info: #7ba1ff;
+  --info-soft: rgb(123 161 255 / 0.14);
+  --info-border: rgb(123 161 255 / 0.3);
+
+  --on-media: rgb(0 0 0 / 0.66);
+  --on-media-text: #ffffff;
+
+  --shimmer-from: #1d1d24;
+  --shimmer-to: #26262f;
+}
+
+@theme inline {
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-overlay: var(--overlay);
+
+  --color-primary: var(--text-primary);
+  --color-secondary: var(--text-secondary);
+  --color-tertiary: var(--text-tertiary);
+  --color-disabled: var(--text-disabled);
+  --color-inverse: var(--text-inverse);
+
+  --color-line: var(--border-default);
+  --color-line-strong: var(--border-strong);
+  --color-line-subtle: var(--border-subtle);
+
+  --color-brand: var(--brand);
+  --color-brand-hover: var(--brand-hover);
+  --color-brand-press: var(--brand-press);
+  --color-brand-soft: var(--brand-soft);
+  --color-brand-border: var(--brand-border);
+  --color-on-brand: var(--on-brand);
+
+  --color-positive: var(--positive);
+  --color-positive-soft: var(--positive-soft);
+  --color-positive-border: var(--positive-border);
+  --color-negative: var(--negative);
+  --color-negative-soft: var(--negative-soft);
+  --color-negative-border: var(--negative-border);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-warning-border: var(--warning-border);
+  --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
+  --color-info-border: var(--info-border);
+
+  --color-on-media: var(--on-media);
+  --color-on-media-text: var(--on-media-text);
+
+  --color-shimmer-from: var(--shimmer-from);
+  --color-shimmer-to: var(--shimmer-to);
+
+  /* Radios: los cuatro únicos que existen, más `rounded-full` de Tailwind. */
+  --radius-control: 12px;
+  --radius-surface: 16px;
+  --radius-panel: 20px;
+  --radius-sheet: 28px;
+
+  /* Sombras: en dark la separación la hacen el borde y la diferencia de
+     superficie, así que `.dark` no las redefine. */
+  --shadow-xs: 0 1px 2px rgb(11 11 15 / 0.05);
+  --shadow-sm: 0 1px 3px rgb(11 11 15 / 0.07), 0 1px 2px -1px rgb(11 11 15 / 0.05);
+  --shadow-md: 0 4px 12px -2px rgb(11 11 15 / 0.09), 0 2px 4px -2px rgb(11 11 15 / 0.05);
+  --shadow-lg: 0 14px 32px -10px rgb(11 11 15 / 0.16), 0 4px 10px -4px rgb(11 11 15 / 0.06);
+  --shadow-xl: 0 28px 60px -20px rgb(11 11 15 / 0.22);
+
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-emphasis: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-exit: cubic-bezier(0.4, 0, 1, 1);
+
+  --duration-instant: 100ms;
+  --duration-fast: 160ms;
+  --duration-base: 240ms;
+  --duration-slow: 400ms;
+
+  /*
+   * El namespace de `duration-*` en Tailwind 4 es `--transition-duration-*`,
+   * no `--duration-*`. Estos alias son los que hacen existir las utilidades
+   * `duration-instant`, `duration-fast`, `duration-base` y `duration-slow` con
+   * el nombre de token del design system. Sin esta línea habría que escribir
+   * `duration-[240ms]`, que es justamente lo que §3.1 prohíbe.
+   */
+  --transition-duration-instant: var(--duration-instant);
+  --transition-duration-fast: var(--duration-fast);
+  --transition-duration-base: var(--duration-base);
+  --transition-duration-slow: var(--duration-slow);
+
+  /* Escala de capas (docs/design-system.md §6): el scanner tiene que quedar
+     SIEMPRE arriba de la `BottomNav`, así que el orden es fijo y no numérico.
+     Ojo: el namespace de z-index es `--z-index-*`. */
+  --z-index-base: 0;
+  --z-index-sticky: 40;
+  --z-index-nav: 50;
+  --z-index-overlay: 60;
+  --z-index-sheet: 70;
+  --z-index-media: 90;
+  --z-index-offline: 100;
+
+  /* Motion CSS-first: cada animación es un token, no una clase suelta con
+     duración escrita a mano (docs/design-system.md §5.1). */
+  --animate-fade-in: fade-in var(--duration-base) var(--ease-standard) both;
+  --animate-sheet-up: sheet-up var(--duration-base) var(--ease-emphasis) both;
+  --animate-pop-in: pop-in var(--duration-base) var(--ease-emphasis) both;
+  --animate-shimmer: shimmer 1.6s linear infinite;
+  --animate-flash-once: flash-once var(--duration-slow) var(--ease-standard) both;
+}
+
+/*
+ * Escala tipográfica (§3.1) como utilidades de Tailwind, no como clases de
+ * `@layer components`: `@utility` las mete en la capa `utilities`, así que
+ * ganan contra cualquier clase de componente, se pueden pisar con variantes
+ * (`sm:text-h1`) y no se emiten si nadie las usa. `@layer components` además
+ * obliga a pelear con la especificidad en cada call site.
+ *
+ * Nueve pasos y nada fuera de la tabla: no se escribe `text-[13px]`.
+ */
+@utility text-display-lg {
+  font-size: 40px;
+  line-height: 42px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+@utility text-display {
+  font-size: 32px;
+  line-height: 34px;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+}
+
+@utility text-h1 {
+  font-size: 26px;
+  line-height: 30px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+@utility text-h2 {
+  font-size: 20px;
+  line-height: 26px;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+}
+
+@utility text-h3 {
+  font-size: 17px;
+  line-height: 22px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+@utility text-body {
+  font-size: 15px;
+  line-height: 22px;
+  font-weight: 400;
+}
+
+@utility text-body-strong {
+  font-size: 15px;
+  line-height: 22px;
+  font-weight: 600;
+}
+
+@utility text-label {
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 500;
+}
+
+@utility text-caption {
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 400;
+}
+
+@utility text-overline {
+  font-size: 10px;
+  line-height: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/*
+ * Fondo del `Skeleton`. Va con `animate-shimmer`, que anima `background-position`:
+ * sin este degradado el keyframe mueve un color plano y no se ve nada. El
+ * `background-size: 200%` es lo que le da recorrido al movimiento.
+ */
+@utility bg-shimmer {
+  background-image: linear-gradient(
+    90deg,
+    var(--shimmer-from) 0%,
+    var(--shimmer-to) 45%,
+    var(--shimmer-from) 90%
+  );
+  background-size: 200% 100%;
+}
+
+/* Keyframes del sistema (§5.2). `shimmer` es el degradado que recorre el esqueleto
+   en vez de un pulso de opacidad — se ve menos "hospital" — y `flash-once` es el
+   único uso de color animado de la app: marca una cifra que cambió. */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes sheet-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes shimmer {
+  from {
+    background-position: -160% 0;
+  }
+  to {
+    background-position: 160% 0;
+  }
+}
+
+@keyframes flash-once {
+  0% {
+    background-color: var(--positive-soft);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+/* §5.3: parte del sistema, no un extra. Sin esto, los skeletons animan igual
+   para quien pidió menos movimiento en el sistema. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/*
+ * El fondo y el color del `<body>` salen de los tokens, y no de clases de
+ * Tailwind. Dos motivos que no son el mismo:
+ *
+ * 1. El overscroll de iOS usa el fondo del `body`. Con clases, el color
+ *    quedaría clavado al tema con el que se renderizó y al arrastrar hacia
+ *    arriba aparecería una banda del otro.
+ * 2. `font-family` es la única forma de que el texto que renderiza el server
+ *    coincida con el del cliente. Con la variable de `next/font` puesta en el
+ *    `<html>`, acá se pasa la que corresponde y no hay un frame con la fuente
+ *    de fallback.
+ */
+body {
+  background: var(--canvas);
+  color: var(--text-primary);
+  font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+/*
+ * `data-offline` lo escribe `components/layout/offline-toast.tsx` y lo leen el
+ * service worker y cualquier hoja de estilo que necesite comportarse distinto
+ * sin conexión. No se acompaña de un `padding-top`: el aviso es un toast que
+ * flota y no debe empujar el layout.
+ */
+html[data-offline='true'] {
+  color-scheme: dark;
+}
+
+/*
+ * La lista vinculante de anti-patrones (colores crudos, tamaños fuera de
+ * escala, `space-y-*`, `animate-pulse`, z-index arbitrario, …) vive en el §12
+ * de docs/design-system.md. `scripts/check-no-raw-colors.mjs` la aplica sobre
+ * `components/**` y `app/**`, y falla `pnpm run lint` si encuentra un color de
+ * la paleta default de Tailwind.
+ */
