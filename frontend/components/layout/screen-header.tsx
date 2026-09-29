@@ -39,6 +39,10 @@ export function ScreenHeader({ title, back, action, subtitle, className }: Scree
     <header
       className={cn(
         'sticky top-0 z-sticky bg-surface/85 pt-[env(safe-area-inset-top)] backdrop-blur-md',
+        // En `lg:` la `BottomNav` es el navbar de arriba, y como es `fixed` el
+        // `top-0` de acá la metía debajo. Baja el offset del navbar para que se
+        // peguen, sin solaparse. Abajo la nav no compite, así que queda en 0.
+        'lg:top-[calc(var(--nav-height)+env(safe-area-inset-top))] lg:pt-0',
         className,
       )}
     >

@@ -58,6 +58,14 @@ export function ScreenContainer({
       className={cn(
         !bleed &&
           'mx-auto w-full max-w-6xl px-4 pb-[calc(5rem+env(safe-area-inset-bottom))] pt-4 sm:px-6 sm:pt-6',
+        /*
+         * En `lg:` la nav pasa a ser el navbar de arriba, así que el espacio que
+         * hay que reservar cambia de lado: el `pb` que tapaba la barra inferior
+         * vuelve a ser normal y el `pt` tiene que despejar el navbar. Sin esto
+         * la primera fila de contenido queda debajo de la barra fija.
+         */
+        !bleed &&
+          'lg:pb-8 lg:pt-[calc(var(--nav-height)+env(safe-area-inset-top)+1.5rem)]',
         className,
       )}
     >

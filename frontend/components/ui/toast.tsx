@@ -232,6 +232,9 @@ export function ToastProvider({ children }: ToastProviderProps) {
                 // Mobile: abajo a la izquierda, por encima de la `BottomNav`
                 // (h-16 + safe area). Nunca la tapa.
                 'inset-x-4 bottom-[calc(5rem+env(safe-area-inset-bottom))] items-start',
+                // En `lg:` la nav ya no está abajo, así que el toast sube y se
+                // corre del navbar por si los dos se pisan.
+                'lg:bottom-auto lg:top-[calc(var(--nav-height)+env(safe-area-inset-top)+1rem)]',
                 'sm:inset-x-auto sm:bottom-auto sm:right-4 sm:items-end',
                 'sm:top-[calc(1rem+env(safe-area-inset-top))]',
               )}

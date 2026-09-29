@@ -232,6 +232,15 @@
   --radius-panel: 20px;
   --radius-sheet: 28px;
 
+  /* Alto de la `BottomNav`, que en `lg:` deja de ser una barra inferior y pasa
+     a ser el navbar de arriba. Está como token y no como `4rem` repetido porque
+     lo necesitan cinco lugares que tienen que coincidir sí o sí: el `top` del
+     `ScreenHeader` pegajoso, el `pt` del `ScreenContainer`, el `bottom` del
+     `Toast`, el `bottom` de la barra de la colección y el inset de su
+     contenido. Con el número escrito en cada uno, un cambio de alto rompía
+     cuatro de los cinco sin que ningún test lo viera. */
+  --nav-height: 4rem;
+
   /* Sombras: en dark la separación la hacen el borde y la diferencia de
      superficie, así que `.dark` no las redefine. */
   --shadow-xs: 0 1px 2px rgb(11 11 15 / 0.05);

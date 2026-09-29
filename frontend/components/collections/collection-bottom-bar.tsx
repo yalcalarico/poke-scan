@@ -23,8 +23,12 @@ import { formatCount } from './collection-options';
  * Va **siempre**, también en los estados de error y de colección vacía: el
  * padding de abajo es invisible ahí, y hacerlo condicional haría saltar el
  * layout en el momento exacto en que llegan los datos.
+ *
+ * El `lg:pb-16` es el otro lado del mismo cálculo: en `lg:` la `BottomNav` es el
+ * navbar de arriba, así que la barra de la colección se apoya en el piso y solo
+ * necesita su propia altura (3.5rem) más aire, no las 8rem de abajo.
  */
-export const DETAIL_CONTENT_INSET = 'pb-[calc(8rem+env(safe-area-inset-bottom))]';
+export const DETAIL_CONTENT_INSET = 'pb-[calc(8rem+env(safe-area-inset-bottom))] lg:pb-16';
 
 export interface CollectionBottomBarProps {
   /** Total de cartas de la colección, con duplicados. Sale de `/stats`, igual que el `CollectionSummary`. */
@@ -56,7 +60,7 @@ export interface CollectionBottomBarProps {
  */
 export function CollectionBottomBar({ totalCards, totalValueUsd }: CollectionBottomBarProps) {
   return (
-    <div className="fixed inset-x-0 bottom-[calc(4rem+env(safe-area-inset-bottom))] z-nav border-t border-line bg-surface/90 shadow-md backdrop-blur-lg">
+    <div className="fixed inset-x-0 bottom-[calc(4rem+env(safe-area-inset-bottom))] z-nav border-t border-line bg-surface/90 shadow-md backdrop-blur-lg lg:bottom-[env(safe-area-inset-bottom)]">
       <div className="mx-auto flex h-14 w-full max-w-6xl items-center justify-between gap-3 px-4 sm:px-6">
         <p className="flex min-w-0 items-baseline gap-1.5 text-caption text-tertiary tabular-nums">
           <span className="truncate">
