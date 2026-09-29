@@ -12,6 +12,57 @@
 
 ---
 
+## ESTADO — aplicado el 2026-09-29
+
+> **Las cuatro fases de este plan están aplicadas.** El documento quedó como el
+> registro de *qué se encontró y por qué*, y los números de contraste que hay
+> abajo son los **de antes del arreglo**: son el registro histórico del bug y no
+> se actualizaron a propósito.
+>
+> Commits: `cbc62e3` (el plan) y `0a1370d` (saca `token.txt` del tracking).
+> `pnpm run check` en verde: 206 tests de backend, 310 de frontend, lint, guard
+> de colores, typecheck y build de los dos proyectos.
+>
+> ### Lo que cambió respecto de lo que este plan decía
+>
+> Cuatro cosas que se supusieron mal, y que aparecieron al aplicar, no al leer:
+>
+> | El plan decía | La realidad |
+> |---|---|
+> | "No hay ningún chip deshabilitado en producción" | `carta/[id]/actions.tsx:212` pasa `disabled` a un `Chip`. Era deuda viva, no latente. |
+> | "`PriceDto` ya tiene `changeUsd`/`changePercent`" | Los tenía **anidados** en `change: PriceChangeDto`, y el backend ya mandaba ese objeto. La premisa "el backend nunca los manda" era a medias. |
+> | "`--border-control` en light cumple 3:1" | El valor elegido daba **2.22:1**. Hubo que oscurecerlo a `#8a8a96` (3.22:1) para que cumpliera lo que el comentario decía. |
+> | "`PriceDelta` nunca recibió números" | Cierto, pero el componente ya tenía el formateo, el ícono y el tono prontos: el trabajo real fue **el endpoint**, no el componente. |
+>
+> Y dos que el plan no vio y aparecieron con la base real o con el navegador:
+>
+> - **La columna `cards.rarity` tiene 41 valores, no 12**, y mezcla dos
+>   vocabularios: pokemontcg.io con espacios (`Rare Holo`) y scrydex en
+>   camelCase (`RareHolo`, `RareUltra`, `HyperRare`). La primera versión de la
+>   señal de rareza era una lista cerrada, así que `RareHolo` (1621 cartas),
+>   `RareUltra` (799) y `IllustrationRare` (511) caían en "sin acento" y **no
+>   dibujaban nada**. Ahora el match es por patrón, normalizado.
+> - **`applyResolved` tenía un `return` temprano** antes de la mutación del DOM,
+>   así que el arreglo del `theme-color` —tal como estaba especificado— nunca se
+>   hubiera ejecutado en la primera carga, que es el caso común.
+>
+> ### Lo que quedó afuera, a propósito
+>
+> - **`share_target`**: se **sacó** del manifest en vez de arreglarlo. El
+>   arreglo real (handler de `getShareTarget()` que resuelva la carta) es una
+>   feature, no un fix, y correspondía a su propio commit.
+> - **Acciones masivas**: no hay endpoint de bulk, así que la acción itera el
+>   `PATCH` uno por uno, **secuencialmente**, con tope de 60 y el costo declarado
+>   en la propia UI. No se inventó un endpoint.
+> - **`--rarity-*`**: la señal de rareza usa tokens que ya existen
+>   (`--info` y `--warning`); no se agregaron tokens nuevos al palette.
+> - **`docs/design-system.md`** se re-sincronizó por completo contra el código,
+>   y en el proceso aparecieron tres tokens (`--transition-duration-*`, los
+>   siete `--z-index-*` y los cinco `--animate-*`) que la doc **exigía pero
+>   nunca mostraba**.
+
+---
+
 ## 📌 Estado — 2026-09-29
 
 > **El cuerpo de este documento no se tocó.** Sigue siendo el plan de registro y los
