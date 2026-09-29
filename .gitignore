@@ -21,3 +21,6 @@ npm-debug.log*
 
 # Docker
 pgdata/
+
+# Tokens sueltos
+token.txt
