@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
 
-import { ScreenHeader } from '@/components/layout/screen-header';
 import { ScreenContainer } from '@/components/layout/screen-container';
 import { CatalogSearch } from '@/components/search/catalog-search';
 import { SearchFallback } from '@/components/search/search-fallback';
@@ -38,14 +37,10 @@ export const metadata: Metadata = {
  */
 export default function BuscarPage() {
   return (
-    <>
-      <ScreenHeader title="Buscar" />
-
-      <ScreenContainer>
-        <Suspense fallback={<SearchFallback />}>
-          <CatalogSearch />
-        </Suspense>
-      </ScreenContainer>
-    </>
+    <ScreenContainer>
+      <Suspense fallback={<SearchFallback />}>
+        <CatalogSearch />
+      </Suspense>
+    </ScreenContainer>
   );
 }
