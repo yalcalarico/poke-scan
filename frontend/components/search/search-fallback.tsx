@@ -7,7 +7,11 @@ const CHIP_WIDTHS = ['w-16', 'w-32', 'w-28'] as const;
 
 function ChipRowSkeleton({ count }: { count: number }) {
   return (
-    <div className="-mx-4 flex gap-2 overflow-hidden px-4 sm:-mx-6 sm:px-6">
+    // El `py-1` copia el de `rarity-filter.tsx` y es por el mismo motivo, al
+    // revés: sin él, la fila real del scroller de rarezas es 8 px más alta que
+    // su placeholder y el salto cae justo en el momento en que la pantalla
+    // aparece, que es el peor lugar para un salto de layout.
+    <div className="-mx-4 flex gap-2 overflow-hidden px-4 py-1 sm:-mx-6 sm:px-6">
       {Array.from({ length: count }, (_, index) => (
         <Skeleton
           key={index}

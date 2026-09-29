@@ -27,6 +27,7 @@ export type { RegisterPayload } from './auth';
 export {
   buildCardsSearchPath,
   getCard,
+  getCardPriceHistory,
   getCardPrices,
   getSets,
   searchCards,
@@ -55,4 +56,7 @@ export type {
   CardSort,
   CardSortDirection,
   CardWithPricesDto,
+  PriceHistoryParams,
 } from './cards';
+
+export { getCardLocation } from './collections';

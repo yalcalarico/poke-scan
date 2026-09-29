@@ -5,6 +5,7 @@ import { PrismaService } from '../../prisma/index.js';
 import { CollectionsService } from './collections.service.js';
 import { AddItemDto } from './dto/add-item.dto.js';
 import { CreateCollectionDto } from './dto/create-collection.dto.js';
+import { ListItemsDto } from './dto/list-items.dto.js';
 import { UpdateItemDto } from './dto/update-item.dto.js';
 
 const TEST_CARD_PREFIX = 'test-collections-';
@@ -1033,5 +1034,295 @@ describe('CollectionsService · precio por item (latestMarketPriceJoin)', () => 
     expect(stats.totalValueUsd).toBeCloseTo(36, 2);
     expect(listed.totalValueUsd).toBeCloseTo(stats.totalValueUsd, 2);
     expect(progress[0]!.valueUsd).toBeCloseTo(stats.totalValueUsd, 2);
+  });
+});
+
+/**
+ * `sort` en el listado de items y `GET /cards/:id/location`.
+ *
+ * El `sort=price` es la parte interesante: tiene que ordenar por el **mismo** join
+ * que usa el `totalValueUsd` de `/stats`, sin pedirle nada a tcgdex, y la página
+ * tiene que seguir trayendo los mismos items que el `count`.
+ */
+describe('CollectionsService · orden del listado y location de carta', () => {
+  const prismaClient = new PrismaClient();
+  const PREFIX = 'test-sort-';
+  const CHEAP = `${PREFIX}cheap`; // número 10, market 2
+  const MID = `${PREFIX}mid`; // número 4, market 20
+  const RICH = `${PREFIX}rich`; // número 104, market 30
+  const NO_PRICE = `${PREFIX}no-price`; // número 40, sin filas de precio
+  const TEST_EMAIL = 'sort@b910.local';
+
+  let moduleRef: TestingModule;
+  let service: CollectionsService;
+  let userId: string;
+  let collectionId: string;
+
+  beforeAll(async () => {
+    moduleRef = await Test.createTestingModule({
+      providers: [
+        CollectionsService,
+        { provide: PrismaService, useValue: prismaClient },
+      ],
+    }).compile();
+
+    service = moduleRef.get(CollectionsService);
+  });
+
+  afterAll(async () => {
+    await prismaClient.card.deleteMany({ where: { id: { startsWith: PREFIX } } });
+    await prismaClient.user.deleteMany({ where: { email: { endsWith: '@b910.local' } } });
+    await prismaClient.$disconnect();
+    await moduleRef.close();
+  });
+
+  beforeEach(async () => {
+    await prismaClient.user.deleteMany({ where: { email: { endsWith: '@b910.local' } } });
+    await prismaClient.card.deleteMany({ where: { id: { startsWith: PREFIX } } });
+
+    userId = (
+      await prismaClient.user.create({
+        data: {
+          email: TEST_EMAIL,
+          username: 'sorteo',
+          passwordHash: 'fake-hash-not-used-in-these-tests',
+          displayName: 'sort',
+        },
+        select: { id: true },
+      })
+    ).id;
+
+    const set = await prismaClient.cardSet.findFirst({
+      orderBy: { id: 'asc' },
+      select: { id: true },
+    });
+
+    const cards = [
+      { id: CHEAP, name: 'Carta Sort A', number: '10', rarity: 'Rare' },
+      { id: MID, name: 'Carta Sort B', number: '4', rarity: 'Common' },
+      { id: RICH, name: 'Carta Sort C', number: '104', rarity: null },
+      { id: NO_PRICE, name: 'Carta Sort D', number: '40', rarity: 'Rare Holo' },
+    ];
+    for (const card of cards) {
+      await prismaClient.card.create({
+        data: {
+          ...card,
+          supertype: 'Pokémon',
+          subtypes: [],
+          types: ['Fire'],
+          setId: set!.id,
+          imageSmall: 'https://example.test/s.png',
+          imageLarge: 'https://example.test/l.png',
+          rawJson: {},
+        },
+      });
+    }
+
+    for (const [cardId, market] of [
+      [CHEAP, '2.00'],
+      [MID, '20.00'],
+      [RICH, '30.00'],
+    ] as const) {
+      await prismaClient.cardPrice.create({
+        data: {
+          cardId,
+          variant: 'normal',
+          market: new Prisma.Decimal(market),
+          source: 'test',
+          currency: 'USD',
+          fetchedAt: new Date('2024-06-01T00:00:00.000Z'),
+        },
+      });
+    }
+
+    collectionId = (
+      await prismaClient.collection.create({
+        data: { userId, name: 'Orden', isDefault: true },
+        select: { id: true },
+      })
+    ).id;
+  });
+
+  const list = (dto: Partial<ListItemsDto> = {}) =>
+    service.listItems(userId, collectionId, {
+      ...DEFAULT_LIST_ITEMS,
+      ...dto,
+    } as ListItemsDto);
+
+  it('sin sort mantiene el orden por fecha de agregado', async () => {
+    await service.addItem(userId, collectionId, addItem(CHEAP));
+    await service.addItem(userId, collectionId, addItem(MID));
+    await service.addItem(userId, collectionId, addItem(RICH));
+
+    const result = await list();
+    // El último agregado es el primero de la página.
+    expect(result.data.map((item) => item.card.id)).toEqual([RICH, MID, CHEAP]);
+  });
+
+  it('sort=name ordena por el nombre de la carta', async () => {
+    await service.addItem(userId, collectionId, addItem(RICH));
+    await service.addItem(userId, collectionId, addItem(CHEAP));
+    await service.addItem(userId, collectionId, addItem(MID));
+
+    const result = await list({ sort: 'name' });
+    expect(result.data.map((item) => item.card.id)).toEqual([CHEAP, MID, RICH]);
+  });
+
+  it('sort=rarity deja las cartas sin rareza al final', async () => {
+    await service.addItem(userId, collectionId, addItem(RICH)); // rarity null
+    await service.addItem(userId, collectionId, addItem(CHEAP)); // Rare
+    await service.addItem(userId, collectionId, addItem(MID)); // Common
+    await service.addItem(userId, collectionId, addItem(NO_PRICE)); // Rare Holo
+
+    const result = await list({ sort: 'rarity' });
+    expect(result.data.map((item) => item.card.id)).toEqual([
+      MID, // Common
+      CHEAP, // Rare
+      NO_PRICE, // Rare Holo
+      RICH, // null
+    ]);
+  });
+
+  it('sort=number ordena por la parte numérica: 4 antes que 10 antes que 104', async () => {
+    await service.addItem(userId, collectionId, addItem(RICH)); // 104
+    await service.addItem(userId, collectionId, addItem(CHEAP)); // 10
+    await service.addItem(userId, collectionId, addItem(MID)); // 4
+    await service.addItem(userId, collectionId, addItem(NO_PRICE)); // 40
+
+    const result = await list({ sort: 'number' });
+    expect(result.data.map((item) => item.card.id)).toEqual([
+      MID, // 4
+      CHEAP, // 10
+      NO_PRICE, // 40
+      RICH, // 104
+    ]);
+  });
+
+  it('sort=price ordena por el valor del item y deja los sin precio al final', async () => {
+    await service.addItem(userId, collectionId, addItem(CHEAP)); // 1 x 2
+    await service.addItem(userId, collectionId, addItem(MID)); // 1 x 20
+    await service.addItem(userId, collectionId, addItem(RICH)); // 1 x 30
+    await service.addItem(userId, collectionId, addItem(NO_PRICE)); // sin precio
+
+    const result = await list({ sort: 'price' });
+    expect(result.data.map((item) => item.card.id)).toEqual([
+      RICH,
+      MID,
+      CHEAP,
+      NO_PRICE,
+    ]);
+  });
+
+  it('sort=price usa quantity: 3 copias de una barata ganan a 1 de una cara', async () => {
+    await service.addItem(userId, collectionId, addItem(MID, { quantity: 3 })); // 60
+    await service.addItem(userId, collectionId, addItem(RICH, { quantity: 1 })); // 30
+
+    const result = await list({ sort: 'price' });
+    expect(result.data.map((item) => item.card.id)).toEqual([MID, RICH]);
+
+    // Y el total coincide con la suma de esos mismos valores.
+    const stats = await service.getStats(userId, collectionId);
+    expect(stats.totalValueUsd).toBe(90);
+  });
+
+  it('el sort y los filtros compone: la página trae los items del filtro y el total del filtro', async () => {
+    await service.addItem(userId, collectionId, addItem(CHEAP, { quantity: 5 }));
+    await service.addItem(userId, collectionId, addItem(MID));
+    await service.addItem(userId, collectionId, addItem(RICH));
+
+    const result = await list({ sort: 'price', duplicatesOnly: true });
+    expect(result.total).toBe(1);
+    expect(result.data.map((item) => item.card.id)).toEqual([CHEAP]);
+  });
+
+  it('sort=price pagina sin repetir items entre páginas', async () => {
+    await service.addItem(userId, collectionId, addItem(CHEAP));
+    await service.addItem(userId, collectionId, addItem(MID));
+    await service.addItem(userId, collectionId, addItem(RICH));
+
+    const first = await list({ sort: 'price', pageSize: 2 });
+    const second = await list({ sort: 'price', page: 2, pageSize: 2 });
+
+    expect(first.data).toHaveLength(2);
+    expect(second.data).toHaveLength(1);
+    expect(second.total).toBe(3);
+    for (const item of second.data) {
+      expect(first.data.map((row) => row.card.id)).not.toContain(item.card.id);
+    }
+  });
+
+  it('una página más allá del final conserva el total real', async () => {
+    await service.addItem(userId, collectionId, addItem(MID));
+
+    const result = await list({ sort: 'price', page: 5, pageSize: 10 });
+    expect(result.data).toHaveLength(0);
+    expect(result.total).toBe(1);
+    expect(result.totalPages).toBe(1);
+  });
+
+  it('findCardLocation devuelve la colección, el item y la cantidad', async () => {
+    const item = await service.addItem(userId, collectionId, addItem(MID, { quantity: 3 }));
+
+    const found = await service.findCardLocation(userId, MID);
+    expect(found).toEqual({
+      collectionId,
+      collectionName: 'Orden',
+      itemId: item.id,
+      quantity: 3,
+      variant: 'normal',
+      condition: 'NM',
+    });
+  });
+
+  it('findCardLocation da null si el usuario no tiene la carta', async () => {
+    await expect(service.findCardLocation(userId, CHEAP)).resolves.toBeNull();
+  });
+
+  it('findCardLocation da 404 si la carta no existe', async () => {
+    await expect(service.findCardLocation(userId, `${PREFIX}nada`)).rejects.toBeInstanceOf(
+      NotFoundException,
+    );
+  });
+
+  it('ownership: el item de otro usuario no se ve (null, no 403)', async () => {
+    await service.addItem(userId, collectionId, addItem(MID));
+
+    const other = await prismaClient.user.create({
+      data: {
+        email: 'otro@b910.local',
+        username: 'otro',
+        passwordHash: 'fake-hash-not-used-in-these-tests',
+        displayName: 'otro',
+      },
+      select: { id: true },
+    });
+
+    await expect(service.findCardLocation(other.id, MID)).resolves.toBeNull();
+  });
+
+  it('con la carta en varias colecciones manda la principal, no la que más copias tiene', async () => {
+    await service.addItem(userId, collectionId, addItem(MID, { quantity: 9 }));
+    const secundaria = await service.create(
+      userId,
+      Object.assign(new CreateCollectionDto(), { name: 'Secundaria', isDefault: false }),
+    );
+    await service.addItem(userId, secundaria.id, addItem(MID, { quantity: 1 }));
+
+    const found = await service.findCardLocation(userId, MID);
+    expect(found?.collectionId).toBe(collectionId);
+    expect(found?.quantity).toBe(9);
+
+    // Si la principal deja de serlo (la otra tiene menos copias), la otra gana.
+    await prismaClient.collection.update({
+      where: { id: collectionId },
+      data: { isDefault: false },
+    });
+    await prismaClient.collection.update({
+      where: { id: secundaria.id },
+      data: { isDefault: true },
+    });
+    const foundSecondary = await service.findCardLocation(userId, MID);
+    expect(foundSecondary?.collectionId).toBe(secundaria.id);
+    expect(foundSecondary?.quantity).toBe(1);
   });
 });

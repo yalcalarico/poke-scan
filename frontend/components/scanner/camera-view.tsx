@@ -20,6 +20,7 @@ import { ActionBar, type ActionBarProps } from './action-bar';
 import { CardFrame } from './card-frame';
 import { CameraControls, NO_CAMERA_CAPABILITIES, type CameraCapabilities } from './camera-controls';
 import { DetectedCardBar, referencePrice } from './detected-bar';
+import { HAPTIC, haptic } from './haptics';
 import { PriceChip } from './price-chip';
 import { frameToneFor, type SessionEntry } from './types';
 
@@ -282,6 +283,21 @@ export function CameraView({
 
       grabbingRef.current = true;
       setIsCapturing(true);
+
+      /*
+       * El obturador vibra **solo cuando el usuario apretó**, y va acá —después
+       * del cerrojo de `grabbingRef` y no en el `onClick` del `ActionBar`— por
+       * dos razones concretas:
+       *
+       * - `grab` es el único lugar donde la captura es real. Si el video no
+       *   está, o si ya hay una lectura en vuelo, el `onClick` igual suena y
+       *   vibrar sin fotografiar es mentira.
+       * - El modo continuo entra por el mismo `grab` con `source: 'auto'` y
+       *   dispara cada 2,5 s. Vibrar ahí sería el anti-patrón escrito: quince
+       *   pulsaciones por minuto de la sesión entera.
+       */
+      if (source === 'manual') haptic(HAPTIC.shutter);
+
       try {
         // Solo el rectángulo del marco guía: el resto de la imagen es fondo, y
         // para el OCR es ruido que degrada la lectura del nombre. Se usa el
@@ -384,6 +400,16 @@ export function CameraView({
         </div>
 
         <div className="pointer-events-none absolute left-4 top-[calc(env(safe-area-inset-top)+1rem)]">
+          {/*
+            Los 16 px del `left-4` / `top-[...]` son el clearance del foco: el
+            outline del botón de cerrar se dibuja 4 px por fuera de la caja, y
+            este botón vive adentro del `stage`, que es `overflow-hidden`. Con
+            `left-4` el borde externo del outline queda a 12 px del borde de la
+            pantalla, o sea 4 px más de los que necesita y ninguno se recorta.
+            Es el mismo motivo por el que el `CameraControls` va en `right-4` y no
+            en `right-0`: los dos controls de las esquinas comparten la misma
+            regla.
+          */}
           <div className="pointer-events-auto">
             <button
               type="button"
@@ -393,7 +419,9 @@ export function CameraView({
                 'flex h-11 w-11 items-center justify-center rounded-full',
                 'bg-on-media text-on-media-text shadow-lg backdrop-blur-md',
                 'transition-colors duration-fast ease-standard hover:bg-on-media-text/20',
-                'focus-visible:ring-2 focus-visible:ring-on-media-text/60',
+                // Mismo motivo que en `action-bar.tsx`: sobre la foto el token
+                // de foco es `--on-media-text`, no `--focus-ring`.
+                'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-on-media-text',
               )}
             >
               <X aria-hidden="true" focusable="false" strokeWidth={1.75} className="h-5 w-5" />

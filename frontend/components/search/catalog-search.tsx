@@ -14,6 +14,7 @@ import {
 } from '@/components/ui';
 import { useAsync } from '@/hooks/use-async';
 import { useInfiniteList } from '@/hooks/use-infinite-list';
+import { useChunkedList } from '@/components/set-progress/use-chunked-list';
 import { getSets, searchCards } from '@/lib/api';
 import type { CardSearchField as SearchField } from '@/lib/api';
 import { toUserFacingMessage } from '@/lib/api/user-message';
@@ -29,6 +30,20 @@ import { SearchControls } from './search-controls';
  * fechas, y esto es un conteo de cartas.
  */
 const COUNT_FORMAT = new Intl.NumberFormat('es-AR');
+
+/**
+ * Cuántas cartas se **pintan** por tanda, una vez que ya están en memoria.
+ *
+ * Es independiente de `CATALOG_PAGE_SIZE` (que pagina requests). 60 es el mismo
+ * número que el binder usa para sus slots y por el mismo motivo: el viewport de
+ * 390 × 844 muestra ~20 tiles de esta grilla, así que 60 deja tres pantallas de
+ * margen para que el sentinel de 600 px traiga la tanda siguiente antes de que el
+ * usuario llegue al final.
+ *
+ * Con esto el pico del DOM son 120 tiles (una tanda entrando) en vez de los 240
+ * que había a la décima página.
+ */
+const RESULTS_CHUNK = 60;
 
 /**
  * Todo el cuerpo de `/buscar`.
@@ -236,6 +251,7 @@ export function CatalogSearch() {
         rarity={urlRarity}
         initialPage={urlPage}
         hasCriteria={hasCriteria}
+        listKey={listKey}
         onClearFilters={clearFilters}
       />
     </div>
@@ -249,6 +265,17 @@ interface CardResultsProps {
   rarity: string;
   initialPage: number;
   hasCriteria: boolean;
+  /**
+   * La identidad del criterio, que es la `key` del remontaje.
+   *
+   * Se pasa como prop y no se vuelve a armar acá porque el `useChunkedList` la
+   * necesita como `resetKey` y las dos tienen que ser **la misma** string: si el
+   * troceo se resetea con una clave y la lista con otra, un cambio de criterio
+   * puede dejar 60 filas del resultado anterior pintadas al lado del nuevo. La
+   * fuente única es la `listKey` de `CatalogSearch`, y que la pase evita que las
+   * dos se desincronicen.
+   */
+  listKey: string;
   onClearFilters: () => void;
 }
 
@@ -267,6 +294,7 @@ function CardResults({
   rarity,
   initialPage,
   hasCriteria,
+  listKey,
   onClearFilters,
 }: CardResultsProps) {
   const gridRef = useRef<HTMLDivElement>(null);
@@ -309,10 +337,56 @@ function CardResults({
   );
 
   /**
+   * Troceo de **render** sobre los items que ya están en memoria.
+   *
+   * ## Por qué dos capas de paginación
+   *
+   * `useInfiniteList` (arriba) pagina **requests**; esta pagina **filas** de un
+   * array que ya está en el cliente. Lo que duele es lo segundo: a la décima
+   * "Cargar más" hay 240 tiles y 240 `next/image` en el DOM, con layout y paint
+   * de los 220 que están fuera de pantalla.
+   *
+   * ## Por qué no `content-visibility: auto`
+   *
+   * Es el argumento que `binder-view.tsx` escribe para sus 300 slots, y aplica
+   * igual: el grid deja de tener altura calculada hasta que cada celda entra en
+   * pantalla (el scroll da saltos), y el **find-in-page deja de encontrar** las
+   * cartas que no se pintaron. En `/buscar` eso es peor que en el binder:
+   * buscar "Charizard" es la razón de que exista la pantalla, y un resultado de
+   * cero sin explicación es el peor resultado posible.
+   *
+   * ## Por qué el corte es acumulativo
+   *
+   * `useChunkedList` devuelve `items.slice(0, limit)`, o sea un **prefijo**, no
+   * una ventana. Eso es lo que hace que el `data-card-index` de cada celda siga
+   * siendo el índice global: `visible[48] === items[48]`, así que el scroll a la
+   * primera carta nueva de más abajo no necesita un offset y no se toca el
+   * `CardGrid`.
+   *
+   * ## 60, y no CATALOG_PAGE_SIZE
+   *
+   * El viewport de 390 × 844 muestra ~20 tiles de la grilla de catálogo (2
+   * columnas en mobile, 6 en `xl:`), así que 60 son tres pantallas de margen. Con
+   * el sentinel de 600 px de `rootMargin`, la tanda siguiente entra antes de que
+   * el usuario llegue al final del corte, así que nunca ve un hueco.
+   */
+  const {
+    visible: itemsToRender,
+    hasMore: hasMoreChunks,
+    showMore,
+    sentinelRef: chunkSentinelRef,
+  } = useChunkedList(items, RESULTS_CHUNK, listKey);
+
+  /**
    * El botón marca que esta carga fue pedida a propósito. El `IntersectionObserver`
    * carga la misma página sin marcar nada: si también scrolleara, cada autoload
    * le tiraría el scroll al usuario mientras está scrolleando, que es la forma
    * más rápida de hacer que odie el scroll infinito.
+   *
+   * Los dos hooks son **independientes** a propósito: el troceo se revela solo,
+   * con su sentinel, y la request se pide sola, con el suyo. Atarlos haría que
+   * cada "Cargar más" creciera el corte en 60 por 24 que se piden, y a las pocas
+   * páginas el troceo no trocearía nada.
    */
   const handleLoadMore = useCallback(() => {
     scrollToNewRef.current = true;
@@ -331,6 +405,21 @@ function CardResults({
    * El largo anterior se actualiza **siempre**, se scrollee o no, porque es lo
    * que separa "las cartas de antes" de "la primera carta nueva" y tiene que
    * dar bien tanto después de un autoload como después de un click.
+   *
+   * ## Por qué el troceo no rompe esto
+   *
+   * Porque el corte es un **prefijo** (`items.slice(0, limit)`): el índice de la
+   * celda es su posición en el array que se pinta, y como lo que se pinta es el
+   * comienzo de la lista completa, ese índice **es** el índice global. Por eso
+   * `data-card-index="48"` sigue siendo la carta 48 y no la carta 8 de la segunda
+   * tanda.
+   *
+   * Y si la carta nueva todavía **no** llegó a pintarse (el corte estaba más
+   * atrás que la página que acaba de entrar), el `querySelector` devuelve `null`
+   * y no hay scroll: que es el comportamiento correcto, porque esa carta no está
+   * en pantalla. Cuando el sentinel revele la tanda que la contiene, el usuario
+   * la va a ver igual al seguir scrolleando — y el efecto ya gastó su intención,
+   * así que no le va a robar el scroll mientras navega.
    */
   useEffect(() => {
     const previous = previousCountRef.current;
@@ -425,9 +514,28 @@ function CardResults({
       ) : null}
 
       {/* 5 · ready */}
-      {items.length > 0 ? (
+      {itemsToRender.length > 0 ? (
         <div ref={gridRef}>
-          <CardGrid cards={items} label="Resultados de la búsqueda" />
+          <CardGrid cards={itemsToRender} label="Resultados de la búsqueda" />
+        </div>
+      ) : null}
+
+      {/*
+        El sentinel del troceo va **entre** la grilla y el "Cargar más", en ese
+        orden y no al revés.
+
+        Es lo que hace que los dos hooks sean independientes de verdad: el corte de
+        render se resuelve primero (el sentinel está más arriba), y la request
+        solo se dispara cuando el usuario llegó al final de **todo** lo pintado.
+        Al revés, cada autoload traería una página nueva que quedaría detrás del
+        corte sin verse, y el usuario vería la grilla quieta mientras el contador
+        de resultados sube.
+      */}
+      {hasMoreChunks ? (
+        <div ref={chunkSentinelRef} className="flex justify-center">
+          <Button variant="ghost" size="md" onClick={showMore}>
+            Ver {COUNT_FORMAT.format(items.length - itemsToRender.length)} cartas más
+          </Button>
         </div>
       ) : null}
 

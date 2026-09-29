@@ -40,6 +40,10 @@
 23. [`rarity` y `supertype` son igualdad, no substring](#23-rarity-y-supertype-son-igualdad-case-insensitive-no-substring)
 24. [`searchBy=number` matchea por igualdad, no por substring](#24-searchbynumber-matchea-por-igualdad-no-por-substring)
 25. [`direction` se ignora cuando hay `q`](#25-direction-se-ignora-cuando-hay-q)
+26. [El `DISTINCT ON` sin filtro leía toda la tabla](#26-el-distinct-on-de-precios-sin-filtro-leía-toda-la-tabla--arreglado)
+27. [`LATERAL` con `LIMIT` gana a `row_number()`](#27-lateral-con-limit-gana-a-row_number-cuando-se-quiere-el-top-n-por-grupo)
+28. [El `DISTINCT ON` de `card_prices` es lo que hace barato el delta de 30 días](#28-el-distinct-on-de-card_prices-es-lo-que-hace-que-el-delta-de-30-días-sea-barato)
+29. [El `orderBy` de Prisma no llega a `card_prices`, y un filtro escrito dos veces diverge](#29-el-orderby-de-prisma-no-llega-a-card_prices-y-un-filtro-escrito-dos-veces-diverge)
 
 ---
 
@@ -1086,6 +1090,41 @@ carta la diferencia es chica (113 buffers sin el filtro contra 120 con él,
 aparece cuando el `card_prices` completo entra en el plan, que es el caso del
 gotcha 26.
 
+
+## 29. El `orderBy` de Prisma no llega a `card_prices`, y un filtro escrito dos veces diverge
+
+`GET /collections/:id/items` gana `sort=price` y `sort=number`
+(`itemsForPage`, en `collections.service.ts`). Los dos muestran por qué el
+`orderBy` de Prisma no alcanza:
+
+- **`price`**: el precio vive en `card_prices`, y el `orderBy` de Prisma solo
+  ordena por columnas o por relaciones **del modelo**. No hay forma de decir
+  "ordená por el último `market` de esta variante" sin salir a SQL.
+- **`number`**: necesita `CAST(NULLIF(regexp_replace(c.number, '\D', '', 'g'), ''))`,
+  y no hay `orderBy` que caste una columna de texto a número.
+
+La forma que quedó es **una query de ids ya ordenados + un `findMany` por esos
+ids**, con el precio del `latestMarketPriceJoin` de siempre (que es `LEFT JOIN
+LATERAL` anclado en el item, no un `DISTINCT ON` global: gotcha 26). Son 3
+queries fijas — ids, `count`, `findMany` — más el `fetchLatestPrices` de siempre.
+No es N+1, y no pide un solo request al proveedor de precios.
+
+### La trampa de verdad: el filtro está escrito dos veces
+
+`itemWhere` (objeto de Prisma) y `itemFilterSql` (SQL) tienen que decir **lo
+mismo**, porque los dos alimentan la misma respuesta: los ids ordenados salen del
+SQL y el `total` sale del `count` de Prisma. Si uno acepta un filtro que el otro
+no, la página mostrada y `total` dejan de ser el mismo conjunto — y no hay
+error, hay un `totalPages` que no cuadra con la última página.
+
+Por eso el `total` sale **siempre** del `count` de Prisma y no de un
+`COUNT(*) OVER ()` de la query de ids: un window function cuenta bien, pero en
+una página más allá del final no hay filas y el `total` devolvería 0, que es
+justo donde el usuario mira si hay más.
+
+**Regla**: cuando agregues un filtro a `ListItemsDto`, agregalo en los dos
+lugares. Si algún día duele, el arreglo es una query de items completa en SQL (con
+`toItemDto` hecho a mano), no dejar que los dos filtros se separen.
 
 ## Cross-references
 

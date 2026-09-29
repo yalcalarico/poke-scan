@@ -16,28 +16,49 @@ import { cn } from '@/lib/cn';
  * cambian igual, y lo que se anuncia nunca puede desincronizarse de lo que se ve.
  */
 export const controlBaseClasses = [
-  'w-full min-w-0 rounded-control border bg-surface-2 text-body text-primary',
+  // El borde en reposo es `--border-control` y no `border` (=`--border-default`):
+  // contra el `bg-surface-2` propio del control, `--border-default` mide
+  // 1.19:1 y el campo deja de leerse como campo para leerse como texto suelto.
+  // WCAG 2.2 SC 1.4.11 pide 3:1 para el límite de un control de formulario. El
+  // token es solo para esto: los separadores decorativos siguen en
+  // `--border-default`, que está exento por ser decorativos.
+  'w-full min-w-0 rounded-control border border-[color:var(--border-control)] bg-surface-2 text-body text-primary',
   'placeholder:text-disabled',
   'transition-[color,background-color,border-color,box-shadow] duration-fast ease-standard',
-  // El anillo de foco es obligatorio (§8.3, §11): antes había 17 elementos con
-  // `focus:outline-none` y sin alternativa, que es un fallo de WCAG 2.4.7.
-  'focus:border-brand focus:ring-2 focus:ring-brand/20 dark:focus:ring-brand/40',
+  // El indicador de foco es obligatorio (§8.3, §11): antes había 17 elementos
+  // con `focus:outline-none` y sin alternativa, que es un fallo de WCAG 2.4.7.
+  //
+  // Y es `outline` y no `ring` por dos motivos concretos (WCAG 2.2 SC 1.4.11):
+  // el `ring-brand/20` viejo medía 1.38:1 sobre superficie clara, y el `ring` es
+  // un `box-shadow`, que el UA fuerza a `none` en high contrast. A diferencia de
+  // los `<button>`, acá el disparador es `focus:` y no `focus-visible:`: un
+  // campo de texto tiene que avisar que está activo también cuando lo enfocás
+  // con el click, que es como lo enfocás el 100 % de las veces en mobile.
+  'focus:border-brand focus:outline-2 focus:outline-offset-2 focus:outline-[color:var(--focus-ring)]',
   'aria-[invalid=true]:border-negative aria-[invalid=true]:focus:border-negative',
-  'aria-[invalid=true]:focus:ring-negative/20 dark:aria-[invalid=true]:focus:ring-negative/40',
+  // En el estado de error el indicador cambia a `--negative` a color pleno, que
+  // es lo que hacía el `ring-negative/20` viejo pero sin el alfa: el rojo queda
+  // para decir "acá hay algo mal" también mientras el campo está enfocado.
+  'aria-[invalid=true]:focus:outline-[color:var(--negative)]',
   'disabled:cursor-not-allowed disabled:border-line-subtle disabled:bg-surface-3 disabled:text-disabled',
 ];
 
 const inputVariants = cva(controlBaseClasses, {
   variants: {
     /*
-     * Alturas 32 / 40 / 48 de §8.3. El padding vertical va derivado de la altura
+     * Alturas 32 / 44 / 48 de §8.3. El padding vertical va derivado de la altura
      * (y + 2 px de borde = alto pedido) en lugar del `py-2.5` nominal de §4.1:
      * con un `h-*` fijo, un `py-2.5` deja 18 px de caja de contenido para 22 px
      * de interlineado y el texto se recorta. El horizontal sí sigue la tabla.
+     *
+     * `md` pasó de 40 a 44 px (§0.5) y su `py-2.5` viene de la misma cuenta:
+     * 44 - 2 de borde - 22 de interlineado = 20, o sea 10 de cada lado. Con el
+     * `py-2` de antes quedaban 26 px de caja para 22 px de texto, que no
+     * recorta pero afloja el centrado vertical.
      */
     size: {
       sm: 'h-8 px-3.5 py-1',
-      md: 'h-10 px-4 py-2',
+      md: 'h-11 px-4 py-2.5',
       lg: 'h-12 px-5 py-3',
     },
   },
@@ -46,9 +67,19 @@ const inputVariants = cva(controlBaseClasses, {
   },
 });
 
-/** Espacio que se le cede al adorno, para que no quede texto debajo del ícono. */
+/**
+ * Espacio que se le cede al adorno, para que no quede texto debajo del ícono.
+ *
+ * Son valores **horizontales** y no dependen del alto del campo, así que el
+ * cambio de `md` a 44 px no los toca: los adornos van con `absolute` +
+ * `-translate-y-1/2`, o sea que el centrado vertical se recalcula solo. El
+ * `pr-*` sí se revisó, porque el toggle de `PasswordInput` y el `IconButton` del
+ * buscador de `search-controls` se anclan a `right-1` (4 px) y el texto tiene que
+ * terminar antes de que empiece el botón.
+ */
 const LEADING_PADDING = { sm: 'pl-9', md: 'pl-10', lg: 'pl-10' } as const;
-const TRAILING_PADDING = { sm: 'pr-10', md: 'pr-11', lg: 'pr-11' } as const;
+/** `right-1` (4) + botón de 40 (md/lg) + 4 de aire = 48; en `sm` el botón es de 32. */
+const TRAILING_PADDING = { sm: 'pr-10', md: 'pr-12', lg: 'pr-12' } as const;
 const ICON_SIZES = { sm: 'h-4 w-4', md: 'h-5 w-5', lg: 'h-5 w-5' } as const;
 
 export type InputSize = NonNullable<VariantProps<typeof inputVariants>['size']>;
@@ -57,7 +88,7 @@ export interface InputProps
   extends Omit<InputHTMLAttributes<HTMLInputElement>, 'size' | 'prefix'>,
     VariantProps<typeof inputVariants> {
   /**
-   * Setea `aria-invalid` (y con eso el borde y el anillo rojos). Es el mismo
+   * Setea `aria-invalid` (y con eso el borde y el indicador rojos). Es el mismo
    * estado que el `Field` pasa como `invalid`: ver el JSDoc de `Field` para por
    * qué no puede propagarse solo.
    */

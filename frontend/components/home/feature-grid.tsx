@@ -48,6 +48,12 @@ const FEATURES: readonly Feature[] = [
  * El `heading` es `sr-only` porque las tres tarjetas ya dicen para qué sirve cada
  * cosa en su propio título: un encabezado visible arriba sería una cuarta frase
  * que repite lo que está abajo (§10.1).
+ *
+ * El `outline` del foco va **por fuera** con sus 4 px de aire (`offset-2` + 2 px
+ * de grosor), que es el patrón de `Button`/`Chip`/`Select`. Acá se puede: la
+ * grilla tiene `gap-3` y el `<li>` no recorta, así que el indicador queda
+ * entero. El `ring-brand/20` que tenía antes medía 1.38:1 contra el canvas, y
+ * WCAG 2.2 SC 1.4.11 pide 3:1.
  */
 export function FeatureGrid() {
   return (
@@ -66,7 +72,7 @@ export function FeatureGrid() {
             */}
             <Link
               href={feature.href}
-              className="block h-full rounded-surface focus-visible:ring-2 focus-visible:ring-brand/20 dark:focus-visible:ring-brand/40"
+              className="block h-full rounded-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--focus-ring)]"
             >
               <Surface interactive className="flex h-full flex-col gap-2">
                 <span className="grid size-10 place-items-center rounded-control bg-brand-soft text-brand">

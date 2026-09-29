@@ -869,4 +869,207 @@ describe('CardsService · change de 30 días (B10)', () => {
 
     expect(await changeOf('holofoil')).toBeNull();
   });
+
+  it('los campos planos del delta son el mismo número que `change`', async () => {
+    await seedReference('holofoil', daysAgo(40), { market: '10.00' });
+    current = [
+      {
+        variant: 'holofoil',
+        market: new Prisma.Decimal('5.00'),
+        mid: null,
+        fetchedAt: daysAgo(0),
+      },
+    ];
+
+    const [price] = (await service.getCardWithPrices(CARD)).prices;
+    // Son los tres campos que consume la píldora del cliente, y no un segundo
+    // cálculo: si divergieran, el "-$5 (-50 %)" y el `change` dirían distinto.
+    expect(price?.changeUsd).toBe(price?.change?.usd);
+    expect(price?.changePercent).toBe(price?.change?.percent);
+    expect(price?.windowLabel).toBe('últimos 30 días');
+  });
+
+  it('sin delta los tres campos planos vienen null, no 0', async () => {
+    await seedReference('holofoil', daysAgo(3), { market: '10.00' });
+    current = [
+      {
+        variant: 'holofoil',
+        market: new Prisma.Decimal('5.00'),
+        mid: null,
+        fetchedAt: daysAgo(0),
+      },
+    ];
+
+    const [price] = (await service.getCardWithPrices(CARD)).prices;
+    expect(price?.change).toBeNull();
+    expect(price?.changeUsd).toBeNull();
+    expect(price?.changePercent).toBeNull();
+    expect(price?.windowLabel).toBeNull();
+  });
+});
+
+/**
+ * `GET /cards/:id/prices/history` arma la serie con un `DISTINCT ON` sobre el día
+ * de la tabla `card_prices`, que ya existe. Estos tests fijan las tres reglas que
+ * un `DISTINCT ON` mal escrito rompe sin error: el día, el criterio del día y el
+ * `null` honesto cuando no hay dos extremos.
+ */
+describe('CardsService · histórico de precios', () => {
+  const prismaClient = new PrismaClient();
+  const PREFIX = 'test-history-';
+  const CARD = `${PREFIX}card`;
+  const DAY = 24 * 60 * 60 * 1000;
+
+  let moduleRef: TestingModule;
+  let service: CardsService;
+
+  const daysAgo = (days: number): Date => new Date(Date.now() - days * DAY);
+
+  beforeAll(async () => {
+    moduleRef = await Test.createTestingModule({
+      providers: [
+        CardsService,
+        { provide: PrismaService, useValue: prismaClient },
+        // El histórico no toca el proveedor de precios: si lo tocara, estos
+        // tests pasarían igual y el rate limit no.
+        { provide: SyncPricesService, useValue: { getPricesForCard: async () => [] } },
+        { provide: CurrencyService, useValue: { getCachedRate: async () => null } },
+      ],
+    }).compile();
+
+    service = moduleRef.get(CardsService);
+  });
+
+  afterAll(async () => {
+    await prismaClient.card.deleteMany({ where: { id: { startsWith: PREFIX } } });
+    await prismaClient.$disconnect();
+    await moduleRef.close();
+  });
+
+  beforeEach(async () => {
+    await prismaClient.card.deleteMany({ where: { id: { startsWith: PREFIX } } });
+    const set = await prismaClient.cardSet.findFirst({
+      orderBy: { id: 'asc' },
+      select: { id: true },
+    });
+    await prismaClient.card.create({
+      data: {
+        id: CARD,
+        name: 'Charizard Histórico',
+        supertype: 'Pokémon',
+        subtypes: [],
+        types: ['Fire'],
+        number: '4',
+        rarity: 'Rare',
+        setId: set!.id,
+        imageSmall: 'https://example.test/s.png',
+        imageLarge: 'https://example.test/l.png',
+        rawJson: {},
+      },
+    });
+  });
+
+  const seed = (variant: string, market: string | null, fetchedAt: Date) =>
+    prismaClient.cardPrice.create({
+      data: {
+        cardId: CARD,
+        variant,
+        market: market === null ? null : new Prisma.Decimal(market),
+        source: 'test',
+        currency: 'USD',
+        fetchedAt,
+      },
+    });
+
+  it('devuelve un punto por día, en orden cronológico y con la última cotización del día', async () => {
+    // Dos filas del mismo día: gana la más nueva, y el día es **uno solo**.
+    await seed('holofoil', '10.00', daysAgo(3));
+    await seed('holofoil', '12.00', daysAgo(2.96));
+    await seed('holofoil', '8.00', daysAgo(1));
+
+    const result = await service.getPriceHistory(CARD);
+
+    expect(result.cardId).toBe(CARD);
+    expect(result.currency).toBe('USD');
+    expect(result.variant).toBeNull();
+    expect(result.windowDays).toBe(30);
+    expect(result.points).toHaveLength(2);
+    expect(result.points.map((point) => point.date)).toEqual([
+      result.points[0]!.date,
+      result.points[1]!.date,
+    ]);
+    expect(result.points[0]!.date < result.points[1]!.date).toBe(true);
+    expect(result.points[0]!.market).toBe(12);
+    expect(result.points[1]!.market).toBe(8);
+  });
+
+  it('el delta de la ventana sale del primer y el último punto con market', async () => {
+    await seed('holofoil', '10.00', daysAgo(20));
+    await seed('holofoil', '7.50', daysAgo(10));
+    await seed('holofoil', '5.00', daysAgo(1));
+
+    const result = await service.getPriceHistory(CARD);
+
+    expect(result.change).toEqual({ changeUsd: -5, changePercent: -50 });
+    expect(result.from).toBe(result.points[0]!.date);
+    expect(result.to).toBe(result.points[2]!.date);
+  });
+
+  it('un solo punto no tiene delta: null, no 0 %', async () => {
+    await seed('holofoil', '10.00', daysAgo(1));
+
+    const result = await service.getPriceHistory(CARD);
+
+    expect(result.points).toHaveLength(1);
+    expect(result.change).toBeNull();
+  });
+
+  it('una carta sin histórico devuelve points vacío y change null', async () => {
+    const result = await service.getPriceHistory(CARD);
+
+    expect(result.points).toEqual([]);
+    expect(result.change).toBeNull();
+    expect(result.from).toBeNull();
+    expect(result.to).toBeNull();
+  });
+
+  it('con variant se acota a esa variante y responde con el variant pedido', async () => {
+    await seed('holofoil', '90.00', daysAgo(2));
+    await seed('normal', '3.00', daysAgo(2));
+
+    const result = await service.getPriceHistory(CARD, { variant: 'normal' });
+
+    expect(result.variant).toBe('normal');
+    expect(result.points).toHaveLength(1);
+    expect(result.points[0]!.market).toBe(3);
+  });
+
+  it('sin variant gana la mejor cotización del día, como el sort=price del catálogo', async () => {
+    await seed('holofoil', '90.00', daysAgo(2));
+    await seed('normal', '3.00', daysAgo(2));
+
+    const result = await service.getPriceHistory(CARD);
+
+    expect(result.variant).toBeNull();
+    expect(result.points).toHaveLength(1);
+    expect(result.points[0]!.market).toBe(90);
+  });
+
+  it('days acota la ventana y se recorta a 7..365', async () => {
+    await seed('holofoil', '10.00', daysAgo(100));
+    await seed('holofoil', '11.00', daysAgo(20));
+
+    expect((await service.getPriceHistory(CARD, { days: 30 })).points).toHaveLength(1);
+    expect((await service.getPriceHistory(CARD, { days: 365 })).points).toHaveLength(2);
+    // 5000 se recorta a 365 en vez de dar 400.
+    expect((await service.getPriceHistory(CARD, { days: 5000 })).windowDays).toBe(365);
+    // 1 se recorta a 7: una semana es el piso de una "serie".
+    expect((await service.getPriceHistory(CARD, { days: 1 })).windowDays).toBe(7);
+  });
+
+  it('una carta inexistente da 404, como el resto de las rutas de carta', async () => {
+    await expect(service.getPriceHistory(`${PREFIX}no-existe`)).rejects.toBeInstanceOf(
+      NotFoundException,
+    );
+  });
 });

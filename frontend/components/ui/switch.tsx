@@ -70,18 +70,30 @@ export function Switch({
   return (
     <div className={cn('flex min-w-0 items-center justify-between gap-4 py-1', className)}>
       {hasText ? (
-        <label htmlFor={controlId} className="flex min-w-0 flex-col">
+        /*
+          El wrapper es una columna, pero el `<label>` envuelve **solo** el
+          texto del label. La descripción va como hermana, no dentro: dentro, el
+          algoritmo de nombre accesible concatena todo el contenido del label y
+          el switch se anunciaba como "Modo oscuroSigue la preferencia del
+          sistema" — el nombre deja de ser el texto que el usuario ve, y la
+          descripción además se oía dos veces: una en el nombre y otra por el
+          `aria-describedby` de abajo. Afuera, el nombre es el label y la
+          descripción llega una sola vez, por su vía.
+        */
+        <span className="flex min-w-0 flex-col">
           {label !== undefined && label !== null ? (
-            <span className={cn('text-body', disabled ? 'text-disabled' : 'text-primary')}>
-              {label}
-            </span>
+            <label htmlFor={controlId} className="min-w-0">
+              <span className={cn('text-body', disabled ? 'text-disabled' : 'text-primary')}>
+                {label}
+              </span>
+            </label>
           ) : null}
           {description ? (
             <span id={descriptionId} className="text-caption text-secondary">
               {description}
             </span>
           ) : null}
-        </label>
+        </span>
       ) : null}
 
       <button
@@ -95,14 +107,29 @@ export function Switch({
         className={cn(
           'relative inline-flex shrink-0 items-center rounded-full border',
           'transition-colors duration-fast ease-standard',
-          'focus-visible:ring-2 focus-visible:ring-brand/20 dark:focus-visible:ring-brand/40',
+          // Ver el bloque de `Button`: el indicador de foco es un `outline` a
+          // color pleno (WCAG 2.2 SC 1.4.11), no un `ring-brand/20` de 1.38:1.
+          'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--focus-ring)]',
           'disabled:cursor-not-allowed disabled:opacity-50',
           // El borde es lo que da el contraste del componente contra el canvas
           // (§2.4): `--border-default` no alcanza 3:1, `--border-strong` sí.
-          checked ? 'border-brand bg-brand' : 'border-line-strong bg-surface-3',
+          // El riel apagado, en cambio, no usa `--surface-3`: el knob va en
+          // `--surface` y contra ese gris la posición OFF se leía en 1.16:1 —se
+          // veía el switch, pero no dónde estaba el knob—. `--switch-track-off`
+          // es el color de la posición, no el del control genérico, y sube solo
+          // con el tema.
+          checked
+            ? 'border-brand bg-brand'
+            : 'border-line-strong bg-[color:var(--switch-track-off)]',
           TRACK[size],
         )}
       >
+        {/*
+          El knob no cambió de color: el que estaba mal era el riel. Con el
+          riel en `--switch-track-off` los dos lados del knob tienen su propio
+          color de estado, y el `shadow-xs` sigue estando ahí para separar las
+          dos superficies cuando el navegador las dibuja pegadas.
+        */}
         <span
           aria-hidden="true"
           className={cn(

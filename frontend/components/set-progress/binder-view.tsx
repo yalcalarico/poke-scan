@@ -12,6 +12,7 @@ import { pluralize } from '@/lib/format';
 import { variantShort } from '@/lib/variants';
 import type { CollectionItemDto } from '@/types/api';
 
+import { BinderWaffle } from './binder-waffle';
 import { buildBinderSlots, type BinderSlot, type BinderSnapshot } from './set-progress-source';
 import { useChunkedList } from './use-chunked-list';
 
@@ -82,6 +83,15 @@ const BINDER_SIZES =
  * DOM nunca pasa de 120 slots y la altura de cada fila está siempre calculada.
  * Con `memo` abajo, cambiar de chip no vuelve a dibujar los slots que no
  * cambian, que es el otro 80 % del costo.
+ *
+ * ## El mismo argumento se repite en tres pantallas más
+ *
+ * `/buscar`, `/colecciones/[id]` y `/share/[slug]` tienen el mismo problema con
+ * más datos —hasta 240 y hasta 500 `CardTile`— y usan el mismo hook con un
+ * sentinel. Y la razón que decide es la del find-in-page, no el tamaño: una
+ * colección compartida de 500 cartas tiene que poder buscarse con Ctrl+F, y
+ * `content-visibility` deja de encontrar las que no se pintaron de una forma que
+ * el usuario no puede entender ni reportar.
  */
 const BINDER_CHUNK = 60;
 
@@ -192,11 +202,24 @@ export function BinderView({ collectionId, snapshot, onChanged }: BinderViewProp
       />
 
       {/*
-        Fila de chips con scroll propio: tres pills de 36 px no entran en 390 px
+        Fila de chips con scroll propio: tres pills de 40 px no entran en 390 px
         con los gaps, y sin el `-mx-4` el scroll cortaría el pill contra el
-        borde. El `py-1` evita que el anillo de foco quede recortado.
+        borde.
+
+        ─── El `py-1.5` es estructural, no un margen ───
+
+        El `overflow-x-auto` recorta contra los bordes de su propia caja, y lo
+        único que separa la fila de ellos es el padding vertical. El foco de un
+        `Chip` son 2 px de `outline` con `offset-2`: 4 px por fuera del pill. El
+        `py-1` que había antes alcanzaba de sobra para el `ring` viejo (2 px sin
+        offset) y queda **justo** para el `outline` —justo es sin margen, y con
+        layout fraccionario o un zoom del sistema un borde de 4 px puede caer en
+        el medio píxel y recortarse—. Por eso 6 px.
+
+        Suma 4 px de alto a la fila, y no compensa en ningún lado: la grilla de
+        abajo va en su propio bloque del `flex-col gap-4`.
       */}
-      <div className="-mx-4 flex gap-2 overflow-x-auto px-4 py-1 sm:mx-0 sm:px-0">
+      <div className="-mx-4 flex gap-2 overflow-x-auto px-4 py-1.5 sm:mx-0 sm:px-0">
         {MODES.map((option) => {
           const count = counts[option.id];
           return (
@@ -347,6 +370,20 @@ function BinderSummary({
         </p>
       </div>
 
+      {/*
+        El waffle va **entre** la cifra y la barra, no donde está la barra.
+        La barra de 6 px es una línea fina que a 358 px de ancho no dice nada a
+        simple vista; el waffle es la lectura física ("la página está a la
+        mitad"), y para que funcione tiene que estar cerca del número grande, que
+        es de donde sale el "37 %" del texto de abajo.
+
+        El color lo pone `text-positive` del contenedor de la fila, y el waffle
+        usa `currentColor`: no hay prop de tono, es el mismo criterio que
+        `Progress`. `positive` porque es progreso de una colección, y §2.3 dice
+        que `positive` es el color del progreso.
+      */}
+      <BinderWaffle percent={percent} className="text-positive" />
+
       <Progress
         value={percent ?? 0}
         size="md"
@@ -358,6 +395,12 @@ function BinderSummary({
         }
       />
 
+      {/*
+        El texto de abajo es el que **sí** lleva el porcentaje escrito, y por eso
+        el waffle puede ser `aria-hidden` sin violar WCAG 1.4.1: el color no es el
+        único portador, el número está a 8 px del dibujo. Ver el JSDOC del
+        componente.
+      */}
       <p className="text-caption text-tertiary">
         {percent === null
           ? 'No sabemos cuántas cartas tiene este set.'
@@ -418,7 +461,7 @@ const BinderSlotCell = memo(function BinderSlotCell({ slot, onOpen, onAdd }: Bin
             // y no como un lugar donde la carta falta.
             'border-2 border-dashed border-line dark:border-line-strong bg-surface-2',
             'transition-colors duration-fast ease-standard hover:border-line-strong',
-            'focus-visible:ring-2 focus-visible:ring-brand/20 dark:focus-visible:ring-brand/40',
+            'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--focus-ring)]',
           )}
         >
           <span className="text-center text-caption text-tertiary tabular-nums">

@@ -2,7 +2,13 @@ import type { Metadata } from 'next';
 
 import { AppMark } from '@/components/brand';
 import { ScreenContainer } from '@/components/layout/screen-container';
-import { AppPreview, FeatureGrid, HomeCta, fetchPreviewCards } from '@/components/home';
+import {
+  AppPreview,
+  FeatureGrid,
+  HomeCta,
+  ScanSessionResume,
+  fetchPreviewCards,
+} from '@/components/home';
 import { InstallCta } from '@/components/share';
 import { cn } from '@/lib/cn';
 
@@ -79,6 +85,26 @@ export default async function HomePage() {
 
         {previewCards.length > 0 ? <AppPreview cards={previewCards} /> : null}
       </section>
+
+      {/*
+        La fila de "Continuás donde quedaste", arriba de las features.
+
+        ## Por qué entre el hero y las features y no arriba del todo
+
+        El hero es la promesa de la app para alguien que **no** conocela todavía,
+        y arriba del todo es donde tiene que estar para eso. La fila es para
+        alguien que ya la usó y dejó algo a medias: es un segundo mensaje, y va
+        después de la primera impresión y antes de las features, que son lo
+        último que se lee.
+
+        ## Por qué no tiene `mt` propio
+
+        El `flex flex-col gap-10` del `ScreenContainer` ya pone 40 px entre
+        bloques, y el JSDOC de §4.1 dice que el ritmo vertical se maneja con
+        `gap-*` en el contenedor y nunca con `space-y-*` ni con `mt` en un hijo.
+        Agregar un `mt` acá pelearía con ese `gap`.
+      */}
+      <ScanSessionResume />
 
       <FeatureGrid />
 

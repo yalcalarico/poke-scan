@@ -8,6 +8,7 @@ import { ScreenHeader } from '@/components/layout/screen-header';
 import {
   CameraView,
   IdlePanel,
+  MAX_SESSION_ENTRIES,
   OrganizeSheet,
   PHASE_DETAIL,
   PHASE_HEADLINE,
@@ -15,9 +16,12 @@ import {
   ScanPreview,
   cameraNoticeCopy,
   captureToImageData,
+  clearSession,
   fileToImageData,
   formatCount,
   isCameraStage,
+  readSession,
+  writeSession,
   type CameraNoticeKind,
   type CaptureSource,
   type ScanPhase,
@@ -140,7 +144,62 @@ export default function ScanPage() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [result, setResult] = useState<IdentifyResponseDto | null>(null);
   const [nameGuess, setNameGuess] = useState<string | null>(null);
+  /**
+   * La sesión de escaneo.
+   *
+   * Empieza con lo que haya en `sessionStorage` **leído en un efecto**, no en el
+   * `useState` inicial: `sessionStorage` no existe en el server, así que leerlo en
+   * el inicializador daría unahydration mismatch (el HTML del server no tendría
+   * las 7 cartas y el primer render del cliente sí) —y con `React 19` eso es un
+   * error, no un warning.
+   *
+   * El efecto que la restaura corre en una microtask por el patrón de
+   * `docs/gotchas.md` §9: un `setState` sincrónico en el cuerpo del efecto es un
+   * render en cascada, y con el doble montaje de `StrictMode` el `writeSession`
+   * del efecto de guardado se dispararía **antes** de que la restauración
+   * termine y pisaría lo guardado con el array vacío. Esa es la razón concreta de
+   * que los dos efectos estén ordenados así.
+   */
   const [session, setSession] = useState<SessionEntry[]>([]);
+  /**
+   * `true` cuando el primer render ya leyó el storage. Antes de eso el guardado
+   * está **desactivado**, por la misma razón del punto anterior: sin este flag,
+   * el primer efecto que corre escribe `[]` y borra la sesión del usuario antes
+   * de haberla leído.
+   */
+  const [isSessionRestored, setIsSessionRestored] = useState(false);
+
+  useEffect(() => {
+    let disposed = false;
+    queueMicrotask(() => {
+      if (disposed) return;
+      const stored = readSession();
+      if (stored.length > 0) setSession(stored);
+      setIsSessionRestored(true);
+    });
+    return () => {
+      disposed = true;
+    };
+  }, []);
+
+  /**
+   * Guardar la sesión en cada cambio, una vez restaurada.
+   *
+   * Es un efecto de **escritura**, no de sincronización: no lee nada de React
+   * para decidir qué hacer, solo escribe. Por eso no dispara el lint de
+   * `set-state-in-effect` y por eso no necesita la microtask.
+   *
+   * Se escribe en el estado vacío para **borrar** la clave, y no para dejar un
+   * `[]`: un `sessionStorage` con un array vacío se lee distinto de una clave
+   * ausente, y la home usa "hay sesión" para decidir si muestra la fila de
+   * "Continuás donde quedaste". Con `0` cartas la fila no va, y el espacio
+   * guardado por un `[]` no vale nada.
+   */
+  useEffect(() => {
+    if (!isSessionRestored) return;
+    writeSession(session);
+  }, [isSessionRestored, session]);
+
   /**
    * De dónde salió la lectura en curso. `processing` es un estado compartido
    * por la cámara y por la galería, y sin esto un "subir una foto" desde la
@@ -362,6 +421,21 @@ export default function ScanPage() {
     setSession((current) => current.filter((entry) => !saved.has(entry.runId)));
   }, []);
 
+  /**
+   * Descartar la sesión entera.
+   *
+   * El `clearSession()` explícito es por el efecto de guardado: el `setSession`
+   * vacío ya dispara el `writeSession([])` que borra la clave, así que la llamada
+   * es redundante. Va explícita igual porque el reader de este archivo debería
+   * ver que "descartar todo" toca el storage, no solo el estado de React: si
+   * mañana el efecto de guardado cambia, el descarte explícito sigue siendo
+   * cierto.
+   */
+  const handleDiscardAll = useCallback(() => {
+    clearSession();
+    setSession([]);
+  }, []);
+
   const handleRemove = useCallback((runId: number) => {
     setSession((current) => current.filter((entry) => entry.runId !== runId));
   }, []);
@@ -529,10 +603,29 @@ export default function ScanPage() {
             ) : null}
 
             {stage === 'idle' && session.length > 0 ? (
-              <p className="text-caption text-tertiary">
-                {formatCount(session.length)}{' '}
-                {session.length === 1 ? 'carta leída' : 'cartas leídas'} en esta sesión.
-              </p>
+              <div className="flex flex-col gap-1">
+                {/*
+                  El texto sigue diciendo "en esta sesión" y no "guardadas",
+                  porque `sessionStorage` **no** sobrevive a cerrar el browser:
+                  sobrevive a cerrar la PWA y a un refresh, que es el caso que
+                  importa. Decir "guardadas" sería una promesa de meses.
+                */}
+                <p className="text-caption text-tertiary">
+                  {formatCount(session.length)}{' '}
+                  {session.length === 1 ? 'carta leída' : 'cartas leídas'} en esta sesión.
+                </p>
+                {session.length >= MAX_SESSION_ENTRIES ? (
+                  <p className="text-caption text-tertiary">
+                    Guardamos hasta {formatCount(MAX_SESSION_ENTRIES)} cartas. Agregá estas y
+                    seguí escaneando.
+                  </p>
+                ) : null}
+                <div>
+                  <Button variant="ghost" size="md" onClick={handleDiscardAll} fullWidth>
+                    Descartar la sesión
+                  </Button>
+                </div>
+              </div>
             ) : null}
           </ScreenContainer>
         </>

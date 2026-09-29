@@ -2,7 +2,7 @@
 
 > Los 10 modelos de Prisma, qué hace cada migración, la convención de nombres
 > (tablas snake_case, columnas camelCase), los índices que **no** están en el
-> schema y los dos patrones de query que se repiten en todo el código.
+> schema y los patrones de query que se repiten en todo el código.
 > Requisito previo: [`../../AGENTS.md`](../../AGENTS.md) §3.2 y §3.5.
 
 ## La convención que rompe todo
@@ -135,6 +135,11 @@ scan y no un sort de 20k filas.
 
 No hay unique sobre `(cardId, variant)`: el histórico es el objetivo.
 
+**El histórico no necesita tabla propia.** `GET /cards/:id/prices/history` arma la
+serie con un `DISTINCT ON` sobre el día (ver [patrón 1b](#patrón-1b--un-punto-por-día-del-histórico)),
+así que no hay migración, ni snapshot diario, ni backfill: lo que hay es la
+misma tabla de siempre leída con otro `DISTINCT ON`.
+
 ### Collection (`collections`)
 
 | Campo | Tipo | Notas |
@@ -256,7 +261,7 @@ justo para que los índices viajen con la migración.
 | `card_sets_name_trgm_idx` | migración a mano | autocomplete/búsqueda de sets por nombre |
 | `users_username_trgm_idx` | migración a mano | `GET /users/search` sobre `username contains` |
 | `users_display_name_trgm_idx` | migración a mano | ídem sobre `displayName` |
-| `card_prices_cardId_variant_fetchedAt_idx` | schema | el "último precio por variante", con `DISTINCT ON` o con el `LATERAL` de los agregados |
+| `card_prices_cardId_variant_fetchedAt_idx` | schema | el "último precio por variante" (con `DISTINCT ON` o con el `LATERAL` de los agregados) y el "un precio por día" del histórico |
 | `collection_items_collectionId_cardId_variant_condition_key` | schema (unique) | evita filas duplicadas; habilita el `findUnique` por la clave compuesta |
 | `share_links_slug_key` | schema (unique) | el `GET /s/:slug` es un index lookup directo |
 | `users_email_key`, `users_username_key`, `refresh_tokens_tokenHash_key` | schema (unique) | lookups de login, refresh y solicitudes de amistad |
@@ -317,6 +322,95 @@ El service mapea el resultado a un `Map` con clave `` `${cardId}::${variant}` ``
 (`priceKey` en `collections.service.ts:161`) para pegarle el precio al item
 correcto. Las tres copias de `fetchLatestPrices` son idénticas a propósito: se
 movieron de módulo sin unificar.
+
+## Patrón 1b — un punto por día del histórico
+
+El mismo `append-only` con el `DISTINCT ON`, pero agrupando por **día** en vez de
+por variante (`GET /cards/:id/prices/history`):
+
+```sql
+SELECT DISTINCT ON (day)
+  day, s.market, s.low, s.mid, s.high, s."fetchedAt"
+FROM (
+  SELECT (p."fetchedAt" AT TIME ZONE 'UTC')::date AS day,
+         p.market, p.low, p.mid, p.high, p."fetchedAt"
+  FROM card_prices p
+  WHERE p."cardId" = $1 AND p."fetchedAt" >= $2
+) s
+ORDER BY day, s."fetchedAt" DESC
+```
+
+- El día se calcula **en UTC** (`AT TIME ZONE 'UTC'`) y no con `date(p."fetchedAt")`:
+  el segundo usa la zona del servidor, así que el mismo día puede partirse en dos
+  según dónde corra la API.
+- El `WHERE` va en el subselect interno porque el `DISTINCT ON` necesita el
+  `ORDER BY` empezando por `day` (gotcha 16).
+- El `AND "fetchedAt" >= $2` es lo que acota la respuesta a `windowDays` filas y
+  lo que deja al índice `card_prices_cardId_variant_fetchedAt_idx` recortar la
+  ventana: sin él, el costo crece con el histórico entero de la carta.
+- **No hace falta una tabla de snapshots diarios ni un índice nuevo**: la tabla ya
+  guarda la historia y ya está indexada como para esto.
+
+## Patrón 1c — ordenar items por precio o por número
+
+`GET /collections/:id/items?sort=price|number` no lo resuelve el `orderBy` de
+Prisma: `number` necesita un `CAST` que el ORM no arma, y `price` vive en
+`card_prices`, a la que el `orderBy` no llega. La forma es **una query de ids ya
+ordenados** y después un `findMany` por esos ids:
+
+```sql
+-- sort=price
+SELECT i.id
+FROM collection_items i
+JOIN cards c ON c.id = i."cardId"
+LEFT JOIN LATERAL (                       -- el mismo latestMarketPriceJoin
+  SELECT p.market AS "market"
+  FROM card_prices p
+  WHERE p."cardId" = i."cardId" AND p.variant = i.variant
+  ORDER BY p."fetchedAt" DESC
+  LIMIT 1
+) lp ON true
+WHERE i."collectionId" = $1
+ORDER BY (i.quantity * lp.market) DESC NULLS LAST, c.name ASC, i.id ASC
+LIMIT $2 OFFSET $3
+```
+
+Tres cosas que hacen que no sea un N+1 ni una segunda fuente de verdad:
+
+1. **El precio sale del mismo `latestMarketPriceJoin`** que usa el
+   `totalValueUsd` de `/stats`, con la misma expresión `i.quantity * lp.market`:
+   la lista ordenada y el total mostrado no pueden discrepar.
+2. **El `LATERAL` va anclado en el item**, no con un `DISTINCT ON` global: son N
+   lookups que cortan en la primera fila del índice, atados a la cantidad de items
+   y no a la historia global de precios (gotcha 26).
+3. **El filtro de esta query es el espejo de `itemWhere`**. Si aparece un filtro
+   nuevo en `ListItemsDto`, tiene que estar en los dos, o la página y el `total`
+   dejan de ser el mismo conjunto.
+
+`sort=number` usa el literal compartido `common/sql/numeric-number.ts`
+(`NUMERIC_CARD_NUMBER`), que es el mismo `CAST(NULLIF(regexp_replace(...)))` que
+ordena el catálogo: `"10"` antes que `"4"` como texto sería al revés de como está
+impresa la carta. Espera que `cards` esté aliaseada `c`.
+
+## Patrón 1d — en qué colección del usuario está una carta
+
+`GET /cards/:id/location`: **una** fila con el `userId` en el `WHERE`, no un check
+aparte:
+
+```sql
+SELECT col.id, col.name, i.id, i.quantity, i.variant, i.condition
+FROM collection_items i
+JOIN collections col ON col.id = i."collectionId"
+WHERE i."cardId" = $1 AND col."userId" = $2
+ORDER BY col."isDefault" DESC, i.quantity DESC, i."addedAt" ASC, i.id ASC
+LIMIT 1
+```
+
+El ownership en el `WHERE` es lo que hace que una colección ajena devuelva la
+misma respuesta que "no la tenés" (`null`) y no un 403 que confirmaría que el id
+existe. El `ORDER BY` ordena por un campo de la relación (`collections.isDefault`),
+que el `orderBy` de Prisma no puede expresar, y el `id` del final lo vuelve un
+orden total.
 
 ## Patrón 2 — ownership en el `where`
 

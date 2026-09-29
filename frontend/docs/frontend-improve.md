@@ -12,6 +12,32 @@
 
 ---
 
+## 📌 Estado — 2026-09-29
+
+> **El cuerpo de este documento no se tocó.** Sigue siendo el plan de registro y los
+> números de contraste que están abajo son, a propósito, el registro histórico de lo
+> que estaba mal. No los actualices: el valor **nuevo** de cada token vive en
+> [`design-system.md` §2.1 y §2.4](design-system.md), que es la fuente de verdad.
+
+| Fase | Estado |
+|---|---|
+| **Fase 1 — Correcciones** | ✅ **Aplicada.** Los 11 ítems, incluido `scroll-padding-top`, `touch-action`, `overscroll-behavior-y` en `html`, y la baja de `share_target` y `window_controls_overlay` del manifest. |
+| **Fase 2 — Contraste y tacto** | ✅ **Aplicada.** `--focus-ring` + migración a `outline` en toda la app, `--border-control`, `--switch-track-off`, shimmer, `overline` a 11 px, `--positive`/`--brand` de light, `md` a 44 px, bloque `forced-colors`, y `haptics.ts` con el shutter y el scan exitoso. |
+| **Fase 3 — Tests de las primitivas** | ⏳ **Pendiente.** |
+| **Fase 4 — Producto** | ⏳ **Pendiente.** |
+
+Las consecuencias de la Fase 2 que **no** están en este plan y sí están
+documentadas en `design-system.md`: el `outline-offset: 2px` exige 4 px de aire que
+un scroller `overflow-x-auto` recorta (§4.4), dos componentes con ancestro
+`overflow-hidden` dibujan el indicador hacia adentro (§8.6), y hay un token nuevo
+para el foco sobre foto (§8.16).
+
+**Pendiente que quedó de la Fase 2:** los cuatro indicadores del scanner siguen
+usando `outline-on-media-text` en vez de `--focus-ring-on-media`. Es el mismo blanco,
+así que no cambia nada de lo que se ve; es un cambio de componente pendiente.
+
+---
+
 ## 0. Diagnóstico en una página
 
 Esto **no es un prototipo**. Es una app con un design system propio, un guard de

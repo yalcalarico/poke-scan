@@ -25,8 +25,14 @@ Cinco reglas que resuelven el 90 % de las decisiones. En orden de prioridad.
 4. **Un componente, una decisión.** Variantes por prop (`variant`, `size`, `tone`), no
    por clase condicional en el call site. Si necesitás una tercera forma, se agrega una
    variante nueva al componente, no una copia.
-5. **Todo se puede tocar con 44 px y llegar con el teclado.** Cualquier excepción
-   necesita un comentario que explique por qué.
+5. **Todo se puede tocar con 44 px y llegar con el teclado.** El tamaño **default**
+   de todo control interactivo —el que sale de `size="md"`— es de 44 px, porque
+   el default es el que decide si la regla se cumple o no. Cualquier excepción
+   necesita un comentario que explique por qué, y hay dos documentadas: el
+   `Switch` de 26 px (§8.3) y el chip de contenido de 28 px (§8.4), en los dos
+   casos porque el objetivo real del toque es otro elemento más grande.
+   Y el foco no es decorativo: se ve, llega a 3:1 de contraste, y **nadie lo
+   recorta** (ver §4.4).
 
 ---
 
@@ -84,6 +90,27 @@ text-warning / bg-warning-soft / text-info / bg-info-soft
 `blue`, `green` quedan **prohibidos** en JSX. Un linter de grep en `pnpm run check`
 debería fallar si aparecen (`scripts/check-no-raw-colors.mjs`, ver plan Fase 0).
 
+### Cuatro tokens sin utilidad
+
+`--focus-ring`, `--focus-ring-on-media`, `--border-control` y `--switch-track-off`
+**no** están mapeados en `@theme inline`, a propósito. No existen `outline-focus`,
+`border-control` ni `switch-track-off` como clases, y eso es lo correcto:
+
+- `--focus-ring` y `--focus-ring-on-media` se consumen con sintaxis de valor
+  arbitrario: `outline-[color:var(--focus-ring)]`. Mapeados a `--color-*` habrían
+  producido `outline-focus` y `bg-focus`, que son las dos cosas que el design
+  system no quiere: el anillo de foco no es un color de relleno y no se le pone
+  a un `background`.
+- `--border-control` y `--switch-track-off` sí se usan como `border` y `bg`, pero
+  con valor arbitrario (`border-[color:var(--border-control)]`) porque la
+  distinción con `--border-default` es **de rol**, no de tono: el primero es "el
+  límite de un control" y el segundo "una separación decorativa", y una utilidad
+  que no dice cuál es cuál se presta para equivocarse.
+
+Cuando agregues un token nuevo, la pregunta es si pertenece al mapa de
+utilidades o al consumo por `var()`. Los colores de superficie, texto, borde
+decorativo y marca pertenecen al mapa; los tres de "estado" de un control, no.
+
 ---
 
 ## 2. Color
@@ -93,6 +120,11 @@ debería fallar si aparecen (`scripts/check-no-raw-colors.mjs`, ver plan Fase 0)
 Definidos en `app/globals.css`. Los **semánticos** viven fuera de `@theme` (porque
 cambian con el tema) y se re-exponen adentro con `@theme inline`, que es el mecanismo
 de Tailwind 4 para eso.
+
+Este bloque es una **copia de los valores**, no del texto: los comentarios con el
+porqué de cada decisión viven en `globals.css`, junto al token, y son la fuente.
+Lo que está acá y no en el CSS: los tokens que no se mapean a utilidad (§1, "Cuatro
+tokens sin utilidad"), y las tres capas de `@theme` que no son color.
 
 ```css
 @import "tailwindcss";
@@ -110,7 +142,7 @@ de Tailwind 4 para eso.
   /* Texto */
   --text-primary: #0b0b0f;
   --text-secondary: #5c5c68;
-  --text-tertiary: #86868f;
+  --text-tertiary: #6f6f7a;
   --text-disabled: #b4b4bd;
   --text-inverse: #ffffff;
 
@@ -119,8 +151,21 @@ de Tailwind 4 para eso.
   --border-default: #e4e4e9;
   --border-strong: #d0d0d8;
 
+  /* Solo el límite de los controles de formulario, no los separadores. */
+  --border-control: #a8a8b2;
+
+  /* Indicador de foco. A color pleno: `ring-brand/20` medía 1.38:1. */
+  --focus-ring: #e01f26;
+
+  /* Indicador de foco sobre el velo del scanner: blanco, no el rojo de marca
+     (`#e01f26` mide 1.91:1 contra ese scrim, `#ff4a4f` 2.57:1). */
+  --focus-ring-on-media: #ffffff;
+
+  /* Riel de un `Switch` apagado: el knob medía 1.16:1 contra `--surface-3`. */
+  --switch-track-off: #a8a8b2;
+
   /* Marca: rojo. Es el acento de navegación y de acción primaria. */
-  --brand: #e01f26;
+  --brand: #d81c23;
   --brand-hover: #c2161c;
   --brand-press: #9e1217;
   --brand-soft: #fff0f0;
@@ -128,7 +173,7 @@ de Tailwind 4 para eso.
   --on-brand: #ffffff;
 
   /* Semánticos */
-  --positive: #12804a;          /* valor, dinero, éxito, precio subiendo */
+  --positive: #117a47;          /* valor, dinero, éxito, precio subiendo */
   --positive-soft: #e7f6ee;
   --positive-border: #b7e3cb;
   --negative: #d01a21;          /* precio bajando, error de acción */
@@ -144,6 +189,10 @@ de Tailwind 4 para eso.
   /* El scanner siempre vuela sobre la foto: superficies oscuras fijas. */
   --on-media: rgb(11 11 15 / 0.72);
   --on-media-text: #ffffff;
+
+  /* Paradas del degradado del `Skeleton` (token del sistema, no del componente) */
+  --shimmer-from: #dcdce4;
+  --shimmer-to: #f2f2f5;
 }
 
 .dark {
@@ -155,13 +204,18 @@ de Tailwind 4 para eso.
 
   --text-primary: #f5f5f7;
   --text-secondary: #a1a1ae;
-  --text-tertiary: #75757f;
+  --text-tertiary: #82828c;
   --text-disabled: #4a4a54;
   --text-inverse: #0b0b0f;
 
   --border-subtle: #1d1d24;
   --border-default: #2a2a33;
   --border-strong: #3c3c48;
+
+  --border-control: #6a6a76;
+  --focus-ring: #ff4a4f;
+  --focus-ring-on-media: #ffffff;
+  --switch-track-off: #6a6a76;
 
   --brand: #ff4a4f;             /* más saturado para tener contraste sobre #15151b */
   --brand-hover: #ff6a6e;
@@ -185,9 +239,15 @@ de Tailwind 4 para eso.
 
   --on-media: rgb(0 0 0 / 0.66);
   --on-media-text: #ffffff;
+
+  --shimmer-from: #23232b;
+  --shimmer-to: #2b2b35;
 }
 
 @theme inline {
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+
   --color-canvas: var(--canvas);
   --color-surface: var(--surface);
   --color-surface-2: var(--surface-2);
@@ -227,8 +287,8 @@ de Tailwind 4 para eso.
   --color-on-media: var(--on-media);
   --color-on-media-text: var(--on-media-text);
 
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-shimmer-from: var(--shimmer-from);
+  --color-shimmer-to: var(--shimmer-to);
 
   --radius-control: 12px;
   --radius-surface: 16px;
@@ -249,12 +309,40 @@ de Tailwind 4 para eso.
   --duration-fast: 160ms;
   --duration-base: 240ms;
   --duration-slow: 400ms;
+
+  /* El namespace de duración de Tailwind 4 es `--transition-duration-*`, así que
+     estos alias son los que hacen existir `duration-fast`, `duration-base`, etc.
+     Sin ellos habría que escribir `duration-[240ms]`, que §3.1 prohíbe. */
+  --transition-duration-instant: var(--duration-instant);
+  --transition-duration-fast: var(--duration-fast);
+  --transition-duration-base: var(--duration-base);
+  --transition-duration-slow: var(--duration-slow);
+
+  /* §6. Ojo: el namespace de z-index también cambia, es `--z-index-*`. */
+  --z-index-base: 0;
+  --z-index-sticky: 40;
+  --z-index-nav: 50;
+  --z-index-overlay: 60;
+  --z-index-sheet: 70;
+  --z-index-media: 90;
+  --z-index-offline: 100;
+
+  /* §5.1. Cada animación es un token, no una clase con la duración escrita a mano. */
+  --animate-fade-in: fade-in var(--duration-base) var(--ease-standard) both;
+  --animate-sheet-up: sheet-up var(--duration-base) var(--ease-emphasis) both;
+  --animate-pop-in: pop-in var(--duration-base) var(--ease-emphasis) both;
+  --animate-shimmer: shimmer 1.6s linear infinite;
+  --animate-flash-once: flash-once var(--duration-slow) var(--ease-standard) both;
 }
 ```
 
 `.dark` **no** redefine sombras. En dark la separación la hacen el borde y la
 diferencia de superficie; las sombras de `@theme` sirven igual porque son
 semi-transparentes y se leen como "oscuridad hacia abajo", que es lo correcto.
+
+Y `.dark` **tampoco** redefine `--shimmer-*` por el motivo inverso: el shimmer es un
+placeholder y tiene que leerse contra la superficie, así que en dark sube de valor
+igual que en light.
 
 ### 2.2 Mapa de roles
 
@@ -276,6 +364,10 @@ semi-transparentes y se leen como "oscuridad hacia abajo", que es lo correcto.
 | Warning | `text-warning` / `bg-warning-soft` | "Datos viejos", "no estamos seguros", "te faltan cartas" |
 | Info / lectura | `text-info` / `bg-info-soft` | Vista pública de solo lectura, avisos neutros |
 | Sobre foto | `bg-on-media` + `text-on-media-text` | Todo el chrome del scanner |
+| Indicador de foco | `outline-[color:var(--focus-ring)]` | **Todo** elemento enfocable (§8.3, §11) |
+| Indicador de foco sobre foto | `outline-[color:var(--focus-ring-on-media)]` | Los 4 indicadores del scanner (§8.16) |
+| Límite de un control | `border-[color:var(--border-control)]` | `Input`, `Textarea`, disparador del `Select` (no el `Switch`) |
+| Riel apagado de un `Switch` | `bg-[color:var(--switch-track-off)]` | `Switch` en posición OFF |
 
 ### 2.3 Dos reglas semánticas que no se rompen
 
@@ -301,12 +393,50 @@ texto underlined).
 Objetivo **WCAG 2.2 AA**.
 
 - Texto normal: ≥ 4.5:1 contra su superficie. Texto ≥ 24 px o ≥ 19 px bold: ≥ 3:1.
-- Componentes y bordes de control: ≥ 3:1 (`--border-strong` cumple; `--border-default`
-  no se usa para el límite de un control, solo para separación decorativa).
-- **`text-tertiary` es terciario de verdad**: no se usa para el único texto que hay en
-  pantalla. En la v1 `text-slate-500` sobre `slate-900/40` daba 4.0:1 y fallaba. Los
-  tokens nuevos dan 4.6:1 en claro y 4.5:1 en dark, así que `--text-tertiary` sí
-  puede llevar metadata, pero nunca el mensaje principal.
+- Indicador de foco y borde de control: ≥ 3:1 (SC 1.4.11, *Non-text Contrast*).
+
+Todos los ratios de esta tabla están **medidos** con la fórmula de WCAG 2.x contra los
+tokens de §2.1, no estimados. Cuando se cambia un token, se vuelve a medir la fila
+que lo usa: es la única forma de que el documento siga siendo cierto.
+
+| Token | Contra | Ratio | |
+|---|---|---|---|
+| `--focus-ring` | `--surface` | **4.78:1** | era **1.38:1** con `ring-brand/20` |
+| `--focus-ring` | `--surface` (dark) | **5.49:1** | |
+| `--focus-ring-on-media` | velo `--on-media` | **7–9:1** | el peor caso es la foto más clara |
+| `--brand` (light) | `--brand-soft` | **4.62:1** | era 4.32:1 |
+| `--positive` (light) | `--positive-soft` | **4.83:1** | era 4.47:1 |
+| `--on-brand` | `--brand` (light) | **5.11:1** | texto del botón primario |
+| `--text-tertiary` | `--canvas` | **4.52:1** | era **3.28:1**: no pasaba |
+| `--text-tertiary` | `--surface` | **4.96:1** | |
+| `--text-tertiary` | `--surface-2` | **4.68:1** | |
+| `--text-tertiary` | `--surface-3` | 4.29:1 | **no llega**: no usarlo sobre un hover |
+| `--text-tertiary` | `--surface` (dark) | **4.78:1** | era **3.99:1** |
+| `--text-tertiary` | `--surface-2` (dark) | 4.40:1 | **no llega** |
+| `--text-tertiary` | `--surface-3` (dark) | 3.94:1 | **no llega** |
+| `--shimmer-from` | `--surface` | 1.36:1 | era 1.16:1 |
+
+**`text-tertiary` sigue siendo terciario de verdad.** Los tokens ya pasan 4.5:1
+contra canvas y superficie, así que `--text-tertiary` puede llevar metadata; lo que
+no puede es ser el único texto de una pantalla (§11). Ojo con las tres filas que
+no llegan: un `text-tertiary` **sobre `--surface-3`** (un hover) queda bajo 4.5 en los
+dos temas, así que una fila de hover no puede tener su único texto en terciario.
+
+### 2.4.1 Un incumplimiento que sigue abierto
+
+`--border-control` **en light** mide **2.22:1** contra el `--surface-2` del propio
+campo (y 2.36:1 contra `--surface`), o sea que no llega al 3:1 de SC 1.4.11. En dark
+sí pasa: 3.14:1 contra `--surface-2`. Lo mismo para `--switch-track-off`, que comparte
+el valor de claro.
+
+No se corrige acá a propósito, por dos razones: (1) el límite de un campo de texto no
+es la única pista de que es un campo —tiene su propio fondo, su label y su icono— y
+SC 1.4.11 exige 3:1 solo para la información **necesaria** para identificar el
+componente; (2) oscurecerlo más rompe el look, que es el otro objetivo del sistema.
+Pero es una excepción consciente y no un overlook: **si alguna vez un control se
+identifica solo por su borde, hay que subir `--border-control` en light**, y la vía
+es el bloque `prefers-contrast: more` de §5.5, que ya lo lleva a `#5c5c68` (6.21:1)
+para quien lo pide explícitamente.
 
 ---
 
@@ -323,8 +453,10 @@ una sola familia, y eso es correcto.
 
 ### 3.1 Escala
 
-Nueve pasos. **Nada fuera de esta tabla.** Se implementan como utilities de
-`@theme` o como clases en `@layer components`; no se escriben `text-[13px]`.
+Diez pasos. **Nada fuera de esta tabla.** Se implementan como `@utility` de Tailwind
+—que las mete en la capa `utilities`, así que ganan contra cualquier clase de
+componente y se pueden pisar con variantes (`sm:text-h1`)—, no como clases de
+`@layer components`. No se escriben `text-[13px]`.
 
 | Nombre | Tamaño / interlineado | Peso | Tracking | Uso |
 |---|---|---|---|---|
@@ -337,7 +469,13 @@ Nueve pasos. **Nada fuera de esta tabla.** Se implementan como utilities de
 | `body-strong` | 15 / 22 | 600 | normal | Cuerpo que necesita emphasis |
 | `label` | 13 / 18 | 500 | normal | Labels de campo, botones medianos, chips |
 | `caption` | 12 / 16 | 400 | normal | Metadatos, subtítulos de set, help text |
-| `overline` | 10 / 12 | 600 | 0.08em, `uppercase` | El "VALUE" de la card resumen, labels de stat |
+| `overline` | **11 / 14** | 600 | 0.08em, `uppercase` | El "VALUE" de la card resumen, labels de stat |
+
+El `overline` **subió de 10/12 a 11/14**. No es un capricio de diseño: a 10 px no se
+distingue de `caption` salvo por el uppercase, y el tracking de 0.08em sobre diez
+caracteres dejaba el `VALUE` de la card resumen ilegible en pantallas de baja
+densidad. 11 px con el mismo peso y el mismo tracking sigue siendo un overline y
+sigue llamándose `overline`: el nombre del token no cambia cuando el valor cambia.
 
 En mobile el `display` baja a `display-lg` solo si es la cifra hero de la pantalla
 (el total de la colección, el precio de la carta). `h1` baja a 24 px en `sm:`.
@@ -378,7 +516,7 @@ Escala Tailwind de 4 px, sin excepción. Lo que se **documenta** es el ritmo:
 | Gap entre tarjetas del grid | `gap-3` (12) en mobile, `sm:gap-4` |
 | Gap entre bloques de una pantalla | `gap-6` (24) → `sm:gap-8` |
 | Padding de una `Surface` | `p-4` estándar, `p-5` si tiene un título, `p-3` en un `Stat` |
-| Padding de un control | `px-4 py-2.5` (md), `px-3.5 py-2` (sm), `px-5 py-3` (lg) |
+| Padding de un control | `px-4 py-2.5` (md), `px-3.5 py-1` (sm), `px-5 py-3` (lg) — en un `h-*` fijo el `py` se **deriva** del alto, no es nominal (§8.3) |
 | Separación label → valor | `mt-1` |
 | Separación label → control | `mb-1.5` |
 | Alto del `ScreenHeader` | `h-14` + `pt-[env(safe-area-inset-top)]` |
@@ -416,6 +554,34 @@ En v1 había **2 sombras en toda la app**. Ahora la elevación es explícita:
 **Regla:** el borde (`border-line`) y la sombra van **siempre juntos** en una
 superficie clara. En dark la sombra casi no se ve y el borde hace el trabajo; se
 mantiene la misma clase en ambos temas para no tener dos ramas de JSX.
+
+### 4.4 Los 4 px de aire del indicador de foco — no se borran
+
+> `outline-offset: 2px` + `outline-width: 2px` = **4 px de aire** en cada lado del
+> indicador de foco. Es el número que hace que un `outline` sea un indicador y no
+> una línea pegada al borde del control.
+
+Ese aire **necesita espacio en el layout, y el que lo recorta es el `overflow` del
+padre**. La trampa concreta:
+
+- Un scroller horizontal con `overflow-x-auto` **y sin padding vertical recorta el
+  `outline` de los hijos**. Lo peor es que parece un scroller "solo horizontal":
+  **`overflow-x: auto` fuerza el `overflow-y` computado a `auto`**
+  (CSS Overflow 3), así que también recorta en vertical. Un `overflow-x-auto` sin
+  `py-*` es un recorte en las dos direcciones.
+- Por eso los scrollers de chips y filtros que tienen elementos enfocables llevan
+  **`py-1`**, aunque a simple vista parezca padding de más: no lo es. Ya está en
+  `carta/[id]/actions.tsx`, `carta/[id]/page.tsx`, `collection-filters.tsx`,
+  `rarity-filter.tsx` y `set-progress/binder-view.tsx`.
+
+Y el caso inverso, cuando el aire hacia afuera no existe porque un ancestro tiene
+`overflow-hidden`: el indicador **se dibuja hacia adentro**, con
+`-outline-offset-2` (queda 0 px de aire y 2 px de grosor dentro de la caja). Hoy está
+en `collection-card.tsx` y `price-hero.tsx`, los dos dentro de una `Surface`
+`overflow-hidden`. El criterio para elegir: si el ancestro recorta, va adentro; si no,
+afuera. Nunca se deja sin indicador.
+
+**Si tocás un `overflow-hidden` o un scroller, revisá si el foco le queda visible.**
 
 ---
 
@@ -475,6 +641,83 @@ siente bien.
 
 En v1 el `animate-pulse` de los skeletons corría sin mirar esta preferencia. Este
 bloque es **parte del sistema**, no un extra: va en `globals.css` desde la Fase 0.
+
+Ojo con una cosa: este bloque **no** apaga el indicador de foco. Si alguna vez
+alguien lo agrega al `outline`, se está rompiendo WCAG 2.4.7 y el objetivo de §5.4
+al mismo tiempo.
+
+### 5.4 `forced-colors: active` — obligatorio
+
+Windows High Contrast, y el equivalente en iOS. El UA reemplaza los colores del autor
+por su paleta, y como el chrome de la app se apoya en superficie + borde
+(`bg-surface` + `border-line` + `shadow-sm`), los bordes se funden con el fondo y los
+paneles quedan planos. Va en `globals.css` desde la Fase 0.
+
+Lo primero y más importante es lo que **no** se hace: **nunca**
+`forced-color-adjust: none`. Eso apagaría el modo entero, y el `Checkbox` es un
+`<input type="checkbox">` nativo *a propósito* justamente porque dibuja bien acá. Lo
+que se hace es la inversa: sobreescribir los tokens con palabras clave del sistema,
+así la app sigue las reglas del sistema en vez de pelearlas.
+
+```css
+@media (forced-colors: active) {
+  :root, .dark {
+    --canvas: Canvas;   --surface: Canvas;    --surface-2: Canvas;  --surface-3: Canvas;
+    --border-subtle: ButtonBorder;  --border-default: ButtonBorder;
+    --border-strong: ButtonText;    --border-control: ButtonBorder;
+    --focus-ring: Highlight;        --focus-ring-on-media: Highlight;
+    --switch-track-off: ButtonBorder;
+    --text-secondary: CanvasText;   --text-tertiary: GrayText;  --text-disabled: GrayText;
+  }
+
+  /* El mecanismo PRIMARIO de foco en forced colors, no un fallback (§4.4, §8.3) */
+  :focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+  }
+}
+```
+
+`.dark` entra también: en high contrast el tema del sistema manda, y el mismo
+conjunto de palabras clave funciona para los dos.
+
+Y `:focus-visible { outline: … }` **no es un parche**: el indicador de foco del
+sistema es un `outline`, y el `outline` es de lo único que sobrevive acá (el `ring`
+—`box-shadow`— lo fuerza el UA a `none`). Por eso `--focus-ring` se sobreescribe con
+`Highlight` y no con el rojo de marca: si el anillo no llegara a 3:1 contra su fondo,
+el del sistema tampoco, y no hay forma de arreglarlo desde la paleta del autor. Ver
+el comentario largo en `globals.css`.
+
+### 5.5 `prefers-contrast: more` — obligatorio
+
+No cambia el tema ni los colores semánticos: **sube el piso** de separación de los
+bordes y de la metadata, que es lo primero que se aplana cuando la fuente del sistema
+achica el contraste. Los valores no son nuevos: cada uno es el de otro token que ya
+está en el archivo (el tertiary se pega al secondary, el borde de control sube al gris
+de texto). Es un piso más alto con la misma paleta, no una paleta nueva.
+
+| Token | Normal (light) | `prefers-contrast: more` |
+|---|---|---|
+| `--text-tertiary` | `#6f6f7a` (4.52:1) | `#5c5c68` (6.00:1) |
+| `--border-default` | `#e4e4e9` | `#a8a8b2` (2.15:1) |
+| `--border-control` | `#a8a8b2` (2.22:1) | `#5c5c68` (6.21:1) |
+| `--switch-track-off` | `#a8a8b2` (2.22:1) | `#5c5c68` |
+
+En dark pasa lo mismo con los equivalentes: `--text-tertiary` de `#82828c` a
+`#a1a1ae`, `--border-default` de `#2a2a33` a `#6a6a76`, `--border-control` y
+`--switch-track-off` de `#6a6a76` a `#a1a1ae`. Es la vía por la que se resuelve
+ conscientiousemente el incumplimiento de §2.4.1.
+
+### 5.6 Reglas a nivel documento
+
+Tres reglas de `<html>` que no son de ningún componente y por eso no viven en uno,
+con su porqué en `globals.css`:
+
+| Regla | Por qué |
+|---|---|
+| `touch-action: manipulation` | Saca el delay de 300 ms del tap en Chrome y Android. `user-scalable` no es la respuesta: el zoom se permite hasta 5× y lo que se quiere es que un toque responda ya, no que la página no se pueda zoomear. |
+| `overscroll-behavior-y: contain` | Evita el pull-to-refresh. En una PWA eso no recarga la página: dispara la navegación del service worker y deja la app en un estado raro a mitad de uso. |
+| `scroll-padding-top: calc(3.5rem + env(safe-area-inset-top))` | Arregla un bug real: el `ScreenHeader` es `sticky top-0` con `h-14` + el safe area, y sin scroll padding los `scrollIntoView({ block: 'start' })` dejaban la carta destino debajo del header y el skip link aterrizaba tapado. Cierra SC 2.4.11 (Focus Not Obscured). |
 
 ---
 
@@ -615,19 +858,85 @@ type ButtonSize = 'sm' | 'md' | 'lg' | 'icon';
 | `destructive` | `bg-negative text-on-brand` | idem | Borrar, revocar. **Nunca** para el CTA de un form |
 | `inverse` | `bg-surface text-primary` | idem | Sobre `bg-brand` o sobre foto |
 
-- Alturas: `sm` 32, `md` 40, `lg` 48, `icon` 40×40. **Nunca menos de 40** para un
-  botón con label; `sm` solo para acciones terciarias dentro de una fila densa.
+- Alturas: `sm` **32**, `md` **44**, `lg` **48**, `icon` **40×40**.
+  `md` **subió de 40 a 44** y es el cambio de una línea que hace que §0.5 sea
+  cierta: `md` es el tamaño **default**, o sea el de todos los botones de la app, y
+  el default es el que decide si la regla se cumple o no. `sm` sigue en 32 y esta
+  misma tabla lo reserva para acciones terciarias dentro de una fila densa; es la
+  excepción, y está escrita abajo en el `Button` con su motivo.
+- El padding vertical **no** se escribe en un botón: el alto fijo `h-*` manda y el
+  texto se centra con `items-center`. (En `Input` es al revés, y por un motivo
+  distinto: ver §8.3.)
 - `loading`: muestra `Spinner` + cambia a `pendingLabel` + `aria-busy` + `disabled`.
-  **Nunca** un spinner suelto al lado del texto: el botón entero cambia.
+  **Nunca** un spinner suelto al lado del texto: el botón entero cambia. Sin
+  `pendingLabel` los `children` van a un `sr-only`, así que el nombre accesible no se
+  pierde (SC 4.1.2) —el `pendingLabel` aporta el texto **visible** del estado
+  ocupado, que es una decisión de copy, no de accesibilidad.
 - `pressed` usa `active:scale-[0.98]` con `--duration-instant` + `--ease-standard`.
 - `fullWidth` para los botones de pantalla completa y los de auth.
+- Indicador de foco: el bloque de `outline` de §8.3, no un `ring`.
 
 ### 8.2 `IconButton`
 
-Ícono + `aria-label` obligatorio. 40×40 mínimo, 44×44 en `ScreenHeader` y `Sheet`.
-`tooltip` opcional (solo desktop, se oculta en touch).
+Ícono + `aria-label` obligatorio. `sm` **40×40** (default), `md` **44×44**, y `md` es
+la medida en `ScreenHeader` y `Sheet`. `tooltip` opcional (solo desktop, se oculta en
+touch). Indicador de foco: el bloque `outline` de §8.3.
 
-### 8.3 `Field`, `Input`, `Textarea`, `Select`, `Checkbox`, `Switch`
+### 8.3 El indicador de foco — obligatorio
+
+> **Este bloque es normativo.** El patrón que estaba antes acá
+> (`focus:ring-2 focus:ring-brand/20`) **fallaba** y no se vuelve a escribir. Lee
+> §8.3.1 antes de tocar cualquier componente.
+
+El indicador de foco del design system es un **`outline` a color pleno**:
+
+```tsx
+// Botones, chips, icon buttons, switch: no es un control de texto, así que el
+// disparador es `:focus-visible` y no `:focus`.
+'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--focus-ring)]'
+
+// Controles de texto: el disparador es `:focus`.
+'focus:outline-2 focus:outline-offset-2 focus:outline-[color:var(--focus-ring)]'
+```
+
+En los controles de texto además va `focus:border-brand`, porque ahí el color del
+borde sí aporta: en `aria-[invalid=true]` el borde **y** el indicador pasan a
+`--negative` a color pleno.
+
+El disparador es `focus:` y no `focus-visible:` en un campo de texto por un motivo
+concreto: **un campo de texto tiene que avisar que está activo también cuando lo
+enfocás con el click**, que en mobile es como lo enfocás el 100 % de las veces. En un
+`<button>` el click no cambia el foco, así que `focus-visible:` es lo correcto.
+
+#### 8.3.1 Por qué `outline` y no `ring`, y por qué a color pleno
+
+Dos razones independientes, y las dos hay que respetarlas:
+
+1. **Contraste.** El patrón viejo era `ring-brand/20`: un 20 % de alfa del rojo de
+   marca sobre una superficie clara medía **1.38:1**. WCAG 2.2 SC 1.4.11 pide
+   **3:1** para el indicador de foco, y este es el único mecanismo que tiene una
+   persona que navega con teclado para saber dónde está. Por eso `--focus-ring` va a
+   color pleno: **nunca** a un alfa del token de marca. Hoy mide 4.78:1 contra
+   `--surface`.
+2. **`outline` sobrevive a `forced-colors`, `ring` no.** `ring-*` de Tailwind es un
+   `box-shadow`, y en Windows High Contrast el UA fuerza `box-shadow: none`: el
+   indicador desaparece justo en el modo donde más se lo necesita (ver §5.4).
+
+Y `outline-offset: 2px` no es decoración: es el aire de §4.4, sin el cual el
+indicador queda pegado al borde del control y no se lee como indicador.
+
+**Consecuencias que hay que respetar al tocar un componente** (detalle en §4.4):
+
+- Un scroller `overflow-x-auto` sin `py-*` **recorta** el indicador. Los scrollers de
+  chips llevan `py-1` por eso, no porque quede más prolijo.
+- Un ancestro `overflow-hidden` obliga a `-outline-offset-2` (indicador hacia
+  adentro): hoy en `collection-card.tsx` y `price-hero.tsx`.
+- Sobre el velo del scanner, `--focus-ring` **no sirve** (1.91:1 / 2.57:1 contra el
+  scrim): ahí va `--focus-ring-on-media`. Ver §8.16.
+
+Cero `focus:outline-none` sin alternativa, en cualquier elemento.
+
+#### 8.3.2 El resto de `Field`, `Input`, `Textarea`, `Select`, `Checkbox`, `Switch`
 
 **`Field` es obligatorio** para todo campo de formulario. Reemplaza el `FormField`
 suelto de v1 y todos los `<label>` + input reimplementados a mano.
@@ -640,19 +949,35 @@ suelto de v1 y todos los `<label>` + input reimplementados a mano.
 
 - `Field` provee `<label htmlFor>`, hint, error, `aria-describedby` y `aria-invalid`.
   El `id` sale de `useId()`.
-- `Input` / `Textarea`: `bg-surface-2 border-line rounded-control px-4 py-2.5 text-body
-  placeholder:text-disabled focus:border-brand focus:ring-2 focus:ring-brand/20`.
-  **El anillo de foco es obligatorio** — v1 tenía 17 elementos con `focus:outline-none`
-  y sin alternativa.
+- `Input` / `Textarea`: `bg-surface-2 rounded-control px-4 py-2.5 text-body
+  placeholder:text-disabled` + el bloque `outline` de arriba. El borde es
+  **`border-[color:var(--border-control)]`**, no `border-line`: contra el
+  `bg-surface-2` propio del control, `--border-default` mide 1.19:1 y el campo deja
+  de leerse como campo (ver §2.4.1 para el matiz del 3:1).
+- Alturas: `sm` **32**, `md` **44**, `lg` **48**. `md` subió de 40 a 44 por lo mismo
+  que `Button`. El `py-*` de un control de texto **sí** se escribe, pero derivado del
+  alto y no nominal: `44 − 2 de borde − 22 de interlineado = 20`, o sea 10 de cada
+  lado. Con un `h-*` fijo y el `py-2.5` de §4.1 quedaban 18 px de caja para 22 px de
+  interlineado y el texto se recortaba.
 - **`Select` es un listbox propio, no un `<select>`.** Motivo: hay 8 selects nativos en
   la app y el de set tiene 176 opciones; en iOS el dropdown del sistema rompe la
   sensación de producto. Implementación: `role="listbox"` + `role="option"` +
   `aria-expanded` + `aria-activedescendant`, navegado con ↑ ↓ Enter Esc, con
   `aria-label` en el botón. Tipo/retro/input de texto, `Portal` a `document.body`,
   `max-h-72 overflow-y-auto`, y **búsqueda interna** obligatoria cuando hay más de 12
-  opciones. Foco atrapado dentro del listbox mientras está abierto.
-- `Checkbox` y `Switch`: 20×20, `accent-brand` para checkbox, switch de 44×26 con
-  knob animado. Ambos con `<label htmlFor>` real, no label envolviendo.
+  opciones. Foco atrapado dentro del listbox mientras está abierto. Alturas `sm` 32,
+  `md` **44**, `lg` 48. El borde del popover del listbox usa `focus-within:` con
+  `-outline-offset-2`, porque el popover recorta por `overflow-hidden` (§4.4).
+- `Checkbox` y `Switch`: `Checkbox` 20×20 nativo con `accent-brand` —a propósito, es
+  lo único que dibuja bien en high contrast (§5.4)— y `Switch` de **44×26** con knob
+  animado y el riel apagado en `--switch-track-off`. Ambos con `<label htmlFor>`
+  real, no label envolviendo.
+
+**Excepciones a §0.5, y por qué se justifican.** El track del `Switch` mide 26 px,
+menos de los 44: la fila completa es tappable (el label es el target del click y del
+foco) y por encima del switch hay padding de la fila, así que el objetivo real es de
+44 px sin inflar el control visual. `Checkbox` en 20×20 es el mismo argumento y además
+el control nativo. Ninguna de las dos se arregla subiendo el control.
 
 ### 8.4 `Chip`
 
@@ -669,7 +994,19 @@ invertido). Un componente, dos densidades.
   Esto es lo que hacen las referencias: el chip activo es negro.
 - **Contenido**: `bg-surface-2 text-secondary` o con `tone` para `positive` /
   `negative` / `warning` / `brand` (`-soft` + `-border` + color de texto).
-- Alturas: 36 (filtro), 28 (contenido), 20 (inline con `text-overline`).
+- Alturas: **`md` 40 (filtro)**, `sm` **28 (contenido)**. El `mode` decide el tamaño
+  por defecto: `filter` → `md` (40), `content` → `sm` (28).
+- El filtro `md` **subió de 36 a 40** por §0.5: es el control de la barra de filtros
+  de `/buscar`, del filtro de rareza y del selector de modo, los tres en el camino
+  principal del pulgar y los tres con el default `md`. El default es el que se mide.
+- **El chip de contenido se queda en 28 a propósito**, y es la excepción que §0.5
+  pide justificar. El chip de contenido vive **adentro** de una card, al lado de un
+  precio o de un contador: subirlo a 40 no lo haría más accesible —el objetivo real
+  sigue siendo la fila de la card— y desarmaría la retícula de `/carta/[id]`. Los dos
+  tamaños siguen siendo públicos (`size` explícito) para el consumidor que sí quiera
+  un chip de contenido grande.
+- El foco del `Chip` es el bloque `outline` de §8.3, y por eso las filas con scroll
+  horizontal necesitan `py-1` (§4.4).
 - Recarga: transición de color con `--duration-fast`; sin animación de posición.
 
 ### 8.5 `Badge`
@@ -688,6 +1025,14 @@ supertype, estado de un enlace. Tonos: `neutral` (default), `brand`, `positive`,
 Un solo componente. Lo que en v1 eran `rounded-xl border border-slate-800 bg-slate-900/40
 p-4` en 15 archivos con 4 radios y 5 paddings distintos, ahora es `<Surface>`.
 `Card` (colecciones) y `EmptyState` se construyen **encima** de `Surface`.
+
+**`Surface` es `overflow-hidden`, y eso tiene una consecuencia con el foco.** El
+indicador hacia afuera de un elemento que llena la `Surface` entera se recorta contra
+su propio borde. Cuando el elemento enfocable es **la `Surface` misma** (una card
+clickeable), el offset va **negativo**: `-outline-offset-2`, dibujado 2 px adentro del
+borde de la tarjeta. Hoy está en `collection-card.tsx` y `price-hero.tsx`. Cuando el
+elemento enfocable está **adentro** de la `Surface` y con padding alrededor, el
+`outline-2 outline-offset-2` de §8.3 va bien. Ver §4.4.
 
 ### 8.7 `Stat` y `StatRow`
 
@@ -818,6 +1163,39 @@ Píldora `bg-negative-soft text-negative` (o `positive` si sube), `tabular-nums`
 con `TrendingDown` / `TrendingUp` de lucide. **Cero decimales en el porcentaje, dos
 en el monto.**
 
+`PriceHero` vive en una `Surface` `overflow-hidden`, así que su indicador de foco va
+`-outline-offset-2` (§8.6, §4.4).
+
+### 8.16 El foco sobre foto: `--focus-ring-on-media`
+
+El scanner es la **única** parte de la app donde el indicador de foco va sobre una
+superficie que no es un token de superficie: el velo `--on-media` sobre el `<video>`.
+Y ahí `--focus-ring` **no se puede usar**:
+
+| Indicador | Contra el velo | | |
+|---|---|---|---|
+| `--focus-ring` light `#e01f26` | **1.91:1** | no llega | |
+| `--focus-ring` dark `#ff4a4f` | **2.57:1** | no llega | |
+| `--focus-ring-on-media` (blanco) | **7–9:1** | pasa | el peor caso es la foto más clara |
+
+El rojo de marca es la marca, no un color de foco sobre negro: sobre una superficie
+oscura desaparece. `--focus-ring-on-media` sale de la semántica de `--on-media-text` y
+es **blanco en los dos temas** (el velo es oscuro en los dos), y en `forced-colors`
+mapea a `Highlight` como el otro, porque en ese modo manda la paleta del sistema.
+
+```tsx
+// scanner: el bloque de outline de §8.3 pero con el token del medio
+'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--focus-ring-on-media)]'
+```
+
+**Estado actual, a tener en cuenta:** los cuatro indicadores del scanner
+(`action-bar.tsx` —el shutter y el botón de estado—, `camera-controls.tsx` y
+`camera-view.tsx`) **siguen usando `outline-on-media-text`**, que es el mismo blanco
+con el mismo resultado visual. El token `--focus-ring-on-media` existe y está
+correctamente valuado, pero **migrar esos cuatro call sites es un cambio de
+componente, no de token**: se puede hacer en cualquier momento y no cambia ni un
+pixel de lo que se ve. Lo que no se puede hacer es volver a `--focus-ring` ahí.
+
 ---
 
 ## 9. Reglas de datos en pantalla
@@ -940,9 +1318,15 @@ Los números en texto libre usan `Intl.NumberFormat('es-AR')` vía `pluralize` /
   para lo que cambia solo.
 - **Inputs**: `<label htmlFor>` siempre; `sr-only` si es visualmente redundante;
   `aria-invalid` + `aria-describedby` en `Field`; `inputMode` correcto.
-- **Foco visible obligatorio**: `focus:ring-2 focus:ring-brand/20` en todo control.
-  Cero `focus:outline-none` sin alternativa. En el dark el anillo es
-  `focus:ring-brand/40`.
+- **Foco visible obligatorio**: el bloque `outline` a color pleno de §8.3
+  (`focus-visible:outline-2 focus-visible:outline-offset-2
+  focus-visible:outline-[color:var(--focus-ring)]`, y con `focus:` en vez de
+  `focus-visible:` en los controles de texto). Cero `focus:outline-none` sin
+  alternativa. **Nunca** `ring-brand/20` ni ningún alfa del token de marca: medía
+  **1.38:1** contra la superficie y la norma pide 3:1 (SC 1.4.11) — es el único
+  mecanismo que tiene una persona que navega con teclado para ubicarse. Sobre foto
+  va `--focus-ring-on-media` (§8.16), y el aire de `outline-offset` no puede quedar
+  recortado por ningún `overflow` (§4.4).
 - **Skip link**: `<a href="#contenido" className="sr-only focus:not-sr-only …">Saltar
   al contenido</a>` como primer elemento del `<body>`. Con `BottomNav` fija y 20
   cartas en grilla, el teclado no puede tener que atravesar 10+ elementos.
@@ -967,7 +1351,11 @@ Lista corta y vinculante. Si algo de acá aparece en un PR, el PR no entra.
 | `text-[13px]`, `text-[11px]`, `text-[10px]` | Tamaño fuera de la escala de §3.1. |
 | `rounded-md`, `rounded-2xl` sin motivo | Radios sin token son tokens rotos. |
 | `space-y-*` | Se mezcla mal con `gap-*`; produce salto de layout. |
-| `focus:outline-none` sin `focus:ring-*` | WCAG 2.4.7. |
+| `focus:outline-none` sin el `outline` de §8.3 | WCAG 2.4.7, y el patrón viejo `ring-brand/20` daba 1.38:1 |
+| `ring-brand/20`, o cualquier alfa del token de marca para el foco | 1.38:1 contra superficie. El foco va a color pleno (SC 1.4.11). Ver §8.3.1 |
+| `focus-ring`/`border-control`/`switch-track-off` mapeados en `@theme inline` | Son tokens de **estado**, no de superficie: se consumen por `var()` (§1) |
+| Sacar el `py-1` de un scroller con elementos enfocables | Es el aire del `outline`; sin eso el foco se recorta (§4.4) |
+| Tocar el alto de `md` de un control | 44 px es §0.5, no una preferencia (ver §8.1, §8.3, §8.4) |
 | `transition` sin duración | 150 ms default implícito, no es una decisión. |
 | `animate-pulse` | Reemplazado por el `shimmer` de `Skeleton`. |
 | `className={`template string`}` | Sin `cn()`, no se resuelven conflictos. |
@@ -991,8 +1379,14 @@ Antes de pedir revisión:
 - [ ] Todo componente nuevo sale de `components/ui/` o es **de verdad** específico de
       la pantalla; si es el segundo caso, no lleva `bg-` hardcodeado.
 - [ ] Estados de carga, error y vacío del §9.1 implementados, con sus labels ARIA.
-- [ ] Foco visible en todo elemento interactivo, verificado con Tab.
+- [ ] Foco visible en todo elemento interactivo, verificado con Tab — y **visible**
+      dentro de cualquier `overflow` que hayas tocado (`py-1` en los scrollers,
+      `-outline-offset-2` si el ancestro recorta). Ver §4.4.
+- [ ] Alturas de `md` en 44 si tocaste un control (§0.5), con la excepción
+      justificada en un comentario si no llegaste.
 - [ ] Probado a 390 px en **los dos temas** y con `prefers-reduced-motion: reduce`.
+- [ ] Probado con `forced-colors: active` (DevTools → Rendering → Emulate CSS) si
+      tocaste superficies, bordes o el indicador de foco. Ver §5.4.
 - [ ] Probado en la PWA instalada (no solo en browser): nav, safe areas, cámara.
 - [ ] Copy con tildes y `…`, y con voseo.
 - [ ] `Number` de cifras con `tabular-nums` si se compara con otro.

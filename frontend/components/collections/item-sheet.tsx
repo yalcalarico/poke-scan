@@ -376,6 +376,22 @@ function ItemForm({
           />
         </Field>
 
+        {/*
+          Los dos `Select` de abajo (y los tres del `AddToCollectionSheet`) no
+          llevan `aria-labelledby` a mano y ya no hacen falta: el `Field` clona
+          su único hijo y le inyecta `aria-labelledby`/`aria-describedby`
+          apuntando al `<label>` que él mismo renderiza
+          (`components/ui/field.tsx:268-273`). El `Select` es hijo **directo** y
+          único del `Field`, que es la condición para que la inyección llegue, y
+          su API acepta las dos props y las baja al `<button role="combobox">`.
+
+          Antes sí faltaba: `<label htmlFor>` no nombra un `<button>`, así que el
+          lector anunciaba "combobox, 2 de 5" a secas. No se agrega el prop
+          "por las dudas": si algún día se pasa a llamar al `Select` con un
+          wrapper en el medio, la inyección deja de llegar y ahí sí hay que
+          escribirlo, como hacen `organize-sheet.tsx:345` y
+          `share-link-creator.tsx:217`.
+        */}
         <Field {...variantField} label="Variante">
           <Select
             id={variantField.id}
@@ -698,6 +714,13 @@ export function AddToCollectionSheet({
 
       {collections && collections.length > 0 ? (
         <div className="flex flex-col gap-4">
+          {/*
+          Los tres `Select` de acá (Colección, Variante, Condición) están
+          nombrados por la inyección del `Field`, igual que los dos del
+          `ItemSheet` de arriba: hijo directo y único, `label` presente, y
+          `useFieldA11y` proveyendo el mismo `labelId` que el `Field` resuelve.
+          Ver el bloque de arriba para el porqué de no escribir el prop a mano.
+        */}
           <Field {...collectionField} label="Colección">
             <Select
               id={collectionField.id}

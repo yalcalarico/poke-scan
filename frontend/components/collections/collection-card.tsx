@@ -77,8 +77,21 @@ const MAX_COVER_ITEMS = 4;
  * construir**: `CollectionDto` no trae portada y pedir 4 items por colección es
  * un N+1 (`AGENTS.md`, "Cero N+1"). Con `cover` ausente se dibuja una superficie
  * de marca —`bg-brand-soft` con `Layers`— que se ve deliberada en vez de rota.
- * El día que el DTO exponga el campo, se pasa el array y se borra el fallback;
+* El día que el DTO exponga el campo, se pasa el array y se borra el fallback;
  * la prop ya está escrita para eso.
+ *
+ * ## Por qué el `outline` del foco va hacia adentro
+ *
+ * El `Link` llena la `Surface` entera, y la `Surface` es `overflow-hidden` (para
+ * que el mosaic respete el radio). Un `outline` con `offset-2` —el patrón de
+ * `Button`, `Chip` y `Select`— se dibuja 4 px por fuera de la caja, o sea
+ * completamente afuera de la `Surface`, y lo recorta el `overflow-hidden` de la
+ * propia `Surface`: el indicador de foco no se vería.
+ *
+ * Por eso acá el offset va **negativo**. Es el mismo rodeo que ya usa la fila
+ * del buscador del `Select` (`select.tsx:136`), que también vive dentro de un
+ * `overflow-hidden`: se dibuja 2 px adentro del borde de la tarjeta, que es
+ * justo donde el ojo lo espera en una card.
  */
 export function CollectionCard({ collection, cover, className }: CollectionCardProps) {
   const titleId = `coleccion-${collection.id}`;
@@ -91,7 +104,7 @@ export function CollectionCard({ collection, cover, className }: CollectionCardP
       <Link
         href={`/colecciones/${encodeURIComponent(collection.id)}`}
         aria-labelledby={titleId}
-        className="flex h-full flex-col focus-visible:ring-2 focus-visible:ring-brand/20 dark:focus-visible:ring-brand/40"
+        className="flex h-full flex-col focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[color:var(--focus-ring)]"
       >
         {hasCover ? (
           <div

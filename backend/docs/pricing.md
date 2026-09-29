@@ -309,6 +309,70 @@ service se construye sin el job de precios.
 se reinicia con la cola llena, esas cartas quedan sin precio hasta que alguien
 las mire. Es aceptable justamente por el diseño bajo demanda.
 
+## El histórico de precios: dos endpoints, una sola tabla
+
+`card_prices` es append-only, así que **el histórico ya está guardado**: una fila
+por variante por fecha, con `@@index([cardId, variant, fetchedAt])`. No hay tabla
+de snapshots diarios, y no se va a agregar: backfillear lo que ya existe,
+escribir un snapshot en cada refresco y conservarlo para siempre es el mismo dato
+con un día de atraso y un job más. La serie se arma **en el momento**, con un
+`DISTINCT ON` sobre el día.
+
+| Endpoint | Qué contesta | Costo |
+|---|---|---|
+| `GET /cards/:id/prices` | "el precio de hoy contra la fila de hace 30 días" (el `change` de cada variante) | 1 query extra por carta, solo este endpoint |
+| `GET /cards/:id/prices/history` | la serie diaria de la ventana y el delta agregado | 1 query, **sin** proveedor externo |
+
+### El delta de la ficha: `change`
+
+El de `GET /cards/:id/prices` mide **el precio de hoy contra la última fila
+anterior a la ventana**, que sale de un `DISTINCT ON (variant) ... WHERE
+"fetchedAt" < now() - 30 días`. El detalle completo de cuándo es `null` está en
+[api.md](api.md); la regla que importa acá es que **la fila de referencia tiene
+que ser otra fila**: si la carta solo tiene precios de esta semana, no hay
+referencia y el delta es `null` en vez de un `0 %` que nadie sabe explicar.
+
+### La serie: `GET /cards/:id/prices/history`
+
+Un punto por día, con la última cotización de ese día. El `DISTINCT ON (day)`
+colapsa las N filas del día a una y el `ORDER BY` de afuera lo da vuelta para que
+la serie sea cronológica:
+
+```sql
+SELECT DISTINCT ON (day) day, s.market, s.low, s.mid, s.high, s."fetchedAt"
+FROM (
+  SELECT (p."fetchedAt" AT TIME ZONE 'UTC')::date AS day, p.market, …, p."fetchedAt"
+  FROM card_prices p
+  WHERE p."cardId" = $1 AND p."fetchedAt" >= $2
+) s
+ORDER BY day, s."fetchedAt" DESC
+```
+
+Cuatro cosas que no son negociables:
+
+1. **El `ORDER BY` interno empieza por `day`.** Si no, Postgres agrupa por otra
+   cosa y devuelve una serie silenciosamente distinta (gotcha 16).
+2. **El `AND "fetchedAt" >= $2` es lo que acota la respuesta** a `windowDays`
+   filas (una por día) y lo que deja al índice recortar la ventana en vez de
+   recorrer el histórico entero de la carta. No es una optimización: sin él, el
+   costo de este endpoint crece con la historia global de la carta.
+3. **Sin `variant`, el punto del día es el de mayor `market`.** Es el mismo
+   criterio "mejor precio disponible" que usa `sort=price` del catálogo, y es lo
+   que evita que una carta que solo tiene `reverseHolofoil` devuelva una serie
+   vacía.
+4. **No llama a nadie externo.** Es la única ruta de precios que no toca tcgdex ni
+   pokemontcg.io: lee Postgres y nada más, así que puede ser pública y estar en el
+   camino caliente de la ficha (`AGENTS.md` §3.1).
+
+### El agregado de la ventana
+
+`change` del endpoint del histórico (`{ changeUsd, changePercent }`) compara **el
+primer punto con `market` contra el último**. Es `null` — no `0` — cuando la serie
+está vacía, cuando hay un solo punto con precio, o cuando el primero es `0`
+(división por cero). Con la historia de `card_prices` de hoy (unos días) `null` es
+el caso más común, y hay que dibujarlo como "no hay histórico suficiente": un
+`0 %` afirma que el precio no se movió, que es un dato, y no lo es.
+
 ## El endpoint de refresco
 
 `POST /api/collections/:id/refresh-prices` → `CollectionsService.enqueueMissingPrices`:
@@ -433,10 +497,20 @@ fila con el del item.
 
 `refresh()` hace `createMany` con un `fetchedAt` nuevo. Por eso el
 `card_prices` crece y por eso el `DISTINCT ON` es indispensable. No hay
-limpieza: el histórico de precios es el feature.
+limpieza: **el histórico de precios es el feature**, y ahora eso es literal — es lo
+que alimenta `GET /cards/:id/prices/history` (la serie diaria) y el `change` de
+`GET /cards/:id/prices`. Antes de que existieran esas dos rutas, "el histórico es
+el feature" era una intención; ahora es la razón por la que las dos consultas
+leen la tabla en vez de agregar una.
 
 Para hacer space, un `DELETE FROM card_prices WHERE "fetchedAt" < now() - interval '90 days'`
-es seguro salvo que estés mostrando charts de evolución.
+es seguro **mientras no estés mostrando la serie**: el endpoint del histórico
+devuelve una ventana de hasta 365 días, así que podar a 90 días no rompe nada (la
+serie empieza a tener huecos y el `change` de la ficha pierde su fila de
+referencia), pero borra historia que un gráfico de evolución necesitaría.
+
+El `totalValueUsd` **no** depende de la poda: usa el `LATERAL ... LIMIT 1`, que
+corta en la primera fila del índice y nunca recorre el histórico.
 
 ## Ver también
 

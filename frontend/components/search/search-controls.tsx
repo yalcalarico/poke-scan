@@ -203,6 +203,25 @@ export function SearchControls({
  * llegaría nunca al chip ni al hint que explica por qué. Con `aria-disabled`
  * sigue siendo alcanzable, se anuncia como deshabilitado y el `Enter` no hace
  * nada, que es exactamente el contrato de un control deshabilitado.
+ *
+ * ─── Por qué NO se usa el `disabled` nuevo del `Chip` ───
+ *
+ * El `Chip` ganó una apariencia real de apagado, y podría parecer que este
+ * call site quedó viejo. No: el `disabled` del `Chip` trae `pointer-events-none`
+ * y el atributo nativo, o sea **justo las dos cosas que este chip no puede
+ * tener** —dejarse de hover y perder el tab order—. Por eso el apagado de acá
+ * está escrito a mano con `className`, que es lo que el `Chip` deja pasar al
+ * final del `cn()` y por lo tanto gana.
+ *
+ * Lo que sí queda es que el apagado real del `Chip` nunca se activa en esta
+ * pantalla, porque `disabled` es `false`. Revisado: no hay doble tratamiento.
+ * El `onClick` sigue siendo un no-op y el `hover` está neutralizado, así que el
+ * chip se ve y se anuncia como no disponible sin hacer nada.
+ *
+ * Un detalle que sí queda, y es preexistente: el `Chip` en modo `filter` le
+ * pone `aria-pressed`, así que el chip announces "no disponible, no
+ * seleccionado". Es correcto —`aria-pressed="false"` en un toggle apagado— y no
+ * se toca.
  */
 function SearchModeChip({
   label,

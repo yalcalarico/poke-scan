@@ -6,8 +6,11 @@
 export {
   CardPriceSection,
   heroPriceUsd,
+  priceWindowDelta,
   type CardPriceSectionProps,
+  type PriceWindowDelta,
 } from './card-price-section';
+export { PriceHistory, type PriceHistoryProps } from './price-history';
 export {
   freshestFetchedAt,
   isPriceStale,
@@ -19,6 +22,7 @@ export {
   type PriceDeltaTone,
 } from './price-delta';
 export { NO_PRICE_COPY, PriceHero, type PriceHeroProps } from './price-hero';
+export { Sparkline, type SparklinePoint, type SparklineProps } from './sparkline';
 export {
   countPricelessVariants,
   isPricelessVariant,

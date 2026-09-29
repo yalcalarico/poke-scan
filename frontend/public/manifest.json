@@ -6,7 +6,7 @@
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
+  "display_override": ["standalone", "minimal-ui"],
   "orientation": "portrait",
   "background_color": "#F4F4F6",
   "theme_color": "#F4F4F6",
@@ -34,16 +34,6 @@
       "purpose": "maskable"
     }
   ],
-  "share_target": {
-    "action": "/carta",
-    "method": "GET",
-    "enctype": "application/x-www-form-urlencoded",
-    "params": {
-      "title": "title",
-      "text": "text",
-      "url": "url"
-    }
-  },
   "shortcuts": [
     {
       "name": "Escanear una carta",

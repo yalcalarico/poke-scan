@@ -57,3 +57,22 @@ export {
   type ScanStage,
   type SessionEntry,
 } from './types';
+
+/**
+ * La sesión de escaneo persistida. Vive acá y no en `lib/api/` porque no habla
+ * con el backend: es estado del navegador con su propio ciclo de vida, y su
+ * hermano `token-storage.ts` está en `lib/api/` solo porque acompaña a `apiFetch`.
+ *
+ * `readSession` es segura de llamar desde el server (devuelve `[]`), así que un
+ * Server Component puede preguntar "¿hay algo guardado?" sin romper el render.
+ *
+ * No hay `countSession()`: el conteo sale de `readSession().length` para que el
+ * número y la lista que dibuja el `OrganizeSheet` no puedan divergir. Ver el
+ * comentario en `session-storage.ts`.
+ */
+export {
+  clearSession,
+  MAX_SESSION_ENTRIES,
+  readSession,
+  writeSession,
+} from './session-storage';

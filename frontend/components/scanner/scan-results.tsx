@@ -1,13 +1,14 @@
 'use client';
 
 import { Search } from 'lucide-react';
-import { useId, useState, type FormEvent } from 'react';
+import { useEffect, useId, useState, type FormEvent } from 'react';
 
 import { Alert, Button, EmptyState, Input, Sheet } from '@/components/ui';
 import type { IdentifiedCandidateDto, IdentifyResponseDto } from '@/types/api';
 
 import { CandidateCard } from './candidate-card';
 import { formatCount } from './copy';
+import { HAPTIC, haptic } from './haptics';
 import { CONFIDENT_SCORE } from './types';
 
 export interface ScanResultsProps {
@@ -49,6 +50,29 @@ export function ScanResults({
   const detected = extracted?.name ?? localNameGuess;
   const contextHint = extracted?.setHint ?? null;
   const total = data?.totalCandidates ?? 0;
+  const hasMatch = candidates.length > 0;
+
+  /*
+   * ─── Por qué la confirmación vive acá y no en la `CameraView` ───
+   *
+   * El momento de "salió una carta" es el mismo render en el que la pantalla
+   * hace `setSession(...)` **y** `setStage('results')`. Los dos `setState` caen
+   * en el mismo tick, así que React los batchea: la `CameraView` se desmonta
+   * antes de que corra un efecto que mire el contador de sesión. Un
+   * `useEffect` sobre `sessionCount` adentro del scanner no vibraría nunca — y no
+   * fallaría, que es peor.
+   *
+   * Este `Sheet` es lo que sobrevive a ese montaje (la pantalla lo renderiza
+   * siempre, con `open`), y abrirse con al menos una candidata *es* la
+   * confirmación: la mejor match ya entró a la sesión en el mismo tick.
+   *
+   * Con cero candidatas no vibra: el `EmptyState` de abajo es un fallo de
+   * lectura, y confirmar un "no encontramos nada" con la misma sensación que un
+   * acierto es mentirle al tacto.
+   */
+  useEffect(() => {
+    if (open && hasMatch) haptic(HAPTIC.confirmed);
+  }, [open, hasMatch]);
 
   const handleManualSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();

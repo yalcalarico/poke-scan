@@ -284,7 +284,7 @@ export default async function CardDetailPage({ params }: { params: Promise<{ id:
               </h2>
               <Link
                 href={searchHref}
-                className="inline-flex items-center gap-1 rounded-control text-label text-brand transition-colors duration-fast ease-standard hover:bg-surface-2 focus-visible:ring-2 focus-visible:ring-brand/20 dark:focus-visible:ring-brand/40"
+                className="inline-flex items-center gap-1 rounded-control text-label text-brand transition-colors duration-fast ease-standard hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--focus-ring)]"
               >
                 Ver el set
                 <ArrowRight aria-hidden="true" focusable="false" strokeWidth={1.75} className="h-4 w-4" />
@@ -295,9 +295,25 @@ export default async function CardDetailPage({ params }: { params: Promise<{ id:
               {setName} · {pluralize(related.length, 'carta', 'cartas')}
             </p>
 
+            {/*
+              Scroller horizontal de relacionadas. El `py-1` es **load-bearing**,
+              no espaciado: `overflow-x: auto` hace computar `overflow-y: auto`
+              (CSS Overflow 3), así que la fila recorta también en vertical, y el
+              `CardTile` lleva su indicador de foco 4 px por fuera del borde
+              (`outline-width: 2px` + `outline-offset: 2px`). Sin `pt-1` el
+              borde de arriba del indicador queda partido contra el `<ul>` en
+              cada tile. El `pb-1` estaba desde antes y hoy es el mínimo exacto
+              del lado de abajo.
+
+              Ojo con el `-mx-4` + `px-4` + `sm:mx-0 sm:px-0`: en mobile la fila
+              llega al borde de la pantalla y el padding compensa el `-mx-4`, que
+              es lo que deja asomar el último pill al scrollear. En `sm` se
+              anulan y la fila queda al ancho del `ScreenContainer`, que no
+              recorta.
+            */}
             <ul
               role="list"
-              className="-mx-4 mt-3 flex gap-3 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0"
+              className="-mx-4 mt-3 flex gap-3 overflow-x-auto px-4 py-1 sm:mx-0 sm:px-0"
             >
               {related.map((relatedCard) => (
                 <li key={relatedCard.id} className="w-24 shrink-0">

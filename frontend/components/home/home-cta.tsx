@@ -36,6 +36,14 @@ const SECONDARY_LABEL = 'Explorar el catálogo';
  * alguien sin sesión (que es el caso común). Un label que se corrige solo es más
  * barato que un placeholder, y el peor caso —que alguien entre al escáner en vez
  * de a sus colecciones— es una pantalla igual de válida.
+ *
+ * ## Los dos links de abajo llevan su propio `outline`
+ *
+ * Los dos CTA de arriba no lo necesitan: heredan el de `buttonVariants`. Estos
+ * dos sí, y lo llevan **hacia afuera** con `offset-2`, como `Button`/`Chip`/
+* `Select`: el `ring-brand/20` viejo medía 1.38:1 contra el canvas y SC 1.4.11
+ * pide 3:1. Los 4 px de aire entran de sobra —el padre es un `flex-col gap-3` y
+ * el hero no recorta— así que acá no hace falta padding de salvaguarda.
  */
 export function HomeCta() {
   const { isAuthenticated } = useAuth();
@@ -86,7 +94,7 @@ export function HomeCta() {
       {isAuthenticated ? (
         <Link
           href={"/ajustes"}
-          className="inline-flex items-center justify-center gap-1.5 rounded-control text-label text-secondary transition-colors duration-fast ease-standard hover:text-primary focus-visible:ring-2 focus-visible:ring-brand/20 dark:focus-visible:ring-brand/40"
+          className="inline-flex items-center justify-center gap-1.5 rounded-control text-label text-secondary transition-colors duration-fast ease-standard hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--focus-ring)]"
         >
           <UserRound aria-hidden="true" focusable="false" strokeWidth={1.75} className="h-4 w-4" />
           Ver tu perfil
@@ -96,7 +104,7 @@ export function HomeCta() {
           ¿Ya tenés cuenta?{' '}
           <Link
             href={"/login"}
-            className="rounded-control text-body-strong text-brand transition-colors duration-fast ease-standard hover:underline focus-visible:ring-2 focus-visible:ring-brand/20 dark:focus-visible:ring-brand/40"
+            className="rounded-control text-body-strong text-brand transition-colors duration-fast ease-standard hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--focus-ring)]"
           >
             Iniciá sesión
           </Link>

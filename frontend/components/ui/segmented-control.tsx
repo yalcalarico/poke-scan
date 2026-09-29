@@ -71,7 +71,13 @@ export function SegmentedControl<T extends string>({
             className={cn(
               'inline-flex h-11 min-w-0 flex-1 items-center justify-center gap-1.5 rounded-control px-3',
               'font-label transition-colors duration-fast ease-standard',
-              'focus-visible:ring-2 focus-visible:ring-brand/20 dark:focus-visible:ring-brand/40',
+              // Ver el bloque de `Button`: el indicador de foco es un `outline`
+              // a color pleno (WCAG 2.2 SC 1.4.11), no un `ring-brand/20` de
+              // 1.38:1. El `outline-offset` de 2 px invade el `gap-0.5` del
+              // vecino, y es aceptable: el grupo no tiene `overflow: hidden` y
+              // un anillo de foco que se solapa con el segmento contiguo se
+              // lee mejor que uno recortado.
+              'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--focus-ring)]',
               'disabled:pointer-events-none disabled:text-disabled',
               isActive
                 ? 'bg-primary text-inverse shadow-xs'

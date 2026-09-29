@@ -98,7 +98,7 @@ export function CandidateCard({ candidate, isBest, isInSession, onAdd }: Candida
 
         <Link
           href={`/carta/${encodeURIComponent(card.id)}`}
-          className="inline-flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-control px-3 text-label text-secondary transition-colors duration-fast ease-standard hover:bg-surface-3 hover:text-primary focus-visible:ring-2 focus-visible:ring-brand/20 dark:focus-visible:ring-brand/40"
+          className="inline-flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-control px-3 text-label text-secondary transition-colors duration-fast ease-standard hover:bg-surface-3 hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--focus-ring)]"
         >
           <ExternalLink aria-hidden="true" focusable="false" strokeWidth={1.75} className="h-4 w-4" />
           Ver carta

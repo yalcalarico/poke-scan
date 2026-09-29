@@ -98,6 +98,15 @@ export function CollectionDetailSkeleton() {
         </div>
       </div>
 
+      {/*
+        Scroller de la fila de filtros, con la misma forma que
+        `collection-filters.tsx`. **Sin `py-1` a propósito, y no es un olvido:**
+        acá no hay `Chip`s reales sino `Skeleton`s que no son enfocables, así que
+        no hay `outline` que se recorte. Y el alto de esta fila tiene que
+        *matchear* la fila real de filtros: si el skeleton mide 4 px menos, la
+        grilla de cartas salta cuando llega el contenido (§9.1). El `py-1` que
+        necesita el `outline` se lo pone el componente real, no el skeleton.
+      */}
       <div className="-mx-4 flex gap-2 overflow-hidden px-4 sm:mx-0 sm:px-6" aria-hidden="true">
         <ChipSkeleton width="w-16" />
         <ChipSkeleton width="w-24" />

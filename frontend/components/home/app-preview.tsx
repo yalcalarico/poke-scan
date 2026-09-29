@@ -35,6 +35,41 @@ export interface AppPreviewProps {
  *   pantalla de búsqueda, que es lo que la home quiere previsualizar.
  *
  * Server Component: no tiene estado ni handlers, y el `CardTile` tampoco (§8.1).
+ *
+ * ## `aria-hidden`: el mock es decorativo y repite lo de abajo
+ *
+ * Los tres `CardTile` de acá son cartas reales del catálogo, así que cada uno
+ * anuncia "Carta <nombre> <rareza> del set <set>" por su `alt`. Para quien entra
+ * a `/` con lector de pantalla eso son ~20 palabras que **no aportan nada**: las
+ * tres `FeatureGrid` de más abajo ya dicen qué hace la app, y en el peor de los
+ * casos el texto empuja el CTA primario más abajo de donde tiene que estar.
+ *
+ * Se tapa el bloque entero: no se borran las imágenes ni se toca el layout, solo
+ * se lo saca del árbol de accesibilidad. Es el mismo criterio de `AppMark`, que
+ * usa `alt=""` con el motivo escrito ("el nombre de la app siempre está al lado
+ * como texto").
+ *
+ * ## Por qué además `inert`
+ *
+ * Los tres `CardTile` son `<Link>`, o sea **enfocables**. Un `aria-hidden` solo
+ * los saca del árbol de accesibilidad pero los deja en el recorrido del Tab, y
+ * el resultado es peor que antes: tres paradas donde el foco se mueve y el
+ * lector no anuncia nada (WCAG 2.2 SC 4.1.2 y la regla de axe
+ * `aria-hidden-focus`). `inert` cierra las dos puertas —ni se anuncian ni se
+ * enfocan— y es el mismo par que usa el `Sheet` para el resto del documento
+ * (`sheet.tsx:86-98`).
+ *
+ * El costo es que las cartas del mock dejan de ser tocables. Es el costo
+ * correcto: son un preview, los destinos reales están en las `FeatureGrid` de
+ * abajo, y tocar una carta al azar y saltar a `/carta/[id]` desde el hero es una
+ * navegación que nadie pidió.
+ *
+ * ## Por qué va en el `div` interno y no en la `Surface`
+ *
+ * Porque `SurfaceProps` todavía no declara `aria-hidden`
+ * (`components/ui/surface.tsx:7-20`) y pasárselo da error de tipos. El `div` es
+ * el único hijo, así que taparlo cubre el 100 % de lo anunciable. Si algún día
+ * la `Surface` acepta el atributo, esto se sube un nivel.
  */
 export function AppPreview({ cards }: AppPreviewProps) {
   const [featured, ...rest] = cards;
@@ -47,7 +82,13 @@ export function AppPreview({ cards }: AppPreviewProps) {
     // Sin `overflow-hidden`: el `CardTile` sube medio píxel en hover y un clip
     // acá lo cortaría justo en el movimiento (§0.2).
     <Surface elevated padded={false} className="rounded-panel">
-      <div className="grid gap-4 p-4 sm:grid-cols-[minmax(0,9rem)_minmax(0,1fr)] sm:gap-5 sm:p-5">
+      <div
+        // Ver el bloque de arriba: decorativo, `aria-hidden` + `inert` para que
+        // no deje links mudos en el recorrido del Tab.
+        aria-hidden="true"
+        inert
+        className="grid gap-4 p-4 sm:grid-cols-[minmax(0,9rem)_minmax(0,1fr)] sm:gap-5 sm:p-5"
+      >
         <div className="mx-auto w-28 shrink-0 sm:mx-0 sm:w-full">
           <CardTile card={featured} variant="collection" />
         </div>

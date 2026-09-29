@@ -62,6 +62,66 @@ export function heroPriceUsd(prices: readonly PriceDto[]): number | null {
   return null;
 }
 
+/** El delta que se le pasa al `PriceDelta`, o `null` si no hay ninguno. */
+export interface PriceWindowDelta {
+  changeUsd: number | null;
+  changePercent: number | null;
+  /** `undefined` = "sin ventana": el `PriceDelta` muestra solo la fecha. */
+  windowLabel?: string;
+}
+
+/**
+ * El delta de la ventana, leído de los precios que ya están en memoria.
+ *
+ * ## De dónde sale
+ *
+ * De la **primera variante que lo trae**, en el orden de `sortPricesByVariant`, que
+ * es el mismo orden que usa `heroPriceUsd`. Esa coincidencia importa: si la
+ * píldora hablara de la variación de una variante y la cifra grande de otra, la
+ * pantalla mostraría dos precios distintos para la misma carta.
+ *
+ * ## Las dos formas, y por qué se leen las dos
+ *
+ * El backend manda el delta en dos formas: los tres campos planos
+ * (`changeUsd` / `changePercent` / `windowLabel`) y el objeto anidado `change`.
+ * Son **la misma cuenta**, y leer las dos es lo que evita que el delta desaparezca
+ * si una de las dos deja de venir. Los planos ganan cuando están.
+ *
+ * ## El `null` no se convierte en `0`
+ *
+ * Los tres vienen juntos o en `null`, y `null` significa "se calculó y no hay con
+ * qué comparar" (un solo punto con precio, o el primero en cero). Se propaga tal
+ * cual y el `PriceDelta` lo traduce a la fecha de actualización, que es lo único
+ * que sabe decir con verdad. Convertirlo a `0` afirmaría que el precio no se movió,
+ * que es un dato.
+ */
+export function priceWindowDelta(prices: readonly PriceDto[]): PriceWindowDelta | null {
+  for (const price of sortPricesByVariant(prices)) {
+    const flatUsd = price.changeUsd;
+    const flatPercent = price.changePercent;
+
+    const hasFlat =
+      typeof flatUsd === 'number' || typeof flatPercent === 'number' || flatUsd === null;
+    if (hasFlat) {
+      return {
+        changeUsd: flatUsd ?? null,
+        changePercent: flatPercent ?? null,
+        windowLabel: price.windowLabel ?? undefined,
+      };
+    }
+
+    const nested = price.change;
+    if (nested) {
+      return {
+        changeUsd: nested.usd,
+        changePercent: nested.percent,
+        windowLabel: `últimos ${nested.windowDays} días`,
+      };
+    }
+  }
+  return null;
+}
+
 /**
  * Los precios de la carta en la ficha: el `PriceHero` siempre y el detalle en un
  * `Sheet`. No queda el state `revalidating` que tenía el `CardPriceSection`
@@ -148,6 +208,27 @@ export function CardPriceSection({ cardId, initialPrices = [] }: CardPriceSectio
   const hasPrices = prices.length > 0;
 
   /*
+   * El delta que se le pasa al `PriceHero`.
+   *
+   * Se lee de los **tres campos planos** (`changeUsd` / `changePercent` /
+   * `windowLabel`) y se cae a `change` anidado como respaldo. Los dos son la
+   * misma cuenta del backend con dos formas distintas: los planos son de primer
+   * nivel y es lo que manda hoy, y el anidado es lo que ya leía esta pantalla
+   * antes de que existieran. Leer los dos y no uno es lo que evita que el delta
+   * desaparezca si uno de los dos deja de venir.
+   *
+   * Los tres vienen **juntos o `null`**, y `null` no se traduce a `0`: el
+   * `PriceDelta` ya sabe distinguir "no hay variación calculable" de "no se
+   * movió", que son dos cosas opuestas, y es la regla del proyecto no inventar
+   * un dato (`price-delta.tsx`).
+   *
+   * El `windowLabel` solo se pasa si hay delta: sin él el `PriceHero` usaría el
+   * default "últimos 30 días" al lado de una fecha de actualización, que son dos
+   * afirmaciones sobre ventanas distintas en la misma línea.
+   */
+  const delta = priceWindowDelta(prices);
+
+  /*
    * `empty` no necesita un bloque propio: lo muestra el `PriceHero` con el guion
    * (`—`, `aria-label="Sin precio"`) y su `Alert` de `warning`, porque "esta carta
    * no tiene precio" y "no hay cifra" son el mismo hecho. Pintarlo también acá
@@ -172,8 +253,12 @@ export function CardPriceSection({ cardId, initialPrices = [] }: CardPriceSectio
       ) : (
         <PriceHero
           usd={usd}
+          cardId={cardId}
           isLoading={isLoading}
           updatedAt={updatedAt}
+          changeUsd={delta?.changeUsd}
+          changePercent={delta?.changePercent}
+          windowLabel={delta?.windowLabel}
           onOpenDetails={hasPrices ? () => setIsSheetOpen(true) : undefined}
         />
       )}

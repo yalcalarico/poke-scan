@@ -48,7 +48,9 @@ export function IconButton({
         'inline-flex shrink-0 items-center justify-center rounded-control text-secondary',
         'transition-colors duration-fast ease-standard',
         'hover:bg-surface-3 hover:text-primary',
-        'focus-visible:ring-2 focus-visible:ring-brand/20 dark:focus-visible:ring-brand/40',
+        // Ver el bloque de `Button`: el indicador de foco es un `outline` a
+        // color pleno (WCAG 2.2 SC 1.4.11), no un `ring-brand/20` de 1.38:1.
+        'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--focus-ring)]',
         'disabled:pointer-events-none disabled:text-disabled',
         SIZES[size],
         className,

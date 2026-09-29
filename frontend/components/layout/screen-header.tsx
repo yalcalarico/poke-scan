@@ -20,10 +20,19 @@ export interface ScreenHeaderProps {
  * El header de una pantalla, no un header global. Referencia histórica: la app
  * anterior tenía un `TopBar` fijo para todas.
  *
- * Un header global obliga a pelear desde adentro con cada caso: la pantalla de
+* Un header global obliga a pelear desde adentro con cada caso: la pantalla de
  * escaneo no quiere un header, la de colección quiere el nombre de la colección
- * y la de búsqueda quiere un "cerrar". Uno por pantalla los resuelve en el lugar
+ * y la de búsqueda quiere un "cerrar". Uno por pantalla lo resuelve en el lugar
  * donde se conoce la información.
+ *
+ * ## El indicador de foco del chevron
+ *
+ * `outline` con `offset-2` y no el `ring-brand/40` de antes: el anillo no llegaba
+ * a los 3:1 de WCAG 2.2 SC 1.4.11, y el `ring` además es un `box-shadow`, que el
+ * UA fuerza a `none` en high contrast. Los 4 px de aire entran porque el
+ * `-ml-2` del chevron le deja 8 px contra el borde del header: 2 de offset + 2
+ * de grosor, de sobra. El header es `sticky` pero no recorta, así que acá no hay
+ * que agregar padding.
  */
 export function ScreenHeader({ title, back, action, subtitle, className }: ScreenHeaderProps) {
   return (
@@ -39,7 +48,7 @@ export function ScreenHeader({ title, back, action, subtitle, className }: Scree
             <Link
               href={back.href}
               aria-label={back.label ? `Volver a ${back.label}` : 'Volver'}
-              className="-ml-2 flex h-10 w-10 items-center justify-center rounded-full text-secondary transition-colors duration-fast hover:bg-surface-3 hover:text-primary focus-visible:ring-2 focus-visible:ring-brand/40"
+              className="-ml-2 flex h-10 w-10 items-center justify-center rounded-full text-secondary transition-colors duration-fast hover:bg-surface-3 hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--focus-ring)]"
             >
               <ChevronLeft className="h-6 w-6" aria-hidden="true" />
             </Link>

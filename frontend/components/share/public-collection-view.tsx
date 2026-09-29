@@ -1,8 +1,8 @@
 import Link from 'next/link';
 import { Layers, Plus, Search, Sparkles } from 'lucide-react';
 
-import { CardGrid } from '@/components/cards/card-grid';
 import { InstallCta } from '@/components/share/install-cta';
+import { PublicCardGrid } from '@/components/share/public-card-grid';
 import { Alert, Avatar, EmptyState, Stat, StatGrid, buttonVariants } from '@/components/ui';
 import { cn } from '@/lib/cn';
 import { formatDate, formatPrice, pluralize } from '@/lib/format';
@@ -113,6 +113,14 @@ export function PublicCollectionView({ data }: PublicCollectionViewProps) {
             </span>
           </h2>
 
+          {/*
+            El troceo vive en `PublicCardGrid`, un client component, y no acá:
+            `public-collection-view.tsx` es server-safe y 500 `CardTile` en un
+            Server Component se mandan como SSR completo. El wrapper solo decide
+            **cuántas** se pintan; el estado vacío sigue siendo de esta pantalla
+            porque es una frase sobre la colección del dueño, no sobre la
+            paginación.
+          */}
           {items.length === 0 ? (
             <EmptyState
               kind="no-results"
@@ -122,18 +130,7 @@ export function PublicCollectionView({ data }: PublicCollectionViewProps) {
               description={`${ownerDisplayName} todavía no agrego cartas a esta colección.`}
             />
           ) : (
-            <CardGrid
-              as="ul"
-              variant="collection"
-              label={`Cartas de ${ownerDisplayName}`}
-              entries={items.map((item) => ({
-                card: item.card,
-                quantity: item.quantity,
-                // La misma carta puede estar dos veces con variantes distintas
-                // (holofoil y normal), y la `key` sola las confunde.
-                key: `${item.variant}-${item.condition}-${item.id}`,
-              }))}
-            />
+            <PublicCardGrid items={items} label={`Cartas de ${ownerDisplayName}`} />
           )}
         </section>
       </main>

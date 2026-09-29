@@ -44,11 +44,29 @@ export interface CollectionFiltersProps {
  *
  * ## Por qué "Intercambio" no es una tercera pestaña
  *
- * Como checkbox al lado de un tablist, "Duplicadas" y "Para intercambio" se
- * podían combinar. Dos chips con `aria-pressed` no: si "Todas" y "Intercambio"
+* Como checkbox al lado de un tablist, "Duplicadas" y "Para intercambio" se
+ * podían combinar. Dos chips con `aria-pressed` no: si "Todas" e "Intercambio"
  * estuvieran ambos presionados, "Todas" no estaría diciendo nada. "Intercambio"
  * es entonces un modificador independiente con su propio `aria-pressed`, y
  * "Todas" es el estado sin filtros — por eso "Ver todas" lo apaga.
+ *
+ * ## ─── El `py-1` de la fila es estructural, no decoración ───
+ *
+ * No se puede borrar aunque se vea como "4 px de más".
+ *
+ * El `overflow-x-auto` recorta contra los bordes de su propia caja, y lo único
+ * que separa a los chips de esos bordes es el padding **vertical**. El foco de
+ * un `Chip` son 2 px de `outline` con `offset-2`: 4 px por fuera del pill. Sin
+ * el `py-1`, el `outline` superior e inferior se cortan a la mitad y el indicador
+ * se ve como un error de render —una línea de 1 px, o directamente nada— en
+ * lugar de como un foco.
+ *
+ * Con 4 px queda **justo**, y justo es sin margen: con layout fraccionario o un
+ * zoom del sistema un borde de 4 px puede caer en el medio píxel y recortarse.
+ * El binder paga 6 px por eso (`binder-view.tsx:212`, `py-1.5`). Acá los chips
+ * son 40 px de alto contra 4 px de aire, así que subirlo a `py-1.5` suma 8 px a
+ * una fila que ya está pegada al contador de arriba: 4 px es el piso, y si
+ * alguna vez hay que tocarlo, para arriba.
  */
 export function CollectionFilters({
   scope,
@@ -67,7 +85,7 @@ export function CollectionFilters({
     <div
       role="group"
       aria-label="Filtros de la colección"
-      className="-mx-4 flex gap-2 overflow-x-auto px-4 sm:mx-0 sm:px-0"
+      className="-mx-4 flex gap-2 overflow-x-auto px-4 py-1 sm:mx-0 sm:px-0"
     >
       <Chip
         active={isAll}

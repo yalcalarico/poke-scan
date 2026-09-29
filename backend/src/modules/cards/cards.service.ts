@@ -1,10 +1,17 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
+import { NUMERIC_CARD_NUMBER } from '../../common/sql/numeric-number.js';
 import { SyncPricesService, PRICE_MAX_AGE_MS } from '../../jobs/sync-prices.service.js';
 import { PrismaService } from '../../prisma/index.js';
 import { CurrencyService, type RateView } from '../currency/currency.service.js';
 import type { RateType } from '../currency/currency.constants.js';
 import { CardPricesQueryDto } from './dto/card-prices-query.dto.js';
+import {
+  PRICE_HISTORY_DEFAULT_DAYS,
+  PRICE_HISTORY_MAX_DAYS,
+  PRICE_HISTORY_MIN_DAYS,
+  PriceHistoryQueryDto,
+} from './dto/price-history-query.dto.js';
 import { type CardSearchField, SearchCardsDto } from './dto/search-cards.dto.js';
 
 const DEFAULT_PAGE = 1;
@@ -28,7 +35,17 @@ const CHANGE_WINDOW_DAYS = 30;
  */
 const CHANGE_MAX_REFERENCE_AGE_DAYS = 90;
 
-const NUMERIC_NUMBER = Prisma.sql`CAST(NULLIF(regexp_replace(c.number, '\\D', '', 'g'), '') AS INTEGER)`;
+/**
+ * Rótulo de la ventana del delta. Lo manda el backend y el cliente lo muestra al
+ * lado de la píldora: si la ventana cambia, el texto cambia con ella y no queda
+ * un `"últimos 30 días"` hardcodeado en dos lugares.
+ */
+const CHANGE_WINDOW_LABEL = `últimos ${CHANGE_WINDOW_DAYS} días`;
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+/** Alias local: el literal vive en `common/sql/numeric-number.ts`. */
+const NUMERIC_NUMBER = NUMERIC_CARD_NUMBER;
 
 /**
  * Último precio de mercado por carta, para `sort=price`.
@@ -120,6 +137,20 @@ export interface CardPriceDto {
    * de actualización. Ver `priceChange()` para las reglas de cuándo es `null`.
    */
   change?: PriceChangeDto | null;
+  /**
+   * Los tres campos que consume la píldora de variación del cliente
+   * (`PriceDelta`), con los nombres que espera. Son **la misma** cuenta que
+   * `change`, no un segundo cálculo: el endpoint de histórico los manda
+   * aparte porque son de primer nivel y no anidados.
+   *
+   * Los tres van **siempre juntos o nunca**: si no hay nada honesto que decir,
+   * los tres vienen `null` (no `0`, no `undefined`). Un `0 %` afirma que el
+   * precio no se movió, que es un dato; un `null` dice que no se puede saber.
+   */
+  changeUsd?: number | null;
+  changePercent?: number | null;
+  /** "últimos 30 días". `null` cuando no hay delta. */
+  windowLabel?: string | null;
 }
 
 /**
@@ -145,6 +176,58 @@ export interface PriceArsDto {
   mid: number | null;
   high: number | null;
   market: number | null;
+}
+
+/**
+ * Un punto de la serie de `GET /cards/:id/prices/history`.
+ *
+ * Un punto por **día**, no por fila: `card_prices` es append-only y una carta
+ * refrescada seis veces el mismo día tiene seis filas, que para un gráfico son
+ * el mismo punto con ruido.
+ */
+export interface PriceHistoryPointDto {
+  /** El día en UTC, `YYYY-MM-DD`. Es la etiqueta del eje. */
+  date: string;
+  /** `fetchedAt` real de la fila que se eligió para ese día. */
+  fetchedAt: string;
+  market: number | null;
+  low: number | null;
+  mid: number | null;
+  high: number | null;
+}
+
+/** El delta agregado de la ventana, o `null` si no hay nada honesto que decir. */
+export interface PriceWindowChangeDto {
+  /** Con signo: `-2.5` es una caída. Siempre USD. */
+  changeUsd: number;
+  /** Cero decimales, redondeo simétrico (misma regla que `priceChange`). */
+  changePercent: number;
+}
+
+/**
+ * `GET /cards/:id/prices/history`: la serie de precios de una carta.
+ *
+ * Sale de la tabla `card_prices` que **ya existe** y que ya está indexada por
+ * `(cardId, variant, fetchedAt)`. No hay tabla nueva, ni columna nueva, ni
+ * snapshot diario: el histórico se arma en el momento con un `DISTINCT ON` sobre
+ * el día. Agregar una tabla de snapshots obligaría a backfillear y a mantenerla
+ * en cada refresco, para terminar guardando lo mismo con un día de atraso.
+ */
+export interface PriceHistoryDto {
+  cardId: string;
+  /** La variante de la serie, o `null` si es "la mejor disponible por día". */
+  variant: string | null;
+  /** Siempre `USD`: la conversión a ARS la hace el cliente. */
+  currency: 'USD';
+  /** La ventana efectiva, ya recortada a 7..365. */
+  windowDays: number;
+  /** Fecha del primer punto con `market`, o `null` si la serie está vacía. */
+  from: string | null;
+  /** Fecha del último punto con `market`, o `null` si la serie está vacía. */
+  to: string | null;
+  /** Un punto por día, en orden cronológico ascendente. */
+  points: PriceHistoryPointDto[];
+  change: PriceWindowChangeDto | null;
 }
 
 export interface ConversionMeta {
@@ -235,6 +318,16 @@ interface ReferencePriceRow {
   variant: string;
   market: Prisma.Decimal | null;
   mid: Prisma.Decimal | null;
+  fetchedAt: Date;
+}
+
+/** Una fila de `priceHistory`: un día, con la cotización elegida de ese día. */
+interface PriceHistoryRow {
+  date: string;
+  market: Prisma.Decimal | null;
+  low: Prisma.Decimal | null;
+  mid: Prisma.Decimal | null;
+  high: Prisma.Decimal | null;
   fetchedAt: Date;
 }
 
@@ -340,6 +433,62 @@ function priceChange(
     percent: percent < 0 ? -Math.round(-percent) : Math.round(percent),
     windowDays: CHANGE_WINDOW_DAYS,
     from: new Date(referenceDate).toISOString(),
+  };
+}
+
+/**
+ * La ventana efectiva de la serie, recortada a 7..365 días.
+ *
+ * Se **recorta** en vez de fallar: `?days=5000` es alguien que quiere todo lo que
+ * haya, y un 400 lo obliga a adivinar el tope. Abajo de una semana la "serie"
+ * son un par de puntos sueltos, que no es un histórico; arriba de un año el
+ * payload crece sin que el gráfico cambie (una fila por día, y el refresco
+ * diario es el techo real de cuántos puntos hay).
+ */
+function resolveHistoryWindow(days: number | undefined): number {
+  if (days === undefined) return PRICE_HISTORY_DEFAULT_DAYS;
+  return Math.min(Math.max(days, PRICE_HISTORY_MIN_DAYS), PRICE_HISTORY_MAX_DAYS);
+}
+
+/**
+ * El delta agregado de una serie, o `null` cuando no hay nada honesto que decir.
+ *
+ * Se compara **el primer punto con `market` contra el último**, no contra el
+ * precio actual ni contra una interpolación:
+ *
+ * - **Sin puntos con `market`, o con uno solo → `null`.** Un delta necesita dos
+ *   extremos: con un punto el "cambio" sería `0 %`, que afirma que el precio no
+ *   se movió. Con la historia de `card_prices` de hoy (unos días) este es el caso
+ *   más común, y por eso la respuesta tiene que poder decir "no sé" en vez de
+ *   mentir con un cero.
+ * - **El primero en `0` → `null`**, por división por cero.
+ * - **Dos extremos iguales → `{ 0, 0 }`**: ahí sí sabemos que no se movió, y un
+ *   `null` lo escondería.
+ *
+ * Solo se usa `market`, la misma columna que suma el `totalValueUsd` de una
+ * colección: una serie en la que un día el número es `mid` y al día siguiente
+ * `market` mide un cambio de método de valuación, no de precio.
+ */
+function windowChange(
+  points: PriceHistoryPointDto[],
+): PriceWindowChangeDto | null {
+  const withMarket = points.filter(
+    (point): point is PriceHistoryPointDto & { market: number } => point.market !== null,
+  );
+  if (withMarket.length < 2) return null;
+
+  const first = withMarket[0]!;
+  const last = withMarket[withMarket.length - 1]!;
+  if (first.market === 0) return null;
+
+  const changeUsd = last.market - first.market;
+  const changePercent = (changeUsd / first.market) * 100;
+
+  return {
+    changeUsd: round2(changeUsd),
+    // Redondeo simétrico: `Math.round(-72.5)` da -72, y "cayó 73 %" con un -72.5
+    // exacto debería decir -73. Misma regla que `priceChange`.
+    changePercent: changePercent < 0 ? -Math.round(-changePercent) : Math.round(changePercent),
   };
 }
 
@@ -516,6 +665,12 @@ export class CardsService {
       };
 
       dto.change = priceChange(dto, reference.get(price.variant) ?? null);
+      // Los campos planos son el **mismo** delta con los nombres que consume la
+      // píldora del cliente (`PriceDelta`). Se derivan, no se recalculan: dos
+      // cálculos del mismo número divergen apenas una regla cambia.
+      dto.changeUsd = dto.change?.usd ?? null;
+      dto.changePercent = dto.change?.percent ?? null;
+      dto.windowLabel = dto.change === null ? null : CHANGE_WINDOW_LABEL;
 
       // Espejo de los campos USD: un precio tiene 4 valores, no 1.
       if (rate) {
@@ -541,6 +696,127 @@ export class CardsService {
     }
 
     return result;
+  }
+
+  /**
+   * `GET /cards/:id/prices/history`: la serie de precios, **una fila por día**.
+   *
+   * ## No hay tabla nueva, y por qué
+   *
+   * `card_prices` ya es append-only con `@@index([cardId, variant, fetchedAt])`:
+   * una carta refrescada seis veces el mismo día tiene seis filas y la historia
+   * ya está guardada. El histórico se arma **en el momento**, con un `DISTINCT ON`
+   * sobre el día. Una tabla de snapshots diarios obligaría a backfillear lo que
+   * ya está, a escribirla en cada refresco y a conservarla para siempre: mismo
+   * dato, un día de atraso y un job más.
+   *
+   * ## No llama a nadie externo
+   *
+   * Es la única parte del sistema de precios que **no** toca tcgdex ni pokemontcg.io
+   * (`AGENTS.md` §3.1): lee Postgres y nada más. Por eso puede ser pública y
+   * estar en el camino caliente de la ficha de carta.
+   *
+   * La carta va en paralelo con la serie: `getById` es un index lookup por PK que
+   * además tira el 404 si el id no está en el catálogo, así que consultarlo no
+   * cuesta un round-trip extra.
+   */
+  async getPriceHistory(
+    id: string,
+    query: PriceHistoryQueryDto = {},
+  ): Promise<PriceHistoryDto> {
+    const windowDays = resolveHistoryWindow(query.days);
+    const from = new Date(Date.now() - windowDays * DAY_MS);
+
+    const [card, rows] = await Promise.all([
+      this.getById(id),
+      this.priceHistoryRows(id, query.variant ?? null, from),
+    ]);
+
+    const points: PriceHistoryPointDto[] = rows.map((row) => ({
+      date: row.date,
+      fetchedAt: toIso(row.fetchedAt) ?? row.date,
+      market: toNumber(row.market),
+      low: toNumber(row.low),
+      mid: toNumber(row.mid),
+      high: toNumber(row.high),
+    }));
+
+    const withMarket = points.filter(
+      (point): point is PriceHistoryPointDto & { market: number } => point.market !== null,
+    );
+
+    return {
+      cardId: card.id,
+      variant: query.variant ?? null,
+      currency: 'USD',
+      windowDays,
+      from: withMarket[0]?.date ?? null,
+      to: withMarket[withMarket.length - 1]?.date ?? null,
+      points,
+      change: windowChange(points),
+    };
+  }
+
+  /**
+   * Un punto por día de la serie.
+   *
+   * El `DISTINCT ON (day)` es el que colapsa las N filas del día a una, y el
+   * `ORDER BY` de adentro **empieza por `day`** porque si no Postgres agrupa por
+   * otra cosa y devuelve una serie silenciosamente distinta (gotcha 16). El
+   * `ORDER BY` de afuera vuelve a subir: el `DISTINCT ON` trabaja al revés
+   * (`fetchedAt DESC` para ganar con la última del día) y la respuesta tiene que
+   * ser cronológica.
+   *
+   * Sin `variant`, el criterio del día es `market DESC`: la **mejor** cotización
+   * disponible de la carta ese día, el mismo "mejor precio disponible" que usa
+   * `sort=price` del catálogo. Es lo que evita que una carta que solo tiene
+   * `reverseHolofoil` devuelva una serie vacía.
+   *
+   * El `AND "fetchedAt" >= from` no es una optimización: es lo que acota la
+   * respuesta a `windowDays` filas (una por día) y lo que deja al índice
+   * `card_prices(cardId, variant, fetchedAt)` recortar la ventana en vez de
+   * recorrer el histórico entero de la carta.
+   */
+  private async priceHistoryRows(
+    cardId: string,
+    variant: string | null,
+    from: Date,
+  ): Promise<PriceHistoryRow[]> {
+    const variantFilter =
+      variant === null ? Prisma.empty : Prisma.sql`AND p.variant = ${variant}`;
+    const pickOfTheDay =
+      variant === null
+        ? Prisma.sql`s.market DESC NULLS LAST, s."fetchedAt" DESC`
+        : Prisma.sql`s."fetchedAt" DESC`;
+
+    return this.prisma.$queryRaw<PriceHistoryRow[]>(Prisma.sql`
+      SELECT
+        latest.day::text AS "date",
+        latest.market AS "market",
+        latest.low AS "low",
+        latest.mid AS "mid",
+        latest.high AS "high",
+        latest."fetchedAt" AS "fetchedAt"
+      FROM (
+        SELECT DISTINCT ON (day)
+          day, s.market, s.low, s.mid, s.high, s."fetchedAt"
+        FROM (
+          SELECT
+            (p."fetchedAt" AT TIME ZONE 'UTC')::date AS day,
+            p.market AS market,
+            p.low AS low,
+            p.mid AS mid,
+            p.high AS high,
+            p."fetchedAt" AS "fetchedAt"
+          FROM card_prices p
+          WHERE p."cardId" = ${cardId}
+            AND p."fetchedAt" >= ${from}
+            ${variantFilter}
+        ) s
+        ORDER BY day, ${pickOfTheDay}
+      ) latest
+      ORDER BY latest.day ASC
+    `);
   }
 
   /**

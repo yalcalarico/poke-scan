@@ -1,6 +1,6 @@
 # API — referencia de endpoints
 
-> Los 40 endpoints del backend y cómo llamarlos: método, ruta, auth, query
+> Los 42 endpoints del backend y cómo llamarlos: método, ruta, auth, query
 > params con su validación, body (el DTO real), respuesta (la forma real),
 > errores posibles y un ejemplo. Si vas a tocar un controller, este es el doc.
 
@@ -16,8 +16,8 @@
 | [Salud](#salud) | 1 |
 | [Auth](#auth) | 4 |
 | [Usuarios](#usuarios) | 1 |
-| [Cartas y sets](#cartas-y-sets) | 6 |
-| [Colecciones](#colecciones) | 13 |
+| [Cartas y sets](#cartas-y-sets) | 7 |
+| [Colecciones](#colecciones) | 14 |
 | [Compartir](#compartir) | 6 |
 | [Moneda](#moneda) | 2 |
 | [Amigos](#amigos) | 7 |
@@ -458,6 +458,11 @@ interface CardPriceDto {
   currency: string; source: string; fetchedAt: string;
   priceArs?: { low: number|null; mid: number|null; high: number|null; market: number|null } | null;
   change?: PriceChangeDto | null;   // ver "Variación de 30 días" abajo
+  // Los tres mismos números, planos, con los nombres que consume la píldora de
+  // variación del cliente (`PriceDelta`). Ver "Variación de 30 días".
+  changeUsd?: number | null;
+  changePercent?: number | null;
+  windowLabel?: string | null;      // "últimos 30 días"
 }
 
 interface PriceChangeDto {
@@ -472,13 +477,21 @@ interface ConversionMeta {
 }
 ```
 
-#### Variación de 30 días (`change`)
+#### Variación de 30 días (`change`, `changeUsd`, `changePercent`, `windowLabel`)
 
 `change` mide el precio de referencia contra la ventana de 30 días. No hay tabla
 nueva: `card_prices` es append-only, así que el valor viejo sale de un
 `DISTINCT ON (variant) ... WHERE "fetchedAt" < now() - 30 días`, y solo lo
 calcula este endpoint (los precios de items de colección y del link público no lo
 traen, así que ahí el campo viene ausente).
+
+**`changeUsd`, `changePercent` y `windowLabel` son los mismos tres números,
+planos**, con los nombres que la píldora de variación del cliente consume
+(`changeUsd`, `changePercent`, `windowLabel`). No son un segundo cálculo: se
+derivan del `change` ya calculado, así que no pueden divergir. Van **los tres o
+ninguno**: cuando no hay nada honesto que decir vienen los tres en `null`
+(`windowLabel` incluido), nunca `0`. Un `0 %` afirma que el precio no se movió, y
+eso es un dato.
 
 **Qué precio se compara:** `market` y, si es `null`, `mid` — la misma precedencia
 que usa el cliente para elegir la cifra del hero (`heroPriceUsd` en
@@ -499,6 +512,12 @@ no de precio.
 `from` viaja siempre que hay `change`: es la fecha real de la fila usada, que
 puede ser más vieja que la ventana. El cliente puede mostrarla en vez de la
 ventana cuando quiera no mentir.
+
+> El **histórico completo** de la carta (la serie diaria y el delta agregado de la
+> ventana) está en [`GET /cards/:id/prices/history`](#get-apicardsidpriceshistory).
+> Acá el delta es "el precio de **hoy** contra la fila de referencia", que es lo
+> que necesita la ficha; el endpoint del histórico es el que responde "cómo se
+> movió dentro de la ventana".
 
 **Costo:** una query extra por carta, en paralelo con `getPricesForCard`, sobre
 `card_prices(cardId, variant, fetchedAt)` — el índice que ya existía. Medido con
@@ -562,6 +581,114 @@ precio conocido con la lista `prices` vacía, sin error. Ver
 
 ```bash
 curl 'http://localhost:3001/api/cards/base1-4/prices?currency=ARS&rateType=blue'
+```
+
+### `GET /api/cards/:id/prices/history`
+
+Público. Query `PriceHistoryQueryDto` (`cards/dto/price-history-query.dto.ts`):
+
+| Param | Reglas | Default | Efecto |
+|---|---|---|---|
+| `variant` | `@IsIn(CARD_VARIANTS)` (los 8 valores) | — | Acota la serie a esa variante |
+| `days` | `@Type(() => Number)`, `@IsInt()` | `30` | Ventana **recortada** a 7..365 |
+
+**200** → `PriceHistoryDto`:
+
+```ts
+interface PriceHistoryDto {
+  cardId: string;
+  variant: string | null;      // null = serie "mejor disponible por día"
+  currency: 'USD';             // la conversión a ARS la hace el cliente
+  windowDays: number;          // la ventana EFECTIVA, ya recortada
+  from: string | null;         // 'YYYY-MM-DD' del primer punto con market
+  to: string | null;           // 'YYYY-MM-DD' del último punto con market
+  points: PriceHistoryPointDto[];
+  change: { changeUsd: number; changePercent: number } | null;
+}
+
+interface PriceHistoryPointDto {
+  date: string;      // el día en UTC, 'YYYY-MM-DD'
+  fetchedAt: string; // ISO real de la fila elegida para ese día
+  market: number | null; low: number | null; mid: number | null; high: number | null;
+}
+```
+
+#### Un punto por día, no por fila
+
+`card_prices` es append-only: una carta refrescada seis veces el mismo día tiene
+seis filas. Para un gráfico eso es un punto con ruido, así que el día colapsa a
+**una** fila: la última cotización de ese día (o la de mayor `market` si no se
+pide `variant`). El `DISTINCT ON` trabaja al revés, de más nuevo a más viejo, y
+el `ORDER BY` de afuera lo da vuelta para que la serie sea cronológica.
+
+```sql
+SELECT DISTINCT ON (day) day, s.market, s."fetchedAt"
+FROM ( SELECT (p."fetchedAt" AT TIME ZONE 'UTC')::date AS day, ... ) s
+ORDER BY day, s."fetchedAt" DESC
+```
+
+#### Sin `variant`: la mejor cotización del día
+
+Con `variant`, el punto del día es **la última cotización** de esa variante. Sin
+`variant`, es **la de mayor `market` de ese día**, que es el mismo criterio
+"mejor precio disponible" que usa `sort=price` del catálogo: hay cartas que solo
+tienen `reverseHolofoil` o `firstEdition`, y fijar una variante las dejaría sin
+serie. Por eso `variant: null` en la respuesta: el cliente sabe que no está
+mirando una variante en particular.
+
+#### `change` (el agregado de la ventana)
+
+`change` compara **el primer punto con `market` contra el último** de la ventana:
+
+| Situación | `change` |
+|---|---|
+| Serie vacía (`points: []`) | `null` |
+| Un solo punto con `market` | `null` |
+| Solo hay puntos con `market: null` | `null` |
+| El primer `market` es `0` | `null` (división por cero) |
+| Dos extremos iguales | `{ changeUsd: 0, changePercent: 0 }` — sí sabemos que no se movió |
+| Dos o más puntos con `market` | el delta real |
+
+`changePercent` sale con **cero decimales y redondeo simétrico**
+(`Math.round(-72.5)` da -72; un -72.5 exacto debería decir -73). `changeUsd`
+lleva signo y es USD. `from`/`to` son las fechas de los dos extremos, así que el
+cliente puede decir el rango real y no solo la ventana pedida.
+
+**`null` es una respuesta, no un error.** Con la historia de `card_prices` de hoy
+(unos días) casi toda carta tiene uno o dos puntos, así que `change: null` es el
+caso más común y hay que dibujarlo como "no hay histórico suficiente", nunca como
+"0 %".
+
+#### Costo
+
+**Una** query que lee solo `card_prices`. El `AND "fetchedAt" >= $2` es lo que
+deja al índice `card_prices(cardId, variant, fetchedAt)` recortar la ventana en
+vez de recorrer el histórico entero de la carta, y lo que acota la respuesta a
+`windowDays` filas. **No llama a tcgdex ni a pokemontcg.io**: es la única ruta de
+precios que no toca el proveedor externo, y por eso puede ser pública (`AGENTS.md`
+§3.1). La carta se resuelve en paralelo (`getById`, un index lookup por PK).
+
+| Error | Cuándo |
+|---|---|
+| `404 Carta no encontrada: <id>` | El id no está en el catálogo local |
+| `400` | `days` no es un entero, o `variant` fuera del enum |
+
+```bash
+node -e "fetch('http://localhost:3001/api/cards/sv3pt5-150/prices/history?days=90').then(r=>r.json()).then(console.log)"
+```
+
+```json
+{
+  "cardId": "sv3pt5-150", "variant": null, "currency": "USD", "windowDays": 90,
+  "from": "2026-09-27", "to": "2026-09-28",
+  "points": [
+    { "date": "2026-09-27", "fetchedAt": "2026-09-27T14:51:25.311Z",
+      "market": 4.39, "low": 2.25, "mid": 4.74, "high": 203862.68 },
+    { "date": "2026-09-28", "fetchedAt": "2026-09-28T19:04:42.023Z",
+      "market": 4.28, "low": 2.34, "mid": 4.61, "high": 203862.68 }
+  ],
+  "change": { "changeUsd": -0.11, "changePercent": -3 }
+}
 ```
 
 ### `POST /api/cards/identify`
@@ -728,6 +855,71 @@ interface CollectionStatsDto {
   setsCount: number; totalValueUsd: number; totalValueArs: number | null;
   cardsMissingPrice: number;
 }
+
+/** GET /api/cards/:id/location — `null` si el usuario no tiene la carta. */
+interface CardLocationDto {
+  collectionId: string; collectionName: string; itemId: string;
+  quantity: number; variant: string; condition: string;
+}
+```
+
+### `GET /api/cards/:id/location`
+
+**Requiere Bearer.** Decir **en qué colección del usuario está esta carta**, en
+una query. La ficha de una carta lo necesita para el "Administrar" y para marcar
+el item como para intercambio, y antes de esto tenía que listar **todas** las
+colecciones del usuario en paralelo (un `listItems` por colección): con 8
+colecciones eran 8 requests concurrentes en la pantalla más visitada después del
+catálogo.
+
+Vive en `CollectionsController` y no en `CardsController` a propósito: lee
+colecciones privadas, y lo que lo hace privado es el `@UseGuards` de clase de ese
+controller (gotcha 9: `@Public()` no lo lee ningún guard).
+
+**200** → `CardLocationDto` o el literal `null`:
+
+```json
+{ "collectionId": "…", "collectionName": "Mi binder", "itemId": "…",
+  "quantity": 3, "variant": "holofoil", "condition": "NM" }
+```
+
+| Situación | Respuesta |
+|---|---|
+| La tiene | `200` con el `CardLocationDto` |
+| **No** la tiene en ninguna colección | `200` con el literal `null` (no 404: la carta existe, el usuario no la posee) |
+| El `cardId` no está en el catálogo | `404 Carta no encontrada: <id>` |
+| Sin token | `401` |
+
+El cuerpo es un `null` **explícito** y no una respuesta vacía: el controller usa
+`@Res({ passthrough: true })` + `res.json(location)` porque un `return null` de
+Nest termina la respuesta sin body, y el cliente no debería tener que distinguir
+"no la tenés" de "no vino nada" por el tamaño de la respuesta.
+
+**El `userId` va en el `WHERE`, no en un check aparte** (`AGENTS.md` §7):
+
+```sql
+SELECT col.id, col.name, i.id, i.quantity, i.variant, i.condition
+FROM collection_items i
+JOIN collections col ON col.id = i."collectionId"
+WHERE i."cardId" = $1 AND col."userId" = $2
+ORDER BY col."isDefault" DESC, i.quantity DESC, i."addedAt" ASC, i.id ASC
+LIMIT 1
+```
+
+- Una colección ajena no aparece: el resultado es `null`, que además es la
+  respuesta correcta. Un 403 confirmaría que ese id existe.
+- El orden pone **la principal primero** (es la que el cliente usa para el
+  `PATCH`), después la de más copias, y el `id` del final vuelve el orden total.
+  Prisma no puede ordenar por un campo de la relación (`isDefault` es de
+  `collections`), así que la fila se arma en SQL.
+- **Una** query con join, cero N+1. Solo cuando no encuentra item se consulta el
+  catálogo, que es el camino que decide entre `null` y 404.
+- Sin filtro por `variant`: si la misma carta está en la misma colección con dos
+  variantes, gana la de más copias. Si el cliente necesita una variante
+  puntual, el endpoint devuelve la que encontró y la UI abre esa.
+
+```bash
+curl http://localhost:3001/api/cards/base1-4/location -H "Authorization: Bearer $TOKEN"
 ```
 
 ### `GET /api/collections/:id/set-progress`
@@ -919,8 +1111,9 @@ Query `ListItemsDto`:
 | `forTradeOnly` | `@IsBoolean()` | `false` → filtra `isForTrade = true` |
 | `setId` | `@MaxLength(64)` | filtra por `card.setId` exacto |
 | `search` | `@MaxLength(80)` | `card.name contains` case-insensitive |
+| `sort` | `@IsIn(['name','rarity','number','price'])` | — → `addedAt DESC, id ASC` |
 
-**200** → `Paginated<CollectionItemDto>`. Orden `addedAt DESC, id ASC`.
+**200** → `Paginated<CollectionItemDto>`.
 
 `duplicatesOnly` y `forTradeOnly` **se componen** (los dos a la vez devuelven los
 items repetidos que además están marcados para intercambiar) y el `count` usa
@@ -929,8 +1122,57 @@ corresponden a los items de la página. `forTradeOnly` existe porque filtrar
 "para intercambiar" del lado del cliente daba "0 resultados" en la página 3 de
 una colección con 200 items marcados.
 
+#### `sort`: los cuatro órdenes
+
+Los valores son los mismos de `/cards/search?sort=` (`CARD_SORT_FIELDS`), pero
+acá cada uno ordena **items**, no cartas:
+
+| `sort` | Orden |
+|---|---|
+| (ausente) | `addedAt DESC, id ASC` — en el orden en que se fueron agregando |
+| `name` | `card.name ASC, id ASC` |
+| `rarity` | `card.rarity ASC NULLS LAST, card.name ASC, id ASC` |
+| `number` | parte **numérica** de `card.number` `ASC NULLS LAST, card.name ASC, id ASC` |
+| `price` | `quantity × market` de la variante del item `DESC NULLS LAST, card.name ASC, id ASC` |
+
+Cuatro decisiones:
+
+1. **Sin default a propósito.** Si `sort` no viene, el orden sigue siendo
+   `addedAt DESC`, que es el que espera el resto de la app. Poner `name` de
+   default cambiaría el contrato de un endpoint que ya funcionaba.
+2. **`number` es numérico, no textual.** Es el mismo
+   `CAST(NULLIF(regexp_replace(...)))` (`common/sql/numeric-number.ts`) que usa
+   `sort=number` del catálogo: como texto, `"10"` quedaría antes que `"4"`.
+   `NULLS LAST` es para los tokens sin dígitos (`TG02`), que no se pueden ordenar
+   numéricamente.
+3. **`price` ordena por el valor del item** (`quantity × market`), que es la
+   **misma expresión** que suma el `totalValueUsd` de `/stats`: la lista ordenada
+   y el total mostrado no pueden discrepar. Sale del `card_prices` local por el
+   mismo `latestMarketPriceJoin` (`LEFT JOIN LATERAL ... LIMIT 1`), así que
+   **no pide nada a tcgdex ni a pokemontcg.io** y no gasta rate limit. Es `DESC`
+   ("más caros primero") porque al revés la primera página sería la de las cartas
+   sin precio, que son la mayoría al empezar. `NULLS LAST` en las dos direcciones
+   porque los items sin precio no son un criterio de orden: es falta de dato.
+4. **El desempate termina siempre en el `id`**: es un orden **total**, así que
+   dos requests seguidos devuelven la misma página y la lista no salta de posición
+   mientras el usuario scrollea.
+
+**No hay `direction`**: el orden es fijo por criterio. Si mañana hace falta
+"más baratas primero", es un parámetro nuevo, no un reinterpretar el actual.
+
+`name` y `rarity` salen con el `orderBy` de Prisma (que llega a la relación
+`card`); `number` y `price` **no pueden**, y salen de una query de ids ya
+ordenados + un `findMany` por esos ids. El `total` sale **siempre** del `count` de
+Prisma, no de la query de ids, así que una página más allá del final conserva el
+total real (un `COUNT(*) OVER ()` daría 0 justo donde el usuario mira si hay más).
+Son 3 queries fijas, sin N+1.
+
 ```bash
-curl 'http://localhost:3001/api/collections/$ID/items?duplicatesOnly=true&pageSize=100' \
+# las más caras primero, sin filtro
+curl 'http://localhost:3001/api/collections/$ID/items?sort=price' \
+  -H "Authorization: Bearer $TOKEN"
+# en orden impreso: 4 antes que 10 antes que 4a
+curl 'http://localhost:3001/api/collections/$ID/items?sort=number' \
   -H "Authorization: Bearer $TOKEN"
 ```
 

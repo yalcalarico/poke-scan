@@ -34,12 +34,30 @@ export interface ActionBarProps {
   status: string;
 }
 
-/** 44 px: es la pantalla de una mano con la cámara abierta (§0.5). */
+/**
+ * 44 px: es la pantalla de una mano con la cámara abierta (§0.5).
+ *
+ * ## El foco acá no usa `--focus-ring`
+ *
+ * Es la única excepción de la app al patrón de `Button`/`Chip`, y no por
+ * gusto. `--focus-ring` es el rojo de marca: sobre el velo `--on-media` —que es
+ * negro al 72 % sobre una foto— mide 1,9:1 en claro y 2,6:1 en dark, y los dos
+ * están muy por debajo de los 3:1 de SC 1.4.11. El token correcto acá es
+ * `--on-media-text` a color pleno: blanco contra ese mismo velo da más de 9:1 en
+ * los dos temas, y el control es redondo, así que el contraste contra el fondo
+ * es lo único que hay que defender.
+ *
+ * `outline` y no `ring` por lo de siempre: el UA lo fuerza a `none` en high
+ * contrast, que es donde más hace falta. Y `outline-offset-2` **no mueve nada**:
+ * el `outline` se dibuja afuera de la caja y no participa del layout, así que
+ * los 4 px de aire no empujan la fila del obturador ni la barra contra el borde
+ * inferior. Ver el comentario de `pb-[calc(...)]` más abajo.
+ */
 const MEDIA_ICON_BUTTON = [
   'flex h-11 w-11 items-center justify-center rounded-full',
   'bg-on-media text-on-media-text shadow-lg backdrop-blur-md',
   'transition-colors duration-fast ease-standard hover:bg-on-media-text/20',
-  'focus-visible:ring-2 focus-visible:ring-on-media-text/60',
+  'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-on-media-text',
   'disabled:pointer-events-none disabled:opacity-40',
 ];
 
@@ -99,6 +117,21 @@ export function ActionBar({
         mientras corre: tapar la pantalla para decir "leyendo" le quita al
         usuario el control de la foto, que es justo lo que puede corregir
         mientras espera.
+
+        ─── El `pb` y los 4 px del `outline` ───
+
+        Ese padding de abajo no es decorativo: es el clearance del foco. El
+        `Organizar (N)` es el control más bajo de la barra, y su `outline` de
+        2 px con `offset-2` se dibuja 4 px **por fuera** de la caja. Con los 12 px
+        de `pb` más `env(safe-area-inset-bottom)` (34 px en un iPhone con
+        indicador) el borde externo del outline queda a 46 px del borde de la
+        pantalla: no se recorta ni contra la barra ni contra el indicador de
+        inicio. El `pt-3` del otro lado hace lo mismo por arriba de la fila del
+        obturador.
+
+        Y nada de esto **desplaza** la barra: el `outline` no es parte del layout,
+        a diferencia del `ring`, que era un `box-shadow` y tampoco — pero que al
+        ser 2 px sin offset tampoco daba el aire que hace legible el indicador.
       */}
       {progress !== null ? (
         <div className="mb-3 flex flex-col gap-1.5" role="status" aria-live="polite">
@@ -147,7 +180,13 @@ export function ActionBar({
             'flex h-20 w-20 shrink-0 items-center justify-center rounded-full border-4 border-on-media-text',
             'bg-on-media-text/20 shadow-lg backdrop-blur-md',
             'transition-transform duration-instant ease-standard active:scale-90',
-            'focus-visible:ring-2 focus-visible:ring-on-media-text/70',
+            // Mismo token que `MEDIA_ICON_BUTTON` y por el mismo motivo: el rojo
+            // de `--focus-ring` no llega a 3:1 sobre la foto. El obturador mide
+            // 80 px y vive en el centro de una fila de 358 px de ancho, así que
+            // los 4 px del outline caen de sobra dentro de la barra; el
+            // `overflow` que sí lo recortaría es el del `stage` de la
+            // `CameraView`, y el obturador no está adentro de él.
+            'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-on-media-text',
             'disabled:pointer-events-none disabled:opacity-40',
           )}
         >

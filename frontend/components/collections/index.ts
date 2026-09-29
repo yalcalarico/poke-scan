@@ -15,7 +15,7 @@ export {
   type CollectionFiltersProps,
   type CollectionScope,
 } from './collection-filters';
-export { COLLECTION_PAGE_SIZE, formatCount } from './collection-options';
+export { COLLECTION_CHUNK, COLLECTION_PAGE_SIZE, formatCount } from './collection-options';
 export {
   CollectionRenameSheet,
   type CollectionRenameSheetProps,

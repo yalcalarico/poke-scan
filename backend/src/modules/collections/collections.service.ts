@@ -6,8 +6,10 @@ import {
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { latestMarketPriceJoin } from '../../common/sql/latest-price.js';
+import { NUMERIC_CARD_NUMBER } from '../../common/sql/numeric-number.js';
 import { SyncPricesService } from '../../jobs/sync-prices.service.js';
 import { PrismaService } from '../../prisma/index.js';
+import { type CardSortField } from '../cards/dto/search-cards.dto.js';
 import { AddItemDto } from './dto/add-item.dto.js';
 import { CreateCollectionDto } from './dto/create-collection.dto.js';
 import { ListItemsDto } from './dto/list-items.dto.js';
@@ -121,6 +123,23 @@ export interface CollectionStatsDto {
 }
 
 /**
+ * `GET /cards/:id/location`: **dónde** está esta carta del usuario.
+ *
+ * Es `null` (no 404) cuando el usuario no la tiene en ninguna colección: la carta
+ * existe en el catálogo y el usuario simplemente no la posee, que son dos hechos
+ * distintos y el cliente los dibuja distinto. El 404 queda reservado para un
+ * `cardId` que no existe.
+ */
+export interface CardLocationDto {
+  collectionId: string;
+  collectionName: string;
+  itemId: string;
+  quantity: number;
+  variant: string;
+  condition: string;
+}
+
+/**
  * Una fila de `GET /collections/:id/set-progress` (B7).
  *
  * Sin `SetDto`: el nombre, el símbolo y el logo los junta el cliente con el
@@ -197,6 +216,21 @@ interface SetProgressRow {
   missingCount: number;
 }
 
+/** Una fila de `orderedItemIds`: el id del item ya en su posición final. */
+interface ItemOrderRow {
+  id: string;
+}
+
+/** Una fila de `findCardLocation`. */
+interface CardLocationRow {
+  collectionId: string;
+  collectionName: string;
+  itemId: string;
+  quantity: number;
+  variant: string;
+  condition: string;
+}
+
 type PrismaClientLike = PrismaService | Prisma.TransactionClient;
 
 function toNumber(value: unknown): number | null {
@@ -223,6 +257,15 @@ function isUniqueViolation(error: unknown): boolean {
     error instanceof Prisma.PrismaClientKnownRequestError &&
     error.code === 'P2002'
   );
+}
+
+/**
+ * Escapa los comodines de un `LIKE`/`ILIKE` para que un `%` en el texto busque
+ * un `%` y no matchee todo. Es la misma regla que usa `escapeLike` en
+ * `cards.service.ts`.
+ */
+function escapeLike(value: string): string {
+  return value.replace(/[\\%_]/g, (match) => `\\${match}`);
 }
 
 @Injectable()
@@ -367,40 +410,7 @@ export class CollectionsService {
     const pageSize = dto.pageSize ?? DEFAULT_PAGE_SIZE;
     const offset = (page - 1) * pageSize;
 
-    const where: Prisma.CollectionItemWhereInput = {
-      collectionId,
-      ...(dto.duplicatesOnly ? { quantity: { gt: 1 } } : {}),
-      // Los dos filtros trade/duplicados se acumulan en el mismo `where` (no se
-      // pisan) y el `count` de más abajo lo reutiliza, así que el `total`
-      // siempre corresponde a los datos de la página.
-      ...(dto.forTradeOnly ? { isForTrade: true } : {}),
-      ...(dto.setId || dto.search
-        ? {
-            card: {
-              ...(dto.setId ? { setId: dto.setId } : {}),
-              ...(dto.search
-                ? {
-                    name: {
-                      contains: dto.search,
-                      mode: 'insensitive' as const,
-                    },
-                  }
-                : {}),
-            },
-          }
-        : {}),
-    };
-
-    const [items, total] = await Promise.all([
-      this.prisma.collectionItem.findMany({
-        where,
-        include: ITEM_INCLUDE,
-        orderBy: [{ addedAt: 'desc' }, { id: 'asc' }],
-        take: pageSize,
-        skip: offset,
-      }),
-      this.prisma.collectionItem.count({ where }),
-    ]);
+    const { items, total } = await this.itemsForPage(collectionId, dto, pageSize, offset);
 
     const prices = await this.fetchLatestPrices(
       this.prisma,
@@ -734,6 +744,236 @@ export class CollectionsService {
   }
 
   // ─── Internos ───
+
+  /** El `where` del listado, compartido por los datos y por el `count`. */
+  private itemWhere(
+    collectionId: string,
+    dto: ListItemsDto,
+  ): Prisma.CollectionItemWhereInput {
+    return {
+      collectionId,
+      ...(dto.duplicatesOnly ? { quantity: { gt: 1 } } : {}),
+      // Los dos filtros trade/duplicados se acumulan en el mismo `where` (no se
+      // pisan) y el `count` de más abajo lo reutiliza, así que el `total`
+      // siempre corresponde a los datos de la página.
+      ...(dto.forTradeOnly ? { isForTrade: true } : {}),
+      ...(dto.setId || dto.search
+        ? {
+            card: {
+              ...(dto.setId ? { setId: dto.setId } : {}),
+              ...(dto.search
+                ? {
+                    name: {
+                      contains: dto.search,
+                      mode: 'insensitive' as const,
+                    },
+                  }
+                : {}),
+            },
+          }
+        : {}),
+    };
+  }
+
+  /**
+   * La página de items del listado, con el orden que pidió el cliente.
+   *
+   * ## Por qué hay dos caminos
+   *
+   * `name`, `rarity` y el orden por defecto salen con el `orderBy` de Prisma (que
+   * llega a la relación `card`). **`number` y `price` no pueden**: el primero
+   * porque la parte numérica de `number` es un `CAST` que el ORM no arma, y el
+   * segundo porque el precio vive en otra tabla (`card_prices`) y el `orderBy` de
+   * Prisma no llega a una relación que no sea del modelo. Para esos dos hay una
+   * query de **ids ya ordenados** y después un `findMany` por esos ids.
+   *
+   * ## Lo que no cambia
+   *
+   * - **Cero N+1**: son 3 queries fijas (ids ordenados, `findMany`, `count`) más
+   *   el `fetchLatestPrices` que ya existía. No crece con la cantidad de items.
+   * - **El `count` sale siempre del `where` de Prisma**, no de la query de ids:
+   *   así el `total` es el mismo número con cualquier `sort`, aunque la página
+   *   esté vacía (un `COUNT(*) OVER ()` de la query de ids daría 0 en la última
+   *   página, que es justo donde el usuario mira si hay más).
+   * - `sort=price` **no pide precios a nadie**: lee `card_prices` con el mismo
+   *   `latestMarketPriceJoin` que usa el `totalValueUsd` de `/stats`, así que la
+   *   lista ordenada y el total mostrado no pueden discrepar
+   *   (`AGENTS.md` §3.1).
+   */
+  private async itemsForPage(
+    collectionId: string,
+    dto: ListItemsDto,
+    pageSize: number,
+    offset: number,
+  ): Promise<{ items: ItemWithCard[]; total: number }> {
+    const where = this.itemWhere(collectionId, dto);
+
+    if (dto.sort !== 'number' && dto.sort !== 'price') {
+      const [items, count] = await Promise.all([
+        this.prisma.collectionItem.findMany({
+          where,
+          include: ITEM_INCLUDE,
+          orderBy: this.itemOrderBy(dto.sort),
+          take: pageSize,
+          skip: offset,
+        }),
+        this.prisma.collectionItem.count({ where }),
+      ]);
+      return { items, total: count };
+    }
+
+    const [ids, count] = await Promise.all([
+      this.orderedItemIds(collectionId, dto, pageSize, offset),
+      this.prisma.collectionItem.count({ where }),
+    ]);
+    if (ids.length === 0) return { items: [], total: count };
+
+    const items = await this.prisma.collectionItem.findMany({
+      where: { id: { in: ids } },
+      include: ITEM_INCLUDE,
+    });
+    // `findMany` no garantiza el orden: el que manda es el de la query de ids.
+    const byId = new Map(items.map((item) => [item.id, item]));
+    return {
+      items: ids.flatMap((id) => {
+        const item = byId.get(id);
+        return item === undefined ? [] : [item];
+      }),
+      total: count,
+    };
+  }
+
+  /** El `orderBy` de Prisma para los órdenes que no llegan a `card_prices`. */
+  private itemOrderBy(
+    sort: CardSortField | undefined,
+  ): Prisma.CollectionItemOrderByWithRelationInput[] {
+    switch (sort) {
+      case 'name':
+        return [{ card: { name: 'asc' } }, { id: 'asc' }];
+      case 'rarity':
+        // El `rarity ASC` de Postgres ya deja los NULL al final, que es lo que
+        // quiere "de la más común a la rara".
+        return [{ card: { rarity: 'asc' } }, { card: { name: 'asc' } }, { id: 'asc' }];
+      case 'number':
+      case 'price':
+      default:
+        return [{ addedAt: 'desc' }, { id: 'asc' }];
+    }
+  }
+
+  /**
+   * Los ids de la página, en el orden pedido, para los dos `sort` que Prisma no
+   * puede resolver.
+   *
+   * El precio ordena por **el valor del item** (`quantity × market` de su
+   * variante), que es la misma expresión que suma `totalValueUsd` en `/stats` y
+   * `/set-progress`: mismo número, misma regla. `NULLS LAST` en las dos
+   * direcciones porque los items sin precio son la mayoría de una colección
+   * recién empezada y "sin precio" no es un criterio de orden, es falta de dato.
+   *
+   * El desempate termina en `i.id` (la PK): es un **orden total**, así que dos
+   * requests seguidos devuelven la misma página y la lista no salta entre
+   * renders mientras el usuario scrollea.
+   */
+  private async orderedItemIds(
+    collectionId: string,
+    dto: ListItemsDto,
+    pageSize: number,
+    offset: number,
+  ): Promise<string[]> {
+    const byPrice = dto.sort === 'price';
+    const orderBy = byPrice
+      ? Prisma.sql`(i.quantity * lp.market) DESC NULLS LAST, c.name ASC, i.id ASC`
+      : Prisma.sql`${NUMERIC_CARD_NUMBER} ASC NULLS LAST, c.name ASC, i.id ASC`;
+
+    const rows = await this.prisma.$queryRaw<ItemOrderRow[]>(Prisma.sql`
+      SELECT i.id AS "id"
+      FROM collection_items i
+      JOIN cards c ON c.id = i."cardId"
+      ${byPrice ? this.latestPriceJoin() : Prisma.empty}
+      WHERE ${this.itemFilterSql(collectionId, dto)}
+      ORDER BY ${orderBy}
+      LIMIT ${pageSize} OFFSET ${offset}
+    `);
+
+    return rows.map((row) => row.id);
+  }
+
+  /**
+   * El filtro del listado en SQL, para la query de ids ordenados.
+   *
+   * Es el **espejo** de `itemWhere` y tiene que seguirlo: si uno acepta un filtro
+   * que el otro no, la página mostrada y el `total` dejan de ser el mismo
+   * conjunto. Cuando agregues un filtro a `ListItemsDto`, agregalo en los dos.
+   */
+  private itemFilterSql(collectionId: string, dto: ListItemsDto): Prisma.Sql {
+    const conditions: Prisma.Sql[] = [
+      Prisma.sql`i."collectionId" = ${collectionId}`,
+    ];
+    if (dto.duplicatesOnly) conditions.push(Prisma.sql`i.quantity > 1`);
+    if (dto.forTradeOnly) conditions.push(Prisma.sql`i."isForTrade" = true`);
+    if (dto.setId) conditions.push(Prisma.sql`c."setId" = ${dto.setId}`);
+    if (dto.search) {
+      conditions.push(
+        Prisma.sql`c.name ILIKE ${`%${escapeLike(dto.search)}%`} ESCAPE '\\'`,
+      );
+    }
+    return Prisma.join(conditions, ' AND ');
+  }
+
+  /**
+   * `GET /cards/:id/location`: en qué colección del usuario está esta carta.
+   *
+   * ## Por qué el `userId` va en el `WHERE`
+   *
+   * Es la regla de `AGENTS.md` §7: el ownership se resuelve en la query, no con
+   * un check aparte. Con el `col."userId" = $2` adentro, una colección ajena no
+   * aparece y el endpoint devuelve `null` — que además es la respuesta correcta
+   * para "no la tenés" — en vez de un 403 que confirmaría que ese id existe.
+   *
+   * ## El orden
+   *
+   * `isDefault DESC, quantity DESC, addedAt ASC, id ASC`: si la carta está en
+   * varias colecciones gana la principal (es la que el cliente va a usar para el
+   * `PATCH`), después la que más copias tiene, y el `id` del final vuelve el
+   * orden total. Prisma no puede ordenar por un campo de la relación
+   * (`isDefault` es de `collections`), así que la fila se arma en SQL.
+   */
+  async findCardLocation(
+    userId: string,
+    cardId: string,
+  ): Promise<CardLocationDto | null> {
+    const rows = await this.prisma.$queryRaw<CardLocationRow[]>(Prisma.sql`
+      SELECT
+        col.id AS "collectionId",
+        col.name AS "collectionName",
+        i.id AS "itemId",
+        i.quantity::int AS "quantity",
+        i.variant AS "variant",
+        i.condition AS "condition"
+      FROM collection_items i
+      JOIN collections col ON col.id = i."collectionId"
+      WHERE i."cardId" = ${cardId} AND col."userId" = ${userId}
+      ORDER BY col."isDefault" DESC, i.quantity DESC, i."addedAt" ASC, i.id ASC
+      LIMIT 1
+    `);
+
+    const found = rows[0];
+    if (found) {
+      return { ...found, quantity: Number(found.quantity) };
+    }
+
+    // No hay item: o el usuario no la tiene, o la carta no existe. Solo en este
+    // camino se consulta el catálogo, que es el que devuelve `null` o 404.
+    const card = await this.prisma.card.findUnique({
+      where: { id: cardId },
+      select: { id: true },
+    });
+    if (!card) {
+      throw new NotFoundException(`Carta no encontrada: ${cardId}`);
+    }
+    return null;
+  }
 
   private async ensureDefaultCollection(userId: string): Promise<void> {
     const existing = await this.prisma.collection.findFirst({

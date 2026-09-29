@@ -25,7 +25,12 @@
   /* Texto */
   --text-primary: #0b0b0f;
   --text-secondary: #5c5c68;
-  --text-tertiary: #86868f;
+  /* `text-tertiary` se usa 88 veces, casi siempre a 12 px, y 12 px es texto
+     normal: necesita 4.5:1, no 3:1. El valor viejo daba 3.28:1 contra el
+     canvas y por eso era metadata ilegible. Ojo con `--surface-3`: ahí queda
+     en 4.29:1, justo por debajo, así que un `text-tertiary` sobre un hover no
+     llega a 4.5 y no hay que usarlo para el único texto de una fila. */
+  --text-tertiary: #6f6f7a;
   --text-disabled: #b4b4bd;
   --text-inverse: #ffffff;
 
@@ -34,8 +39,49 @@
   --border-default: #e4e4e9;
   --border-strong: #d0d0d8;
 
+  /* Borde de los controles de formulario, y solo de ellos. `--border-default`
+     se queda como está porque además dibuja separadores decorativos, que
+     están exentos de SC 1.4.11: si se oscureciera, cada divider de la app
+     empezaría a gritar. El límite de un control sí tiene que llegar a 3:1.
+
+     `#8a8a96` da 3.22:1 contra `--surface-2`, que es la superficie real del
+     control. El primer valor que se probó (`#a8a8b2`) daba 2.22:1: subía el
+     contraste contra la superficie, pero no cerraba el 3:1, y un input con el
+     borde por debajo del mínimo sigue siendo indistinguible de texto suelto. */
+  --border-control: #8a8a96;
+
+  /* Anillo de foco. El viejo era `ring-brand/20` y medía 1.38:1 contra la
+     superficie: un 20% de alfa no alcanza ni de cerca los 3:1 que pide
+     SC 1.4.11. Es lo único que le dice a una persona que navega con teclado
+     dónde está, así que va a color pleno y nunca a un alfa del token. */
+  --focus-ring: #e01f26;
+
+  /* El MISMO anillo, pero para lo que vive sobre el velo `--on-media` del
+     scanner. Existe porque `--focus-ring` **no se puede usar ahí**: contra el
+     scrim, `#e01f26` mide **1.91:1** en claro y `#ff4a4f` **2.57:1** en dark,
+     los dos muy por debajo de los 3:1 de SC 1.4.11. Un anillo de foco invisible
+     sobre la cámara es peor que uno de poco contraste: el scanner es la única
+     pantalla donde el teclado se usa con una mano en la cara.
+     El valor sale de `--on-media-text`, que contra el mismo velo da entre 7:1 y
+     9:1 según lo clara que esté la foto de fondo, o sea que el peor caso también
+     pasa. NO "simplificar" esto a `--focus-ring`: es el mismo error que el del
+     `ring-brand/20` de 1.38:1, sólo que con otro fondo.
+     Ojo: los 4 focus indicators del scanner (`action-bar.tsx` x2,
+     `camera-controls.tsx`, `camera-view.tsx`) siguen usando
+     `outline-on-media-text` directamente. Este token es el token de la decisión;
+     migrarlos es un cambio de componente, no de token. */
+  --focus-ring-on-media: #ffffff;
+
+  /* Riel de un `Switch` apagado. El knob va en `--surface-3` y medía 1.16:1
+     contra el riel: se veía el switch, pero no se leía en qué posición
+     estaba. Este es el color de la posición OFF, no el del control genérico.
+
+     `#8e8e9a` da 3.24:1 contra el knob blanco, que es el par que hay que leer:
+     sin ese par, no se sabe si está encendido. */
+  --switch-track-off: #8e8e9a;
+
   /* Marca: rojo. Es el acento de navegación y de acción primaria. */
-  --brand: #e01f26;
+  --brand: #d81c23;
   --brand-hover: #c2161c;
   --brand-press: #9e1217;
   --brand-soft: #fff0f0;
@@ -43,7 +89,9 @@
   --on-brand: #ffffff;
 
   /* Semánticos */
-  --positive: #12804a;          /* valor, dinero, éxito, precio subiendo */
+  --positive: #117a47;          /* valor, dinero, éxito, precio subiendo. 4.47:1
+                                   sobre `positive-soft`: un pelo corto de 4.5,
+                                   y el pill de precio es 12-13 px. */
   --positive-soft: #e7f6ee;
   --positive-border: #b7e3cb;
   --negative: #d01a21;          /* precio bajando, error de acción */
@@ -63,9 +111,12 @@
   /* Paradas del degradado del `Skeleton`. Viven acá y no en el componente
      porque el shimmer es un token del sistema, no una decisión de una pantalla:
      un skeleton written a mano con un gris fijo se ve distinto del de otra
-     pantalla y eso se nota al scrollear. */
-  --shimmer-from: #eeeef2;
-  --shimmer-to: #f8f8fa;
+     pantalla y eso se nota al scrollear.
+     Las paradas están separadas a propósito: con las anteriores el shimmer
+     animaba pero el placeholder era indistinguible de la superficie (1.06:1),
+     o sea que se veía el movimiento y no la forma. */
+  --shimmer-from: #dcdce4;
+  --shimmer-to: #f2f2f5;
 }
 
 .dark {
@@ -77,13 +128,30 @@
 
   --text-primary: #f5f5f7;
   --text-secondary: #a1a1ae;
-  --text-tertiary: #75757f;
+  --text-tertiary: #8a8a95;   /* mismo motivo que en claro: 12 px pide 4.5:1 y
+                                 el valor viejo daba 3.99:1 sobre `--surface`.
+                                 `#82828c` subía el contraste pero dejaba
+                                 4.40:1 sobre `--surface-2`, que es la
+                                 superficie real de un `Select` con su
+                                 placeholder, y 3.94:1 sobre `--surface-3`.
+                                 Con `#8a8a95` los dos pares cierran 4.5:1. */
   --text-disabled: #4a4a54;
   --text-inverse: #0b0b0f;
 
   --border-subtle: #1d1d24;
   --border-default: #2a2a33;
   --border-strong: #3c3c48;
+
+  /* En dark sube el valor porque el borde se come la superficie: el token de
+     claro acá midría 2.36:1 contra `--surface-2` y en dark hay menos
+     luminancia de fondo para contrastear. Los tres de acá son los equivalentes
+     de los de `:root`. */
+  --border-control: #6a6a76;
+  --focus-ring: #ff4a4f;
+  /* `--on-media` es un velo negro en los dos temas, así que el anillo del
+     scanner es blanco en los dos también: ver el comentario de `:root`. */
+  --focus-ring-on-media: #ffffff;
+  --switch-track-off: #6a6a76;
 
   --brand: #ff4a4f;             /* más saturado para tener contraste sobre #15151b */
   --brand-hover: #ff6a6e;
@@ -108,8 +176,8 @@
   --on-media: rgb(0 0 0 / 0.66);
   --on-media-text: #ffffff;
 
-  --shimmer-from: #1d1d24;
-  --shimmer-to: #26262f;
+  --shimmer-from: #23232b;
+  --shimmer-to: #2b2b35;
 }
 
 @theme inline {
@@ -220,7 +288,7 @@
  * (`sm:text-h1`) y no se emiten si nadie las usa. `@layer components` además
  * obliga a pelear con la especificidad en cada call site.
  *
- * Nueve pasos y nada fuera de la tabla: no se escribe `text-[13px]`.
+ * Diez pasos y nada fuera de la tabla: no se escribe `text-[13px]`.
  */
 @utility text-display-lg {
   font-size: 40px;
@@ -281,9 +349,15 @@
   font-weight: 400;
 }
 
+/*
+ * El overline subió de 10 px a 11 px: a 10 px no se distingue de `caption`
+ * salvo por el uppercase, y el tracking de 0.08em sobre 10 chars deja el
+ * "VALUE" de la card resumen ilegible en pantallas de baja densidad. 11 px con
+ * el mismo peso y el mismo tracking sigue siendo un overline, no un `caption`.
+ */
 @utility text-overline {
-  font-size: 10px;
-  line-height: 12px;
+  font-size: 11px;
+  line-height: 14px;
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -367,6 +441,123 @@
     transition-duration: 1ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/*
+ * Windows High Contrast (y el equivalente de iOS). El UA reemplaza los colores
+ * del autor por su paleta, y como el sistema dibuja las superficies con bordes
+ * (`bg-surface` + `border-line` + `shadow-sm`), los bordes se funden con el
+ * fondo y los paneles quedan planos.
+ *
+ * La solución es **no** poner `forced-color-adjust: none`: eso apagaría el
+ * modo, y el `Checkbox` es un `<input type="checkbox">` nativo *a propósito*
+ * justamente porque dibuja bien acá (ver el comentario de `checkbox.tsx`).
+ * Lo que se hace es la inversa: sobreescribir los tokens con las palabras
+ * clave de sistema, así la app sigue las reglas del sistema en vez de pelearlo.
+ *
+ * `.dark` entra también: en high contrast el tema del sistema manda, y el
+ * mismo conjunto de palabras clave funciona para los dos.
+ */
+@media (forced-colors: active) {
+  :root,
+  .dark {
+    /* Todo el chrome se apoya en superficie + borde, así que las superficies
+       se aplanan a propósito y la separación pasa a ser 100% borde. */
+    --canvas: Canvas;
+    --surface: Canvas;
+    --surface-2: Canvas;
+    --surface-3: Canvas;
+    --border-subtle: ButtonBorder;
+    --border-default: ButtonBorder;
+    --border-strong: ButtonText;
+    --border-control: ButtonBorder;
+    --focus-ring: Highlight;
+    /* En forced colors el scanner también entra al sistema: el UA fuerza el
+       scrim a `Canvas` y lo que queda es el mismo `Highlight` de arriba. La
+       distinción entre `--focus-ring` y `--focus-ring-on-media` es una
+       distinción de la **paleta del autor** (rojo de marca vs. blanco sobre
+       negro), y acá la paleta del autor no aplica. */
+    --focus-ring-on-media: Highlight;
+    --switch-track-off: ButtonBorder;
+    --text-secondary: CanvasText;
+    --text-tertiary: GrayText;
+    --text-disabled: GrayText;
+  }
+
+  /*
+   * El indicador de foco del design system es un `outline`, y el `outline` es de
+   * lo único que sobrevive en high contrast: el `ring-*` que se usaba antes es un
+   * `box-shadow`, y acá el UA fuerza `box-shadow: none`, con lo cual el único
+   * mecanismo que tenía una persona que navega con teclado para ubicarse
+   * desaparecía justo en el modo que más lo necesita. Ese es el motivo por el
+   * que se migró app-wide de `ring` a `outline` (WCAG 2.2 SC 1.4.11, *Non-text
+   * Contrast*).
+   *
+   * Por eso esta regla **no es un parche** ni un plan B del `outline` que
+   * escriben los componentes: en forced colors es el mecanismo primario. Los
+   * componentes ya pintan `--focus-ring` a color pleno, y acá ese token se
+   * sobreescribe con la palabra clave de sistema `Highlight`, así que el anillo
+   * no solo sobrevive, sino que pasa a ser el color del propio sistema. Con el
+   * patrón viejo (`ring-brand/20`, 1.38:1) esto habría sido imposible: un alfa
+   * del 20 % no se puede mapear a una palabra clave del sistema.
+   */
+  :focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+  }
+}
+
+/*
+ * `prefers-contrast: more` no cambia el tema ni los colores semánticos: sube el
+ * piso de separación de los bordes y de la metadata, que es lo primero que se
+ * aplana cuando la fuente del sistema achica el contraste.
+ *
+ * Los valores no son nuevos: cada uno es el de otro token que ya está en este
+ * archivo (el tertiary se pega al secondary, el borde de control sube al gris
+ * de texto, y el borde decorativo sube al del control). Es un piso más alto
+ * con la misma paleta, no una paleta nueva.
+ */
+@media (prefers-contrast: more) {
+  :root {
+    --text-tertiary: #5c5c68;
+    --border-default: #a8a8b2;
+    --border-control: #5c5c68;
+    --switch-track-off: #5c5c68;
+  }
+
+  .dark {
+    --text-tertiary: #a1a1ae;
+    --border-default: #6a6a76;
+    --border-control: #a1a1ae;
+    --switch-track-off: #a1a1ae;
+  }
+}
+
+/*
+ * Tres reglas de nivel documento que no son de ningún componente en
+ * particular, y por eso no viven en uno.
+ *
+ * 1. `touch-action: manipulation` saca el delay de 300 ms del tap en Chrome y
+ *    Android. `user-scalable` no es la respuesta: acá el zoom se permite hasta
+ *    5x y lo que se quiere es que un toque responda ya, no que la página no
+ *    se pueda zoomear.
+ * 2. `overscroll-behavior-y: contain` evita el pull-to-refresh. En una PWA eso
+ *    no recarga la página: dispara la navegación del service worker y deja la
+ *    app en un estado raro a mitad de uso. `SheetBody` ya trae su propio
+ *    `overscroll-contain` para que el sheet no arrastre el scroll de atrás;
+ *    esto es el mismo motivo a nivel documento.
+ * 3. `scroll-padding-top` es el arreglo de un bug real: el `ScreenHeader` es
+ *    `sticky top-0` con `h-14` (56 px) más el safe area de arriba, y en todo el
+ *    repo no había scroll padding. Con eso, los `scrollIntoView({ block:
+ *    'start' })` de `catalog-search.tsx` y `collection-detail.tsx` dejaban la
+ *    carta destino debajo del header, y el skip link (`href="#contenido"`)
+ *    aterrizaba tapado. También cierra SC 2.4.11 (Focus Not Obscured) para el
+ *    foco por teclado.
+ */
+html {
+  touch-action: manipulation;
+  overscroll-behavior-y: contain;
+  scroll-padding-top: calc(3.5rem + env(safe-area-inset-top));
 }
 
 /*

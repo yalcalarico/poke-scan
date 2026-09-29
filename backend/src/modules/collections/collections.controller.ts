@@ -8,8 +8,10 @@ import {
   Patch,
   Post,
   Query,
+  Res,
   UseGuards,
 } from '@nestjs/common';
+import type { Response } from 'express';
 import { CurrentUser } from '../../common/decorators/current-user.decorator.js';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard.js';
 import type { AuthUser } from '../../common/types/auth-user.js';
@@ -122,6 +124,28 @@ export class CollectionsController {
     @Param('id') id: string,
   ): Promise<{ queued: number }> {
     return { queued: await this.collectionsService.enqueueMissingPrices(user.sub, id) };
+  }
+
+  // Vive acá y no en `CardsController` porque lee colecciones **privadas**: lo
+  // que lo hace privado es el `@UseGuards` de clase de este controller, no un
+  // decorador del método (gotcha 9). Antes, la ficha de carta tenía que listar
+  // todas las colecciones del usuario en paralelo para encontrar esta fila.
+  //
+  // El `passthrough` con `res.json` es a propósito: un `return null` de Nest
+  // termina la respuesta **sin cuerpo**, y "no la tenés" tiene que ser un `null`
+  // JSON explícito para que el cliente no tenga que distinguir `null` de `404`
+  // por el status y `undefined` de "no vino nada" por el body.
+  @Get('cards/:id/location')
+  getCardLocation(
+    @CurrentUser() user: AuthUser,
+    @Param('id') id: string,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<void> {
+    return this.collectionsService
+      .findCardLocation(user.sub, id)
+      .then((location) => {
+        res.json(location);
+      });
   }
 
   @Patch('items/:itemId')

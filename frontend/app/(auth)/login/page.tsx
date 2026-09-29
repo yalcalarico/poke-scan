@@ -29,7 +29,7 @@ export default function LoginPage() {
           ¿No tenés cuenta?{' '}
           <Link
             href={"/registro"}
-            className="rounded-control text-body-strong text-brand transition-colors duration-fast ease-standard hover:underline focus-visible:ring-2 focus-visible:ring-brand/20 dark:focus-visible:ring-brand/40"
+            className="rounded-control text-body-strong text-brand transition-colors duration-fast ease-standard hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--focus-ring)]"
           >
             Registrate
           </Link>

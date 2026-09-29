@@ -21,3 +21,18 @@ export function formatCount(value: number): string {
  * se cambian uno hay que cambiar el otro, y por eso viven en el mismo archivo.
  */
 export const COLLECTION_PAGE_SIZE = 24;
+
+/**
+ * Cuántas cartas se **pintan** por tanda, una vez que ya están en memoria.
+ *
+ * Es independiente de `COLLECTION_PAGE_SIZE` (que pagina requests), y el mismo
+ * criterio que el binder: el viewport de 390 × 844 muestra ~20 tiles de la grilla
+ * de colección (3 columnas en mobile, 8 en `xl:`), así que 60 deja tres pantallas
+ * de margen para que el sentinel de 600 px traiga la tanda siguiente antes de que
+ * el usuario llegue al final.
+ *
+ * A la décima página el pico del DOM son 120 tiles en vez de los 240 que había sin
+ * troceo, con los mismos `data-card-index` (el corte es un prefijo) y sin tocar el
+ * scroll a la primera carta nueva.
+ */
+export const COLLECTION_CHUNK = 60;

@@ -75,11 +75,14 @@ export interface PriceDeltaProps {
    * Variación del período, **siempre en USD**: el valor crudo de la API es USD y
    * la conversión es del cliente (`useCurrency`).
    *
-   * Hoy el backend **no tiene histórico de precio** (`card_prices` es
-   * append-only pero no se agrega, y la propuesta B10 de calcular la serie no
-   * está implementada), así que estas props llegan `undefined` y el componente
-   * cae a la fecha de actualización. Cuando exista, alcanza con que el DTO
-   * mande los dos números: no hay que tocar el markup.
+   * Las manda `GET /cards/:id/prices`, que calcula la variación de la ventana
+   * sobre `card_prices`. Los endpoints que no calculan delta (los precios de un
+   * item de colección, los del link público) las omiten y acá llegan
+   * `undefined`, que es un estado distinto de `null`: ausente es "este endpoint
+   * no calcula delta", `null` es "se calculó y no hay con qué".
+   *
+   * No hay que tocar el markup para pasar de una cosa a la otra: las props ya
+   * existían y el backend ya las manda.
    */
   changeUsd?: number | null;
   /** Variación porcentual con signo: `-73` es una caída del 73 %. */
@@ -96,14 +99,28 @@ export interface PriceDeltaProps {
  *
  * ## Por qué dos formas en un componente
  *
- * El diseño pide la píldora de la referencia, pero el backend todavía no puede
- * mandarla. Las dos alternativas —píldora o fecha— ocupan el mismo lugar en la
- * composición (la línea bajo la cifra del `PriceHero`) y nunca aparecen juntas,
- * así que un solo componente con dos salidas es menos API que dos. Lo que **no**
- * hace es inventar el dato: sin `changeUsd` y `changePercent` no hay píldora,
- * hay "Actualizado hace 3 h", y el `Alert tone="warning"` de "esto está viejo"
- * lo pone el consumidor (`CardPriceSection`), porque un `Alert` no es una
- * píldora y esta caja no debe crecer de ancho completo.
+ * El diseño pide la píldora de la referencia, y hoy el backend **sí** la puede
+ * mandar (`GET /cards/:id/prices` trae `changeUsd` / `changePercent`; la serie
+ * de `/prices/history` sale de la misma tabla). Las dos alternativas —píldora o
+ * fecha— ocupan el mismo lugar en la composición (la línea bajo la cifra del
+ * `PriceHero`) y nunca aparecen juntas, así que un solo componente con dos
+ * salidas es menos API que dos.
+ *
+ * Lo que **no** hace es inventar el dato: sin `changeUsd` y `changePercent` —o
+ * con los dos en `null`— no hay píldora, hay "Actualizado hace 3 h", y el `Alert
+ * tone="warning"` de "esto está viejo" lo pone el consumidor
+ * (`CardPriceSection`), porque un `Alert` no es una píldora y esta caja no debe
+ * crecer de ancho completo.
+ *
+ * ## El `null` es el caso común y no es un bug
+ *
+ * `card_prices` tiene unos días de historia, así que casi siempre no hay dos
+ * puntos con precio dentro de la ventana y el backend devuelve `null`. El
+ * componente traduce eso a la fecha de actualización, que es lo único que sabe
+ * decir con verdad. La alternativa —pintar `0 %`— afirmaría que el precio no se
+ * movió, que es un dato, y "nunca inventar un dato" es la regla de este
+ * proyecto. La línea de la serie (`PriceHistory`) tiene el mismo criterio, y por
+ * eso puede dibujar la línea **sin** delta al lado.
  *
  * ## Formato
  *

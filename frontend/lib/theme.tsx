@@ -60,12 +60,34 @@ function systemTheme(): ResolvedTheme {
 /** Devuelve `true` si el tema resuelto cambió (y por lo tanto hay que avisar). */
 function applyResolved(theme: Theme): boolean {
   const resolved = theme === 'system' ? systemTheme() : theme;
-  if (resolved === currentResolved) return false;
+  // El aviso es condicional, la sincronización del DOM no: el `return` temprano
+  // dejaba la clase y el `theme-color` sin tocar, y con el SO en dark y la app
+  // en light la barra del sistema quedaba del tema contrario para siempre.
+  const changed = resolved !== currentResolved;
   currentResolved = resolved;
   if (typeof document !== 'undefined') {
     document.documentElement.classList.toggle('dark', resolved === 'dark');
+    // El `theme-color` va ACÁ, y no en otro efecto, por la misma razón que la
+    // clase: los dos son estado global del DOM, fuera de React. Si se
+    // separaran, la barra del sistema dejaría de seguir al toggle de /ajustes.
+    //
+    // `layout.tsx` declara DOS `meta[name="theme-color"]`, uno por cada
+    // `prefers-color-scheme`, y el navegador se queda con el primero que
+    // matchee. Hay que pisar los dos: tocar solo el primero dejaría el otro
+    // intacto, pero si el SO está en dark el que matchea sigue siendo ese, y
+    // la barra queda desincronizada igual. Las media queries no pueden ver el
+    // caso que las rompe: que el usuario eligió el tema a mano.
+    //
+    // Los hexes espejan `--canvas` de `globals.css` (`#f4f4f6` claro, `#0b0b0f`
+    // oscuro). Un `meta` no puede leer un token de CSS, así que quedan
+    // duplicados: si cambia la paleta, hay que cambiar los dos lados.
+    document
+      .querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]')
+      .forEach((meta) =>
+        meta.setAttribute('content', resolved === 'dark' ? '#0B0B0F' : '#F4F4F6'),
+      );
   }
-  return true;
+  return changed;
 }
 
 function emit(): void {

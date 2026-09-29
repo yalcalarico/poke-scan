@@ -7,7 +7,13 @@ const chipVariants = cva(
   [
     'inline-flex shrink-0 items-center justify-center gap-1.5 rounded-full font-label',
     'whitespace-nowrap transition-colors duration-fast ease-standard',
-    'focus-visible:ring-2 focus-visible:ring-brand/20 dark:focus-visible:ring-brand/40',
+    // Ver el bloque de `Button`: el indicador de foco es un `outline` a color
+    // pleno (WCAG 2.2 SC 1.4.11), no un `ring-brand/20` de 1.38:1. Pinta por
+    // fuera del pill y por eso necesita aire: las filas de chips con scroll
+    // horizontal tienen que dejar 4 px de padding vertical, o el `overflow` los
+    // recorta. `carta/[id]/actions.tsx` ya lo tiene (`py-1`);
+    // `rarity-filter.tsx` y `collection-filters.tsx` no, y hay que verlas.
+    'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--focus-ring)]',
   ],
   {
     variants: {
@@ -18,9 +24,14 @@ const chipVariants = cva(
         content: 'border border-transparent',
       },
       size: {
-        // 36 para el filtro, 28 para el contenido (§8.4).
+        // 40 para el filtro (§0.5), 28 para el contenido (§8.4).
+        //
+        // El filtro subió de 36 a 40 porque es el control de la barra de filtros
+        // de búsqueda, del filtro de rareza y del selector de modo: los tres en
+        // el camino principal del pulgar, y los tres con el default `md`. Que
+        // el default sea el que se mide es lo que decide si la regla se cumple.
         sm: 'h-7 px-2.5 text-caption',
-        md: 'h-9 px-3.5 text-label',
+        md: 'h-10 px-3.5 text-label',
       },
       active: {
         true: 'border-primary bg-primary text-inverse',
@@ -49,6 +60,21 @@ const ICON_SIZES = {
   md: 'h-4 w-4',
 } as const;
 
+/**
+ * Apagado. Va **después** de `shape` y de `TONE_CLASSES` en el `cn()` del
+ * componente, y no como una variante de `cva`, por una razón de orden: `cva`
+ * concatena y no mergea, así que si el apagado fuera una variante las dos clases
+ * de `bg-*` / `text-*` / `border-*` quedarían en el HTML y ganaría la última por
+ * orden de la hoja de estilos, no por intención. Con `cn()` el merge resuelve el
+ * conflicto explícitamente.
+ *
+ * Es la misma receta que el `compoundVariants` del `Button`, que existe por el
+ * mismo motivo: en un chip el color puede venir de la variante `active` **o** del
+ * `tone`, y hay que ganarle a los dos.
+ */
+const DISABLED_CLASSES =
+  'pointer-events-none border-line-subtle bg-surface-2 text-disabled';
+
 export type ChipTone = keyof typeof TONE_CLASSES;
 export type ChipMode = 'filter' | 'content';
 export type ChipSize = keyof typeof ICON_SIZES;
@@ -62,6 +88,14 @@ export interface ChipProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonEle
   tone?: ChipTone;
   icon?: LucideIcon;
   iconPosition?: 'start' | 'end';
+  /**
+   * Estado no disponible. Antes no existía y el atributo nativo pasaba al DOM
+   * sin que nada se viera distinto: el chip se veía igual de apretable y solo
+   * dejaba de hacer algo. Se implementa acá y no como variante de `cva` porque el
+   * color tiene que ganarle tanto al `active` de la variante como al `tone`; ver
+   * `DISABLED_CLASSES`.
+   */
+  disabled?: boolean;
 }
 
 /**
@@ -82,23 +116,40 @@ export function Chip({
   icon: Icon,
   iconPosition = 'start',
   type = 'button',
+  disabled = false,
   children,
   ...props
 }: ChipProps) {
+  // El filtro se resuelve a `md` (40 px) y el contenido a `sm` (28 px), y esa
+  // asimetría es deliberada: el filtro es el control de la barra y vive solo,
+  // mientras que el chip de contenido vive **adentro** de una card, al lado de
+  // un precio o de un contador. Subir el de contenido a 40 no lo haría más
+  // accesible —el objetivo real sigue siendo la fila de la card— y desarmaría
+  // la retícula de `carta/[id]`. Es la excepción que §0.5 pide justificar, y
+  // §8.4 ya la fija en 28. Los dos tamaños siguen siendo públicos para el
+  // consumidor que sí quiera un chip de contenido grande.
   const resolvedSize: ChipSize = size ?? (mode === 'content' ? 'sm' : 'md');
   const isContent = mode === 'content';
   // En contenido el `active` no se aplica: no hay nada que imponer sobre el `tone`.
-  const shape = chipVariants({ mode, size: resolvedSize, active: isContent ? false : active });
+  // Y apagado tampoco: si el chip se ve activo no se lee como no disponible, así
+  // que el apagado fuerza el color de reposo de la variante.
+  const shape = chipVariants({
+    mode,
+    size: resolvedSize,
+    active: isContent || disabled ? false : active,
+  });
 
   return (
     <button
       {...props}
       type={type}
+      disabled={disabled}
       aria-pressed={isContent ? undefined : active}
       className={cn(
         shape,
-        isContent && TONE_CLASSES[tone],
-        !isContent && !active && 'hover:bg-surface-2 hover:text-primary',
+        isContent && !disabled && TONE_CLASSES[tone],
+        !isContent && !active && !disabled && 'hover:bg-surface-2 hover:text-primary',
+        disabled && DISABLED_CLASSES,
         className,
       )}
     >

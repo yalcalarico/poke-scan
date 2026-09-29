@@ -31,6 +31,10 @@ export interface DividerProps extends React.HTMLAttributes<HTMLDivElement> {
  * El separador decorativo lleva `aria-hidden`: antes había `<hr>` con texto
  * suelto que los lectores de pantalla leían como un grupo de palabras sin
  * contexto.
+ *
+ * El `aria-hidden` va **después** del spread de `props` a propósito: el `<hr>`
+ * sin label no tiene nada que anunciar nunca, así que el atributo no es
+ * negociable y un `aria-hidden={false}` del call site no debería poder abrirlo.
  */
 export function Divider({
   className,
@@ -53,13 +57,31 @@ export function Divider({
     return (
       <hr
         {...props}
+        aria-hidden="true"
         className={cn('h-px w-full border-0 bg-line', SPACING[spacing], className)}
       />
     );
   }
 
   return (
-    <div className={cn('flex items-center gap-3', SPACING[spacing], className)} {...props}>
+    <div
+      {...props}
+      // El `role` y el `aria-label` también van después del spread: la JSDoc de
+      // arriba promete que la fila con texto es un separator con nombre, y si
+      // fueran ganables desde el call site la promesa dependería de que nadie
+      // se acuerde.
+      role="separator"
+      aria-orientation="horizontal"
+      /*
+       * `separator` es un rol estructural y ARIA **no** le permite tomar el
+       * nombre de su contenido: sin esto, el texto del label ("o seguí con")
+       * queda solo en pantalla y un lector de pantalla nunca lo anuncia. Por
+       * eso el nombre va explícito y el texto interno queda como redundancia
+       * visual para quien ve.
+       */
+      aria-label={label}
+      className={cn('flex items-center gap-3', SPACING[spacing], className)}
+    >
       <span className="h-px flex-1 bg-line" />
       <span className="text-overline text-tertiary">{label}</span>
       <span className="h-px flex-1 bg-line" />

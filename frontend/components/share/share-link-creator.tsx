@@ -210,6 +210,15 @@ export function ShareLinkCreator({ open, onClose, onCreated }: ShareLinkCreatorP
             segura de que se queden desincronizados. La descripción sí la trae
             el `Select` ahora, así que el hint "Elegí una colección o compartí
             todas." también se anuncia.
+
+            Las dos props explícitas son redundantes con lo que el `Field` ya
+            inyecta —y dan el mismo valor, porque `useFieldA11y` y el `Field`
+            derivan los ids del mismo `id`—, pero no entran en conflicto: el
+            `cloneElement` del `Field` reemplaza la prop, no la agrega, así que
+            el atributo sale una sola vez. Se dejan escritas porque el `hint` de
+            este `Field` es un caso donde conviene ser explícito: el `Select` lo
+            anuncia como descripción y es fácil que alguien lo lea como
+            decorativo y lo saque de acá.
           */}
           <Field label="Colección" hint="Elegí una colección o compartí todas." {...collectionField}>
             <Select

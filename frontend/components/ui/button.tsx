@@ -9,7 +9,13 @@ const buttonVariants = cva(
     'inline-flex items-center justify-center gap-2 rounded-control font-label',
     'transition-[color,background-color,border-color,transform,box-shadow] duration-fast ease-standard',
     'active:scale-[0.98]',
-    'focus-visible:ring-2 focus-visible:ring-brand/20 dark:focus-visible:ring-brand/40',
+    // El indicador de foco es `outline` y no `ring` (WCAG 2.2 SC 1.4.11), y va
+    // a color pleno. El patrón viejo —`ring-brand/20`— medía 1.38:1 sobre una
+    // superficie clara: no llega a los 3:1 que pide la norma, y el `ring`
+    // además es un `box-shadow`, que el UA fuerza a `none` en high contrast,
+    // justo donde más se lo necesita. `outline-offset: 2px` además da el aire
+    // que el anillo nunca tuvo.
+    'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--focus-ring)]',
     'disabled:pointer-events-none disabled:active:scale-100',
   ],
   {
@@ -25,7 +31,11 @@ const buttonVariants = cva(
       },
       size: {
         sm: 'h-8 px-3.5 text-label',
-        md: 'h-10 px-4 text-label',
+        // 44 px en `md` (§0.5). Antes eran 40: `md` es el tamaño **default**, o
+        // sea el de todos los botones de la app, y el default es el que decide
+        // si la regla se cumple o no. `sm` sigue en 32 (§8.1 lo reserva para
+        // acciones terciarias en una fila densa) y `lg` en 48.
+        md: 'h-11 px-4 text-label',
         lg: 'h-12 px-5 text-body-strong',
         icon: 'h-10 w-10 p-0',
       },
@@ -67,7 +77,16 @@ export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
     Omit<VariantProps<typeof buttonVariants>, 'disabled' | 'isDisabled'> {
   loading?: boolean;
-  /** Reemplaza el children mientras carga. Sin esto el botón se estrecha y baila. */
+  /**
+   * Reemplaza el children mientras carga. Sin esto el botón se estrecha y baila.
+   *
+   * También es lo que evita el nombre accesible vacío: con `loading` y sin
+   * `pendingLabel`, un botón de `children` puramente visuales se queda mudo
+   * (WCAG 2.2 SC 4.1.2, *Name, Role, Value*), porque el `Spinner` es
+   * `aria-hidden`. El primitivo lo resuelve solo —los `children` van a un
+   * `sr-only`— así que el `pendingLabel` es opcional de verdad; lo que aporta
+   * es el texto **visible** del estado ocupado, que es una decisión de copy.
+   */
   pendingLabel?: React.ReactNode;
   fullWidth?: boolean;
 }
@@ -108,7 +127,12 @@ export function Button({
       )}
     >
       {loading ? <Spinner size="sm" className="shrink-0" /> : null}
-      {loading && pendingLabel ? pendingLabel : children}
+      {/* Texto del botón. Sin `loading` es el de siempre. Con `loading` y
+          `pendingLabel` es el nuevo, y los `children` se van porque el
+          reemplazo de texto ahí sí es decisión del consumidor. */}
+      {loading
+        ? pendingLabel ?? <span className="sr-only">{children}</span>
+        : children}
     </button>
   );
 }

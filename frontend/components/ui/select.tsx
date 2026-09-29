@@ -27,6 +27,32 @@ export type SelectOption<T extends string> = SelectOptionItem<T>;
 /** Más de esto y el buscador deja de ser decorativo: es obligatorio (§8.3). */
 const SEARCHABLE_THRESHOLD = 12;
 
+/*
+ * Constantes de posicionamiento del popover.
+ *
+ * Auditoría de "de qué depende cada una", porque el trigger `md` pasó de 40 a
+ * 44 px y un número quemado que se mida del alto del trigger se desalinea:
+ *
+ * | constante              | de qué depende                        | ¿se mueve con el alto? |
+ * |------------------------|---------------------------------------|------------------------|
+ * | `SEARCHABLE_THRESHOLD` | cantidad de opciones                  | no: es un conteo        |
+ * | `POPOVER_MAX_HEIGHT`   | tope de scroll de la lista            | no: es un cap, no una derivación |
+ * | `POPOVER_MIN_HEIGHT`   | piso de usabilidad                    | no: ver la advertencia de abajo |
+ * | `POPOVER_GAP`          | separación trigger/popover            | no: es aire fijo        |
+ * | `VIEWPORT_MARGIN`      | aire contra el borde de la ventana    | no                      |
+ *
+ * O sea: **ninguna** se deriva del alto del trigger. La única que sí lo usaba
+ * es `positionPopover`, y lo usa a través de `getBoundingClientRect()` en
+ * `top`/`bottom`, que se miden en vivo en cada `apply()`: un trigger 4 px más
+ * alto se reposiciona solo. Lo que sí existía era un agujero en la cache de los
+ * rects, y ese se arregló abajo agregando `bottom` a la comparación.
+ *
+ * `POPOVER_MIN_HEIGHT` es el piso del `maxHeight` y por eso puede pasar: si
+ * abajo solo hay 100 px, el popover se abre a 160 y se sale de la pantalla. Es
+ * un comportamiento preexistente y no se toca acá —cambiarlo cambia la decisión
+ * de `openUp`—, pero queda anotado: el piso se aplica sobre el espacio
+ * disponible, no sobre el disponible menos el piso.
+ */
 const POPOVER_MAX_HEIGHT = 288; // `max-h-72`
 /** Piso del alto: por debajo de 160 px el popover tapa el trigger y no se puede usar. */
 const POPOVER_MIN_HEIGHT = 160;
@@ -37,26 +63,46 @@ const selectVariants = cva(
   [
     'relative flex w-full items-center justify-between gap-2 rounded-control border text-left',
     'transition-[color,background-color,border-color,box-shadow] duration-fast ease-standard',
-    'focus-visible:ring-2 focus-visible:ring-brand/20 dark:focus-visible:ring-brand/40',
+    // Ver el bloque de `Button`: el indicador de foco es un `outline` a color
+    // pleno (WCAG 2.2 SC 1.4.11), no un `ring-brand/20` de 1.38:1.
+    'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--focus-ring)]',
   ],
   {
     variants: {
       size: {
-        // Mismo padding y alto que el `Input`/`Button` (§4.1).
+        // Mismo padding y alto que el `Input`/`Button` (§4.1), y `md` es 44 px
+        // como en los otros dos (§0.5).
         sm: 'h-8 px-3.5 text-label',
-        md: 'h-10 px-4 text-label',
+        md: 'h-11 px-4 text-label',
         lg: 'h-12 px-5 text-body-strong',
       },
       isInvalid: {
         true: 'border-negative',
-        false: 'border-line',
+        false: '',
       },
       isDisabled: {
-        true: 'cursor-not-allowed border-line bg-surface-2 text-disabled',
+        // Sin `border-*` acá a propósito. El color del borde lo reparten
+        // `isInvalid` y `borderTone`, y son excluyentes: si `isDisabled` también
+        // lo declarara, un select inválido **y** apagado llevaría dos clases de
+        // `border-color` al HTML y ganaría la última por orden de la hoja de
+        // estilos, no por intención. `cva` concatena, no mergea —para eso está
+        // `cn()`—, así que la exclusión hay que escribirla.
+        true: 'cursor-not-allowed bg-surface-2 text-disabled',
         false: 'bg-surface-2 text-primary',
       },
+      borderTone: {
+        // El borde en reposo es `--border-control` y no `border` (=`--border-
+        // default`): contra el `bg-surface-2` propio del control, ese gris mide
+        // 1.19:1 y el select deja de leerse como control (WCAG 2.2 SC 1.4.11).
+        // Apagado vuelve a `--border-default` a propósito: un control
+        // deshabilitado está exento del contraste y se ve mejor atenuado.
+        // `invalid` no emite nada porque ese color lo pone `isInvalid`.
+        control: 'border-[color:var(--border-control)]',
+        invalid: '',
+        disabled: 'border-line',
+      },
     },
-    defaultVariants: { size: 'md', isInvalid: false, isDisabled: false },
+    defaultVariants: { size: 'md', isInvalid: false, isDisabled: false, borderTone: 'control' },
   },
 );
 
@@ -79,7 +125,15 @@ const triggerLabelVariants = cva(['min-w-0 flex-1 truncate', 'text-tertiary'], {
 const selectSearchRowVariants = cva(
   [
     'flex shrink-0 items-center gap-2 border-b border-line-subtle p-2',
-    'focus-within:ring-2 focus-within:ring-inset focus-within:ring-brand/20 dark:focus-within:ring-brand/40',
+    /*
+     * El `outline-offset` va **negativo** y es lo único raro de esta regla: la
+     * fila es la primera hija del popover, que es `overflow-hidden` con radio. Un
+     * `outline` por fuera se cortaría contra los tres bordes del popover y se
+     * superpondría con la primera opción, así que se dibuja hacia adentro, que
+     * es lo que hacía el `ring-inset` viejo. Sigue la receta de `Button` en el
+     * color: a color pleno por SC 1.4.11, no un `ring-brand/20` de 1.38:1.
+     */
+    'focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-[color:var(--focus-ring)]',
   ],
   {
     variants: {
@@ -95,8 +149,10 @@ const selectSearchRowVariants = cva(
 
 const searchInputVariants = cva([
   'min-w-0 flex-1 bg-transparent text-primary placeholder:text-tertiary',
-  // Sin `focus:ring` propio: el anillo lo pone la fila con `focus-within`.
-  // Sacar el outline acá está permitido justamente porque hay reemplazo visible.
+  // Sin indicador propio: el input del buscador es la fila de arriba la que lo
+  // dibuja con `focus-within`. Sacar el outline del input está permitido
+  // justamente porque hay reemplazo visible, y es lo único que evita que se
+  // vean dos indicadores concéntricos en el mismo foco.
   'focus:outline-none',
 ]);
 
@@ -137,6 +193,19 @@ interface TriggerRect {
   top: number;
   left: number;
   width: number;
+  /**
+   * `bottom` y no `height` a propósito: lo que se necesita para reposicionar es
+   * la arista contra la que se ancla el popover, y `bottom` la da directa.
+   *
+   * Antes no estaba y era un agujero real: la cache de `apply()` comparaba
+   * `top`/`left`/`width` para no escribir estilos 60 veces por segundo, así que
+   * un trigger que **cambia de alto sin moverse de `top`** —un cambio de `size`,
+   * un `className` que pise el `h-*`, un zoom del texto del sistema— pasaba
+   * inadvertido y el popover quedaba anclado a un `bottom` viejo. Con el trigger
+   * `md` en 44 px, `top` no se mueve al crecer hacia abajo y ese era justo el
+   * caso.
+   */
+  bottom: number;
 }
 
 /**
@@ -459,11 +528,12 @@ export function Select<T extends string>({
         lastRect &&
         lastRect.top === rect.top &&
         lastRect.left === rect.left &&
-        lastRect.width === rect.width
+        lastRect.width === rect.width &&
+        lastRect.bottom === rect.bottom
       ) {
         return;
       }
-      lastRect = { top: rect.top, left: rect.left, width: rect.width };
+      lastRect = { top: rect.top, left: rect.left, width: rect.width, bottom: rect.bottom };
       positionPopover(trigger, popover);
     };
 
@@ -520,7 +590,15 @@ export function Select<T extends string>({
         onKeyDown={(event) => {
           handleKeyDown(event, false);
         }}
-        className={selectVariants({ size, isInvalid: invalid, isDisabled: disabled })}
+        className={selectVariants({
+          size,
+          isInvalid: invalid,
+          isDisabled: disabled,
+          // Un solo paso decide el color del borde. Ver el comentario de la
+          // variante: es lo que garantiza que nunca salgan dos clases de
+          // `border-color` al HTML.
+          borderTone: invalid ? 'invalid' : disabled ? 'disabled' : 'control',
+        })}
       >
         <span className="flex min-w-0 flex-1 items-center gap-2">
           {SelectedIcon ? (
@@ -602,7 +680,14 @@ export function Select<T extends string>({
                       // 36 px, no 44 (§0.5): es una acción redundante —el input
                       // se vacía con la tecla de borrado— y a 44 px se comería
                       // media fila del buscador en 390 px.
-                      className="grid h-9 w-9 shrink-0 place-items-center rounded-control text-tertiary transition-colors duration-fast ease-standard hover:bg-surface-3 hover:text-primary"
+                      //
+                      // El indicador de foco sí está, y es el del patrón de
+                      // `Button`: este botón y el gemelo de
+                      // `select-search-sheet.tsx` eran los dos únicos elementos
+                      // interactivos de todo el set de primitivas sin ninguno. El
+                      // `outline` con offset 2 entra justo en el `p-2` de la
+                      // fila, así que el popover no lo recorta.
+                      className="grid h-9 w-9 shrink-0 place-items-center rounded-control text-tertiary transition-colors duration-fast ease-standard hover:bg-surface-3 hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--focus-ring)]"
                     >
                       <X aria-hidden="true" focusable="false" strokeWidth={1.75} className="h-4 w-4" />
                     </button>

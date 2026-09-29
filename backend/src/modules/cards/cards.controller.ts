@@ -14,9 +14,11 @@ import {
   type CardDto,
   type CardWithPricesDto,
   type Paginated,
+  type PriceHistoryDto,
 } from './cards.service.js';
 import { CardPricesQueryDto } from './dto/card-prices-query.dto.js';
 import { IdentifyDto } from './dto/identify.dto.js';
+import { PriceHistoryQueryDto } from './dto/price-history-query.dto.js';
 import { SearchCardsDto } from './dto/search-cards.dto.js';
 import { IdentifyService, type IdentifyResultDto } from './identify.service.js';
 
@@ -57,6 +59,18 @@ export class CardsController {
     @Query() dto: CardPricesQueryDto,
   ): Promise<CardWithPricesDto> {
     return this.cardsService.getCardWithPrices(id, dto);
+  }
+
+  // A diferencia de `:id/prices`, esta ruta **nunca** consulta al proveedor de
+  // precios: lee solo la tabla local. Por eso puede ir por el mismo camino
+  // público sin gastarse nada del presupuesto de la API externa.
+  @Public()
+  @Get(':id/prices/history')
+  getPriceHistory(
+    @Param('id') id: string,
+    @Query() dto: PriceHistoryQueryDto,
+  ): Promise<PriceHistoryDto> {
+    return this.cardsService.getPriceHistory(id, dto);
   }
 
   @Public()

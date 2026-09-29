@@ -324,7 +324,7 @@ export function OrganizeSheet({ open, entries, onClose, onSaved, onRemove }: Org
                     onClick={() => remove(entry.runId)}
                     aria-label={`Sacar ${card.name} de la sesión`}
                     title="Sacar de la sesión"
-                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-control text-secondary transition-colors duration-fast ease-standard hover:bg-surface-3 hover:text-primary focus-visible:ring-2 focus-visible:ring-brand/20 dark:focus-visible:ring-brand/40"
+                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-control text-secondary transition-colors duration-fast ease-standard hover:bg-surface-3 hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--focus-ring)]"
                   >
                     <Trash2 aria-hidden="true" focusable="false" strokeWidth={1.75} className="h-5 w-5" />
                   </button>
@@ -342,6 +342,18 @@ export function OrganizeSheet({ open, entries, onClose, onSaved, onRemove }: Org
                       // El trigger del listbox es un `<button>` y el
                       // `<label htmlFor>` no lo nombra: sin esto el select de
                       // colección de cada fila quedaba sin nombre accesible.
+                      //
+                      // Hoy es redundante —el `Field` ya inyecta exactamente este
+                      // id por su `??`, que deja ganar a la prop del consumidor—
+                      // pero no es un conflicto ni un `aria-labelledby` duplicado:
+                      // `cloneElement` **reemplaza** la prop, no la agrega, así
+                      // que el atributo sale una sola vez. Y los dos caminos
+                      // resuelven la misma cadena (`${collectionId}-label` es el
+                      // `labelId` que el `Field` computa del `id` que le pasamos).
+                      // Se deja escrito a propósito: si algún día el `Field` deja
+                      // de inyectar, este es el que sostiene el nombre accesible,
+                      // y el síntoma si se borra es un combobox mudo en cada fila
+                      // sin error en ningún lado.
                       aria-labelledby={`${collectionId}-label`}
                       options={collectionOptions}
                       value={draft.collectionId}

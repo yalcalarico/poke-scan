@@ -30,22 +30,19 @@ export type { SelectOption };
  * teclado y una molestia con el pulgar: en mobile esto quiere ser una pantalla
  * casi completa con buscador.
  *
- * ## Integración pendiente: `Sheet`
+ * ## Cómo se compone
  *
- * Falta componer esto dentro del `Sheet` (docs/design-system.md §8.9), que otro
- * agente está escribiendo en paralelo y todavía no existe. **Este archivo no lo
- * importa** a propósito: si lo hiciera, el `Sheet` roto se lleva por delante al
- * `Select`, que es el componente que hay que entregar sí o sí.
- *
- * El contrato de integración, cuando el `Sheet` esté:
+ * `useSelectSearch` no renderiza nada: devuelve el estado y lo reparte entre los
+ * dos componentes que sí dibujan, `SelectSearchInput` y `SelectOptionList`. Los
+ * dos comparten con el popover del `Select` las clases de la fila de búsqueda y
+ * el markup del listbox, así que las dos formas de elegir se ven y se leen
+ * igual.
  *
  * ```tsx
- * const filter = useSelectSearch<SetId>(sets, { value: selectedSetId });
- *
- * <Button onClick={() => setOpen(true)}>Elegir set</Button>
+ * const filter = useSelectSearch(sets, { value: selectedSetId });
  *
  * <Sheet open={open} onClose={() => setOpen(false)} title="Elegí un set">
- *   <SelectSearchInput filter={filter} />
+ *   <SelectSearchInput state={filter} />
  *   <SelectOptionList
  *     options={filter.filteredOptions}
  *     value={filter.value}
@@ -53,7 +50,7 @@ export type { SelectOption };
  *     onActiveChange={filter.setActiveValue}
  *     onSelect={(next) => {
  *       onChange(next);
- *       close();
+ *       setOpen(false);
  *     }}
  *     listboxId={filter.listboxId}
  *     emptyMessage={filter.emptyMessage}
@@ -61,16 +58,21 @@ export type { SelectOption };
  * </Sheet>
  * ```
  *
- * `SelectSearchInput` y `SelectOptionList` comparten con el popover del
- * `Select` las clases de la fila de búsqueda y el markup del listbox, así que
- * las dos formas de elegir se ven y se leen igual.
- *
  * ## Lo que este archivo NO hace
  *
  * - **No monta el overlay ni el portal.** Eso es del `Sheet`.
  * - **No atrapa el foco ni bloquea el scroll.** También del `Sheet` (§8.9).
  * - **No hace typeahead.** Acá el foco vive en el input de búsqueda y las
  *   letras filtran; el typeahead del `Select` es para el caso sin buscador.
+ *
+ * ## Ojo con `select` vs `onSelect`
+ *
+ * `SelectOptionList` pide un `onSelect` que recibe el **valor** ya elegido, y es
+ * el que hay que cablear al commit. El `filter.select` que devuelve el hook es
+ * otra cosa: toma la opción entera y solo mueve el resaltado, sin cerrar nada.
+ * Es lo que usa el `onKeyDown` interno para el Enter, y no sirve para
+ * confirmar. Conectar `onSelect={filter.select}` compila —los dos son
+ * funciones— y no hace nada visible: el menú nunca se cierra.
  */
 
 export interface UseSelectSearchOptions<T extends string> {
@@ -275,7 +277,14 @@ export function SelectSearchInput<T extends string>({
           type="button"
           aria-label="Limpiar búsqueda"
           onClick={() => onQueryChange('')}
-          className="grid h-9 w-9 shrink-0 place-items-center rounded-control text-tertiary transition-colors duration-fast ease-standard hover:bg-surface-3 hover:text-primary"
+          // Mismo tamaño que el del popover del `Select` (36 px, no 44) y por el
+          // mismo motivo: es una acción redundante —el input se vacía con la
+          // tecla de borrado— y a 44 px se comería media fila en 390 px. Lo que
+          // **no** se replica es la falta de indicador: este botón y el de
+          // `select.tsx` eran de los pocos elementos interactivos del set de
+          // primitivas sin ninguno. Indicador de `Button`: `outline` a color
+          // pleno por SC 1.4.11.
+          className="grid h-9 w-9 shrink-0 place-items-center rounded-control text-tertiary transition-colors duration-fast ease-standard hover:bg-surface-3 hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--focus-ring)]"
         >
           <X aria-hidden="true" focusable="false" strokeWidth={1.75} className="h-4 w-4" />
         </button>

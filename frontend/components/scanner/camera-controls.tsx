@@ -175,7 +175,13 @@ export function CameraControls({
           className={cn(
             'flex h-11 w-11 items-center justify-center rounded-full',
             'transition-colors duration-fast ease-standard',
-            'focus-visible:ring-2 focus-visible:ring-on-media-text/60',
+            // `--on-media-text` y no `--focus-ring`: ver el bloque de
+            // `MEDIA_ICON_BUTTON` en `action-bar.tsx`, que tiene los números.
+            // El `p-1` de la píldora y el `right-4` que la posiciona son los que
+            // dejan aire para los 4 px del outline —el `stage` es
+            // `overflow-hidden`— y por eso el control más a la derecha de la
+            // píldora no puede acercarse más de 4 px del borde.
+            'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-on-media-text',
             control.active ? 'bg-brand-soft text-brand' : 'hover:bg-on-media-text/15',
           )}
         >

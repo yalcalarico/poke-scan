@@ -91,6 +91,40 @@ export interface PriceDto {
    *   viejo que la ventana. Si el cliente lo muestra, no miente.
    */
   change?: PriceChangeDto | null;
+  /**
+   * Los tres campos que consume la píldora de variación del `PriceDelta`
+   * (`components/prices/price-delta.tsx`), **planos** y en USD.
+   *
+   * ## Por qué existen si `change` ya estaba
+   *
+   * No es un segundo cálculo: el backend deriva los tres de `change` con los
+   * mismos nombres que el componente ya espera. La diferencia es de forma —
+   * `change` es anidado y con prefijo (`change.usd`), los tres son de primer
+   * nivel — y el endpoint de histórico los manda así porque su consumidor es un
+   * gráfico, no una tabla.
+   *
+   * ## Reglas que hay que respetar al usarlos
+   *
+   * - **Opcionales**: los precios de items de colección y del link público no
+   *   los traen, así que `undefined` es "este endpoint no calcula delta".
+   * - **`null` es una respuesta explícita**, nunca `0`: no hay ninguna
+   *   cotización *anterior* a la ventana con la que comparar, que es lo que más
+   *   pasa porque `card_prices` tiene unos días de historia. Un `0 %` afirma
+   *   que el precio no se movió, y eso es un dato. Ver la nota de `change`
+   *   arriba, que es la misma regla.
+   * - **Van siempre juntos o ninguno**: si no hay nada honesto que decir, los
+   *   tres vienen `null`.
+   * - **Siempre en USD**: la conversión a ARS la hace el cliente
+   *   (`useCurrency().formatMoney`), como con todos los demás precios.
+   *
+   * `card-price-section.tsx` lee estos tres y usa `change` anidado como
+   * respaldo, para que una fila de precio que solo traiga la forma anidida
+   * siga mostrando el delta.
+   */
+  changeUsd?: number | null;
+  changePercent?: number | null;
+  /** "últimos 30 días". `null` cuando no hay delta. */
+  windowLabel?: string | null;
 }
 
 /** Variación de precio de una ventana. Espeja `PriceChangeDto` del backend. */
@@ -100,6 +134,106 @@ export interface PriceChangeDto {
   windowDays: number;
   /** ISO 8601 de la fila usada como referencia. */
   from: string;
+}
+
+/* ─── Histórico de precios ───
+ *
+ * `GET /api/cards/:id/prices/history?days=&variant=`. Es la serie que dibuja el
+ * `Sparkline` de la ficha y de la que sale el delta real.
+ *
+ * A diferencia de `/prices`, este endpoint **nunca** consulta al proveedor de
+ * precios: arma la serie con un `DISTINCT ON (fetchedAt::date)` sobre el índice
+ * `(cardId, variant, fetchedAt)` que `card_prices` ya tiene. Por eso no gasta
+ * nada del presupuesto de pokemontcg.io (`AGENTS.md` §3.1) y por eso puede ir
+ * por la ruta pública.
+ */
+
+/** Un día de la serie. Espeja `PriceHistoryPointDto` del backend. */
+export interface PriceHistoryPointDto {
+  /** El día en UTC, `YYYY-MM-DD`. Es la etiqueta del eje. */
+  date: string;
+  /** `fetchedAt` real de la fila que se eligió para ese día. */
+  fetchedAt: string;
+  market: number | null;
+  low: number | null;
+  mid: number | null;
+  high: number | null;
+}
+
+/**
+ * La variación de la ventana. Espeja `PriceWindowChangeDto`.
+ *
+ * Los dos van **con signo**: `changeUsd: -2839.31` es una caída.
+ */
+export interface PriceWindowChangeDto {
+  changeUsd: number;
+  /** Cero decimales, redondeo simétrico. */
+  changePercent: number;
+}
+
+/** Espeja `PriceHistoryDto` del backend. */
+export interface PriceHistoryDto {
+  cardId: string;
+  /**
+   * La variante de la serie, o `null` si es "la mejor disponible por día".
+   *
+   * `null` **no** es un default perdido: hay cartas que solo tienen
+   * `reverseHolofoil` o `firstEdition`, y fijar una variante las dejaría sin
+   * serie. Es el mismo criterio "mejor precio disponible" que usa `sort=price`.
+   */
+  variant: CardVariant | null;
+  /** Siempre `'USD'`. La conversión a ARS la hace el cliente (§9.3). */
+  currency: 'USD';
+  /** La ventana efectiva, ya recortada por el servidor a 7..365. */
+  windowDays: number;
+  /** Fecha del primer punto con `market`, o `null` si la serie está vacía. */
+  from: string | null;
+  /** Fecha del último punto con `market`, o `null` si la serie está vacía. */
+  to: string | null;
+  /** Un punto por día, en orden cronológico ascendente. */
+  points: PriceHistoryPointDto[];
+  /**
+   * El delta de la ventana, o **`null`**.
+   *
+   * El `null` es deliberado y no es un bug: es lo que vuelve cuando no hay
+   * **dos** puntos con `market`, o cuando el primero vale `0` (con un cero en la
+   * base el porcentaje no significa nada). Dos extremos iguales **sí** devuelven
+   * `{changeUsd: 0, changePercent: 0}`, porque "no se movió" es un dato.
+   *
+   * Con unos días de historia en `card_prices`, el caso común es `null`: el
+   * gráfico se dibuja igual y el delta **no** se inventa. La misma regla que
+   * aplica `price-delta.tsx` cuando no hay variación que mostrar.
+   */
+  change: PriceWindowChangeDto | null;
+}
+
+/* ─── Ubicación de una carta en las colecciones del usuario ─── */
+
+/**
+ * Dónde está esta carta en las colecciones del usuario.
+ *
+ * `GET /api/cards/:id/location`, **autenticado**. Antes de este endpoint, la
+ * ficha de carta tenía que listar todas las colecciones del usuario en paralelo
+ * y buscar el ítem por nombre en cada una: con 8 colecciones eran 8 requests
+ * concurrentes en el montaje de la segunda pantalla más visitada.
+ *
+ * Devuelve `null` (y **no** 404) cuando la carta existe pero el usuario no la
+ * tiene: "no la tenés" no es un error. El 404 queda reservado a "la carta no
+ * existe".
+ *
+ * Cuando la carta está en más de una colección o bajo más de una variante,
+ * devuelve **el ítem con más copias** (`quantity DESC`, con la principal y la
+ * más antigua como desempates), no un array. Es la fila que va a abrir el
+ * `ItemSheet`, y esa fila es la que el usuario quiere administrar.
+ */
+export interface CardLocationDto {
+  collectionId: string;
+  collectionName: string;
+  /** Id del ítem, que es lo que necesita el `PATCH /items/:itemId`. */
+  itemId: string;
+  quantity: number;
+  variant: CardVariant;
+  condition: CardCondition;
 }
 
 // ─── Usuario ───

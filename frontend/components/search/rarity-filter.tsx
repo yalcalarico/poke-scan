@@ -55,6 +55,19 @@ export interface RarityFilterProps {
  * `snap-x` + `snap-start`: al scrollear a dedo, cada chip queda alineado en
  * lugar de quedar a medio camino entre dos. Sin snap, el último chip visible
  * siempre queda cortado y parece un error de layout.
+ *
+ * ─── El `py-1` es estructural, no un margen ───
+ *
+ * El scroller es `overflow-x-auto` y el padding vertical es lo único que
+ * separa la fila de los bordes de su propia caja de clip. El foco de un `Chip`
+ * son 2 px de `outline` con `offset-2`, o sea 4 px por fuera del pill: sin este
+ * `py-1` el `overflow` se come el borde de arriba y el de abajo de los dos
+ * extremos —los que están pegados al borde, no todos— y el indicador de foco se
+ * ve como una línea cortada justo en el lado que más se mira.
+ *
+ * Antes el `ring` no pasaba por acá: eran 2 px sin offset, y alcanzaba con
+ * padding vertical cero. La migración al `outline` duplicó el aire que hace
+ * falta, y esta fila era la única de las dos que no lo tenía.
  */
 export function RarityFilter({ value, onChange, className }: RarityFilterProps) {
   return (
@@ -62,7 +75,7 @@ export function RarityFilter({ value, onChange, className }: RarityFilterProps) 
       role="group"
       aria-label="Filtros por rareza"
       className={cn(
-        '-mx-4 flex snap-x gap-2 overflow-x-auto px-4 sm:-mx-6 sm:px-6',
+        '-mx-4 flex snap-x gap-2 overflow-x-auto px-4 py-1 sm:-mx-6 sm:px-6',
         NO_SCROLLBAR,
         className,
       )}

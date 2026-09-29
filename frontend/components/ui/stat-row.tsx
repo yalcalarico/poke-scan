@@ -123,11 +123,14 @@ export function StatRow({
         // El puntero solo si hay algo clickeable: en `listitem` sin `onClick`
         // el consumidor pone el Link adentro y la fila no es el target.
         (isButton || mode === 'link' || handlesClick) && 'cursor-pointer',
-        // El anillo va en el elemento que recibe el foco: en `button` es el div,
-        // en `link` es el `<a>` de afuera, y `focus-within` lo levanta.
-        isButton && 'focus-visible:ring-2 focus-visible:ring-brand/20 dark:focus-visible:ring-brand/40',
+        // El indicador va en el elemento que recibe el foco: en `button` es el
+        // div, en `link` es el `<a>` de afuera, y `focus-within` lo levanta.
+        // Mismo patrón que `Button`: `outline` a color pleno (SC 1.4.11) en vez
+        // del `ring-brand/20` de 1.38:1.
+        isButton &&
+          'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--focus-ring)]',
         (mode === 'link' || mode === 'listitem') &&
-          'focus-within:ring-2 focus-within:ring-brand/20 dark:focus-within:ring-brand/40',
+          'focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-[color:var(--focus-ring)]',
         className,
       )}
     >

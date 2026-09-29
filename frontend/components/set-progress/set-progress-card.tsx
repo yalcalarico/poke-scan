@@ -85,7 +85,7 @@ export function SetProgressCard({
       disabled={!interactive}
       className={cn(
         'block w-full rounded-surface text-left',
-        'focus-visible:ring-2 focus-visible:ring-brand/20 dark:focus-visible:ring-brand/40',
+        'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--focus-ring)]',
         'disabled:pointer-events-none',
         className,
       )}

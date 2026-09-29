@@ -1,5 +1,5 @@
 import { CircleAlert } from 'lucide-react';
-import { useId, type ReactNode } from 'react';
+import { cloneElement, isValidElement, useId, type ReactElement, type ReactNode } from 'react';
 
 import { cn } from '@/lib/cn';
 
@@ -39,13 +39,48 @@ function isPresent(value: ReactNode): boolean {
 }
 
 /**
+ * Lo único que el `Field` le inyecta al hijo, y lo mínimo que hace falta para
+ * que un control que **no** es un `<label>`-nombrable quede con nombre.
+ *
+ * El tipo es deliberadamente abierto y no `React.HTMLAttributes<HTMLElement>`:
+ * el hijo del `Field` es un **componente** del design system (`Select`, `Input`,
+ * `Textarea`, `Switch`), no un elemento del DOM, y un componente no es
+ * asignable a un tipo de props intrínsecas. Con este tipo, `cloneElement`
+ * compila para cualquiera de ellos y el chequeo real queda en el runtime: el
+ * componente que no sepa qué hacer con `aria-labelledby` lo ignora, que es
+ * exactamente lo que tiene que pasar.
+ */
+interface FieldChildAriaProps {
+  'aria-labelledby'?: string;
+  'aria-describedby'?: string;
+}
+
+/**
+ * `true` solo si el hijo es **un** elemento válido. Un array, un fragmento o un
+ * string no se pueden clonar con props: hay que devolver el `children` tal cual
+ * y que el consumidor resuelva el nombre a mano, pero sin reventar.
+ */
+function isInjectableChild(node: ReactNode): node is ReactElement<FieldChildAriaProps> {
+  return isValidElement<FieldChildAriaProps>(node);
+}
+
+/**
  * El `aria-describedby` apunta a **una sola** cosa, y el error le gana al hint.
  * Se calcula acá y no en el componente para que el hook y `Field` no puedan
  * discrepar: si divergieran, el lector anunciaría un `id` que no existe.
+ *
+ * Recibe los `id` ya resueltos y no los arma: `Field` acepta `hintId`/`errorId`
+ * como props, y si esta función los derivara de `controlId` el `Field` publicaría
+ * un `describedBy` que no matchea el nodo que realmente renderiza.
  */
-function resolveDescribedBy(controlId: string, hasHint: boolean, hasError: boolean) {
-  if (hasError) return `${controlId}-error`;
-  if (hasHint) return `${controlId}-hint`;
+function resolveDescribedBy(
+  errorId: string,
+  hintId: string,
+  hasHint: boolean,
+  hasError: boolean,
+) {
+  if (hasError) return errorId;
+  if (hasHint) return hintId;
   return undefined;
 }
 
@@ -64,13 +99,15 @@ export function useFieldA11y({ id, hint, error }: UseFieldA11yOptions = {}): Fie
   const controlId = id ?? generatedId;
   const hasError = isPresent(error);
   const hasHint = !hasError && isPresent(hint);
+  const hintId = `${controlId}-hint`;
+  const errorId = `${controlId}-error`;
 
   return {
     id: controlId,
     labelId: `${controlId}-label`,
-    hintId: `${controlId}-hint`,
-    errorId: `${controlId}-error`,
-    describedBy: resolveDescribedBy(controlId, hasHint, hasError),
+    hintId,
+    errorId,
+    describedBy: resolveDescribedBy(errorId, hintId, hasHint, hasError),
     invalid: hasError,
   };
 }
@@ -97,10 +134,18 @@ export interface FieldProps extends Partial<FieldA11y> {
  *
  * ## Cómo se conecta con el control
  *
- * El hijo es el control real, no un prop `input`. Para que el label, el hint y
- * el error lleguen al control hay que pasar **el mismo `id`** a los dos y el
- * estado de error explícito. El helper `useFieldA11y` hace que eso sea una
- * línea en vez de cuatro:
+ * El hijo es el control real, no un prop `input`. Hay **dos** conexiones:
+ *
+ * 1. El `id`. Para que el `<label htmlFor>` apunte a algo tiene que ser el mismo
+ *    `id` que el del control.
+ * 2. El nombre y la descripción. El `Field` los **inyecta** en el hijo por
+ *    `cloneElement` (ver el bloque de `cloneElement` en el cuerpo), así que no
+ *    hay que pasarlos a mano.
+ *
+ * La segunda es nueva. Antes las dos eran trabajo del call site, y por eso
+ * `organize-sheet.tsx` termina pasando un `aria-labelledby` escrito a mano.
+ *
+ * El helper `useFieldA11y` hace que la primera sea una línea en vez de cuatro:
  *
  * ```tsx
  * 'use client';
@@ -112,7 +157,7 @@ export interface FieldProps extends Partial<FieldA11y> {
  *   const [error, setError] = useState<string | null>(null);
  *
  *   // Un solo objeto: el `Field` lo usa para el label/hint/error y el `Input`
- *   // para el `id` y el `aria-describedby`.
+ *   // para el `id`.
  *   const field = useFieldA11y({ id: 'email', error });
  *
  *   return (
@@ -127,7 +172,6 @@ export interface FieldProps extends Partial<FieldA11y> {
  *           value={email}
  *           onChange={(event) => setEmail(event.target.value)}
  *           invalid={field.invalid}
- *           aria-describedby={field.describedBy}
  *         />
  *       </Field>
  *       <Button type="submit">Entrar</Button>
@@ -135,6 +179,10 @@ export interface FieldProps extends Partial<FieldA11y> {
  *   );
  * }
  * ```
+ *
+ * Pasar `aria-describedby={field.describedBy}` a mano **no** rompe nada y sigue
+ * siendo necesario si el control no es hijo directo del `Field` (por ejemplo
+ * cuando hay un wrapper en el medio). Para el caso normal ya no hace falta.
  *
  * ## Por qué el `aria-invalid` lo pone el consumidor
  *
@@ -146,6 +194,10 @@ export interface FieldProps extends Partial<FieldA11y> {
  * justamente porque no lo son. El costo de que lo declare el consumidor es una
  * prop; el costo de que lo declare el componente es que el design system entero
  * no se puede renderizar en un Server Component.
+ *
+ * El `aria-invalid` tampoco se inyecta por `cloneElement` aunque el hijo acepte
+ * props: `aria-invalid` es el estado de un campo, no su nombre, y el `Field` no
+ * puede afirmar que un `Select` apagado e inválido es un error. Se deja.
  *
  * El `Input` y el `Textarea` pintan el estado **desde** `aria-invalid`
  * (`aria-[invalid=true]:*`), no desde el prop `invalid`, así que el estilo y lo
@@ -180,10 +232,49 @@ export function Field({
   const resolvedHintId = hintId ?? `${controlId}-hint`;
   const resolvedErrorId = errorId ?? `${controlId}-error`;
   const resolvedLabelId = labelId ?? `${controlId}-label`;
+  const describedBy = resolveDescribedBy(resolvedErrorId, resolvedHintId, hasHint, hasError);
+  const hasLabel = label !== undefined && label !== null;
+
+  /*
+   * Por qué se inyecta y no se deja como obligación del consumidor:
+   * `<label htmlFor>` **no nombra un `<button>`**. La spec de HTML solo etiqueta
+   * `<input>`, `<select>`, `<textarea>`, `<button>`, `<meter>`, `<output>`,
+   * `<progress>`, `<fieldset>`, `<legend>`, `<optgroup>` y `<option>`, pero el
+   * `Select` propio renderiza un `<button role="combobox">`: el `htmlFor` apunta
+   * a un id válido, el navegador no da error, y el lector de pantalla anuncia
+   * "combobox, 2 de 5" a secas. Lo mismo con el `aria-describedby`: el hint y el
+   * error existen en el DOM pero nada los referencia.
+   *
+   * O sea: el bug no es del `Select`, es de toda la clase de controles que no
+   * son labellables, y por eso se arregla acá y no allá. Si en algún momento se
+   * "simplifica" esto afuera, el síntoma es que los `Select` dentro de un
+   * `Field` vuelven a no tener nombre, y no hay ningún error en ningún lado.
+   *
+   * Dos guardas, y las dos importan:
+   *
+   * 1. **No se pisa lo que el consumidor ya puso.** `organize-sheet.tsx` pasa su
+   *    propio `aria-labelledby` (por el `id` compuesto de la fila). El `??` lo
+   *    deja ganar: una prop explícita es una decisión del call site, y el
+   *    `Field` no puede saber si el label que el consumidor quiere nombrar es el
+   *    suyo o este.
+   * 2. **Solo se inyecta `aria-labelledby` si hay label renderizado.** Apuntar
+   *    a un id que no existe en el DOM es peor que no apuntar: el lector queda
+   *    con una referencia colgando en vez de con un nombre.
+   *
+   * La precedencia del `describedBy` (error le gana a hint) es la de
+   * `resolveDescribedBy`, la misma función que usa `useFieldA11y`. Las dos
+   * caminos tienen que decir lo mismo o uno de los dos miente.
+   */
+  const child = isInjectableChild(children)
+    ? cloneElement(children, {
+        ...(hasLabel ? { 'aria-labelledby': children.props['aria-labelledby'] ?? resolvedLabelId } : {}),
+        ...(describedBy ? { 'aria-describedby': children.props['aria-describedby'] ?? describedBy } : {}),
+      })
+    : children;
 
   return (
     <div className={cn('flex min-w-0 flex-col', className)}>
-      {label !== undefined && label !== null ? (
+      {hasLabel ? (
         <label
           id={resolvedLabelId}
           htmlFor={controlId}
@@ -202,7 +293,7 @@ export function Field({
         </label>
       ) : null}
 
-      {children}
+      {child}
 
       {hasError ? (
         <div

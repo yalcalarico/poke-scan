@@ -2,11 +2,15 @@ import { CONDITION_OPTIONS, VARIANT_OPTIONS } from '@/lib/variants';
 import type {
   CardCondition,
   CardDto,
+  CardLocationDto,
   CardVariant,
   CollectionItemDto,
   CollectionStatsDto,
   PriceChangeDto,
   PriceDto,
+  PriceHistoryDto,
+  PriceHistoryPointDto,
+  PriceWindowChangeDto,
   SetDto,
 } from '@/types/api';
 
@@ -113,6 +117,33 @@ function toPriceChange(raw: unknown): PriceChangeDto | null | undefined {
   return { usd, percent, windowDays, from };
 }
 
+/**
+ * El delta **plano** de `PriceDto` (`changeUsd` / `changePercent` /
+ * `windowLabel`), o `undefined` si el endpoint no lo manda.
+ *
+ * Los tres van juntos o no van, así que se preservan como bloque y se devuelve
+ * `undefined` si falta cualquiera: un `changePercent` sin `changeUsd` haría que
+ * el `PriceDelta` eligiera el porcentaje como referencia de signo y pinte una
+ * caída donde no la hubo.
+ *
+ * El `null` explícito se conserva (se ve "se calculó y no hay nada que decir"),
+ * igual que en `toPriceChange`. La diferencia es que acá los tres campos son
+ * `number | null` sueltos y no un objeto.
+ */
+function toFlatPriceChange(raw: Record<string, unknown>): {
+  changeUsd: number | null;
+  changePercent: number | null;
+  windowLabel: string | null;
+} {
+  const changeUsd = num(raw.changeUsd);
+  const changePercent = num(raw.changePercent);
+  const windowLabel = str(raw.windowLabel);
+  if (changeUsd === null || changePercent === null) {
+    return { changeUsd: null, changePercent: null, windowLabel: null };
+  }
+  return { changeUsd, changePercent, windowLabel };
+}
+
 /* ─── Set ─── */
 
 /**
@@ -217,6 +248,88 @@ export function toPriceDto(raw: unknown): PriceDto | null {
     // Se conserva la distinción ausente/`null`: solo `GET /cards/:id/prices`
     // manda el campo, y el `PriceDelta` necesita saber si no vino o vino vacío.
     change: toPriceChange(raw.change),
+    // Los tres planos. Se leen **después** de haber validado la variante: una
+    // fila corrupta se descarta entera más arriba, así que acá no hay que
+    // decidir qué hacer con un delta de una fila que no existe.
+    ...toFlatPriceChange(raw),
+  };
+}
+
+/* ─── Histórico de precios ─── */
+
+/** `PriceHistoryPointDto` o `null`: un punto sin `date` no se puede ubicar. */
+function toPriceHistoryPoint(raw: unknown): PriceHistoryPointDto | null {
+  if (!isRecord(raw)) return null;
+  const date = str(raw.date);
+  if (!date) return null;
+
+  return {
+    date,
+    // `fetchedAt` real de la fila elegida para ese día. Default a la fecha del
+    // punto: el backend siempre lo manda, y un ISO inválido es peor que
+    // devolver el día, que al menos sigue siendo la etiqueta del eje.
+    fetchedAt: str(raw.fetchedAt) ?? date,
+    market: num(raw.market),
+    low: num(raw.low),
+    mid: num(raw.mid),
+    high: num(raw.high),
+  };
+}
+
+/**
+ * `PriceHistoryDto` o `null`, para `GET /cards/:id/prices/history`.
+ *
+ * ## Por qué es "todo o nada" y por qué no lo es para los puntos
+ *
+ * El envelope sin `cardId` no se puede ni dibujar ni volver a pedir: se
+ * descarta entero. Un **punto** sin `date` sí se puede descartar individual: son
+ * filas de una serie y perder una no deja la serie sin sentido (salvo que se
+ * pierda la primera o la última, y para eso están `from` y `to`, que son
+ * datos del envelope y se calculan aparte).
+ *
+ * `change: null` se preserva tal cual. Es la respuesta que el backend da cuando
+ * no hay con qué comparar, y es lo que hace que el `Sparkline` muestre la serie
+ * **sin** delta en lugar de inventar un 0 %.
+ */
+export function toPriceHistory(raw: unknown): PriceHistoryDto | null {
+  if (!isRecord(raw)) return null;
+  const cardId = str(raw.cardId);
+  if (!cardId) return null;
+
+  const points: PriceHistoryPointDto[] = [];
+  for (const entry of Array.isArray(raw.points) ? raw.points : []) {
+    const point = toPriceHistoryPoint(entry);
+    if (point) points.push(point);
+  }
+
+  const windowDays = num(raw.windowDays);
+
+  /*
+   * El delta del envelope. Los dos números van juntos o no hay nada: un
+   * `changePercent` sin `changeUsd` haría que el `PriceDelta` usara el
+   * porcentaje como signo de referencia, que es un camino que no existe.
+   *
+   * Y `null` se queda en `null`. Es la respuesta del backend cuando hay un solo
+   * punto con precio o el primero vale 0, y es exactamente lo que el
+   * `Sparkline` necesita para **no** pintar una variación que no se puede
+   * calcular (ver `PriceHistoryDto.change` en `types/api.ts`).
+   */
+  let change: PriceWindowChangeDto | null = null;
+  if (isRecord(raw.change)) {
+    const changeUsd = num(raw.change.changeUsd);
+    const changePercent = num(raw.change.changePercent);
+    if (changeUsd !== null && changePercent !== null) change = { changeUsd, changePercent };
+  }
+
+  return {
+    cardId,
+    variant: toVariant(raw.variant),
+    currency: 'USD',
+    windowDays: windowDays === null ? 30 : windowDays,
+    from: str(raw.from),
+    to: str(raw.to),
+    points,
+    change,
   };
 }
 
@@ -263,6 +376,47 @@ export function toCollectionItemDto(raw: unknown): CollectionItemDto | null {
     notes: str(raw.notes),
     addedAt,
     price: raw.price === undefined ? null : toPriceDto(raw.price),
+  };
+}
+
+/**
+ * `CardLocationDto` o `null`, para `GET /cards/:id/location`.
+ *
+ * ## Por qué el `null` del envelope y el del guard son el mismo valor
+ *
+ * El endpoint responde `null` cuando la carta existe y el usuario no la tiene,
+ * y eso **no es un error**. El guard devuelve `null` para los dos casos —"no la
+ * tenés" y "la respuesta no se puede leer"— porque para la ficha de carta son
+ * la misma situación de pantalla: no hay ítem que administrar y no hay nada que
+ * mostrar. La diferencia real (404 = la carta no existe) llega como `ApiError`
+ * antes de que el guard se ejecute.
+ *
+ * La alternativa —un tipo `{ found: false } | { found: true, … }`— obligaría a
+ * que cada call site desarmara un caso que no cambia nada en pantalla. La regla
+ * del módulo es que el guard devuelve `null` y quien compone decide, y acá
+ * quien compone tiene una sola decisión que tomar.
+ *
+ * `itemId` es el campo obligatorio de verdad: sin él no hay `PATCH /items/:id`
+ * que pueda hacer el toggle de intercambio ni abrir el `ItemSheet`.
+ */
+export function toCardLocation(raw: unknown): CardLocationDto | null {
+  if (!isRecord(raw)) return null;
+  const collectionId = str(raw.collectionId);
+  const itemId = str(raw.itemId);
+  const quantity = num(raw.quantity);
+  const variant = toVariant(raw.variant);
+  const condition = toCondition(raw.condition);
+  if (!collectionId || !itemId || quantity === null || !variant || !condition) return null;
+
+  return {
+    collectionId,
+    // El nombre de la colección va en la descripción de la `StatRow`; si
+    // faltara, sale "—" en vez de perder el ítem entero.
+    collectionName: str(raw.collectionName) ?? '—',
+    itemId,
+    quantity,
+    variant,
+    condition,
   };
 }
 
