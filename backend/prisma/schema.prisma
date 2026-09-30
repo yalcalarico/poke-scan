@@ -243,6 +243,89 @@ model ScanJob {
   @@map("scan_jobs")
 }
 
+// ─── Cola de refresco de precios (Fase 4 de docs/plans/02-backend-production.md) ───
+
+/// Una fila por carta que espera refresco de precios.
+///
+/// Es la cola que antes vivía en un array del proceso (`SyncPricesService.queue`).
+/// La diferencia que importa no es "no perder la cola al reiniciar": es que
+/// **`lastProviderCallAt` también era del proceso**, así que con dos instancias
+/// el `MIN_GAP_MS` se contaba dos veces y el ritmo real hacia el proveedor se
+/// duplicaba. Con la fila en Postgres, el ritmo es global.
+///
+/// El `@@unique` de `cardId` es la deduplicación: no hay `deduplicationKey`
+/// porque el refresh no es por variante (un request trae todas), así que la
+/// carta es la única clave.
+///
+/// `availableAt` es el backoff y también el reloj del claim: una fila `pending`
+/// con `availableAt` en el futuro no se toca hasta que llegue. Un encolado
+/// **nunca adelanta** un backoff (`GREATEST` en el upsert): si no, una lectura
+/// stale-while-revalidate repetida se convertiría en un lazo de reintentos
+/// contra una carta que el proveedor no tiene.
+///
+/// `lockedBy`/`lockedAt` son el claim. `SKIP LOCKED` hace que dos instancias no
+/// puedan tomar la misma fila, y `lockedAt` es lo que permite recuperar en el
+/// arranque los `processing` que quedaron colgados.
+model PriceRefreshJob {
+  id          String    @id @default(uuid())
+  cardId      String    @unique
+  status      String    @default("pending") // pending | processing | completed | failed
+  attempts    Int       @default(0)
+  availableAt DateTime  @default(now())
+  lastError   String?
+  lockedBy    String?
+  lockedAt    DateTime?
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // El claim ordena por `availableAt` entre filas `pending`: sin este índice es
+  // un seq scan con `ORDER BY` + `LIMIT 1` sobre toda la tabla.
+  @@index([status, availableAt])
+  // La recuperación de `processing` colgados en el arranque filtr por edad.
+  @@index([status, lockedAt])
+  @@map("price_refresh_jobs")
+}
+
+/// El reloj global del ritmo hacia un proveedor de precios.
+///
+/// Una fila por proveedor, actualizada con un `UPDATE ... WHERE "lastCalledAt"
+/// <= now() - intervalo`. Si el `UPDATE` no matchea, el slot está tomado: el
+/// que espere calcula cuánto falta y duerme eso, en vez de hacer un `SELECT` en
+/// bucle.
+///
+/// Sin esta tabla el gap es un `Date.now()` en memoria, y un `Date.now()` en
+/// memoria es un gap por proceso. Es la diferencia entre "cortés" y "cumple la
+/// cuota" en cuanto haya dos instancias.
+model ProviderRateLimit {
+  providerId   String   @id
+  lastCalledAt DateTime
+  updatedAt    DateTime @updatedAt
+
+  @@map("provider_rate_limits")
+}
+
+/// Cursor de los syncs de catálogo, por job **y** por proveedor.
+///
+/// Antes eran dos claves Redis sin TTL (`sync:cards:lastPage`,
+/// `sync:cards:complete`) con granularidad global: un `flushall` reiniciaba el
+/// sync desde la página 1 y hacía re-traer las 83 páginas de un catálogo que ya
+/// estaba completo.
+///
+/// El id es composed (`<jobType>:<providerId>`) y no un `uuid`, porque la fila
+/// tiene que ser la misma para el próximo sync del mismo job y proveedor: es un
+/// checkpoint, no un registro. Cuando entre un segundo proveedor de catálogo, no
+/// comparte cursor con pokemontcg.io.
+model SyncState {
+  id         String   @id // "cards:pokemontcg.io"
+  lastPage   Int      @default(0)
+  totalPages Int?
+  isComplete Boolean  @default(false)
+  updatedAt  DateTime @updatedAt
+
+  @@map("sync_state")
+}
+
 // ─── Amigos (fase 8) ───
 
 /// Una fila por par (requester, addressee) orientado. El @@unique garantiza
