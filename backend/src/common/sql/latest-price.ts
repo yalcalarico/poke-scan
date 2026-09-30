@@ -1,5 +1,11 @@
 import { Prisma } from '@prisma/client';
 
+export interface CurrentPricePolicy {
+  id: string;
+  defaultSource: string;
+  defaultCurrency: string;
+}
+
 /**
  * `LEFT JOIN` del **último** precio de mercado de cada item.
  *
@@ -39,12 +45,16 @@ import { Prisma } from '@prisma/client';
  * Proyecta **solo** `market`: es la única columna que consumen el `totalValueUsd`
  * de los agregados y el `valueUsd` del progreso por set.
  */
-export function latestMarketPriceJoin(): Prisma.Sql {
+export function latestMarketPriceJoin(policy: CurrentPricePolicy): Prisma.Sql {
   return Prisma.sql`
     LEFT JOIN LATERAL (
       SELECT p.market AS "market"
       FROM card_prices p
-      WHERE p."cardId" = i."cardId" AND p.variant = i.variant
+      WHERE p."cardId" = i."cardId"
+        AND p.variant = i.variant
+        AND p.provider = ${policy.id}
+        AND p.source = ${policy.defaultSource}
+        AND p.currency = ${policy.defaultCurrency}
       ORDER BY p."fetchedAt" DESC
       LIMIT 1
     ) lp ON true

@@ -1203,6 +1203,13 @@ Lo no obvio:
   caption sigue siendo el que dice cuántos días hay —nunca "0 %" cuando el
   backend devuelve `change: null`— y el color de la línea sale **solo** del
   `change` del servidor, para que el sparkline no pueda contradecir a la píldora.
+- **La procedencia va en el texto visible.** `PriceDto.provider` y
+  `PriceHistoryDto.provider` + `source` están en el contrato para que se muestren:
+  el caption de `PriceHistory` termina con `· tcgplayer · TCGdex` y `PriceTable`
+  rotula el mercado de cada fila. Con `provider: null` el texto dice "origen no
+  identificado" en vez de atribuir la serie a la fuente activa —no hay dato que
+  pruebe de dónde salió— y `PriceDto.isStale` (precio de otro proveedor o de más
+  de 24 h) es lo que dispara el `Alert` de "esto está viejo" y el refresh.
 - **`PriceDelta` tiene un tercer tono, `flat`.** *"Sin cambio no es 'ni una cosa ni
   la otra': es un precio quieto, y pintar un 0 % de rojo dice 'cayó' cuando no cayó
   nada"*.

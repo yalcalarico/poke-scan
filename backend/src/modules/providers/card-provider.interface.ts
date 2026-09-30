@@ -105,6 +105,10 @@ export interface RemotePriceSetDetail {
 
 export interface PriceProvider {
   readonly id: string;
+  /** Mercado que usa la app para rankings y valuaciones por defecto. */
+  readonly defaultSource: string;
+  /** Moneda que usa la app para rankings y valuaciones por defecto. */
+  readonly defaultCurrency: string;
   listSets(): Promise<RemotePriceSet[]>;
   getSetDetail(setId: string): Promise<RemotePriceSetDetail | null>;
   /**

@@ -231,6 +231,15 @@ function buildSummary(history: PriceHistoryDto | null): HistorySummary | null {
 
   const dayCount = points.length;
   const windowDays = history.windowDays;
+  const providerName =
+    history.provider === null
+      ? 'origen no identificado'
+      : history.provider === 'tcgdex'
+        ? 'TCGdex'
+        : history.provider === 'scrydex'
+          ? 'Scrydex'
+          : history.provider;
+  const provenance = `${history.source} · ${providerName}`;
 
   if (dayCount === 0) {
     return {
@@ -242,7 +251,7 @@ function buildSummary(history: PriceHistoryDto | null): HistorySummary | null {
        * carta, así que "todavía no hay" es una frase que puede ser verdad hoy y
        * falsa en una hora, y por eso no promete nada.
        */
-      caption: 'Todavía no hay historial de precio para comparar.',
+      caption: `Todavía no hay historial de precio para comparar · ${provenance}.`,
       toneClass: 'text-tertiary',
     };
   }
@@ -321,10 +330,10 @@ function buildSummary(history: PriceHistoryDto | null): HistorySummary | null {
   const caption = !hasChange
     ? `${dayCount} ${dayWord} de precio ${
         dayCount === 1 ? 'registrado' : 'registrados'
-      }. Todavía no hay con qué comparar una variación.`
+      }. Todavía no hay con qué comparar una variación · ${provenance}.`
     : isThin
-      ? `${dayCount} ${dayWord} de precio · ${direction}. La línea crece con cada consulta nueva.`
-      : `${dayCount} ${dayWord} de precio · ${direction} en los últimos ${windowDays} días`;
+      ? `${dayCount} ${dayWord} de precio · ${direction}. La línea crece con cada consulta nueva · ${provenance}.`
+      : `${dayCount} ${dayWord} de precio · ${direction} en los últimos ${windowDays} días · ${provenance}`;
 
   return { points, label, caption, toneClass };
 }

@@ -24,6 +24,8 @@ function point(date: string, market: number | null): PriceHistoryPointDto {
 function history(overrides: Partial<PriceHistoryDto> = {}): PriceHistoryDto {
   return {
     cardId: 'base1-4',
+    provider: 'tcgdex',
+    source: 'tcgplayer',
     variant: null,
     currency: 'USD',
     windowDays: 30,
@@ -190,7 +192,9 @@ describe('PriceHistory: la geometría se dibuja siempre que haya datos', () => {
     expect(document.querySelector('.bg-current')).toBeNull();
     await waitFor(() =>
       expect(
-        screen.getByText('Todavía no hay historial de precio para comparar.'),
+        screen.getByText(
+          /Todavía no hay historial de precio para comparar · tcgplayer · TCGdex\./,
+        ),
       ).toBeInTheDocument(),
     );
   });
@@ -241,11 +245,38 @@ describe('PriceHistory: la geometría se dibuja siempre que haya datos', () => {
     );
 
     render(<PriceHistory cardId="base1-4" />);
-    await screen.findByText('Todavía no hay historial de precio para comparar.');
+    await screen.findByText(
+      /Todavía no hay historial de precio para comparar · tcgplayer · TCGdex\./,
+    );
 
     expect(document.querySelector('svg')).toBeNull();
     expect(document.querySelector('figcaption')).toBeNull();
     expect(document.body).toHaveTextContent('Esta carta no tiene historial de precio en los últimos 30 días.');
+  });
+
+  /*
+   * La procedencia va en el texto, no en un tooltip: de dónde salió la serie es
+   * parte de lo que el usuario está mirando, y sin esto dos series de
+   * proveedores distintos se leen como la misma cifra.
+   */
+  it('el caption dice de qué mercado y de qué proveedor salió la serie', async () => {
+    getCardPriceHistory.mockResolvedValue(twoDayHistory());
+    render(<PriceHistory cardId="base1-4" />);
+
+    const caption = await screen.findByText(/2 días de precio/);
+    expect(caption).toHaveTextContent('tcgplayer');
+    expect(caption).toHaveTextContent('TCGdex');
+  });
+
+  it('con provider null el caption no le atribuye la serie a nadie', async () => {
+    getCardPriceHistory.mockResolvedValue(
+      history({ provider: null, source: 'tcgplayer', points: [], from: null, to: null, change: null }),
+    );
+    render(<PriceHistory cardId="base1-4" />);
+
+    const caption = await screen.findByText(/Todavía no hay historial/);
+    expect(caption).toHaveTextContent('origen no identificado');
+    expect(caption).not.toHaveTextContent('TCGdex');
   });
 
   it('los puntos con market nulo no cuentan como días', async () => {

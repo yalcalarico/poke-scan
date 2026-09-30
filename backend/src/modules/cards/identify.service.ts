@@ -1,6 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/index.js';
+import { PRICE_PROVIDER, type PriceProvider } from '../providers/card-provider.interface.js';
 import type { CardDto, CardPriceDto, SetDto } from './cards.service.js';
 import {
   DEFAULT_IDENTIFY_LIMIT,
@@ -223,6 +224,7 @@ interface PriceRow {
   mid: number | string | null;
   high: number | string | null;
   market: number | string | null;
+  provider: string | null;
   currency: string;
   source: string;
   fetchedAt: Date;
@@ -381,7 +383,10 @@ function extractSignals(lines: string[]): CardSignals {
 
 @Injectable()
 export class IdentifyService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    @Inject(PRICE_PROVIDER) private readonly priceProvider: PriceProvider,
+  ) {}
 
   /**
    * Log de diagnóstico de `identify`, apagado salvo `IDENTIFY_DEBUG=1`.
@@ -710,7 +715,14 @@ export class IdentifyService {
           ${parts.artist}::float8 AS "sigArtist",
           ${parts.rarity}::float8 AS "sigRarity",
           b.raw AS "matchedText",
-          EXISTS (SELECT 1 FROM card_prices cp WHERE cp."cardId" = c.id) AS "hasPrice"
+           EXISTS (
+             SELECT 1 FROM card_prices cp
+             WHERE cp."cardId" = c.id
+               AND cp.provider = ${this.priceProvider.id}
+               AND cp.source = ${this.priceProvider.defaultSource}
+               AND cp.currency = ${this.priceProvider.defaultCurrency}
+               AND cp.market IS NOT NULL
+           ) AS "hasPrice"
         FROM best b
         JOIN cards c ON c.id = b.id
         LEFT JOIN card_sets s ON s.id = c."setId"
@@ -869,11 +881,15 @@ export class IdentifyService {
         mid AS mid,
         high AS high,
         market AS market,
+        provider AS provider,
         currency AS currency,
         source AS source,
         "fetchedAt" AS "fetchedAt"
       FROM card_prices
       WHERE "cardId" = ANY(${cardIds}::text[])
+        AND provider = ${this.priceProvider.id}
+        AND source = ${this.priceProvider.defaultSource}
+        AND currency = ${this.priceProvider.defaultCurrency}
       ORDER BY "cardId", variant, "fetchedAt" DESC
     `);
 
@@ -886,6 +902,7 @@ export class IdentifyService {
         mid: toNumber(row.mid),
         high: toNumber(row.high),
         market: toNumber(row.market),
+        provider: row.provider,
         currency: row.currency,
         source: row.source,
         fetchedAt: toIso(row.fetchedAt) ?? new Date(0).toISOString(),

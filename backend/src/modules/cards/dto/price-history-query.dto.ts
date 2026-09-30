@@ -5,6 +5,7 @@ import { IsIn, IsInt, IsOptional } from 'class-validator';
 // constante, no se copia. `card-variant.ts` no importa nada, así que no se
 // genera un ciclo entre los dos módulos.
 import { CARD_VARIANTS, type CardVariant } from '../../collections/dto/card-variant.js';
+import { PROVIDER_IDS } from '../../providers/card-provider.interface.js';
 
 /** Ventana por defecto del histórico: la misma que usa el delta de 30 días. */
 export const PRICE_HISTORY_DEFAULT_DAYS = 30;
@@ -12,6 +13,7 @@ export const PRICE_HISTORY_DEFAULT_DAYS = 30;
 export const PRICE_HISTORY_MIN_DAYS = 7;
 /** Tope duro: 365 puntos es el payload más grande que se devuelve. */
 export const PRICE_HISTORY_MAX_DAYS = 365;
+export const PRICE_HISTORY_PROVIDERS = [...Object.values(PROVIDER_IDS), 'legacy'] as const;
 
 /**
  * Query de `GET /cards/:id/prices/history`.
@@ -22,6 +24,11 @@ export const PRICE_HISTORY_MAX_DAYS = 365;
  * número entero.
  */
 export class PriceHistoryQueryDto {
+  /** Proveedor de la serie. Sin él, se usa el activo; `legacy` selecciona filas sin procedencia. */
+  @IsOptional()
+  @IsIn(PRICE_HISTORY_PROVIDERS)
+  provider?: (typeof PRICE_HISTORY_PROVIDERS)[number];
+
   /**
    * Variante a la que se acota la serie. Sin él, la serie es **una fila por día**
    * con la mejor cotización disponible de la carta ese día (el mismo criterio

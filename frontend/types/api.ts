@@ -67,8 +67,12 @@ export interface PriceDto {
   mid: number | null;
   high: number | null;
   market: number | null;
+  /** API que entregó la cotización; `null` en precios legacy sin procedencia verificable. */
+  provider: string | null;
+  /** `true` si el dato es legacy/de otro proveedor o superó la frescura configurada. */
+  isStale?: boolean;
   currency: string; // 'USD'
-  source: string; // 'tcgplayer'
+  source: string; // mercado/listing, p. ej. 'tcgplayer'
   fetchedAt: string; // ISO 8601
   priceArs?: number | null; // presente cuando CURRENCY_ARS_ENABLED está activo
   /**
@@ -174,6 +178,9 @@ export interface PriceWindowChangeDto {
 /** Espeja `PriceHistoryDto` del backend. */
 export interface PriceHistoryDto {
   cardId: string;
+  /** `null` identifica la serie legacy sin proveedor verificable. */
+  provider: string | null;
+  source: string;
   /**
    * La variante de la serie, o `null` si es "la mejor disponible por día".
    *
@@ -182,8 +189,8 @@ export interface PriceHistoryDto {
    * serie. Es el mismo criterio "mejor precio disponible" que usa `sort=price`.
    */
   variant: CardVariant | null;
-  /** Siempre `'USD'`. La conversión a ARS la hace el cliente (§9.3). */
-  currency: 'USD';
+  /** Moneda original de la serie. La conversión a ARS la hace el cliente (§9.3). */
+  currency: string;
   /** La ventana efectiva, ya recortada por el servidor a 7..365. */
   windowDays: number;
   /** Fecha del primer punto con `market`, o `null` si la serie está vacía. */

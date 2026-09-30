@@ -8,6 +8,7 @@ import { Test, type TestingModule } from '@nestjs/testing';
 import { Prisma, PrismaClient } from '@prisma/client';
 import { PrismaService } from '../../prisma/index.js';
 import { RedisService } from '../../redis/index.js';
+import { PRICE_PROVIDER } from '../providers/card-provider.interface.js';
 import { CollectionsService } from '../collections/collections.service.js';
 import { AddItemDto } from '../collections/dto/add-item.dto.js';
 import { CreateCollectionDto } from '../collections/dto/create-collection.dto.js';
@@ -25,6 +26,11 @@ const TEST_CARD_2_ID = `${TEST_CARD_PREFIX}secondary`;
 const TEST_EMAIL_A = 'friends-user-a@test.local';
 const TEST_EMAIL_B = 'friends-user-b@test.local';
 const TEST_EMAIL_C = 'friends-user-c@test.local';
+const PRICE_PROVIDER_STUB = {
+  id: 'tcgdex',
+  defaultSource: 'tcgplayer',
+  defaultCurrency: 'USD',
+};
 
 const searchDto = (dto: Partial<SearchUsersDto> = {}): SearchUsersDto =>
   Object.assign(new SearchUsersDto(), dto);
@@ -54,6 +60,7 @@ describe('FriendsService', () => {
         FriendsService,
         CollectionsService,
         { provide: PrismaService, useValue: prismaClient },
+        { provide: PRICE_PROVIDER, useValue: PRICE_PROVIDER_STUB },
         // Sin Redis en los tests: el service tiene que degradar a "sin caché".
         {
           provide: RedisService,
@@ -138,7 +145,8 @@ describe('FriendsService', () => {
         cardId: TEST_CARD_ID,
         variant: 'normal',
         market: new Prisma.Decimal('25.00'),
-        source: 'test',
+        provider: 'tcgdex',
+        source: 'tcgplayer',
         currency: 'USD',
         fetchedAt: new Date('2024-01-01T00:00:00.000Z'),
       },

@@ -1,8 +1,9 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { randomInt } from 'node:crypto';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/index.js';
 import { RedisService } from '../../redis/index.js';
+import { PRICE_PROVIDER, type PriceProvider } from '../providers/card-provider.interface.js';
 import type {
   CardDto,
   CollectionItemDto,
@@ -48,6 +49,7 @@ interface LatestPriceRow {
   mid: Prisma.Decimal | null;
   high: Prisma.Decimal | null;
   market: Prisma.Decimal | null;
+  provider: string | null;
   currency: string;
   source: string;
   fetchedAt: Date;
@@ -136,6 +138,7 @@ export class ShareService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly redis: RedisService,
+    @Inject(PRICE_PROVIDER) private readonly priceProvider: PriceProvider,
   ) {}
 
   // ───-links privados ───
@@ -230,7 +233,7 @@ export class ShareService {
   // ─── Ruta pública ───
 
   async getPublic(slug: string): Promise<SharedCollectionDto> {
-    const cacheKey = `share:${slug}`;
+    const cacheKey = `share:${this.priceProvider.id}:${slug}`;
 
     const cached = await this.redis.getJson<SharedCollectionDto>(cacheKey);
     if (cached) {
@@ -307,7 +310,7 @@ export class ShareService {
   }
 
   private async invalidateCache(slug: string): Promise<void> {
-    await this.redis.del(`share:${slug}`);
+    await this.redis.del(`share:${this.priceProvider.id}:${slug}`);
   }
 
   private trackView(slug: string): void {
@@ -351,11 +354,15 @@ export class ShareService {
         p.mid,
         p.high,
         p.market,
+        p.provider,
         p.currency,
         p.source,
         p."fetchedAt" AS "fetchedAt"
       FROM card_prices p
       WHERE p."cardId" = ANY(${uniqueCardIds}::text[])
+        AND p.provider = ${this.priceProvider.id}
+        AND p.source = ${this.priceProvider.defaultSource}
+        AND p.currency = ${this.priceProvider.defaultCurrency}
       ORDER BY p."cardId", p.variant, p."fetchedAt" DESC
     `);
 
@@ -369,6 +376,7 @@ export class ShareService {
         mid: toNumber(row.mid),
         high: toNumber(row.high),
         market: toNumber(row.market),
+        provider: row.provider,
         currency: row.currency,
         source: row.source,
         fetchedAt: toIso(row.fetchedAt),

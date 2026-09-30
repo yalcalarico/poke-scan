@@ -151,10 +151,12 @@ export function PriceTable({ prices, className }: PriceTableProps) {
           </thead>
           <tbody>
             {rows.map((price) => (
-              <tr key={`${price.variant}-${price.source}-${price.fetchedAt}`} className="border-b border-line-subtle last:border-0">
+              <tr key={`${price.provider ?? 'legacy'}-${price.variant}-${price.source}-${price.fetchedAt}`} className="border-b border-line-subtle last:border-0">
                 <th scope="row" className="py-2.5 pr-3 text-left text-body-strong text-primary">
                   {variantLabel(price.variant)}
-                  <span className="block text-caption font-normal text-tertiary">{price.source}</span>
+                  <span className="block text-caption font-normal text-tertiary">
+                    {price.source} · {price.provider ?? 'origen no identificado'}
+                  </span>
                 </th>
                 <td className="py-2.5 pr-3 text-right text-body text-secondary">
                   <PriceCell usd={price.low} />
@@ -178,11 +180,13 @@ export function PriceTable({ prices, className }: PriceTableProps) {
       <div className="flex flex-col gap-3 lg:hidden">
         {rows.map((price) => (
           <section
-            key={`${price.variant}-${price.source}-${price.fetchedAt}`}
+            key={`${price.provider ?? 'legacy'}-${price.variant}-${price.source}-${price.fetchedAt}`}
             className="rounded-control border border-line bg-surface-2 p-1"
           >
             <h3 className="px-2 pt-1.5 text-body-strong text-primary">{variantLabel(price.variant)}</h3>
-            <p className="px-2 text-caption text-tertiary">{price.source}</p>
+            <p className="px-2 text-caption text-tertiary">
+              {price.source} · {price.provider ?? 'origen no identificado'}
+            </p>
             <dl className="mt-1">
               <StatRow title="Bajo" value={<PriceCell usd={price.low} />} />
               <StatRow title="Medio" value={<PriceCell usd={price.mid} />} />

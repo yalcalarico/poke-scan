@@ -15,6 +15,8 @@ function price(overrides: Partial<PriceDto>): PriceDto {
     mid: null,
     high: null,
     market: 29.9,
+    provider: 'tcgdex',
+    isStale: false,
     currency: 'USD',
     source: 'tcgplayer',
     fetchedAt: '2026-09-28T10:00:00.000Z',
@@ -26,6 +28,8 @@ function price(overrides: Partial<PriceDto>): PriceDto {
 function history(overrides: Partial<PriceHistoryDto> = {}): PriceHistoryDto {
   return {
     cardId: 'base1-4',
+    provider: 'tcgdex',
+    source: 'tcgplayer',
     variant: null,
     currency: 'USD',
     windowDays: 30,

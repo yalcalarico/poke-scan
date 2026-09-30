@@ -2,6 +2,7 @@ import {
   BadRequestException,
   ConflictException,
   ForbiddenException,
+  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -9,6 +10,7 @@ import { Prisma } from '@prisma/client';
 import { latestMarketPriceJoin } from '../../common/sql/latest-price.js';
 import { PrismaService } from '../../prisma/index.js';
 import { RedisService } from '../../redis/index.js';
+import { PRICE_PROVIDER, type PriceProvider } from '../providers/card-provider.interface.js';
 import type {
   CardDto,
   CollectionItemDto,
@@ -157,6 +159,7 @@ interface LatestPriceRow {
   mid: Prisma.Decimal | null;
   high: Prisma.Decimal | null;
   market: Prisma.Decimal | null;
+  provider: string | null;
   currency: string;
   source: string;
   fetchedAt: Date;
@@ -206,6 +209,7 @@ export class FriendsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly redis: RedisService,
+    @Inject(PRICE_PROVIDER) private readonly priceProvider: PriceProvider,
   ) {}
 
   // ─── Búsqueda de usuarios ───
@@ -703,7 +707,7 @@ export class FriendsService {
     const misses: string[] = [];
     for (const id of userIds) {
       const cached = await this.redis.getJson<FriendCollectionSummaryDto>(
-        `friends:summary:${id}`,
+        `friends:summary:${this.priceProvider.id}:${id}`,
       );
       if (cached) {
         result.set(id, cached);
@@ -723,7 +727,7 @@ export class FriendsService {
         COALESCE(SUM(i.quantity * lp.market), 0)::float8 AS "totalValueUsd"
       FROM collections col
       LEFT JOIN collection_items i ON i."collectionId" = col.id
-      ${latestMarketPriceJoin()}
+      ${latestMarketPriceJoin(this.priceProvider)}
       WHERE col."userId" = ANY(${misses}::text[])
       GROUP BY col."userId"
     `);
@@ -737,7 +741,7 @@ export class FriendsService {
       };
       result.set(row.userId, summary);
       await this.redis.setJson(
-        `friends:summary:${row.userId}`,
+        `friends:summary:${this.priceProvider.id}:${row.userId}`,
         summary,
         FRIEND_CACHE_TTL_SECONDS,
       );
@@ -751,7 +755,7 @@ export class FriendsService {
     friendId: string,
     collectionId?: string,
   ): string {
-    return `friends:collection:${viewerId}:${friendId}:${collectionId ?? 'all'}`;
+    return `friends:collection:${this.priceProvider.id}:${viewerId}:${friendId}:${collectionId ?? 'all'}`;
   }
 
   /**
@@ -789,11 +793,15 @@ export class FriendsService {
         p.mid,
         p.high,
         p.market,
+        p.provider,
         p.currency,
         p.source,
         p."fetchedAt" AS "fetchedAt"
       FROM card_prices p
       WHERE p."cardId" = ANY(${uniqueCardIds}::text[])
+        AND p.provider = ${this.priceProvider.id}
+        AND p.source = ${this.priceProvider.defaultSource}
+        AND p.currency = ${this.priceProvider.defaultCurrency}
       ORDER BY p."cardId", p.variant, p."fetchedAt" DESC
     `);
 
@@ -807,6 +815,7 @@ export class FriendsService {
         mid: toNumber(row.mid),
         high: toNumber(row.high),
         market: toNumber(row.market),
+        provider: row.provider,
         currency: row.currency,
         source: row.source,
         fetchedAt: toIso(row.fetchedAt),

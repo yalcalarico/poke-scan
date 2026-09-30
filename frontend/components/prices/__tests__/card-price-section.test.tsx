@@ -49,8 +49,10 @@ function price(overrides: Partial<PriceDto> = {}): PriceDto {
     mid: 2,
     high: 3,
     market: 12.34,
+    provider: 'tcgdex',
+    isStale: false,
     currency: 'USD',
-    source: 'tcgdex',
+    source: 'tcgplayer',
     fetchedAt: new Date().toISOString(),
     change: null,
     changeUsd: null,
@@ -84,6 +86,8 @@ function pricesPayload(prices: PriceDto[]): CardWithPricesDto {
 function emptyHistory(): PriceHistoryDto {
   return {
     cardId: 'xy4-117',
+    provider: 'tcgdex',
+    source: 'tcgplayer',
     variant: null,
     currency: 'USD',
     windowDays: 30,

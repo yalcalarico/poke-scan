@@ -1,5 +1,6 @@
 import {
   ConflictException,
+  Inject,
   Injectable,
   NotFoundException,
   Optional,
@@ -9,6 +10,7 @@ import { latestMarketPriceJoin } from '../../common/sql/latest-price.js';
 import { NUMERIC_CARD_NUMBER } from '../../common/sql/numeric-number.js';
 import { SyncPricesService } from '../../jobs/sync-prices.service.js';
 import { PrismaService } from '../../prisma/index.js';
+import { PRICE_PROVIDER, type PriceProvider } from '../providers/card-provider.interface.js';
 import { type CardSortField } from '../cards/dto/search-cards.dto.js';
 import { AddItemDto } from './dto/add-item.dto.js';
 import { CreateCollectionDto } from './dto/create-collection.dto.js';
@@ -108,6 +110,7 @@ export interface PriceDto {
   mid: number | null;
   high: number | null;
   market: number | null;
+  provider: string | null;
   currency: string;
   source: string;
   fetchedAt: string;
@@ -237,6 +240,7 @@ interface LatestPriceRow {
   mid: Prisma.Decimal | null;
   high: Prisma.Decimal | null;
   market: Prisma.Decimal | null;
+  provider: string | null;
   currency: string;
   source: string;
   fetchedAt: Date;
@@ -312,6 +316,7 @@ function escapeLike(value: string): string {
 export class CollectionsService {
   constructor(
     private readonly prisma: PrismaService,
+    @Inject(PRICE_PROVIDER) private readonly priceProvider: PriceProvider,
     /** Opcional: los tests unitarios lo construyen sin el job de precios. */
     @Optional() private readonly syncPrices?: SyncPricesService,
   ) {}
@@ -568,7 +573,23 @@ export class CollectionsService {
     await this.assertOwned(userId, collectionId);
     const items = await this.prisma.collectionItem.findMany({
       where: { collection: { id: collectionId, userId } },
-      select: { cardId: true, card: { select: { prices: { select: { id: true }, take: 1 } } } },
+      select: {
+        cardId: true,
+        card: {
+          select: {
+            prices: {
+              where: {
+                provider: this.priceProvider.id,
+                source: this.priceProvider.defaultSource,
+                currency: this.priceProvider.defaultCurrency,
+                market: { not: null },
+              },
+              select: { id: true },
+              take: 1,
+            },
+          },
+        },
+      },
       distinct: ['cardId'],
     });
 
@@ -685,11 +706,7 @@ export class CollectionsService {
         COUNT(i.id) FILTER (WHERE i.quantity > 1)::int AS "duplicateCards",
         COUNT(DISTINCT c."setId")::int AS "setsCount",
         COALESCE(SUM(i.quantity * lp.market), 0)::float8 AS "totalValueUsd",
-        COUNT(DISTINCT i."cardId") FILTER (
-          WHERE NOT EXISTS (
-            SELECT 1 FROM card_prices cp WHERE cp."cardId" = i."cardId"
-          )
-        )::int AS "cardsMissingPrice"
+         COUNT(DISTINCT i."cardId") FILTER (WHERE lp.market IS NULL)::int AS "cardsMissingPrice"
       FROM collection_items i
       JOIN collections col ON col.id = i."collectionId"
       JOIN cards c ON c.id = i."cardId"
@@ -1070,7 +1087,7 @@ export class CollectionsService {
    * total de un lado y el del otro dejan de cuadrar cuando `card_prices` crece.
    */
   private latestPriceJoin(): Prisma.Sql {
-    return latestMarketPriceJoin();
+    return latestMarketPriceJoin(this.priceProvider);
   }
 
   private async aggregateQuery(
@@ -1187,11 +1204,15 @@ export class CollectionsService {
         p.mid,
         p.high,
         p.market,
+        p.provider,
         p.currency,
         p.source,
         p."fetchedAt" AS "fetchedAt"
       FROM card_prices p
       WHERE p."cardId" = ANY(${uniqueCardIds}::text[])
+        AND p.provider = ${this.priceProvider.id}
+        AND p.source = ${this.priceProvider.defaultSource}
+        AND p.currency = ${this.priceProvider.defaultCurrency}
       ORDER BY p."cardId", p.variant, p."fetchedAt" DESC
     `);
 
@@ -1205,6 +1226,7 @@ export class CollectionsService {
         mid: toNumber(row.mid),
         high: toNumber(row.high),
         market: toNumber(row.market),
+        provider: row.provider,
         currency: row.currency,
         source: row.source,
         fetchedAt: toIso(row.fetchedAt),

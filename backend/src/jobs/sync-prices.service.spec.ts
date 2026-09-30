@@ -74,6 +74,8 @@ describe('SyncPricesService', () => {
     redisStore = redis._store;
     provider = {
       id: 'tcgdex',
+      defaultSource: 'tcgplayer',
+      defaultCurrency: 'USD',
       listSets: vi.fn(),
       getSetDetail: vi.fn(),
       getCardPrices: vi.fn(),
@@ -216,7 +218,7 @@ describe('SyncPricesService', () => {
     const prices = await service.refresh(TEST_CARD_ID);
 
     expect(prices).toEqual([]);
-    const hit = redisStore.get(`prices:tcgdex:${TEST_CARD_ID}`);
+    const hit = redisStore.get(`prices:v2:tcgdex:${TEST_CARD_ID}`);
     expect(hit).toBeDefined();
     expect(hit!.ttl).toBe(6 * 60 * 60);
   });
@@ -251,6 +253,7 @@ describe('SyncPricesService', () => {
         cardId: TEST_CARD_ID,
         variant: 'holofoil',
         market: 7.77,
+        provider: 'tcgdex',
         source: 'tcgplayer',
         currency: 'USD',
         fetchedAt: new Date(Date.now() - 60 * 60 * 1000),
@@ -269,6 +272,7 @@ describe('SyncPricesService', () => {
         cardId: TEST_CARD_ID,
         variant: 'holofoil',
         market: 0.5,
+        provider: 'tcgdex',
         source: 'tcgplayer',
         currency: 'USD',
         fetchedAt: new Date(Date.now() - 25 * 60 * 60 * 1000),
@@ -306,6 +310,7 @@ describe('SyncPricesService', () => {
           cardId: TEST_CARD_ID,
           variant: 'holofoil',
           market: 3,
+          provider: 'tcgdex',
           source: 'tcgplayer',
           currency: 'USD',
           fetchedAt: new Date(Date.now() - 3 * 60 * 60 * 1000),
@@ -314,6 +319,7 @@ describe('SyncPricesService', () => {
           cardId: TEST_CARD_ID,
           variant: 'holofoil',
           market: 9.99,
+          provider: 'tcgdex',
           source: 'tcgplayer',
           currency: 'USD',
           fetchedAt: new Date(Date.now() - 60 * 60 * 1000),
@@ -322,6 +328,7 @@ describe('SyncPricesService', () => {
           cardId: TEST_CARD_ID,
           variant: 'normal',
           market: 0.5,
+          provider: 'tcgdex',
           source: 'tcgplayer',
           currency: 'USD',
           fetchedAt: new Date(Date.now() - 2 * 60 * 60 * 1000),

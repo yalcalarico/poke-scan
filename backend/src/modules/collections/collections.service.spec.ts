@@ -2,6 +2,7 @@ import { ConflictException, NotFoundException } from '@nestjs/common';
 import { Test, type TestingModule } from '@nestjs/testing';
 import { Prisma, PrismaClient } from '@prisma/client';
 import { PrismaService } from '../../prisma/index.js';
+import { PRICE_PROVIDER } from '../providers/card-provider.interface.js';
 import { CollectionsService } from './collections.service.js';
 import { AddItemDto } from './dto/add-item.dto.js';
 import { CreateCollectionDto } from './dto/create-collection.dto.js';
@@ -17,6 +18,11 @@ const TEST_SET_ID = `${TEST_CARD_PREFIX}set-sin-total`;
 const TEST_CARD_IN_UNKNOWN_SET_ID = `${TEST_CARD_PREFIX}in-set-sin-total`;
 const TEST_MARKET = new Prisma.Decimal('12.50');
 const DEFAULT_LIST_ITEMS = { page: 1, pageSize: 50 } as const;
+const PRICE_PROVIDER_STUB = {
+  id: 'tcgdex',
+  defaultSource: 'tcgplayer',
+  defaultCurrency: 'USD',
+};
 
 const addItem = (cardId: string, dto: Partial<AddItemDto> = {}): AddItemDto =>
   Object.assign(new AddItemDto(), { cardId }, dto);
@@ -37,6 +43,7 @@ describe('CollectionsService', () => {
       providers: [
         CollectionsService,
         { provide: PrismaService, useValue: prismaClient },
+        { provide: PRICE_PROVIDER, useValue: PRICE_PROVIDER_STUB },
       ],
     }).compile();
 
@@ -118,7 +125,8 @@ describe('CollectionsService', () => {
         mid: new Prisma.Decimal('2.00'),
         high: new Prisma.Decimal('30.00'),
         market: TEST_MARKET,
-        source: 'test',
+        provider: 'tcgdex',
+        source: 'tcgplayer',
         currency: 'USD',
         fetchedAt: new Date('2024-01-01T00:00:00.000Z'),
       },
@@ -130,7 +138,8 @@ describe('CollectionsService', () => {
         cardId: TEST_CARD_ID,
         variant: 'normal',
         market: new Prisma.Decimal('99.00'),
-        source: 'test',
+        provider: 'tcgdex',
+        source: 'tcgplayer',
         currency: 'USD',
         fetchedAt: new Date('2024-06-01T00:00:00.000Z'),
       },
@@ -141,7 +150,8 @@ describe('CollectionsService', () => {
         cardId: TEST_CARD_ID,
         variant: 'holofoil',
         market: new Prisma.Decimal('55.00'),
-        source: 'test',
+        provider: 'tcgdex',
+        source: 'tcgplayer',
         currency: 'USD',
         fetchedAt: new Date('2024-06-01T00:00:00.000Z'),
       },
@@ -178,7 +188,8 @@ describe('CollectionsService', () => {
         cardId: TEST_CARD_IN_UNKNOWN_SET_ID,
         variant: 'normal',
         market: new Prisma.Decimal('7.25'),
-        source: 'test',
+        provider: 'tcgdex',
+        source: 'tcgplayer',
         currency: 'USD',
         fetchedAt: new Date('2024-06-01T00:00:00.000Z'),
       },
@@ -736,6 +747,7 @@ describe('CollectionsService · cover de portada (B9)', () => {
       providers: [
         CollectionsService,
         { provide: PrismaService, useValue: prismaClient },
+        { provide: PRICE_PROVIDER, useValue: PRICE_PROVIDER_STUB },
       ],
     }).compile();
 
@@ -918,7 +930,8 @@ describe('CollectionsService · precio por item (latestMarketPriceJoin)', () => 
         variant,
         mid: new Prisma.Decimal('3.00'),
         market: market === null ? null : new Prisma.Decimal(market),
-        source: 'test',
+        provider: 'tcgdex',
+        source: 'tcgplayer',
         currency: 'USD',
         fetchedAt: new Date(fetchedAt),
       },
@@ -929,6 +942,7 @@ describe('CollectionsService · precio por item (latestMarketPriceJoin)', () => 
       providers: [
         CollectionsService,
         { provide: PrismaService, useValue: prismaClient },
+        { provide: PRICE_PROVIDER, useValue: PRICE_PROVIDER_STUB },
       ],
     }).compile();
 
@@ -1006,7 +1020,7 @@ describe('CollectionsService · precio por item (latestMarketPriceJoin)', () => 
     expect(stats.totalValueUsd).toBeCloseTo(522, 2);
   });
 
-  it('una fila más nueva con market NULL no hace caer a la fila vieja con precio', async () => {
+  it('una fila más nueva con market NULL cuenta como precio faltante', async () => {
     // La última cotización de la variante vino sin `market`. El total tiene que
     // sumar 0, no el 77 de la fila anterior: un `WHERE market IS NOT NULL` en el
     // lateral "arreglaría" el síntoma y mentiría sobre el dato más reciente.
@@ -1018,9 +1032,8 @@ describe('CollectionsService · precio por item (latestMarketPriceJoin)', () => 
     const stats = await service.getStats(userId, collectionId);
     expect(stats.totalValueUsd).toBe(0);
 
-    // La carta sí tiene fila de precio, así que no cuenta como "sin precio"
-    // (el criterio de `cardsMissingPrice` es la existencia, no el market).
-    expect(stats.cardsMissingPrice).toBe(0);
+    // La fila más nueva es la cotización vigente y no tiene `market` usable.
+    expect(stats.cardsMissingPrice).toBe(1);
   });
 
   it('el mismo número aparece en /stats, en el listado y en el progreso por set', async () => {
@@ -1063,6 +1076,7 @@ describe('CollectionsService · orden del listado y location de carta', () => {
       providers: [
         CollectionsService,
         { provide: PrismaService, useValue: prismaClient },
+        { provide: PRICE_PROVIDER, useValue: PRICE_PROVIDER_STUB },
       ],
     }).compile();
 
@@ -1128,7 +1142,8 @@ describe('CollectionsService · orden del listado y location de carta', () => {
           cardId,
           variant: 'normal',
           market: new Prisma.Decimal(market),
-          source: 'test',
+          provider: 'tcgdex',
+          source: 'tcgplayer',
           currency: 'USD',
           fetchedAt: new Date('2024-06-01T00:00:00.000Z'),
         },

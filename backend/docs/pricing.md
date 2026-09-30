@@ -81,7 +81,7 @@ LLAMADA
   │
   ▼
 ┌─ Capa 1: Redis ───────────────────────────────────────┐
-│  clave  prices:<providerId>:<cardId>                 │
+│  clave  prices:v2:<providerId>:<cardId>                │
 │  valor  CardPriceView[]  (JSON)                       │
 │  TTL    3600 s (CACHE_TTL_SECONDS)                    │
 │         21600 s si el último refresh vino vacío       │
@@ -124,6 +124,10 @@ sin precio: los lanzamientos recientes todavía no tienen listados en TCGPlayer.
 Sin ella, cada visita a la página de una carta de `me55` sería un request a
 tcgdex. Con ella se reintenta cada 6 h y, cuando el set aparece en el feed, el
 precio se muestra solo.
+
+La clave lleva `v2` porque la forma del valor cambió (trae `provider` e
+`isStale`). Las claves viejas no se leen ni se invalidan: expiran solas en 1 h, y
+un valor viejo sin `provider` haría que `getPricesForCard` no refrescara nunca.
 
 Al leer de Redis hay que **rehidratar la fecha**, porque JSON no tiene `Date`:
 
@@ -189,27 +193,55 @@ async refresh(cardId: string): Promise<CardPriceView[]> {
 }
 ```
 
-Las tres degradaciones devuelven **lo último conocido** en vez de borrar nada:
-set sin mapeo, error de red, y todavía sin cotización. Una caída de tcgdex no
-deja la colección en `$0`.
+Las degradaciones devuelven **lo último conocido** en vez de borrar nada: set
+sin mapeo, error de red, y todavía sin cotización. Una caída de tcgdex no deja
+la colección en `$0`.
 
-`card_prices.provider` identifica la API y `source` el mercado/listing. Las filas
-anteriores a esta columna quedan con `provider = NULL`: no se puede inferir su
-procedencia con certeza. Las lecturas todavía usan la política de proveedor único;
-antes de activar una segunda fuente hay que filtrar precios actuales por proveedor.
+## La política de proveedor
+
+`card_prices.provider` identifica la API y `source` el mercado/listing. Las 180
+filas que ya había en la base quedaron con `provider = NULL`: **no se puede
+inferir su procedencia con certeza**, así que no se les atribuye a tcgdex ni por
+casualidad ni por utilidad. Para pedirlas por la API, `?provider=legacy` las
+selecciona.
+
+De ahí sale la regla que gobierna todas las lecturas, y la diferencia entre
+"mostrar un precio" y "valuar una colección" es deliberada:
+
+| Lectura | Filtro | Por qué |
+|---|---|---|
+| Ficha de carta (`getPricesForCard`) | proveedor activo, y si no hay, **fallback** al más reciente de otro proveedor | una cifra es mejor que un hueco, y `isStale: true` la marca como no vigente |
+| Rankings (`sort=price`) | **solo** el proveedor activo | ordenar por precio es una valuación: mezclar fuentes produce un ranking que no existe |
+| Totales, stats, progreso, links públicos | **solo** el proveedor activo | idem: `totalValueUsd` es un número que se compara con el de otra persona |
+| Histórico | el `provider` que pida el cliente | el histórico es el archivo, y el archivo tiene más de una fuente |
+
+El fallback **nunca** alimenta una valuación, y por eso no se cachea: la clave
+`prices:v2:<providerId>:<cardId>` guarda únicamente cotizaciones del proveedor
+activo. `isStale` se recalcula en cada hit de Redis a partir de `provider` y de
+`fetchedAt`, no se confía en el valor serializado.
+
+**Consecuencia práctica:** con las 180 filas legacy y ninguna fila de tcgdex, la
+ficha de una carta muestra su último precio conocido marcado como viejo, y en
+cambio `sort=price` y los totales no ven nada. No es un bug a tapar: es la base
+antes de que el proveedor activo escriba. Un ranking que arranca en `$0` es peor
+que uno que no ordena.
 
 ### El `DISTINCT ON` que elige el precio más reciente
 
 `card_prices` es append-only: varias filas por `(cardId, variant)`, una por
 fecha. Para exponer "el precio actual" siempre se usa el mismo SQL (ver
-[database.md](database.md)):
+[database.md](database.md)), y el filtro de proveedor es parte de la definición
+de "actual":
 
 ```sql
 SELECT DISTINCT ON (p."cardId", p.variant)
   p."cardId", p.variant, p.low, p.mid, p.high, p.market,
-  p.currency, p.source, p."fetchedAt"
+  p.provider, p.currency, p.source, p."fetchedAt"
 FROM card_prices p
 WHERE p."cardId" = ANY(${uniqueCardIds}::text[])
+  AND p.provider = ${priceProvider.id}
+  AND p.source = ${priceProvider.defaultSource}
+  AND p.currency = ${priceProvider.defaultCurrency}
 ORDER BY p."cardId", p.variant, p."fetchedAt" DESC
 ```
 
@@ -219,17 +251,24 @@ Aparece en cuatro lugares, con el mismo `ORDER BY`: `CollectionsService.fetchLat
 
 En las agregaciones **no** se usa el `DISTINCT ON`: se usa el `LATERAL` de
 `common/sql/latest-price.ts` (`latestMarketPriceJoin`), que es el mismo
-resultado anclado en la fila del item:
+resultado anclado en la fila del item y con el mismo filtro de proveedor:
 
 ```sql
 LEFT JOIN LATERAL (
   SELECT p.market AS "market"
   FROM card_prices p
   WHERE p."cardId" = i."cardId" AND p.variant = i.variant
+    AND p.provider = ${policy.id}
+    AND p.source = ${policy.defaultSource}
+    AND p.currency = ${policy.defaultCurrency}
   ORDER BY p."fetchedAt" DESC
   LIMIT 1
 ) lp ON true
 ```
+
+`latestMarketPriceJoin` **exige** la política como parámetro (no hay default):
+un join sin filtro de proveedor compila, pasa los tests con una sola fuente y
+devuelve valuaciones mezcladas apenas entra la segunda.
 
 El `DISTINCT ON` global da el mismo número, pero su subconsulta no sabe qué
 cartas se van a usar y termina leyendo **toda** `card_prices`. Como la tabla es

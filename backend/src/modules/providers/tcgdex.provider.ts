@@ -62,6 +62,8 @@ function asString(value: unknown): string {
 @Injectable()
 export class TcgdexProvider implements PriceProvider {
   readonly id = PROVIDER_IDS.TCGDEX;
+  readonly defaultSource = 'tcgplayer';
+  readonly defaultCurrency = 'USD';
   private readonly logger = new Logger(TcgdexProvider.name);
 
   async listSets(): Promise<RemotePriceSet[]> {

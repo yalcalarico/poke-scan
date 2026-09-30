@@ -3,6 +3,7 @@ import { Test, type TestingModule } from '@nestjs/testing';
 import { Prisma, PrismaClient } from '@prisma/client';
 import { PrismaService } from '../../prisma/index.js';
 import { RedisService } from '../../redis/index.js';
+import { PRICE_PROVIDER } from '../providers/card-provider.interface.js';
 import { CollectionsService } from '../collections/collections.service.js';
 import { AddItemDto } from '../collections/dto/add-item.dto.js';
 import { CreateCollectionDto } from '../collections/dto/create-collection.dto.js';
@@ -15,6 +16,11 @@ const TEST_CARD_ID = `${TEST_CARD_PREFIX}primary`;
 const TEST_CARD_2_ID = `${TEST_CARD_PREFIX}secondary`;
 const TEST_EMAIL_A = 'share-user-a@test.local';
 const TEST_EMAIL_B = 'share-user-b@test.local';
+const PRICE_PROVIDER_STUB = {
+  id: 'tcgdex',
+  defaultSource: 'tcgplayer',
+  defaultCurrency: 'USD',
+};
 
 const addItem = (cardId: string, dto: Partial<AddItemDto> = {}): AddItemDto =>
   Object.assign(new AddItemDto(), { cardId }, dto);
@@ -40,6 +46,7 @@ describe('ShareService', () => {
         ShareService,
         CollectionsService,
         { provide: PrismaService, useValue: prismaClient },
+        { provide: PRICE_PROVIDER, useValue: PRICE_PROVIDER_STUB },
         // Sin Redis en los tests: el service tiene que degradar a "sin caché".
         {
           provide: RedisService,
@@ -122,7 +129,8 @@ describe('ShareService', () => {
         cardId: TEST_CARD_ID,
         variant: 'normal',
         market: new Prisma.Decimal('10.00'),
-        source: 'test',
+        provider: 'tcgdex',
+        source: 'tcgplayer',
         currency: 'USD',
         fetchedAt: new Date('2024-01-01T00:00:00.000Z'),
       },

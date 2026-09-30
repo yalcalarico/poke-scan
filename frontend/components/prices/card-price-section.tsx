@@ -158,8 +158,12 @@ export function CardPriceSection({ cardId, initialPrices = [] }: CardPriceSectio
    */
   const needsRefresh = useMemo(() => {
     const age = priceAgeMs(updatedAt);
-    return age === null || age > PRICE_MAX_AGE_MS - PRICE_FRESHNESS_SLACK_MS;
-  }, [updatedAt]);
+    return (
+      prices.some((price) => price.isStale === true) ||
+      age === null ||
+      age > PRICE_MAX_AGE_MS - PRICE_FRESHNESS_SLACK_MS
+    );
+  }, [prices, updatedAt]);
 
   useEffect(() => {
     if (!needsRefresh) return;
@@ -207,7 +211,7 @@ export function CardPriceSection({ cardId, initialPrices = [] }: CardPriceSectio
 
   const isLoading = status === 'loading';
   const usd = heroPriceUsd(prices);
-  const stale = isPriceStale(updatedAt);
+  const stale = prices.some((price) => price.isStale === true) || isPriceStale(updatedAt);
   const pricelessVariants = countPricelessVariants(prices);
   const hasPrices = prices.length > 0;
 
@@ -274,8 +278,8 @@ export function CardPriceSection({ cardId, initialPrices = [] }: CardPriceSectio
       */}
       {status === 'ready' && stale ? (
         <Alert tone="warning" size="sm" title="Precio desactualizado">
-          El precio que ves tiene más de un día. Lo actualizamos cuando alguien
-          consulta la carta.
+          El dato puede ser viejo o venir de una fuente anterior. Lo actualizamos
+          cuando alguien consulta la carta.
         </Alert>
       ) : null}
 

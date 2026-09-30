@@ -70,6 +70,8 @@ describe('TcgdexSetMappingService', () => {
     redisStore = redis._store;
     provider = {
       id: 'tcgdex',
+      defaultSource: 'tcgplayer',
+      defaultCurrency: 'USD',
       listSets: vi.fn(),
       getSetDetail: vi.fn(),
       getCardPrices: vi.fn(),

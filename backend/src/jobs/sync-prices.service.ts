@@ -34,9 +34,11 @@ export interface CardPriceView {
   mid: number | null;
   high: number | null;
   market: number | null;
+  provider: string | null;
   source: string;
   currency: string;
   fetchedAt: Date;
+  isStale: boolean;
 }
 
 function toNumber(value: Prisma.Decimal | null): number | null {
@@ -52,10 +54,11 @@ function toView(row: {
   mid: Prisma.Decimal | null;
   high: Prisma.Decimal | null;
   market: Prisma.Decimal | null;
+  provider: string | null;
   source: string;
   currency: string;
   fetchedAt: Date;
-}): CardPriceView {
+}, activeProviderId: string): CardPriceView {
   return {
     cardId: row.cardId,
     variant: row.variant,
@@ -63,9 +66,12 @@ function toView(row: {
     mid: toNumber(row.mid),
     high: toNumber(row.high),
     market: toNumber(row.market),
+    provider: row.provider,
     source: row.source,
     currency: row.currency,
     fetchedAt: row.fetchedAt,
+    isStale:
+      row.provider !== activeProviderId || Date.now() - row.fetchedAt.getTime() >= MAX_AGE_MS,
   };
 }
 
@@ -102,30 +108,46 @@ export class SyncPricesService {
   async getPricesForCard(cardId: string): Promise<CardPriceView[]> {
     const cached = await this.redis.getJson<CardPriceView[]>(this.cacheKey(cardId));
     if (cached) {
-      const prices = cached.map((p) => ({ ...p, fetchedAt: new Date(p.fetchedAt) }));
+      const prices = cached.map((price) => {
+        const fetchedAt = new Date(price.fetchedAt);
+        return {
+          ...price,
+          fetchedAt,
+          isStale:
+            price.provider !== this.priceProvider.id ||
+            Date.now() - fetchedAt.getTime() >= MAX_AGE_MS,
+        };
+      });
       // Una lista vacía puede ser una respuesta negativa cacheada por seis
       // horas. Respetar esa TTL evita insistirle a la fuente por cartas que
       // todavía no cotiza.
-      if (prices.length > 0 && this.isStale(prices)) this.enqueueRefresh(cardId);
+      if (prices.some((price) => price.provider === this.priceProvider.id) && this.isStale(prices)) {
+        this.enqueueRefresh(cardId);
+      }
       return prices;
     }
 
-    const latest = await this.latestPrices(cardId);
-    if (latest.length > 0 && !this.isStale(latest)) {
-      await this.cache(cardId, latest);
-      return latest;
+    const current = await this.latestPrices(cardId, this.priceProvider.id);
+    if (current.length > 0) {
+      if (!this.isStale(current)) await this.cache(cardId, current);
+      else this.enqueueRefresh(cardId);
+      return current;
     }
 
-    // Este método corre en un request público: devolver lo último conocido y
-    // encolar el refresh mantiene la respuesta rápida aunque la cola tenga
-    // trabajo pendiente.
+    // Una fila legacy u otro proveedor se puede mostrar como fallback, pero no
+    // se trata como fresca ni se usa para valuaciones del proveedor activo.
+    const fallback = await this.latestFallbackPrices(cardId);
     this.enqueueRefresh(cardId);
-    return latest;
+    return fallback;
   }
 
   private isStale(prices: readonly CardPriceView[]): boolean {
     const fetchedAt = prices[0]?.fetchedAt;
-    return fetchedAt === undefined || Date.now() - fetchedAt.getTime() >= MAX_AGE_MS;
+    return (
+      fetchedAt === undefined ||
+      prices[0]?.provider !== this.priceProvider.id ||
+      Date.now() - fetchedAt.getTime() >= MAX_AGE_MS
+    );
   }
 
   /**
@@ -209,7 +231,7 @@ export class SyncPricesService {
       this.logger.warn(
         `Sin mapeo a tcgdex para el set ${card.set.name} (${card.set.id}): no se pueden refrescar los precios de ${cardId}`,
       );
-      return this.latestPrices(cardId);
+      return this.latestKnownPrices(cardId);
     }
 
     let remote: RemoteCardPrice[];
@@ -219,37 +241,46 @@ export class SyncPricesService {
       this.logger.warn(
         `Fallo el fetch de precios de tcgdex para ${cardId}: ${(error as Error).message}`,
       );
-      return this.latestPrices(cardId);
+      return this.latestKnownPrices(cardId);
     }
 
-    if (remote.length === 0) {
+    const currentQuotes = remote.filter(
+      (price) =>
+        price.source === this.priceProvider.defaultSource &&
+        price.currency === this.priceProvider.defaultCurrency,
+    );
+    const fetchedAt = new Date();
+    if (remote.length > 0) {
+      await this.prisma.cardPrice.createMany({
+        data: remote.map((price) => ({
+          cardId,
+          variant: price.variant,
+          low: price.low,
+          mid: price.mid,
+          high: price.high,
+          market: price.market,
+          provider: this.priceProvider.id,
+          source: price.source,
+          currency: price.currency,
+          fetchedAt,
+        })),
+      });
+    }
+
+    if (currentQuotes.length === 0) {
       this.logger.log(
-        `tcgdex todavía no cotiza ${cardId} (${card.set.name}): queda lo último conocido`,
+        `${this.priceProvider.id} no devolvió ${this.priceProvider.defaultSource}/${this.priceProvider.defaultCurrency} para ${cardId}: queda lo último conocido`,
       );
-      const previous = await this.latestPrices(cardId);
+      const previous = await this.latestKnownPrices(cardId);
       await this.cache(cardId, previous, NEGATIVE_CACHE_TTL_SECONDS);
       return previous;
     }
 
-    const fetchedAt = new Date();
-    await this.prisma.cardPrice.createMany({
-      data: remote.map((price) => ({
-        cardId,
-        variant: price.variant,
-        low: price.low,
-        mid: price.mid,
-        high: price.high,
-        market: price.market,
-        provider: this.priceProvider.id,
-        source: price.source,
-        currency: price.currency,
-        fetchedAt,
-      })),
-    });
-
-    const view: CardPriceView[] = remote.map((price) => ({
+    const view: CardPriceView[] = currentQuotes.map((price) => ({
       ...price,
+      provider: this.priceProvider.id,
       fetchedAt,
+      isStale: false,
     }));
     await this.cache(cardId, view);
     this.logger.log(
@@ -346,7 +377,10 @@ export class SyncPricesService {
    * del resultado). Es el mismo `DISTINCT ON` que usan las agregaciones de
    * colecciones, share y friends.
    */
-  private async latestPrices(cardId: string): Promise<CardPriceView[]> {
+  private async latestPrices(
+    cardId: string,
+    providerId: string,
+  ): Promise<CardPriceView[]> {
     const rows = await this.prisma.$queryRaw<
       (Omit<CardPriceView, 'low' | 'mid' | 'high' | 'market'> & {
         low: Prisma.Decimal | null;
@@ -362,18 +396,68 @@ export class SyncPricesService {
         p.mid,
         p.high,
         p.market,
+        p.provider,
         p.source,
         p.currency,
         p."fetchedAt" AS "fetchedAt"
       FROM card_prices p
       WHERE p."cardId" = ${cardId}
+        AND p.provider = ${providerId}
+        AND p.source = ${this.priceProvider.defaultSource}
+        AND p.currency = ${this.priceProvider.defaultCurrency}
       ORDER BY p."cardId", p.variant, p."fetchedAt" DESC
     `;
-    return rows.map(toView);
+    return rows.map((row) => toView(row, this.priceProvider.id));
+  }
+
+  private async latestFallbackPrices(cardId: string): Promise<CardPriceView[]> {
+    const rows = await this.prisma.$queryRaw<
+      (Omit<CardPriceView, 'low' | 'mid' | 'high' | 'market'> & {
+        low: Prisma.Decimal | null;
+        mid: Prisma.Decimal | null;
+        high: Prisma.Decimal | null;
+        market: Prisma.Decimal | null;
+      })[]
+    >`
+      WITH fallback_provider AS (
+        SELECT p.provider
+        FROM card_prices p
+        WHERE p."cardId" = ${cardId}
+          AND p.provider IS DISTINCT FROM ${this.priceProvider.id}
+          AND p.source = ${this.priceProvider.defaultSource}
+          AND p.currency = ${this.priceProvider.defaultCurrency}
+        GROUP BY p.provider
+        ORDER BY MAX(p."fetchedAt") DESC NULLS LAST
+        LIMIT 1
+      )
+      SELECT DISTINCT ON (p."cardId", p.variant)
+        p."cardId" AS "cardId",
+        p.variant AS "variant",
+        p.low,
+        p.mid,
+        p.high,
+        p.market,
+        p.provider,
+        p.source,
+        p.currency,
+        p."fetchedAt" AS "fetchedAt"
+      FROM card_prices p
+      WHERE p."cardId" = ${cardId}
+        AND p.provider IS NOT DISTINCT FROM (SELECT provider FROM fallback_provider)
+        AND p.source = ${this.priceProvider.defaultSource}
+        AND p.currency = ${this.priceProvider.defaultCurrency}
+      ORDER BY p."cardId", p.variant, p."fetchedAt" DESC
+    `;
+    return rows.map((row) => toView(row, this.priceProvider.id));
+  }
+
+  private async latestKnownPrices(cardId: string): Promise<CardPriceView[]> {
+    const current = await this.latestPrices(cardId, this.priceProvider.id);
+    return current.length > 0 ? current : this.latestFallbackPrices(cardId);
   }
 
   private cacheKey(cardId: string): string {
-    return `prices:${this.priceProvider.id}:${cardId}`;
+    return `prices:v2:${this.priceProvider.id}:${cardId}`;
   }
 
   private async cache(

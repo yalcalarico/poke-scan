@@ -4,10 +4,16 @@ import { Prisma, PrismaClient } from '@prisma/client';
 import { SyncPricesService } from '../../jobs/sync-prices.service.js';
 import { PrismaService } from '../../prisma/index.js';
 import { CurrencyService } from '../currency/currency.service.js';
+import { PRICE_PROVIDER } from '../providers/card-provider.interface.js';
 import { CardsService } from './cards.service.js';
 import { SearchCardsDto } from './dto/search-cards.dto.js';
 
 const search = (dto: SearchCardsDto) => dto;
+const PRICE_PROVIDER_STUB = {
+  id: 'tcgdex',
+  defaultSource: 'tcgplayer',
+  defaultCurrency: 'USD',
+};
 
 describe('CardsService', () => {
   const prismaClient = new PrismaClient();
@@ -21,6 +27,7 @@ describe('CardsService', () => {
       providers: [
         CardsService,
         { provide: PrismaService, useValue: prismaClient },
+        { provide: PRICE_PROVIDER, useValue: PRICE_PROVIDER_STUB },
         {
           provide: SyncPricesService,
           useValue: {
@@ -32,6 +39,8 @@ describe('CardsService', () => {
                 mid: new Prisma.Decimal('9.87'),
                 high: new Prisma.Decimal('45.50'),
                 market: new Prisma.Decimal('7.25'),
+                provider: 'tcgdex',
+                isStale: false,
                 source: 'tcgplayer',
                 currency: 'USD',
                 fetchedAt: new Date('2024-05-01T12:00:00.000Z'),
@@ -430,7 +439,8 @@ describe('CardsService', () => {
           data: {
             ...price,
             market: price.market === null ? null : new Prisma.Decimal(price.market),
-            source: 'test',
+            provider: 'tcgdex',
+            source: 'tcgplayer',
             currency: 'USD',
             fetchedAt: new Date('2024-01-01T00:00:00.000Z'),
           },
@@ -671,6 +681,9 @@ describe('CardsService', () => {
         SELECT DISTINCT ON (p."cardId", p.variant)
           p."cardId" AS "cardId", p.variant AS "variant", p.market AS "market"
         FROM card_prices p
+        WHERE p.provider = 'tcgdex'
+          AND p.source = 'tcgplayer'
+          AND p.currency = 'USD'
         ORDER BY p."cardId", p.variant, p."fetchedAt" DESC
       ) best
       WHERE best.market IS NOT NULL
@@ -725,6 +738,34 @@ describe('CardsService', () => {
       );
       return rows[0]?.count ?? 0;
     }
+
+    const TEST_PRICE_AT = new Date('2000-01-02T00:00:00.000Z');
+    beforeAll(async () => {
+      await prismaClient.cardPrice.deleteMany({
+        where: {
+          cardId: { in: ['base1-4', 'base2-10', 'xy4-117'] },
+          provider: 'tcgdex',
+          fetchedAt: TEST_PRICE_AT,
+        },
+      });
+      await prismaClient.cardPrice.createMany({
+        data: [
+          { cardId: 'base1-4', variant: 'holofoil', market: 100, provider: 'tcgdex', source: 'tcgplayer', currency: 'USD', fetchedAt: TEST_PRICE_AT },
+          { cardId: 'base2-10', variant: 'normal', market: 60, provider: 'tcgdex', source: 'tcgplayer', currency: 'USD', fetchedAt: TEST_PRICE_AT },
+          { cardId: 'xy4-117', variant: 'holofoil', market: 40, provider: 'tcgdex', source: 'tcgplayer', currency: 'USD', fetchedAt: TEST_PRICE_AT },
+        ],
+      });
+    });
+
+    afterAll(async () => {
+      await prismaClient.cardPrice.deleteMany({
+        where: {
+          cardId: { in: ['base1-4', 'base2-10', 'xy4-117'] },
+          provider: 'tcgdex',
+          fetchedAt: TEST_PRICE_AT,
+        },
+      });
+    });
 
     it('el catálogo tiene cartas cotizadas: sin esto los tests de abajo no miden nada', async () => {
       const priced = await countPriced();
@@ -874,6 +915,7 @@ describe('CardsService · change de 30 días (B10)', () => {
       providers: [
         CardsService,
         { provide: PrismaService, useValue: prismaClient },
+        { provide: PRICE_PROVIDER, useValue: PRICE_PROVIDER_STUB },
         {
           provide: SyncPricesService,
           useValue: {
@@ -885,7 +927,9 @@ describe('CardsService · change de 30 días (B10)', () => {
                 mid: price.mid,
                 high: new Prisma.Decimal('99.00'),
                 market: price.market,
-                source: 'test',
+                provider: 'tcgdex',
+                isStale: false,
+                source: 'tcgplayer',
                 currency: 'USD',
                 fetchedAt: price.fetchedAt,
               })),
@@ -943,7 +987,8 @@ describe('CardsService · change de 30 días (B10)', () => {
         variant,
         market: decimal(price.market),
         mid: decimal(price.mid),
-        source: 'test',
+        provider: 'tcgdex',
+        source: 'tcgplayer',
         currency: 'USD',
         fetchedAt,
       },
@@ -1134,6 +1179,7 @@ describe('CardsService · histórico de precios', () => {
       providers: [
         CardsService,
         { provide: PrismaService, useValue: prismaClient },
+        { provide: PRICE_PROVIDER, useValue: PRICE_PROVIDER_STUB },
         // El histórico no toca el proveedor de precios: si lo tocara, estos
         // tests pasarían igual y el rate limit no.
         { provide: SyncPricesService, useValue: { getPricesForCard: async () => [] } },
@@ -1179,7 +1225,8 @@ describe('CardsService · histórico de precios', () => {
         cardId: CARD,
         variant,
         market: market === null ? null : new Prisma.Decimal(market),
-        source: 'test',
+        provider: 'tcgdex',
+        source: 'tcgplayer',
         currency: 'USD',
         fetchedAt,
       },

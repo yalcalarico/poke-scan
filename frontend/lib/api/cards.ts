@@ -51,6 +51,8 @@ export interface PriceHistoryParams {
    * mejor cotización disponible de ese día.
    */
   variant?: CardVariant;
+  /** Proveedor histórico; `legacy` solicita filas sin procedencia verificable. */
+  provider?: 'pokemontcg.io' | 'tcgdex' | 'scrydex' | 'legacy';
 }
 
 export function buildCardsSearchPath(params: CardSearchParams = {}): string {

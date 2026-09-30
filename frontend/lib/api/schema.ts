@@ -241,6 +241,8 @@ export function toPriceDto(raw: unknown): PriceDto | null {
     mid: num(raw.mid),
     high: num(raw.high),
     market: num(raw.market),
+    provider: str(raw.provider),
+    isStale: raw.isStale === true,
     currency: str(raw.currency) ?? 'USD',
     source: str(raw.source) ?? '—',
     fetchedAt: str(raw.fetchedAt) ?? '',
@@ -323,8 +325,10 @@ export function toPriceHistory(raw: unknown): PriceHistoryDto | null {
 
   return {
     cardId,
+    provider: str(raw.provider),
+    source: str(raw.source) ?? '—',
     variant: toVariant(raw.variant),
-    currency: 'USD',
+    currency: str(raw.currency) ?? 'USD',
     windowDays: windowDays === null ? 30 : windowDays,
     from: str(raw.from),
     to: str(raw.to),

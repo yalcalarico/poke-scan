@@ -1,10 +1,11 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { NUMERIC_CARD_NUMBER } from '../../common/sql/numeric-number.js';
 import { SyncPricesService, PRICE_MAX_AGE_MS } from '../../jobs/sync-prices.service.js';
 import { PrismaService } from '../../prisma/index.js';
 import { CurrencyService, type RateView } from '../currency/currency.service.js';
 import type { RateType } from '../currency/currency.constants.js';
+import { PRICE_PROVIDER, type PriceProvider } from '../providers/card-provider.interface.js';
 import { CardPricesQueryDto } from './dto/card-prices-query.dto.js';
 import {
   PRICE_HISTORY_DEFAULT_DAYS,
@@ -67,17 +68,22 @@ const NUMERIC_NUMBER = NUMERIC_CARD_NUMBER;
  * `DISTINCT ON` dos veces. Con ~60 cartas cotizadas sobre 20.670 del catálogo,
  * esa diferencia es la que separa dos round-trips de cuatro.
  */
-const CURRENT_CARD_MARKET_PRICES = Prisma.sql`
-  SELECT latest."cardId", MAX(latest.market) AS price
-  FROM (
-    SELECT DISTINCT ON (p."cardId", p.variant)
-      p."cardId", p.variant, p.market
-    FROM card_prices p
-    ORDER BY p."cardId", p.variant, p."fetchedAt" DESC
-  ) latest
-  WHERE latest.market IS NOT NULL
-  GROUP BY latest."cardId"
-`;
+function currentCardMarketPrices(provider: PriceProvider): Prisma.Sql {
+  return Prisma.sql`
+    SELECT latest."cardId", MAX(latest.market) AS price
+    FROM (
+      SELECT DISTINCT ON (p."cardId", p.variant)
+        p."cardId", p.variant, p.market
+      FROM card_prices p
+      WHERE p.provider = ${provider.id}
+        AND p.source = ${provider.defaultSource}
+        AND p.currency = ${provider.defaultCurrency}
+      ORDER BY p."cardId", p.variant, p."fetchedAt" DESC
+    ) latest
+    WHERE latest.market IS NOT NULL
+    GROUP BY latest."cardId"
+  `;
+}
 
 export interface SetDto {
   id: string;
@@ -113,6 +119,8 @@ export interface CardPriceDto {
   mid: number | null;
   high: number | null;
   market: number | null;
+  provider: string | null;
+  isStale?: boolean;
   currency: string;
   source: string;
   fetchedAt: string;
@@ -203,10 +211,13 @@ export interface PriceWindowChangeDto {
  */
 export interface PriceHistoryDto {
   cardId: string;
+  /** `null` identifica precios históricos anteriores al registro de proveedor. */
+  provider: string | null;
+  source: string;
   /** La variante de la serie, o `null` si es "la mejor disponible por día". */
   variant: string | null;
-  /** Siempre `USD`: la conversión a ARS la hace el cliente. */
-  currency: 'USD';
+  /** Moneda de los puntos. La conversión a ARS la hace el cliente por separado. */
+  currency: string;
   /** La ventana efectiva, ya recortada a 7..365. */
   windowDays: number;
   /** Fecha del primer punto con `market`, o `null` si la serie está vacía. */
@@ -532,6 +543,7 @@ export class CardsService {
     private readonly prisma: PrismaService,
     private readonly syncPrices: SyncPricesService,
     private readonly currency: CurrencyService,
+    @Inject(PRICE_PROVIDER) private readonly priceProvider: PriceProvider,
   ) {}
 
   async search(dto: SearchCardsDto): Promise<Paginated<CardDto>> {
@@ -646,10 +658,11 @@ export class CardsService {
         : Prisma.empty;
     const direction: Prisma.Sql =
       dto.direction === 'desc' ? Prisma.sql`DESC` : Prisma.sql`ASC`;
+    const currentPrices = currentCardMarketPrices(this.priceProvider);
 
     const [counts, priced] = await Promise.all([
       this.prisma.$queryRaw<{ total: number; priced: number }[]>(Prisma.sql`
-        WITH current_prices AS MATERIALIZED (${CURRENT_CARD_MARKET_PRICES})
+        WITH current_prices AS MATERIALIZED (${currentPrices})
         SELECT
           (SELECT COUNT(*)::int FROM cards c ${where}) AS total,
           (
@@ -660,7 +673,7 @@ export class CardsService {
           ) AS priced
       `),
       this.prisma.$queryRaw<CardSearchRow[]>(Prisma.sql`
-        WITH current_prices AS MATERIALIZED (${CURRENT_CARD_MARKET_PRICES})
+        WITH current_prices AS MATERIALIZED (${currentPrices})
         SELECT ${CARD_SEARCH_COLUMNS}
         FROM current_prices cp
         JOIN cards c ON c.id = cp."cardId"
@@ -688,7 +701,7 @@ export class CardsService {
         ? Prisma.sql`${where} AND NOT EXISTS (SELECT 1 FROM current_prices cp WHERE cp."cardId" = c.id)`
         : Prisma.sql`WHERE NOT EXISTS (SELECT 1 FROM current_prices cp WHERE cp."cardId" = c.id)`;
     const unpriced = await this.prisma.$queryRaw<CardSearchRow[]>(Prisma.sql`
-      WITH current_prices AS MATERIALIZED (${CURRENT_CARD_MARKET_PRICES})
+      WITH current_prices AS MATERIALIZED (${currentPrices})
       SELECT ${CARD_SEARCH_COLUMNS}
       FROM cards c
       LEFT JOIN card_sets s ON s.id = c."setId"
@@ -785,12 +798,17 @@ export class CardsService {
         mid: toNumber(price.mid),
         high: toNumber(price.high),
         market: toNumber(price.market),
+        provider: price.provider,
+        isStale: price.isStale,
         currency: price.currency,
         source: price.source,
         fetchedAt: toIso(price.fetchedAt) ?? new Date(0).toISOString(),
       };
 
-      dto.change = priceChange(dto, reference.get(price.variant) ?? null);
+      dto.change =
+        price.provider === this.priceProvider.id
+          ? priceChange(dto, reference.get(price.variant) ?? null)
+          : null;
       // Los campos planos son el **mismo** delta con los nombres que consume la
       // píldora del cliente (`PriceDelta`). Se derivan, no se recalculan: dos
       // cálculos del mismo número divergen apenas una regla cambia.
@@ -852,10 +870,18 @@ export class CardsService {
   ): Promise<PriceHistoryDto> {
     const windowDays = resolveHistoryWindow(query.days);
     const from = new Date(Date.now() - windowDays * DAY_MS);
+    const provider =
+      query.provider === undefined
+        ? this.priceProvider.id
+        : query.provider === 'legacy'
+          ? null
+          : query.provider;
+    const source = this.priceProvider.defaultSource;
+    const currency = this.priceProvider.defaultCurrency;
 
     const [card, rows] = await Promise.all([
       this.getById(id),
-      this.priceHistoryRows(id, query.variant ?? null, from),
+      this.priceHistoryRows(id, query.variant ?? null, from, provider, source, currency),
     ]);
 
     const points: PriceHistoryPointDto[] = rows.map((row) => ({
@@ -873,8 +899,10 @@ export class CardsService {
 
     return {
       cardId: card.id,
+      provider,
+      source,
       variant: query.variant ?? null,
-      currency: 'USD',
+      currency,
       windowDays,
       from: withMarket[0]?.date ?? null,
       to: withMarket[withMarket.length - 1]?.date ?? null,
@@ -907,9 +935,16 @@ export class CardsService {
     cardId: string,
     variant: string | null,
     from: Date,
+    provider: string | null,
+    source: string,
+    currency: string,
   ): Promise<PriceHistoryRow[]> {
     const variantFilter =
       variant === null ? Prisma.empty : Prisma.sql`AND p.variant = ${variant}`;
+    const providerFilter =
+      provider === null
+        ? Prisma.sql`AND p.provider IS NULL`
+        : Prisma.sql`AND p.provider = ${provider}`;
     const pickOfTheDay =
       variant === null
         ? Prisma.sql`s.market DESC NULLS LAST, s."fetchedAt" DESC`
@@ -937,6 +972,9 @@ export class CardsService {
           FROM card_prices p
           WHERE p."cardId" = ${cardId}
             AND p."fetchedAt" >= ${from}
+            ${providerFilter}
+            AND p.source = ${source}
+            AND p.currency = ${currency}
             ${variantFilter}
         ) s
         ORDER BY day, ${pickOfTheDay}
@@ -974,6 +1012,9 @@ export class CardsService {
       FROM card_prices p
       WHERE p."cardId" = ${cardId}
         AND p."fetchedAt" < ${cutoff}
+        AND p.provider = ${this.priceProvider.id}
+        AND p.source = ${this.priceProvider.defaultSource}
+        AND p.currency = ${this.priceProvider.defaultCurrency}
       ORDER BY p.variant, p."fetchedAt" DESC
     `);
 

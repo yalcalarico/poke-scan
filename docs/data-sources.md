@@ -225,6 +225,29 @@ El paso 1 de los tres es siempre el mismo y ya está hecho como ejemplo:
 `backend/docs/providers.md` para el caso de los precios y para las 3
 opciones de migración del catálogo.
 
+### Lo que ya está listo para el día del swap
+
+Migrar precios no es cambiar un string: es que dos fuentes convivan en
+`card_prices` sin mezclarse. Eso ya está resuelto.
+
+- `card_prices.provider` + `card_external_ids` / `card_set_external_ids`: las
+  escrituras de la fuente nueva no tocan las PK canónicas, así que colecciones,
+  links y rutas siguen apuntando a lo mismo.
+- `card_prices.provider = NULL` en las 180 filas previas: no se les atribuye
+  procedencia que no se puede probar. `?provider=legacy` las consulta, y la app
+  las muestra como último conocido con `isStale: true`.
+- Rankings, totales y links públicos leen **solo** el proveedor activo, por
+  `defaultSource` y `defaultCurrency`. Un ranking mezclando dos APIs es un
+  número que no existe.
+- La caché de precios está namespaced por proveedor (`prices:v2:<id>:<cardId>`),
+  así que el swap no invalida ni pisa la entrada de la otra fuente.
+- Las claves de lectura de friend/share están namespaced por proveedor, porque
+  sus snapshots Siam números de valuación y no solo listas de cartas.
+
+Lo que falta para el swap, y es lo único: **un backfill** que escriba las filas
+del proveedor nuevo. Sin él, los totales valen cero desde el punto de vista del
+usuario (que es la decisión correcta, ver `backend/docs/gotchas.md` §32).
+
 ## Reglas para no romper el rate limit
 
 1. **Nunca** llamar a la fuente desde un handler público.

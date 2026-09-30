@@ -48,6 +48,7 @@
 **Lo que ya se arregló y queda como registro**
 31. [Un lock se suelta con compare-and-delete, nunca con `DEL`](#31-un-lock-se-suelta-con-compare-and-delete-nunca-con-del)
 20. [`getUsdArsBoth` podía tirar un 500 si caía el tipo preferido — **arreglado**](#20-getusdarsboth-podía-tirar-un-500-si-el-tipo-preferido-fallaba--arreglado)
+32. [Un `LEFT JOIN` de precios sin filtro de proveedor compila y miente](#32-un-left-join-de-precios-sin-filtro-de-proveedor-compila-y-miente)
 
 ---
 
@@ -1225,6 +1226,38 @@ solo expira cuando el proceso **realmente** murió.
 
 **Regla**: un lock sin token es un boolean con TTL, y un boolean con TTL no es un
 lock. Es dos locks que se pisan.
+
+## 32. Un `LEFT JOIN` de precios sin filtro de proveedor compila y miente
+
+**Qué pasó**: `card_prices` pasó a tener `provider` y a convivir con 180 filas
+`NULL` (anteriores a la columna), pero las agregaciones seguían uniteando por
+`("cardId", variant, fetchedAt)`. Con una sola fuente escribiéndose, eso es
+correcto. El día que entra la segunda, `totalValueUsd` de una colección suma
+una valuación de tcgdex con una de pokemontcg.io y el resultado no es el precio
+de nada: es la suma de dos métricas distintas.
+
+**Por qué no lo agarró ningún test**: mientras las pruebas corrían con fixtures
+de un solo proveedor, las dos versiones del join dan el mismo número. El fallo
+solo aparece con filas de dos proveedores en la misma carta, que es exactamente
+el estado en el que nadie escribe tests hoy.
+
+**Cómo queda el código**: `latestMarketPriceJoin(policy)` **exige** la política
+como parámetro y no tiene default. El filtro es `provider = <activo> AND source
+= <mercado> AND currency = <moneda>`, y los cuatro call sites
+(`collections`, `friends`, `share`, `stats`) la reciben por inyección de
+`PRICE_PROVIDER`. Un argumento opcional habría sido la forma de mantener el bug
+en la deuda: el default es exactamente el valor que se forgets.
+
+**El otro lado, que es el que se mira**: la ficha de una carta **sí** puede
+mostrar una fila de otro proveedor como último conocido, con `isStale: true`.
+Mostrar una cifra vieja marcada como vieja es honesto; valorarla en un total no
+lo es. Por eso el fallback existe en `getPricesForCard` y no existe en el
+`LATERAL`.
+
+**Consecuencia que hay que conocer**: recién migrada la columna, con las 180
+filas legacy y ninguna del proveedor activo, `sort=price` y los totales devuelven
+cero. Es el estado correcto de una base cuyo proveedor activo todavía no escribió
+nada, y la forma de arreglarlo es que escriba, no abrir el filtro.
 
 ## Cross-references
 

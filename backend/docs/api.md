@@ -461,6 +461,10 @@ interface CardPriceDto {
   cardId: string; variant: string;
   low: number | null; mid: number | null; high: number | null; market: number | null;
   currency: string; source: string; fetchedAt: string;
+  // Procedencia de la fila. `provider: null` es una cotización anterior a la
+  // columna: se puede mostrar como último conocido, y `isStale` la marca.
+  provider: string | null;
+  isStale: boolean;
   priceArs?: { low: number|null; mid: number|null; high: number|null; market: number|null } | null;
   change?: PriceChangeDto | null;   // ver "Variación de 30 días" abajo
   // Los tres mismos números, planos, con los nombres que consume la píldora de
@@ -596,13 +600,21 @@ Público. Query `PriceHistoryQueryDto` (`cards/dto/price-history-query.dto.ts`):
 |---|---|---|---|
 | `variant` | `@IsIn(CARD_VARIANTS)` (los 8 valores) | — | Acota la serie a esa variante |
 | `days` | `@Type(() => Number)`, `@IsInt()` | `30` | Ventana **recortada** a 7..365 |
+| `provider` | `@IsIn(PRICE_HISTORY_PROVIDERS)` | el proveedor activo | `legacy` = filas con `provider IS NULL` |
+
+`source` y `currency` **no** son parámetros: la serie siempre es la del mercado y
+la moneda de valuación de la app (`defaultSource` / `defaultCurrency` del
+proveedor activo). Un histórico de otra fuente no se consulta por la API, y por
+eso `change` sigue siendo USD sin ambigüedad.
 
 **200** → `PriceHistoryDto`:
 
 ```ts
 interface PriceHistoryDto {
   cardId: string;
-  variant: string | null;      // null = serie "mejor disponible por día"
+  provider: 'pokemontcg.io' | 'tcgdex' | 'scrydex' | null; // null = fila legacy
+  source: string;          // tcgplayer: el mercado del que salió la serie
+  variant: string | null;  // null = serie "mejor disponible por día"
   currency: 'USD';             // la conversión a ARS la hace el cliente
   windowDays: number;          // la ventana EFECTIVA, ya recortada
   from: string | null;         // 'YYYY-MM-DD' del primer punto con market
@@ -617,6 +629,12 @@ interface PriceHistoryPointDto {
   market: number | null; low: number | null; mid: number | null; high: number | null;
 }
 ```
+
+`provider` y `source` están en la respuesta para que el cliente los **muestre**:
+el caption de `PriceHistory` dice de qué mercado y de qué proveedor salió la
+serie. Cuando `provider` es `null` —las 180 filas anteriores a la columna— el
+texto dice "origen no identificado" en lugar de atribuirle la serie a la fuente
+activa.
 
 #### Un punto por día, no por fila
 

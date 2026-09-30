@@ -1,6 +1,7 @@
 import { Test, type TestingModule } from '@nestjs/testing';
 import { PrismaClient } from '@prisma/client';
 import { PrismaService } from '../../prisma/index.js';
+import { PRICE_PROVIDER } from '../providers/card-provider.interface.js';
 import { IdentifyDto } from './dto/identify.dto.js';
 import { IdentifyService, type IdentifyResultDto } from './identify.service.js';
 
@@ -13,6 +14,7 @@ const CHARIZARD_LINES = [
   'ES = 3 Cas',
   '5¢y WFiame Pokémon. Length: 5\' 7", Weight: 200 (BS)',
 ];
+const TEST_PRICE_AT = new Date('2000-01-01T00:00:00.000Z');
 const ALAKAZAM_LINES = [
   'STAGE 2 Evolves from Kadabra Put Alakazam on the Stage | card',
   '{5 + Alakazam 4',
@@ -27,16 +29,45 @@ const identify = (dto: IdentifyDto): Promise<IdentifyResultDto> =>
 let moduleRef: TestingModule;
 let service: IdentifyService;
 const prismaClient = new PrismaClient();
+const PRICE_PROVIDER_STUB = {
+  id: 'tcgdex',
+  defaultSource: 'tcgplayer',
+  defaultCurrency: 'USD',
+};
 
 beforeAll(async () => {
   moduleRef = await Test.createTestingModule({
-    providers: [IdentifyService, { provide: PrismaService, useValue: prismaClient }],
+    providers: [
+      IdentifyService,
+      { provide: PrismaService, useValue: prismaClient },
+      { provide: PRICE_PROVIDER, useValue: PRICE_PROVIDER_STUB },
+    ],
   }).compile();
 
   service = moduleRef.get(IdentifyService);
+  await prismaClient.cardPrice.deleteMany({
+    where: {
+      cardId: { in: ['base1-4', 'xy5-1'] },
+      provider: 'tcgdex',
+      fetchedAt: TEST_PRICE_AT,
+    },
+  });
+  await prismaClient.cardPrice.createMany({
+    data: [
+      { cardId: 'base1-4', variant: 'holofoil', market: 1, provider: 'tcgdex', source: 'tcgplayer', currency: 'USD', fetchedAt: TEST_PRICE_AT },
+      { cardId: 'xy5-1', variant: 'normal', market: 2, provider: 'tcgdex', source: 'tcgplayer', currency: 'USD', fetchedAt: TEST_PRICE_AT },
+    ],
+  });
 });
 
 afterAll(async () => {
+  await prismaClient.cardPrice.deleteMany({
+    where: {
+      cardId: { in: ['base1-4', 'xy5-1'] },
+      provider: 'tcgdex',
+      fetchedAt: TEST_PRICE_AT,
+    },
+  });
   await prismaClient.$disconnect();
   await moduleRef.close();
 });
@@ -147,7 +178,7 @@ describe('IdentifyService', () => {
 
   it('trae los precios ya guardados en card_prices (sin llamar a la API externa)', async () => {
     const saved = await prismaClient.cardPrice.findMany({
-      where: { cardId: 'xy5-1' },
+      where: { cardId: 'xy5-1', provider: 'tcgdex' },
       orderBy: { fetchedAt: 'desc' },
     });
     const variants = new Set(saved.map((price) => price.variant));
