@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { PROVIDER_IDS } from './card-provider.interface.js';
 import type {
   PriceProvider,
   RemoteCardPrice,
@@ -60,6 +61,7 @@ function asString(value: unknown): string {
  */
 @Injectable()
 export class TcgdexProvider implements PriceProvider {
+  readonly id = PROVIDER_IDS.TCGDEX;
   private readonly logger = new Logger(TcgdexProvider.name);
 
   async listSets(): Promise<RemotePriceSet[]> {

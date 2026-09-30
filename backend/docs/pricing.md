@@ -4,7 +4,7 @@
 > qué el catálogo sigue espejándose desde pokemontcg.io aunque sus precios
 > quedaron congelados, cómo funcionan las 2 capas de caché (Redis 1 h +
 > Postgres 24 h) más la caché negativa de 6 h, qué es la cola en background de
-> ~26 req/min, y por qué el total de una colección puede legítimamente mostrar
+> el ritmo de cortesía hacia TCGdex, y por qué el total de una colección puede legítimamente mostrar
 > `$0`.
 
 ## La fuente: por qué los precios NO salen de pokemontcg.io
@@ -81,7 +81,7 @@ LLAMADA
   │
   ▼
 ┌─ Capa 1: Redis ───────────────────────────────────────┐
-│  clave  prices:<cardId>                              │
+│  clave  prices:<providerId>:<cardId>                 │
 │  valor  CardPriceView[]  (JSON)                       │
 │  TTL    3600 s (CACHE_TTL_SECONDS)                    │
 │         21600 s si el último refresh vino vacío       │
@@ -193,6 +193,11 @@ Las tres degradaciones devuelven **lo último conocido** en vez de borrar nada:
 set sin mapeo, error de red, y todavía sin cotización. Una caída de tcgdex no
 deja la colección en `$0`.
 
+`card_prices.provider` identifica la API y `source` el mercado/listing. Las filas
+anteriores a esta columna quedan con `provider = NULL`: no se puede inferir su
+procedencia con certeza. Las lecturas todavía usan la política de proveedor único;
+antes de activar una segunda fuente hay que filtrar precios actuales por proveedor.
+
 ### El `DISTINCT ON` que elige el precio más reciente
 
 `card_prices` es append-only: varias filas por `(cardId, variant)`, una por
@@ -249,9 +254,8 @@ respuesta.
 
 ```ts
 /**
- * Disciplina hacia el proveedor: tcgdex no publica límite (pide "consideración"),
- * pero es infra comunitaria compartida y el catálogo también usa
- * pokemontcg.io (~26 req/min entre ambos, debajo de los 30/min de esa API).
+ * Cortesía hacia TCGdex: no publica límite (pide "consideración"). Su ritmo es
+ * independiente del límite de pokemontcg.io, que solo aplica al sync de catálogo.
  */
 const MIN_GAP_MS = 2300;
 
@@ -278,7 +282,7 @@ private async drain(): Promise<void> {
 
 ### El gap vive en un solo lugar; la lectura pública no lo espera
 
-`withProviderSlot` es la única puerta al proveedor. La comparten la cola en
+`withProviderSlot` es la única puerta al proveedor de precios activo. La comparten la cola en
 background y el lote del endpoint admin (`refreshMany`). La lectura pública
 (`getPricesForCard`) **no espera esa puerta**: devuelve el precio cacheado o el
 último de Postgres, y encola el refresh si ya venció.

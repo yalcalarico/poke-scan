@@ -76,10 +76,11 @@ un indicador "Actualizando precio…".
 ## 4. Cola en background con throttling
 
 **Contexto:** agregar 50 cartas seguidas dispararía 50 requests al mismo tiempo
-y rompería el límite de 30/min.
+hacia el proveedor de precios, que pide "consideración" aunque no publique un límite.
 
 **Elegido:** `enqueueRefresh` encola y procesa secuencialmente con 2,3 s entre
-requests (~26/min, con margen bajo el límite de 30).
+requests (~26/min) como cortesía hacia TCGdex. No es el límite de pokemontcg.io:
+esa API entrega el catálogo y su cuota se aplica al sync de catálogo.
 
 **Por qué no awaited en el request:** el usuario tardaría 2 minutos en ver su
 alta confirmada. Fire-and-forget mantiene el alta en 54 ms.

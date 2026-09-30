@@ -69,6 +69,7 @@ describe('TcgdexSetMappingService', () => {
     const redis = stubRedis();
     redisStore = redis._store;
     provider = {
+      id: 'tcgdex',
       listSets: vi.fn(),
       getSetDetail: vi.fn(),
       getCardPrices: vi.fn(),
@@ -116,22 +117,32 @@ describe('TcgdexSetMappingService', () => {
     ]);
     provider.listSets.mockResolvedValue([
       { id: 'otro', name: 'Otro Set' },
-      { id: 'swsh3', name: 'Darkness Ablaze' },
+      { id: `${TEST_SET_PREFIX}swsh3`, name: 'Darkness Ablaze' },
     ]);
     provider.getSetDetail.mockResolvedValue({
-      id: 'swsh3',
+      id: `${TEST_SET_PREFIX}swsh3`,
       name: 'Darkness Ablaze',
       localIds: ['1', '2', '136', '189'],
     });
 
     const mapping = await service.resolve(`${TEST_SET_PREFIX}swsh`);
 
-    expect(mapping).toEqual({ tcgdexSetId: 'swsh3' });
+    expect(mapping).toEqual({ tcgdexSetId: `${TEST_SET_PREFIX}swsh3` });
     const persisted = await prismaClient.cardSet.findUnique({
       where: { id: `${TEST_SET_PREFIX}swsh` },
       select: { tcgdexSetId: true },
     });
-    expect(persisted?.tcgdexSetId).toBe('swsh3');
+    expect(persisted?.tcgdexSetId).toBe(`${TEST_SET_PREFIX}swsh3`);
+    const externalId = await prismaClient.cardSetExternalId.findUnique({
+      where: {
+        provider_externalId: {
+          provider: 'tcgdex',
+          externalId: `${TEST_SET_PREFIX}swsh3`,
+        },
+      },
+      select: { setId: true },
+    });
+    expect(externalId?.setId).toBe(`${TEST_SET_PREFIX}swsh`);
   });
 
   it('cae a la igualdad de ID cuando los nombres difieren (Base → Base Set)', async () => {
@@ -186,6 +197,43 @@ describe('TcgdexSetMappingService', () => {
     expect(mapping).toEqual({ tcgdexSetId: 'ya-mapeado' });
     expect(provider.listSets).not.toHaveBeenCalled();
     expect(provider.getSetDetail).not.toHaveBeenCalled();
+    await expect(
+      prismaClient.cardSetExternalId.findUnique({
+        where: {
+          provider_externalId: { provider: 'tcgdex', externalId: 'ya-mapeado' },
+        },
+        select: { setId: true },
+      }),
+    ).resolves.toEqual({ setId: `${TEST_SET_PREFIX}listo` });
+  });
+
+  it('no reasigna un ID externo ya asociado a otro set canónico', async () => {
+    await createSet(prismaClient, `${TEST_SET_PREFIX}primero`, 'Set Primero', ['1']);
+    await createSet(prismaClient, `${TEST_SET_PREFIX}segundo`, 'Set Segundo', ['1']);
+    provider.listSets.mockResolvedValue([{ id: 'shared-id', name: 'Set Primero' }]);
+    provider.getSetDetail.mockResolvedValue({
+      id: 'shared-id',
+      name: 'Set Primero',
+      localIds: ['1'],
+    });
+
+    expect(await service.resolve(`${TEST_SET_PREFIX}primero`)).toEqual({
+      tcgdexSetId: 'shared-id',
+    });
+    provider.listSets.mockResolvedValue([{ id: 'shared-id', name: 'Set Segundo' }]);
+    redisStore.delete('tcgdex:sets');
+
+    expect(await service.resolve(`${TEST_SET_PREFIX}segundo`)).toBeNull();
+    const alias = await prismaClient.cardSetExternalId.findUnique({
+      where: { provider_externalId: { provider: 'tcgdex', externalId: 'shared-id' } },
+      select: { setId: true },
+    });
+    expect(alias?.setId).toBe(`${TEST_SET_PREFIX}primero`);
+    const secondSet = await prismaClient.cardSet.findUnique({
+      where: { id: `${TEST_SET_PREFIX}segundo` },
+      select: { tcgdexSetId: true },
+    });
+    expect(secondSet?.tcgdexSetId).toBeNull();
   });
 
   it('respeta el miss marker: no rebusca un set ya descartado', async () => {

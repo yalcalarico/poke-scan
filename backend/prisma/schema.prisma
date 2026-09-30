@@ -10,16 +10,16 @@ datasource db {
 // ─── Usuarios y sesiones ───
 
 model User {
-  id           String   @id @default(uuid())
-  email        String   @unique
-  username     String   @unique
+  id           String  @id @default(uuid())
+  email        String  @unique
+  username     String  @unique
   passwordHash String
   displayName  String
   avatarUrl    String?
 
   // Moneda preferida (fase 7: precios en ARS)
-  preferredCurrency  String? @default("USD") // 'USD' | 'ARS'
-  preferredRateType  String? @default("blue") // 'blue' | 'oficial'
+  preferredCurrency String? @default("USD") // 'USD' | 'ARS'
+  preferredRateType String? @default("blue") // 'blue' | 'oficial'
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -75,9 +75,10 @@ model CardSet {
 
   // ID del set equivalente en tcgdex (la fuente de precios). Null = sin mapear:
   // lo resuelve TcgdexSetMappingService la primera vez que se pide un precio.
-  tcgdexSetId  String?
+  tcgdexSetId String?
 
-  cards Card[]
+  cards       Card[]
+  externalIds CardSetExternalId[]
 
   @@index([name])
   @@index([ptcgoCode])
@@ -85,28 +86,29 @@ model CardSet {
 }
 
 model Card {
-  id          String  @id // p.ej. "swsh4-25"
-  name        String
-  supertype   String // Pokémon | Trainer | Energy
-  subtypes    String[]
-  hp          String?
-  types       String[]
-  number      String // p.ej. "25"
-  rarity      String?
-  artist      String?
-  setId       String
-  imageSmall  String
-  imageLarge  String
+  id             String   @id // p.ej. "swsh4-25"
+  name           String
+  supertype      String // Pokémon | Trainer | Energy
+  subtypes       String[]
+  hp             String?
+  types          String[]
+  number         String // p.ej. "25"
+  rarity         String?
+  artist         String?
+  setId          String
+  imageSmall     String
+  imageLarge     String
   regulationMark String?
-  language    String? @default("en")
+  language       String?  @default("en")
 
   // JSON original de la API: preserva ataques, habilidades, legalidades, etc.
   rawJson  Json
   syncedAt DateTime @default(now())
 
-  set    CardSet         @relation(fields: [setId], references: [id], onDelete: Cascade)
-  prices CardPrice[]
-  items  CollectionItem[]
+  set         CardSet          @relation(fields: [setId], references: [id], onDelete: Cascade)
+  prices      CardPrice[]
+  items       CollectionItem[]
+  externalIds CardExternalId[]
 
   @@index([name])
   @@index([setId])
@@ -117,21 +119,50 @@ model Card {
 // ─── Precios (histórico) ───
 
 model CardPrice {
-  id      String  @id @default(uuid())
-  cardId  String
-  variant String // normal | holofoil | reverseHolofoil | firstEditionNormal | firstEditionHolofoil
-  low     Decimal? @db.Decimal(12, 2)
-  mid     Decimal? @db.Decimal(12, 2)
-  high    Decimal? @db.Decimal(12, 2)
-  market  Decimal? @db.Decimal(12, 2)
-  source  String   @default("tcgplayer")
-  currency String  @default("USD")
+  id        String   @id @default(uuid())
+  cardId    String
+  variant   String // normal | holofoil | reverseHolofoil | firstEditionNormal | firstEditionHolofoil
+  low       Decimal? @db.Decimal(12, 2)
+  mid       Decimal? @db.Decimal(12, 2)
+  high      Decimal? @db.Decimal(12, 2)
+  market    Decimal? @db.Decimal(12, 2)
+  provider  String? // API que entregó el precio; null = fila histórica sin procedencia verificable
+  source    String   @default("tcgplayer") // mercado/listing, distinto del proveedor de API
+  currency  String   @default("USD")
   fetchedAt DateTime @default(now())
 
   card Card @relation(fields: [cardId], references: [id], onDelete: Cascade)
 
   @@index([cardId, variant, fetchedAt])
+  @@index([cardId, provider, source, variant, fetchedAt])
   @@map("card_prices")
+}
+
+// IDs externos separados de las PK canónicas que ya usan las colecciones.
+model CardExternalId {
+  provider   String
+  externalId String
+  cardId     String
+  createdAt  DateTime @default(now())
+
+  card Card @relation(fields: [cardId], references: [id], onDelete: Cascade)
+
+  @@id([provider, externalId])
+  @@index([cardId, provider])
+  @@map("card_external_ids")
+}
+
+model CardSetExternalId {
+  provider   String
+  externalId String
+  setId      String
+  createdAt  DateTime @default(now())
+
+  set CardSet @relation(fields: [setId], references: [id], onDelete: Cascade)
+
+  @@id([provider, externalId])
+  @@index([setId, provider])
+  @@map("card_set_external_ids")
 }
 
 // ─── Colecciones ───
@@ -177,13 +208,13 @@ model CollectionItem {
 // ─── Compartir ───
 
 model ShareLink {
-  id           String   @id @default(uuid())
+  id           String    @id @default(uuid())
   userId       String
   collectionId String? // null = todas las colecciones del usuario
-  slug         String   @unique
-  isActive     Boolean  @default(true)
-  viewCount    Int      @default(0)
-  createdAt    DateTime @default(now())
+  slug         String    @unique
+  isActive     Boolean   @default(true)
+  viewCount    Int       @default(0)
+  createdAt    DateTime  @default(now())
   expiresAt    DateTime?
 
   user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -195,16 +226,16 @@ model ShareLink {
 
 // ─── Tracking de jobs de sincronización ───
 model ScanJob {
-  id          String   @id @default(uuid())
+  id          String    @id @default(uuid())
   userId      String
-  status      String   @default("pending") // pending | running | completed | failed
-  jobType     String   @default("sync-catalog") // sync-catalog | refresh-prices
-  processed   Int      @default(0)
+  status      String    @default("pending") // pending | running | completed | failed
+  jobType     String    @default("sync-catalog") // sync-catalog | refresh-prices
+  processed   Int       @default(0)
   total       Int?
   lastError   String?
   startedAt   DateTime?
   completedAt DateTime?
-  createdAt   DateTime @default(now())
+  createdAt   DateTime  @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -218,12 +249,12 @@ model ScanJob {
 /// que no haya dos filas del mismo par en el mismo sentido, y el service
 /// busca siempre en ambos sentidos para que el par tenga un único estado.
 model Friendship {
-  id          String   @id @default(uuid())
+  id          String    @id @default(uuid())
   requesterId String
   addresseeId String
-  status      String   @default("pending") // pending | accepted | rejected | blocked
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  status      String    @default("pending") // pending | accepted | rejected | blocked
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
   respondedAt DateTime?
 
   requester User @relation("FriendshipRequests", fields: [requesterId], references: [id], onDelete: Cascade)

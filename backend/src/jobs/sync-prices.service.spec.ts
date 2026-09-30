@@ -72,7 +72,12 @@ describe('SyncPricesService', () => {
   beforeAll(async () => {
     const redis = stubRedis();
     redisStore = redis._store;
-    provider = { listSets: vi.fn(), getSetDetail: vi.fn(), getCardPrices: vi.fn() };
+    provider = {
+      id: 'tcgdex',
+      listSets: vi.fn(),
+      getSetDetail: vi.fn(),
+      getCardPrices: vi.fn(),
+    };
     mapping = { resolve: vi.fn() };
     moduleRef = await Test.createTestingModule({
       providers: [
@@ -161,18 +166,19 @@ describe('SyncPricesService', () => {
     const rows = await prismaClient.cardPrice.findMany({
       where: { cardId: TEST_CARD_ID },
       orderBy: { variant: 'asc' },
-      select: { variant: true, market: true, source: true, currency: true },
+      select: { variant: true, market: true, provider: true, source: true, currency: true },
     });
     expect(
       rows.map((r) => ({
         variant: r.variant,
         market: Number(r.market),
+        provider: r.provider,
         source: r.source,
         currency: r.currency,
       })),
     ).toEqual([
-      { variant: 'holofoil', market: 3.25, source: 'tcgplayer', currency: 'USD' },
-      { variant: 'normal', market: 3.25, source: 'tcgplayer', currency: 'USD' },
+      { variant: 'holofoil', market: 3.25, provider: 'tcgdex', source: 'tcgplayer', currency: 'USD' },
+      { variant: 'normal', market: 3.25, provider: 'tcgdex', source: 'tcgplayer', currency: 'USD' },
     ]);
   });
 
@@ -210,7 +216,7 @@ describe('SyncPricesService', () => {
     const prices = await service.refresh(TEST_CARD_ID);
 
     expect(prices).toEqual([]);
-    const hit = redisStore.get(`prices:${TEST_CARD_ID}`);
+    const hit = redisStore.get(`prices:tcgdex:${TEST_CARD_ID}`);
     expect(hit).toBeDefined();
     expect(hit!.ttl).toBe(6 * 60 * 60);
   });
@@ -351,11 +357,9 @@ describe('SyncPricesService', () => {
     expect(service.queueSize).toBe(0);
   });
 
-  // El ritmo hacia el proveedor es el límite más importante del proyecto
-  // (30/min, y ~26 para dejarle lugar al catálogo). Estas pruebas fijan que
-  // TODA llamada pasa por `withProviderSlot`: antes el gap solo vivía en
-  // `drain`, así que N requests simultáneos sobre cartas distintas salían en el
-  // mismo instante y un batch del admin vaciaba el presupuesto de un saque.
+  // Estas pruebas fijan que TODA llamada pasa por `withProviderSlot`: antes el
+  // gap solo vivía en `drain` y los requests concurrentes sobre cartas distintas
+  // salían en el mismo instante sin pasar por una compuerta compartida.
   describe('throttle de llamadas al proveedor', () => {
     const createCard = (id: string, number: string) =>
       prismaClient.card.create({

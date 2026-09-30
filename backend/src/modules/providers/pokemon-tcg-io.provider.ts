@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { PROVIDER_IDS } from './card-provider.interface.js';
 import type {
   CardDataProvider,
   PagedResult,
@@ -113,6 +114,8 @@ function mapPaged<T>(
 
 @Injectable()
 export class PokemonTcgIoProvider implements CardDataProvider {
+  readonly id = PROVIDER_IDS.POKEMON_TCG_IO;
+
   private readonly baseUrl: string = BASE_URL;
 
   async getSets(page: number, pageSize: number): Promise<PagedResult<RemoteSet>> {

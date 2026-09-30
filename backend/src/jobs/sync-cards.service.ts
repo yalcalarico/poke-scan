@@ -2,6 +2,7 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import {
   CARD_DATA_PROVIDER,
+  PROVIDER_IDS,
   type CardDataProvider,
   type RemoteCard,
 } from '../modules/providers/card-provider.interface.js';
@@ -43,6 +44,12 @@ export class SyncCardsService {
   ) {}
 
   async syncAll(options: SyncCardsOptions = {}): Promise<SyncCardsResult> {
+    if (this.provider.id !== PROVIDER_IDS.POKEMON_TCG_IO) {
+      throw new Error(
+        `El sync actual de cartas todavía no reconcilia IDs externos de ${this.provider.id}`,
+      );
+    }
+
     const pageSize = options.pageSize ?? DEFAULT_PAGE_SIZE;
 
     await this.syncSetsService.syncAll(pageSize);

@@ -229,8 +229,9 @@ opciones de migración del catálogo.
 
 1. **Nunca** llamar a la fuente desde un handler público.
 2. Los precios pasan por `SyncPricesService`, que ya aplica Redis + Postgres.
-3. La cola de refresh tiene 2,3 s entre requests. No la aceleres sin recalcular
-   contra el límite de 30/min.
+3. El sync de catálogo respeta el límite de pokemontcg.io (30/min, 1.000/día).
+   La cola de precios tiene 2,3 s entre requests por cortesía hacia TCGdex; es
+   otro proveedor y ese ritmo no consume la cuota de pokemontcg.io.
 4. Los jobs de sync son los únicos autorizados a paginar el catálogo entero.
 5. Antes de agregar cualquier llamada externa, preguntate si podría pasar por
    el servicio de precios o por la cola.

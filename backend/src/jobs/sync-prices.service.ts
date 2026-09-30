@@ -24,11 +24,7 @@ const CACHE_TTL_SECONDS = 60 * 60;
  * en vez de 1 h, así no se le pega en cada vista de una carta sin respuesta.
  */
 const NEGATIVE_CACHE_TTL_SECONDS = 6 * 60 * 60;
-/**
- * Disciplina de la cola: tcgdex no publica límite (pide "consideración"), pero
- * es infra comunitaria compartida y el catálogo también usa pokemontcg.io
- * (~26 req/min entre ambos, debajo de los 30/min de esa API).
- */
+/** Cortesía actual hacia TCGdex; sus requests no consumen la cuota de pokemontcg.io. */
 const MIN_GAP_MS = 2300;
 
 export interface CardPriceView {
@@ -141,11 +137,11 @@ export class SyncPricesService {
    *
    * - **dedupe por carta**: si la carta ya se está refrescando, se espera esa
    *   misma promesa en vez de abrir un segundo request al proveedor.
-   * - **gap mínimo global**: `MIN_GAP_MS` se aplica acá, no solo en `drain`.
+   * - **gap mínimo del proveedor activo**: `MIN_GAP_MS` se aplica acá, no solo en `drain`.
    *   Antes, dos requests simultáneos sobre cartas vencidas distintas salían
-   *   los dos juntos, y un `refreshMany` (endpoint admin) podía vaciar el
-   *   presupuesto de 30/min de un saque. Todos los refresh pasan por la misma
-   *   puerta y comparten el mismo reloj.
+   *   los dos juntos, y un `refreshMany` (endpoint admin) podía saltarse el
+   *   ritmo configurado. Todos los refresh pasan por la misma puerta y
+   *   comparten el mismo reloj dentro de este proceso.
    */
   private refreshThrottled(cardId: string): Promise<CardPriceView[]> {
     const existing = this.inFlight.get(cardId);
@@ -244,6 +240,7 @@ export class SyncPricesService {
         mid: price.mid,
         high: price.high,
         market: price.market,
+        provider: this.priceProvider.id,
         source: price.source,
         currency: price.currency,
         fetchedAt,
@@ -376,7 +373,7 @@ export class SyncPricesService {
   }
 
   private cacheKey(cardId: string): string {
-    return `prices:${cardId}`;
+    return `prices:${this.priceProvider.id}:${cardId}`;
   }
 
   private async cache(

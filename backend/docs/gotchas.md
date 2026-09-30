@@ -675,13 +675,14 @@ De ahí salen, todas obligatorias:
 - Los precios **bajo demanda** con 2 capas de caché.
 - `REQUEST_PAUSE_MS = 2100` entre páginas del sync.
 - `MIN_GAP_MS = 2300` en `withProviderSlot` (~26 req/min), la única puerta al
-  proveedor. La comparten la cola y el lote del admin. `getPricesForCard`
+  proveedor de precios. Es cortesía hacia TCGdex, no parte de la cuota de
+  pokemontcg.io. La comparten la cola y el lote del admin. `getPricesForCard`
   devuelve el precio disponible y encola los vencidos sin esperar el slot; un
   camino nuevo que llame al proveedor por afuera queda **sin throttle** y puede
   comerse el presupuesto entero con un pico.
-- Los precios van a tcgdex, que no tiene límite publicado, pero el gap se
-  mantiene: es infra comunitaria compartida y pokemontcg.io sigue consumiendo
-  del mismo presupuesto mientras sea la fuente del catálogo.
+- Los precios van a tcgdex, que no tiene límite publicado; el gap se mantiene
+  como cortesía a esa infraestructura comunitaria. El sync del catálogo va a
+  pokemontcg.io y respeta por separado sus límites publicados.
 - Ningún controller llama a la API externa.
 - `withPageRetry` + sync reanudable, para no gastar requests en reintentos
   inútiles.

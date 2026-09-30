@@ -1,15 +1,14 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import {
   PRICE_PROVIDER,
+  PROVIDER_IDS,
   type PriceProvider,
   type RemotePriceSet,
 } from '../modules/providers/card-provider.interface.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { RedisService } from '../redis/redis.service.js';
 
-const SETS_CACHE_KEY = 'tcgdex:sets';
 const SETS_CACHE_TTL_SECONDS = 24 * 60 * 60;
-const MISS_KEY_PREFIX = 'tcgdex:map:miss:';
 const MISS_TTL_SECONDS = 24 * 60 * 60;
 const VALIDATION_SAMPLE = 25;
 /** Con menos de la mitad de los números presentes, el matcheo es sospechoso. */
@@ -80,7 +79,13 @@ export class TcgdexSetMappingService {
     private readonly prisma: PrismaService,
     private readonly redis: RedisService,
     @Inject(PRICE_PROVIDER) private readonly provider: PriceProvider,
-  ) {}
+  ) {
+    if (provider.id !== PROVIDER_IDS.TCGDEX) {
+      throw new Error(
+        `TcgdexSetMappingService no puede usarse con ${provider.id}; implementar el mapper nuevo antes de cambiar PRICE_PROVIDER`,
+      );
+    }
+  }
 
   /**
    * Mapea todos los sets que falten y devuelve el reporte. Pensado para
@@ -95,7 +100,7 @@ export class TcgdexSetMappingService {
     const result: MapAllResult = { mapped: [], unmapped: [] };
     for (const set of sets) {
       if (options.retryMisses) {
-        await this.redis.del(MISS_KEY_PREFIX + set.id);
+        await this.redis.del(this.missKey(set.id));
       }
       const mapping = await this.resolve(set.id);
       if (mapping === null) {
@@ -118,12 +123,40 @@ export class TcgdexSetMappingService {
   async resolve(setId: string): Promise<TcgdexSetMapping | null> {
     const ours = await this.prisma.cardSet.findUnique({
       where: { id: setId },
-      select: { id: true, name: true, tcgdexSetId: true },
+      select: {
+        id: true,
+        name: true,
+        tcgdexSetId: true,
+        externalIds: {
+          where: { provider: this.provider.id },
+          select: { externalId: true },
+        },
+      },
     });
     if (ours === null) return null;
-    if (ours.tcgdexSetId !== null) return { tcgdexSetId: ours.tcgdexSetId };
+    const externalId = ours.externalIds[0]?.externalId;
+    if (externalId !== undefined) {
+      if (ours.tcgdexSetId !== null && ours.tcgdexSetId !== externalId) {
+        this.logger.error(
+          `El mapping tcgdex de ${ours.id} difiere entre card_sets y card_set_external_ids`,
+        );
+        return null;
+      }
+      return { tcgdexSetId: externalId };
+    }
+    if (ours.tcgdexSetId !== null) {
+      try {
+        await this.persistMapping(ours.id, ours.tcgdexSetId);
+      } catch (error) {
+        this.logger.error(
+          `No se pudo confirmar el mapping tcgdex de ${ours.id}: ${(error as Error).message}`,
+        );
+        return null;
+      }
+      return { tcgdexSetId: ours.tcgdexSetId };
+    }
 
-    if ((await this.redis.get(MISS_KEY_PREFIX + setId)) !== null) return null;
+    if ((await this.redis.get(this.missKey(setId))) !== null) return null;
 
     let candidate: string | null = SET_ID_OVERRIDES[setId] ?? null;
     if (candidate === null) {
@@ -142,7 +175,7 @@ export class TcgdexSetMappingService {
       this.logger.warn(
         `No se encontró set de tcgdex para ${ours.name} (${ours.id}): queda sin precios en vivo`,
       );
-      await this.redis.set(MISS_KEY_PREFIX + ours.id, '1', MISS_TTL_SECONDS);
+      await this.redis.set(this.missKey(ours.id), '1', MISS_TTL_SECONDS);
       return null;
     }
 
@@ -160,16 +193,45 @@ export class TcgdexSetMappingService {
       this.logger.warn(
         `El candidato tcgdex ${candidate} no valida contra las cartas de ${ours.name} (${ours.id}): se descarta`,
       );
-      await this.redis.set(MISS_KEY_PREFIX + ours.id, '1', MISS_TTL_SECONDS);
+      await this.redis.set(this.missKey(ours.id), '1', MISS_TTL_SECONDS);
       return null;
     }
 
-    await this.prisma.cardSet.update({
-      where: { id: ours.id },
-      data: { tcgdexSetId: candidate },
-    });
+    try {
+      await this.persistMapping(ours.id, candidate);
+    } catch (error) {
+      this.logger.error(
+        `No se pudo persistir el mapping tcgdex ${candidate} para ${ours.id}: ${(error as Error).message}`,
+      );
+      return null;
+    }
     this.logger.log(`Set ${ours.name} (${ours.id}) → tcgdex ${candidate}`);
     return { tcgdexSetId: candidate };
+  }
+
+  private async persistMapping(setId: string, externalId: string): Promise<void> {
+    await this.prisma.$transaction(async (tx) => {
+      const where = {
+        provider_externalId: { provider: this.provider.id, externalId },
+      };
+      const existing = await tx.cardSetExternalId.findUnique({
+        where,
+        select: { setId: true },
+      });
+      if (existing && existing.setId !== setId) {
+        throw new Error(`El ID externo ${externalId} ya está asociado al set ${existing.setId}`);
+      }
+      if (!existing) {
+        await tx.cardSetExternalId.create({
+          data: { provider: this.provider.id, externalId, setId },
+        });
+      }
+      await tx.cardSet.update({ where: { id: setId }, data: { tcgdexSetId: externalId } });
+    });
+  }
+
+  private missKey(setId: string): string {
+    return `${this.provider.id}:map:miss:${setId}`;
   }
 
   private async findCandidate(setId: string, name: string): Promise<string | null> {
@@ -185,11 +247,12 @@ export class TcgdexSetMappingService {
   }
 
   private async listSets(): Promise<RemotePriceSet[]> {
-    const cached = await this.redis.getJson<RemotePriceSet[]>(SETS_CACHE_KEY);
+    const cacheKey = `${this.provider.id}:sets`;
+    const cached = await this.redis.getJson<RemotePriceSet[]>(cacheKey);
     if (Array.isArray(cached) && cached.length > 0) return cached;
     const sets = await this.provider.listSets();
     if (sets.length > 0) {
-      await this.redis.setJson(SETS_CACHE_KEY, sets, SETS_CACHE_TTL_SECONDS);
+      await this.redis.setJson(cacheKey, sets, SETS_CACHE_TTL_SECONDS);
     }
     return sets;
   }

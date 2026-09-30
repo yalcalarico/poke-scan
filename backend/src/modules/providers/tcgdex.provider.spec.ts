@@ -69,6 +69,10 @@ describe('TcgdexProvider', () => {
     });
   });
 
+  it('expone el identificador estable del proveedor', () => {
+    expect(provider.id).toBe('tcgdex');
+  });
+
   it('getCardPrices saltea variantes con todos los valores en null', async () => {
     fetchMock.mockResolvedValueOnce(
       ok(

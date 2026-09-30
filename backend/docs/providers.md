@@ -49,6 +49,12 @@ inyección y tres contratos.
 ```ts
 export const CARD_DATA_PROVIDER = Symbol('CARD_DATA_PROVIDER');
 
+export const PROVIDER_IDS = {
+  POKEMON_TCG_IO: 'pokemontcg.io',
+  TCGDEX: 'tcgdex',
+  SCRYDEX: 'scrydex',
+} as const;
+
 export interface PagedResult<T> {
   data: T[]; page: number; pageSize: number; total: number; totalPages: number;
 }
@@ -75,11 +81,12 @@ export interface RemoteCard {
 export interface RemoteCardPrice {
   cardId: string; variant: string;
   low: number | null; mid: number | null; high: number | null; market: number | null;
-  source: string;                      // 'tcgplayer'
+  source: string;                      // mercado/listing: 'tcgplayer', no la API
   currency: string;                    // 'USD'
 }
 
 export interface CardDataProvider {
+  readonly id: string;
   getSets(page: number, pageSize: number): Promise<PagedResult<RemoteSet>>;
   getCardsPage(page: number, pageSize: number): Promise<PagedResult<RemoteCard>>;
   getCard(id: string): Promise<RemoteCard | null>;
@@ -93,6 +100,19 @@ Los tres tipos `Remote*` son **la forma normalizada de la fuente**: el schema de
 Prisma, los DTOs y los DTOs del frontend no dependan de cómo se llame la API.
 `raw` existe para no perder nada: `cards.rawJson` es lo que permite después ir a
 buscar precios sin volver a pegarle a la API.
+
+`id` es el identificador estable de la fuente y se persiste aparte de
+`RemoteCardPrice.source`, que indica el mercado. Las PK existentes siguen siendo
+canónicas: `card_external_ids` y `card_set_external_ids` guardan las relaciones
+entre proveedor e IDs externos. La primera migración las carga para pokemontcg.io
+y preserva los mappings TCGdex actuales. El mapper TCGdex ya las mantiene junto
+con el campo transitorio `tcgdexSetId`; el sync del catálogo todavía tiene que
+resolver sus IDs contra estas tablas antes de cambiar de fuente.
+
+Mientras ese paso no esté hecho, los jobs de sync rechazan un
+`CARD_DATA_PROVIDER` que no sea pokemontcg.io: hoy el upsert del catálogo todavía
+usa IDs externos como PK y no debe apuntarse a otra fuente por un simple cambio
+de binding.
 
 ### `CARD_IDENTIFICATION_PROVIDER`
 
@@ -120,6 +140,7 @@ export interface RemotePriceSet { id: string; name: string }
 export interface RemotePriceSetDetail { id: string; name: string; localIds: string[] }
 
 export interface PriceProvider {
+  readonly id: string;
   listSets(): Promise<RemotePriceSet[]>;
   getSetDetail(setId: string): Promise<RemotePriceSetDetail | null>;
   getCardPrices(cardId: string, setId: string, localId: string): Promise<RemoteCardPrice[]>;
@@ -380,22 +401,28 @@ independiente:
 
 | Quiero cambiar… | Toco | Qué NO se toca |
 |---|---|---|
-| **Los precios** | `PRICE_PROVIDER` + el mapper de sets | Todo lo demás: los IDs de carta siguen siendo los nuestros |
-| **El catálogo** | `CARD_DATA_PROVIDER` | La búsqueda, el escáner, las colecciones |
+| **Los precios** | `PRICE_PROVIDER`, mapping de sets, selección de lecturas y política de caché | PK canónicas y colecciones |
+| **El catálogo** | `CARD_DATA_PROVIDER` + `card_external_ids` / `card_set_external_ids` | PK canónicas, búsqueda, scanner y colecciones |
 
 ### Migrar los precios (el caso fácil)
 
-Es cambiar una clase. `TcgdexProvider implements PriceProvider` tiene tres
-métodos y el mapeo de variantes es un diccionario:
+La interfaz ya normaliza la respuesta, pero cambiar el binding solo no alcanza:
+las filas antiguas no se pueden atribuir con certeza, las consultas actuales no
+filtran por proveedor y el mapper existente está ligado a TCGdex:
 
-1. Escribí el provider nuevo con la misma forma pública.
-2. Cambiá una línea en `providers.module.ts`: el binding de `PRICE_PROVIDER`.
-3. Si la fuente numera los sets distinto, ajustá `TcgdexSetMappingService`
-   (o su versión nueva) y **backfilleá**: los `card_sets.tcgdexSetId` viejos
-   apuntan a la fuente anterior y hay que limpiarlos.
+1. Implementá el adaptador y fixtures para monedas, variantes, vacíos y errores.
+2. Añadí mappings de sets identificados por proveedor; no reutilices
+   `tcgdexSetId` para IDs de otra API. El mapper TCGdex falla al iniciar si se
+   intenta enlazarlo con otro proveedor.
+3. Actualizá caché y lecturas para distinguir el proveedor activo de filas
+   históricas o legado (`provider = NULL`). No sirvas estas últimas como frescas
+   de la API nueva.
+4. Probá el proveedor en sombra y compará cobertura/costo antes del canary y el
+   cambio de binding. Conservá las series antiguas como una serie separada.
 
-Nada más. `SyncPricesService`, la cola, las 2 capas de caché y los 40
-endpoints no se enteran: hablan `RemoteCardPrice[]`.
+`card_prices.provider` y la clave de Redis ya guardan/aislan el proveedor activo,
+pero las lecturas de histórico y los DTOs todavía necesitan un paso antes de una
+migración real.
 
 Lo que **no** se puede saltar es el mapeo de variantes: tiene que producir
 exactamente los 8 valores de `CardVariant`, o los `collection_items`
@@ -405,9 +432,10 @@ guardados con `variant: 'holofoil'` dejan de sumar su precio en el
 ### Migrar el catálogo (el caso caro)
 
 El catálogo guardado tiene los IDs de pokemontcg.io (`base1-4`) y **las
-colecciones de los usuarios los tienen como FK**. Una fuente con IDs propios no
-alcanza re-correando el sync: los `cards.id` no coinciden y las colecciones
-quedan huérfanas.
+colecciones de los usuarios los tienen como FK**. `card_external_ids` y
+`card_set_external_ids` ya contienen el backfill inicial, pero el sync todavía
+no resuelve sus upserts a través de esos aliases y rechaza otros proveedores.
+Ese paso debe completarse antes de promover otro catálogo.
 
 Opciones, de menor a mayor esfuerzo:
 

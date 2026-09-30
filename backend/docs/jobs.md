@@ -246,12 +246,13 @@ documentado entero en [pricing.md](pricing.md). Lo único que vive en este doc:
 - `MAX_AGE_MS = 24h` (frescura en Postgres), `CACHE_TTL_SECONDS = 1h` (Redis),
   `NEGATIVE_CACHE_TTL_SECONDS = 6h` (cuando la fuente todavía no cotiza).
 - `MIN_GAP_MS = 2300` se aplica en `withProviderSlot`, la única puerta al
-  proveedor, y la comparten la cola y el lote del admin (~26 req/min). La
-  lectura pública es stale-while-revalidate y no espera ese slot: ver
+  proveedor de precios, y la comparten la cola y el lote del admin (~26 req/min
+  por cortesía hacia TCGdex; no consume la cuota de pokemontcg.io). La lectura
+  pública es stale-while-revalidate y no espera ese slot: ver
   [pricing.md](pricing.md).
 - `refreshMany(cardIds)` es **bloqueante y en serie** (lo usa el endpoint admin).
-  Con N cartas tarda N × 2,3 s a propósito, para no gastar el presupuesto de un
-  saque.
+  Con N cartas tarda N × 2,3 s a propósito, para respetar el ritmo del proveedor
+  configurado.
 - `refresh(cardId)` **sí hace HTTP**: resuelve el set (lazy si hace falta) y
   pide el precio a tcgdex por (set, localId), pasando por el gap compartido.
   Desde un handler público de lectura, usá `getPricesForCard`: devuelve el dato

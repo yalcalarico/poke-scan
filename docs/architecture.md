@@ -77,8 +77,11 @@ top 8 candidatos con score → el usuario confirma
 addItem → encola el refresco de precio (no bloquea)
    │
    ▼
-cola con 2,3 s entre requests → 26 req/min → bajo el límite de 30
+cola con 2,3 s entre requests → cortesía para TCGdex (sin límite publicado)
 ```
+
+El límite de 30 requests/minuto corresponde a pokemontcg.io y al sync del
+catálogo; TCGdex es otro proveedor.
 
 **Por qué el OCR va en el cliente:** mandar la imagen a un servidor propio
 exigiría upload + storage y multiplicaría la complejidad, mientras que

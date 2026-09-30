@@ -1,5 +1,11 @@
 export const CARD_DATA_PROVIDER = Symbol('CARD_DATA_PROVIDER');
 
+export const PROVIDER_IDS = {
+  POKEMON_TCG_IO: 'pokemontcg.io',
+  TCGDEX: 'tcgdex',
+  SCRYDEX: 'scrydex',
+} as const;
+
 export interface RemoteSet {
   id: string;
   name: string;
@@ -39,6 +45,7 @@ export interface RemoteCardPrice {
   mid: number | null;
   high: number | null;
   market: number | null;
+  /** Mercado/listing del precio (p.ej. TCGPlayer), no la API proveedora. */
   source: string;
   currency: string;
 }
@@ -52,6 +59,7 @@ export interface PagedResult<T> {
 }
 
 export interface CardDataProvider {
+  readonly id: string;
   getSets(page: number, pageSize: number): Promise<PagedResult<RemoteSet>>;
   getCardsPage(page: number, pageSize: number): Promise<PagedResult<RemoteCard>>;
   getCard(id: string): Promise<RemoteCard | null>;
@@ -96,6 +104,7 @@ export interface RemotePriceSetDetail {
 }
 
 export interface PriceProvider {
+  readonly id: string;
   listSets(): Promise<RemotePriceSet[]>;
   getSetDetail(setId: string): Promise<RemotePriceSetDetail | null>;
   /**

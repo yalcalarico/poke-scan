@@ -90,7 +90,7 @@ Espejo de los sets de pokemontcg.io. 176 filas hoy.
 | `rawJson` | `Json?` | el objeto original |
 | `syncedAt` | `DateTime` | |
 
-Relación: `cards Card[]`. Índices: `name`, más el trigram
+Relaciones: `cards Card[]`, `externalIds CardSetExternalId[]`. Índices: `name`, más el trigram
 `card_sets_name_trgm_idx` (fuera del schema).
 
 ### Card (`cards`)
@@ -112,8 +112,24 @@ El catálogo. **20.670 filas** hoy.
 | `rawJson` | `Json` | **obligatorio**: preserva ataques, habilidades, legalidades y el bloque `tcgplayer.prices` (histórico, ya no es la fuente de precios: eso es tcgdex) |
 | `syncedAt` | `DateTime` | |
 
-Relaciones: `set CardSet`, `prices CardPrice[]`, `items CollectionItem[]`.
+Relaciones: `set CardSet`, `prices CardPrice[]`, `items CollectionItem[]` y
+`externalIds CardExternalId[]`.
 Índices: `name`, `setId`, `number`, más el trigram `cards_name_trgm_idx`.
+
+### IDs externos (`card_external_ids`, `card_set_external_ids`)
+
+Las PK actuales de cartas y sets siguen siendo los IDs canónicos que usan las
+colecciones y las rutas. Estas tablas asocian los IDs de cada API con esas PKs,
+sin reemplazarlas durante una migración de proveedor.
+
+| Tabla | Clave | Relación |
+|---|---|---|
+| `card_external_ids` | `(provider, externalId)` | `cardId` canónico |
+| `card_set_external_ids` | `(provider, externalId)` | `setId` canónico |
+
+La migración inicial registra los IDs existentes de pokemontcg.io y copia los
+mappings TCGdex que ya estaban en `card_sets.tcgdexSetId`. Esa columna se conserva
+como compatibilidad temporal; el sync todavía no consume las tablas nuevas.
 
 ### CardPrice (`card_prices`)
 
@@ -125,7 +141,8 @@ Histórico de precios: **una fila por variante por fecha**, nunca se actualiza.
 | `cardId` | `String` | FK a `cards`, `onDelete: Cascade` |
 | `variant` | `String` | 8 valores; ver `VARIANT_MAP` en [providers.md](providers.md) |
 | `low`, `mid`, `high`, `market` | `Decimal? @db.Decimal(12,2)` | |
-| `source` | `String @default("tcgplayer")` | |
+| `provider` | `String?` | API que entregó el valor. `NULL` en las filas históricas sin procedencia verificable. |
+| `source` | `String @default("tcgplayer")` | Mercado/listing, no la API que lo consultó. |
 | `currency` | `String @default("USD")` | |
 | `fetchedAt` | `DateTime @default(now())` | **la columna que ordena** el `DISTINCT ON` |
 
@@ -133,7 +150,10 @@ Histórico de precios: **una fila por variante por fecha**, nunca se actualiza.
 `DISTINCT ON`, para que "el precio más reciente de esta variante" sea un index
 scan y no un sort de 20k filas.
 
-No hay unique sobre `(cardId, variant)`: el histórico es el objetivo.
+No hay unique sobre `(cardId, variant)`: el histórico es el objetivo. El índice
+adicional `(cardId, provider, source, variant, fetchedAt)` prepara lecturas
+conscientes de la procedencia; el índice existente se mantiene para las consultas
+actuales.
 
 **El histórico no necesita tabla propia.** `GET /cards/:id/prices/history` arma la
 serie con un `DISTINCT ON` sobre el día (ver [patrón 1b](#patrón-1b--un-punto-por-día-del-histórico)),
