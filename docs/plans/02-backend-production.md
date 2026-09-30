@@ -56,25 +56,56 @@ Lo que falta y por qué no se hizo junto con el lock:
   externa es deprecada y las keys mueren el **1 de marzo de 2027**, así que
   automatizar el sync de una fuente que va a morir es trabajo que puede quedar
   viejo.
-- Un cron de precios sí tiene sentido, pero convive mal con una cola en memoria:
-  ver Fase 4.
+- El cron de precios era el que estaba bloqueado por la cola en memoria, y eso
+  ya se resolvió (Fase 4). **Queda como decisión abierta**: tiene sentido
+  automático, pero hay que decidir la periodicidad contra el ritmo global de 26
+  requests/min, y hoy la demanda sola ya mantiene la cola alimentada.
+## Fase 4: Cola de precios persistente ✅ hecho
 
-## Fase 4: Cola de precios persistente
+La cola era un array en memoria y, peor, el ritmo también: `lastProviderCallAt`
+era un `Date.now()` en memoria, o sea **un reloj por proceso**. Con dos
+instancias del backend el ritmo real hacia TCGdex se duplicaba, que es la
+restricción más dura del proyecto.
 
-Hoy la cola es **en memoria** (`sync-prices.service.ts`). Un reinicio del backend
-pierde lo pendiente, y `scan-capture.controller.ts` depende de ella para capturar
-cartas.
+Ahora hay tres piezas y una tabla:
 
-El diseño está detallado en `backend/docs/pricing.md` §"Cola persistente".
-Resumen: tabla `price_refresh_jobs` con `deduplicationKey`, `attempts`,
-`availableAt` y estados `pending`/`processing`/`completed`/`failed`, worker
-secuencial con el mismo `MIN_GAP_MS`, y recuperación de `processing` abandonados
-al arrancar.
+- `price_refresh_jobs`: una fila por carta, `cardId` único como deduplicación
+  (el refresh no es por variante, así que no hace falta la `deduplicationKey` que
+  decía este plan), `availableAt` como backoff y reloj del claim, y
+  `FOR UPDATE SKIP LOCKED` para el claim.
+- `provider_rate_limits`: una fila por proveedor. El hueco se toma con un
+  `UPDATE` condicional, y si está tomado el que espera lee cuándo se liberó y
+  duerme esa diferencia. **Es lo que hace que el `MIN_GAP_MS` sea global.**
+- `PriceQueueWorker`: el loop, con un `catch` que lo mantiene vivo si la DB falla.
 
-**Por qué no está hecho:** es un cambio de esquema y de flujo de datos, no un
-fix. Toca el path que maneja el rate limit externo, que es la restricción más
-dura del proyecto (`AGENTS.md` §3.1). Merece su propio commit con su propia
-verificación de que el throttling se sigue respetando.
+Y un cambio de semántica que la cola hacía necesario: `fetchAndStore` propaga el
+fallo del proveedor en vez de tragárselo. Antes un 500 de tcgdex y una carta que
+tcgdex no tiene se veían igual, así que un proveedor caído se guardaba como
+"terminado" y no se volvía a pedir nunca.
+
+`main.ts` también ganó `enableShutdownHooks()`: sin eso, un SIGTERM no frena el
+worker y la fila que tenía tomada queda en `processing` hasta que la recupera el
+arranque siguiente.
+
+**Verificado**: los tests de dos instancias sobre la misma base (nunca la misma
+fila, y el gap respetado entre las dos), la recuperación de `processing`
+abandonados, y el backoff. Ver [gotchas.md](../../backend/docs/gotchas.md) §33.
+
+## Fase 3.5: Cursor de sync y recuperación de jobs ✅ hecho
+
+El cursor del sync eran dos claves Redis sin TTL y de granularidad global. Un
+`flushall` reiniciaba el sync desde la página 1 —83 requests de una cuota de
+1.000/día para comprobar algo que la base ya sabía— y el día que entre un segundo
+proveedor de catálogo ambos syncs compartirían el mismo número de página. Ahora es
+una fila de `sync_state` con id `cards:<providerId>`.
+
+`JobsRecoveryService` reconcilia en el arranque lo que quedó a medias: los
+`processing` de la cola y los `running` de `scan_jobs`, que antes quedaban
+colgados para siempre y un `GET /api/jobs/:id` seguía diciendo `running`.
+
+El cursor se migra con `pnpm run sync-state:migrate`, que no puede ser una
+migración de Prisma porque una migración no puede leer Redis. Ver
+[gotchas.md](../../backend/docs/gotchas.md) §34.
 
 ## Fase 5: Retención de `card_prices`
 

@@ -13,9 +13,14 @@
 |---|---|
 | `jobs.module.ts` | Módulo con los services + el controller de admin |
 | `jobs.controller.ts` | 3 endpoints de admin, auth por `x-admin-key` |
+| `jobs-recovery.service.ts` | En el arranque, reconcilia el trabajo que quedó a medias |
 | `sync-sets.service.ts` | Espeja los sets |
 | `sync-cards.service.ts` | Espeja las cartas. **Reanudable** |
-| `sync-prices.service.ts` | Precios bajo demanda + cola (ver [pricing.md](pricing.md)) |
+| `sync-state.service.ts` | El cursor del sync, en `sync_state` (Postgres) |
+| `sync-prices.service.ts` | Precios bajo demanda (ver [pricing.md](pricing.md)) |
+| `price-queue.service.ts` | La cola de refresco, en `price_refresh_jobs` |
+| `price-queue.worker.ts` | El loop que drena la cola |
+| `provider-rate.gate.ts` | El ritmo hacia el proveedor, compartido por proceso |
 | `tcgdex-set-mapping.service.ts` | Traduce nuestros set IDs a los de tcgdex |
 | `sync.constants.ts` | Los valores compartidos del sync |
 | `retry.ts` | `withPageRetry`, el retry de paginación |
@@ -24,9 +29,15 @@
 // sync.constants.ts
 export const REQUEST_PAUSE_MS = 2100;   // pausa entre páginas (~28 req/min)
 export const DEFAULT_PAGE_SIZE = 250;   // el máximo de pokemontcg.io
-export const KEY_CARDS_LAST_PAGE = 'sync:cards:lastPage';
-export const KEY_CARDS_COMPLETE   = 'sync:cards:complete';
+export const SYNC_LOCK_KEY = 'sync:cards:lock';
+export const SYNC_LOCK_TTL_SECONDS = 1800;
 ```
+
+El cursor del sync **no** está acá: vive en la tabla `sync_state`
+(`SyncStateService`). Y el ritmo hacia el proveedor de precios tampoco: vive en
+`provider_rate_limits` (`ProviderRateGate`). Los dos estaban en Redis y los dos
+se movieron a Postgres por la misma razón —un valor que tiene que ser único no
+puede vivir en la memoria de un proceso—.
 
 ## `SyncSetsService`
 
@@ -63,7 +74,8 @@ a la mitad, así que tiene tres mecanismos para sobrevivir.
 ### 1. La bandera de "ya está completo"
 
 ```ts
-const alreadyComplete = !options.force && (await this.redis.get(KEY_CARDS_COMPLETE)) !== null;
+const state = await this.syncState.readCards();
+const alreadyComplete = !options.force && state.isComplete;
 if (alreadyComplete) {
   this.logger.log('Sync cards omitido: el catálogo ya está completo. Usá { force: true } para rehacerlo.');
   // 1 request barato: solo para conocer el total remoto
@@ -72,9 +84,9 @@ if (alreadyComplete) {
 }
 ```
 
-`KEY_CARDS_COMPLETE` se escribe **solo** si se llegó a la última página
-(`lastPage >= totalPages`). Un sync interrumpido no la escribe, así que el
-próximo corre de nuevo.
+`isComplete` se pone **solo** si se llegó a la última página (`lastPage >=
+totalPages`). Un sync interrumpido no la escribe, así que el próximo corre de
+nuevo.
 
 Con `force: true` se saltea la bandera **y** el punto de reanudación: es el
 "rehacer todo desde cero".
@@ -82,9 +94,7 @@ Con `force: true` se saltea la bandera **y** el punto de reanudación: es el
 ### 2. El punto de reanudación
 
 ```ts
-const resumeFrom = options.force
-  ? 0
-  : ((await this.redis.getNumber(KEY_CARDS_LAST_PAGE)) ?? 0);
+const resumeFrom = options.force ? 0 : state.lastPage;
 if (resumeFrom > 0) this.logger.log(`Sync cards reanudando desde la página ${resumeFrom + 1}`);
 
 // La página inicial siempre se pide: es de donde sale `total`.
@@ -108,18 +118,44 @@ for (let page = resumeFrom + 1; page <= lastPage; page++) {
   }
   const saved = await this.upsertBatch(result.data);
   processed += saved;
-  await this.redis.set(KEY_CARDS_LAST_PAGE, String(page));   // ← checkpoint
+  await this.syncState.saveCards(page, totalPages);   // ← checkpoint
 }
 ```
 
-**La invariante**: `sync:cards:lastPage` se escribe **después** de que la página
-está commiteada en Postgres. Si el proceso muere entre medio, el cursor no
-avanzó y esa página se reprocesa en el próximo intento. `upsert` hace que
-reprocesar sea idempotente.
+**La invariante**: el cursor se escribe **después** de que la página está
+commiteada en Postgres. Si el proceso muere entre medio, el cursor no avanzó y esa
+página se reprocesa en el próximo intento; `upsert` hace que reprocesar sea
+idempotente. Al revés —anotar el cursor antes de guardar— perdería la página en
+silencio y el sync se declararía completo con un hueco en el medio.
 
 Si una página falla después de 8 intentos, el sync se corta pero **no borra el
 cursor**: la próxima corrida arranca desde ahí. Ese es todo el mecanismo de
 reanudación.
+
+### El cursor vive en Postgres, no en Redis
+
+`SyncStateService` escribe en la tabla `sync_state`, con id `cards:<providerId>`.
+Eran dos claves Redis sin TTL (`sync:cards:lastPage`, `sync:cards:complete`) y
+eso tenía dos consecuencias:
+
+1. **Un `flushall` reiniciaba el sync desde la página 1.** No desde cero en
+   términos de datos —el `upsert` es idempotente— pero sí en requests: volver a
+   traer las 83 páginas de un catálogo ya completo son 83 requests de una cuota
+   de 1.000 por día, gastados para comprobar algo que la base ya sabía.
+2. **La granularidad era global.** La clave no decía de qué job ni de qué
+   provider era, así que el día que entre un segundo proveedor de catálogo ambos
+   syncs comparten el mismo número de página.
+
+Un detalle de `saveCards`: `totalPages` se escribe explícito y no se pisa con
+`undefined`, porque Prisma solo manda los campos presentes. Si no, un
+`saveCards(page)` dejaría el `totalPages` de una corrida con `pageSize` distinto
+mezclado con el `lastPage` de esta, y el "completo" caería en la página
+equivocada.
+
+**Al deployar hay que correr `pnpm run sync-state:migrate`**, que pasa el cursor
+de Redis a `sync_state`. No puede ser una migración de Prisma porque una
+migración no puede leer Redis. Es idempotente: si la fila ya existe, no la toca.
+
 
 ### 3. El retry de página
 
@@ -268,10 +304,12 @@ documentado entero en [pricing.md](pricing.md). Lo único que vive en este doc:
 
 - `MAX_AGE_MS = 24h` (frescura en Postgres), `CACHE_TTL_SECONDS = 1h` (Redis),
   `NEGATIVE_CACHE_TTL_SECONDS = 6h` (cuando la fuente todavía no cotiza).
-- `MIN_GAP_MS = 2300` se aplica en `withProviderSlot`, la única puerta al
-  proveedor de precios, y la comparten la cola y el lote del admin (~26 req/min
-  por cortesía hacia TCGdex; no consume la cuota de pokemontcg.io). La lectura
-  pública es stale-while-revalidate y no espera ese slot: ver
+- El ritmo lo aplica `ProviderRateGate`, la única puerta al proveedor de precios.
+  **Vive en Postgres, no en el proceso**: el gap era un `Date.now()` en memoria, o
+  sea un reloj por proceso, y con dos instancias el ritmo real hacia TCGdex se
+  duplicaba. Ahora la fila es una por proveedor y la comparten la cola y el lote
+  del admin (~26 req/min por cortesía; no consume la cuota de pokemontcg.io). La
+  lectura pública es stale-while-revalidate y no espera ese slot: ver
   [pricing.md](pricing.md).
 - `refreshMany(cardIds)` es **bloqueante y en serie** (lo usa el endpoint admin).
   Con N cartas tarda N × 2,3 s a propósito, para respetar el ritmo del proveedor
@@ -280,27 +318,41 @@ documentado entero en [pricing.md](pricing.md). Lo único que vive en este doc:
   pide el precio a tcgdex por (set, localId), pasando por el gap compartido.
   Desde un handler público de lectura, usá `getPricesForCard`: devuelve el dato
   disponible y encola los vencidos, sin bloquear la respuesta.
+- `fetchAndStore(cardId)` es la unidad de trabajo **sin ritmo**: la llama el
+  worker de la cola, que ya tomó el hueco. Propaga el fallo del proveedor; quien
+  degrada a "lo último conocido" es `refresh()`.
 
-### La cola es en memoria, y eso es una limitación
+### La cola es persistente, y el ritmo es global
 
-`enqueueRefresh` procesa en un `setTimeout` sobre un array del proceso. Dos
-consecuencias, y conviene conocerlas antes de tocar nada acá:
+`enqueueRefresh` escribe una fila en `price_refresh_jobs` y `PriceQueueWorker` la
+drena con `FOR UPDATE SKIP LOCKED`. Todo el diseño —dedupe por `cardId`,
+`availableAt` como backoff, la recuperación de `processing` abandonados, y por
+qué reencolar nunca adelanta un backoff— está en [pricing.md](pricing.md) §"La
+cola de precios".
 
-1. **Un reinicio del backend pierde lo pendiente.** No es un error ni una
-   inconsistencia: el precio de esa carta simplemente queda para la próxima
-   lectura, que lo encola de nuevo. Pero si el reinicio cae en el medio de un
-   lote grande, las primeras cartas quedan sin refrescar hasta que alguien las
-   mira.
-2. **No sobrevive a un despliegue con más de una instancia.** El catálogo
-   espejado es compartido, pero la cola no: cada proceso tendría la suya.
+Acá lo que corresponde a este doc es que **el ritmo también se persistió**, y esa
+es la parte que no era obvia: la limitación anterior no era "un reinicio pierde la
+cola", era que el reloj del rate limit era un reloj por proceso.
 
-El diseño de la cola persistente (tabla `price_refresh_jobs` con
-`deduplicationKey`, `attempts`, `availableAt` y recuperación de `processing`
-abandonados al arrancar) está en
-[`docs/plans/02-backend-production.md`](../../docs/plans/02-backend-production.md).
-No está hecho a propósito: toca el path que maneja el rate limit externo, que es
-la restricción más dura del proyecto, y merece su propio commit con su propia
-verificación de que el `MIN_GAP_MS` se sigue respetando.
+## `JobsRecoveryService` — qué pasa con el trabajo a medias
+
+Un `processing` o un `running` cuyo proceso murió es basura silenciosa: nadie lo
+vuelve a tomar y no aparece ningún error. `JobsRecoveryService` lo reconcilia en
+el arranque, y las dos cosas viven juntas porque son el mismo problema.
+
+| Qué | Umbral | Por qué ese número |
+|---|---|---|
+| `price_refresh_jobs` en `processing` | 10 min | Un refresh es un request con reintentos (`retry.ts` llega a 8 intentos con backoff de 30 s): del orden del minuto. Diez minutos es tres veces eso. |
+| `scan_jobs` en `running` | 30 min (`SYNC_LOCK_TTL_SECONDS`) | El sync entero tarda 15-20 min. Más viejo que el TTL del lock es de un proceso que ya no está. |
+
+El criterio es la **edad**, no la identidad de la instancia: el `lockedBy` de la
+cola cambia en cada arranque, así que después de un reinicio no hay nadie a quien
+preguntarle si esa fila era suya. Un umbral más corto cerraría jobs de una
+instancia sana; uno más largo deja basura más tiempo, que es el problema menos
+grave.
+
+Que falle la reconciliación no impide arrancar: se loguea y sigue. La cola se
+vuelve a llenar sola con la próxima lectura.
 
 ## No hay scheduler
 
@@ -308,11 +360,13 @@ verificación de que el `MIN_GAP_MS` se sigue respetando.
 proyecto**. El sync del catálogo es manual (`pnpm run sync` o el endpoint de
 admin) y el de precios es bajo demanda.
 
-El motivo de no automatizar el sync de catálogo todavía es de producto: la fuente
+El motivo de no automatizar el sync de catálogo es de producto: la fuente externa
 es deprecada y las keys mueren el **1 de marzo de 2027**, así que un cron que la
-mantenga al día puede quedar viejo antes de necesitarse. El de precios sí tendría
-sentido, pero convive mal con la cola en memoria: dos planificadores disparando
-sobre una cola que no persiste es peor que uno solo.
+mantenga al día puede quedar viejo antes de necesitarse. Y el de precios ya no
+convive mal con la cola: la cola es persistente y el ritmo es global, así que un
+planificador ya no sería "dos planificadores sobre una cola que no persiste". Eso
+lo deja como decisión abierta, no como bloqueo técnico.
+
 
 ## Endpoints de admin
 

@@ -283,7 +283,7 @@ Y el valor total se calcula siempre sobre **`market`**, no sobre `mid`:
 COALESCE(SUM(i.quantity * lp.market), 0)::float8 AS "totalValueUsd"
 ```
 
-## La cola en background
+## La cola de precios
 
 `enqueueRefresh` existe por un problema concreto: **el precio se pide bajo
 demanda, así que una carta recién agregada a una colección no lo tenía**. El
@@ -291,110 +291,127 @@ total de esa colección valía `$0` hasta que el usuario abría el detalle de ca
 carta una por una. Encolar al agregar resuelve el `$0` de una, sin bloquear la
 respuesta.
 
-```ts
-/**
- * Cortesía hacia TCGdex: no publica límite (pide "consideración"). Su ritmo es
- * independiente del límite de pokemontcg.io, que solo aplica al sync de catálogo.
- */
-const MIN_GAP_MS = 2300;
+La cola vive en la tabla `price_refresh_jobs` y la drena `PriceQueueWorker`. Son
+tres piezas separadas a propósito, y por qué:
 
-enqueueRefresh(cardId: string): void {
-  if (!cardId || this.pending.has(cardId)) return;   // dedupe
-  this.pending.add(cardId);
-  this.queue.push(cardId);
-  if (!this.draining) void this.drain();
-}
+| Pieza | Qué sabe | De qué depende |
+|---|---|---|
+| `PriceQueueService` | La tabla: encolar, reclamar, anotar | Prisma |
+| `ProviderRateGate` | El ritmo hacia el proveedor | Prisma |
+| `PriceQueueWorker` | El loop que las une | Las dos + `SyncPricesService` |
+| `SyncPricesService` | Qué es una carta y un precio | El gate y la cola |
 
-private async drain(): Promise<void> {
-  this.draining = true;
-  try {
-    while (this.queue.length > 0) {
-      const cardId = this.queue.shift()!;
-      try { await this.refresh(cardId); }
-      catch (error) { /* log warn, la cola sigue */ }
-      finally { this.pending.delete(cardId); }
-      // sin sleep: el gap lo mete withProviderSlot
-    }
-  } finally { this.draining = false; }
-}
+El grafo es acíclico porque el worker, que es quien necesita del servicio de
+precios, **no** es el servicio de precios. Si el loop viviera adentro, los dos se
+necesitarían mutuamente.
+
+### Por qué el ritmo vive en Postgres y no en el proceso
+
+Este es el punto que justifica la cola entera. El gap era
+`private lastProviderCallAt = 0`, un número en memoria: **un reloj por proceso**.
+Con dos instancias del backend, cada una contaba su propio gap y el ritmo real
+hacia TCGdex se duplicaba a ~52 requests/min. El rate limit externo es la
+restricción más dura del proyecto (`AGENTS.md` §3.1) y no se respeta con un
+`Date.now()`.
+
+Ahora el reloj es una fila por proveedor (`provider_rate_limits`) y tomar el hueco
+es un `UPDATE` condicional:
+
+```sql
+UPDATE provider_rate_limits
+SET "lastCalledAt" = (now() AT TIME ZONE 'UTC')
+WHERE "providerId" = 'tcgdex'
+  AND "lastCalledAt" <= (now() AT TIME ZONE 'UTC') - '2300 milliseconds'::interval
+RETURNING "providerId"
 ```
 
-### El gap vive en un solo lugar; la lectura pública no lo espera
+Si no matchea, el hueco está tomado: el que espera **lee** cuándo se liberó y
+duerme esa diferencia exacta, en vez de reintentar en bucle. Son dos consultas
+por llamada, y las llamadas están separadas por 2,3 s.
 
-`withProviderSlot` es la única puerta al proveedor de precios activo. La comparten la cola en
-background y el lote del endpoint admin (`refreshMany`). La lectura pública
-(`getPricesForCard`) **no espera esa puerta**: devuelve el precio cacheado o el
-último de Postgres, y encola el refresh si ya venció.
+`MIN_GAP_MS = 2300` ⇒ 60/2,3 ≈ **26 requests/minuto**. No es un límite de tcgdex
+(no publica ninguno) sino cortesía con una infra comunitaria que el proyecto no
+mantiene, y para no comerse el presupuesto de pokemontcg.io mientras siga usando
+esa API para el catálogo.
 
-Que sea uno solo no es una decisión de estilo. Antes el `sleep(MIN_GAP_MS)`
-vivía en `drain`, así que las otras dos rutas no tenían ningún control:
+### El ciclo de un job
 
-- **N clientes abriendo N cartas vencidas** salían todos en el mismo instante,
-  porque `getPricesForCard` llamaba a `refresh()` directo. Ahora todos encolan,
-  reciben el último precio conocido sin esperar y el único worker comparte el
-  gap.
-- **`POST /jobs/refresh-prices`** podía mandar un lote de 50 cartas seguidas y
-  vaciar el presupuesto entero de una tacada.
-
-`refreshThrottled` suma el dedupe por carta sobre ese gap: si la carta ya se está
-refrescando, otro caller de `refresh()` espera esa promesa en vez de abrir otro.
-
-```ts
-private refreshThrottled(cardId: string): Promise<CardPriceView[]> {
-  const existing = this.inFlight.get(cardId);
-  if (existing) return existing;                    // dedupe por carta
-  const run = this.withProviderSlot(() => this.refreshUnthrottled(cardId)).finally(() => {
-    this.inFlight.delete(cardId);
-  });
-  this.inFlight.set(cardId, run);
-  return run;
-}
-
-private async withProviderSlot<T>(task: () => Promise<T>): Promise<T> {
-  const run = this.gate.then(async () => {
-    const wait = this.lastProviderCallAt + this.minGapMs - Date.now();
-    if (wait > 0) await this.sleep(wait);
-    this.lastProviderCallAt = Date.now();   // reloj al arrancar, no al terminar
-    return task();
-  });
-  this.gate = run.catch(() => undefined);   // un fallo no envenena la cadena
-  return run;
-}
+```
+encolar                reclamar               trabajar              anotar
+INSERT/UPSERT   →   FOR UPDATE SKIP    →   gate.wait()        →   complete
+"pending"            LOCKED,                + fetchAndStore           "completed"
+                     "processing"           (1 request)
 ```
 
-Dos detalles que los tests fijan, y que son fáciles de romper pensando "es lo
-mismo":
+`SKIP LOCKED` es lo que hace que dos instancias no puedan tomar la misma fila y
+que una con la cola llena no bloquee a la otra: la que pierde el lock salta a la
+siguiente fila en vez de esperar.
 
-1. **El reloj se toma al arrancar, no al terminar.** Si se tomara al terminar, el
-   gap se sumaría a la latencia de cada llamada y el ritmo real caería por
-   debajo de 26/min sin que nadie lo notara.
-2. **`this.gate` encadena con `.catch`**, no con la promesa directa: un 503 de
-   tcgdex no puede dejar envenenada la cadena y hacer que *toda* llamada
-   posterior rechace sin llegar al proveedor.
+El claim va **antes** del slot, y el slot no se suelta hasta el final. Tomar el
+slot primero sería peor: un worker con la cola vacía consumiría un hueco de ritmo
+en cada poll, y el poll quedaría limitado a un intento cada 2,3 s.
 
-`refresh()` es la entrada throttled para jobs y tests; `refreshUnthrottled()` es
-privada y solo corre dentro del slot. La lectura pública no llama a ninguna de
-las dos en forma síncrona: stale-while-revalidate evita que un request de página
-quede esperando atrás de una cola larga.
+### Los estados, y por qué "no cotiza" no es un fallo
 
-Cinco cosas a respetar si la tocás:
+| Estado | Significa | ¿Se reintenta solo? |
+|---|---|---|
+| `pending` | Espera su turno. `availableAt` dice cuándo | — |
+| `processing` | Alguien lo tomó (`lockedBy`/`lockedAt`) | No: si el proceso muere, lo recupera el arranque |
+| `completed` | Terminó, **haya precio o no** | No: espera una señal nueva |
+| `failed` | Agotó los 5 intentos | No: espera una señal nueva |
 
-1. **`MIN_GAP_MS = 2300`** ⇒ 60/2.3 ≈ **26 requests/minuto**. No es un límite de
-   tcgdex (no publica ninguno) sino cortesía con una infra comunitaria que el
-   proyecto no mantiene, y para no comerse el presupuesto de pokemontcg.io
-   mientras siga usando esa API para el catálogo.
-2. **`pending`** es el dedupe: la misma carta no se encola dos veces mientras
-   espera. `queueSize` expone el tamaño para diagnóstico y tests.
-3. **`draining` es el lock**: si la cola se drena sola, un `enqueueRefresh` que
-   llega durante el drain **no** arranca un segundo loop. Sin ese flag se
-   correrían dos loops en paralelo y el ritmo se rompería.
-4. **Un fallo no frena la cola**: el `catch` loguea y sigue con la siguiente.
-   Un error de una carta no puede bloquear las otras 200.
-5. **Toda llamada al proveedor pasa por `withProviderSlot`**, no solo la cola. Si
-   agregás un job, endpoint o script, llamá a `refresh()` (throttled) o
-   `enqueueRefresh()`. No llames a `refreshUnthrottled()`: es privada y solo se
-   ejecuta dentro del slot. Los handlers que lean precios deben usar
-   `getPricesForCard()`, que responde sin esperar el refresh.
+La distinción que hace posible todo esto: **"el proveedor no tiene esta carta" es
+una respuesta, no un fallo**. Por eso `cel25c` y `me55c` —que no mapean a
+propósito— terminan como `completed`: reintentar no arregla una numeración que no
+coincide, y cada intento es un request que se gasta.
+
+Y al revés: **un 500 de tcgdex sí es un fallo**, y sale. `fetchAndStore` propaga
+el error en vez de tragárselo y devolver "lo último conocido" —que antes lo
+hacía, y hacía que un proveedor caído se guardara como "terminado" y no se
+volviera a pedir nunca—. Quien degrada es `refresh()`, que es el camino que
+tiene que devolver algo.
+
+### El backoff y por qué reencolar no lo adelanta
+
+Un fallo vuelve a `pending` con `availableAt` en el futuro: 30 s, 1 m, 2 m, 4 m,
+y `failed` al quinto intento. El backoff es exponencial con tope, así que un
+proveedor caído pasa de 26 requests/min a uno cada media hora.
+
+El `enqueue` lleva `GREATEST("availableAt", now())` a propósito: **reencolar
+nunca adelanta un backoff**. Una carta que el proveedor rechazó recibe señales
+nuevas todo el día —cada lectura la reencola— y si cada una la despertara, el
+reintento sería un lazo contra un proveedor que acaba de decir que no.
+
+El `ON CONFLICT` lleva además un `WHERE status IN ('completed', 'failed')`, que
+hace que encolar una carta ya `pending` o `processing` sea un no-op **sin
+escribir**. Sin ese `WHERE`, cada lectura de una carta vencida sería un `UPDATE`,
+y las lecturas de precio están en el camino de una página.
+
+### La deduplicación que queda en memoria, y la que no
+
+La cola deduplica por `processing`, y de forma cross-proceso. Queda una
+deduplicación **en el proceso** en `SyncPricesService.inFlight`, para el lote
+admin (`refreshMany`), que llama directo y no pasa por la cola. Contra el worker
+concurrente de otra instancia eso no protege —esa fila la tiene tomada otra—,
+aunque el ritmo global sí se respeta en los dos casos. Es un límite conocido y
+deliberado: el único camino duplicable es un lote admin explícito, y el
+constraint duro (el ritmo) está en la base.
+
+### La lectura pública no espera nada
+
+`getPricesForCard` devuelve el precio cacheado o el último de Postgres, y encola
+si ya venció. No espera el slot, no espera al worker y no espera el round trip
+del encolado: `enqueue` es fire-and-forget con el error logueado, porque la
+respuesta del usuario no depende de que el encolado se haya escrito.
+
+### Qué se reconcilia al arrancar
+
+Un backend que muere a mitad de un refresh deja la fila en `processing`, y el
+claim solo mira `pending`: nadie la vuelve a tomar y no es un error que nadie
+ve, es un precio que deja de actualizarse. `JobsRecoveryService` la devuelve a
+`pending` en el arranque, con el mismo criterio que usa para los `ScanJob`: la
+**edad**, no la identidad de la instancia (que cambia en cada arranque). El umbral
+son 10 min, tres veces el peor caso de un refresh con reintentos.
 
 **Dónde se encola**:
 
@@ -411,9 +428,21 @@ this.syncPrices?.enqueueRefresh(item.cardId);
 El `?.` es por el `@Optional()` de la inyección: en los tests unitarios el
 service se construye sin el job de precios.
 
-**No hay cola persistente**: es un array en memoria del proceso. Si el backend
-se reinicia con la cola llena, esas cartas quedan sin precio hasta que alguien
-las mire. Es aceptable justamente por el diseño bajo demanda.
+Cinco cosas a respetar si la tocás:
+
+1. **Nunca llamar al proveedor sin pasar por `ProviderRateGate`.** Si agregás un
+   job, endpoint o script, usá `enqueueRefresh()` ( Background) o `refresh()`
+   (bloqueante). `fetchAndStore()` es la unidad de trabajo sin ritmo: solo la
+   llama el worker, que ya tomó el hueco.
+2. **No cachear un fallback en la clave del proveedor activo.** `prices:v2:<id>:<cardId>`
+   guarda solo cotizaciones del proveedor activo; el fallback de otro provider
+   se devuelve pero no se cachea.
+3. **Un fallo no frena la cola.** El `catch` del worker anota y sigue con la
+   siguiente; un error de una carta no puede bloquear las otras 200.
+4. **El encolado no es `await`ed** a propósito. Si lo fuera, cada lectura de
+   precio pagaría un round trip.
+5. **El poll del worker es inyectable solo para tests.** Con 250 ms..2 s de
+   producción, cualquier test que espere al worker es flaky por construcción.
 
 ## El histórico de precios: dos endpoints, una sola tabla
 

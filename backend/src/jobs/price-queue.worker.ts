@@ -81,7 +81,9 @@ export class PriceQueueWorker implements OnModuleInit, OnModuleDestroy {
   }
 
   async onModuleInit(): Promise<void> {
-    await this.queue.reconcileAbandoned();
+    // La recuperación de los jobs que quedaron tomados no es de acá sino de
+    // `JobsRecoveryService`, que la hace junto con la de los `ScanJob`: es el
+    // mismo problema y quiere un solo lugar donde mirar.
     this.running = true;
     this.loop = this.run();
     this.logger.log(`Worker de precios listo como ${this.id}`);

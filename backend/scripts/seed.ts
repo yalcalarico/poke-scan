@@ -7,7 +7,10 @@ import { RedisService } from '../src/redis/redis.service.js';
 import { SyncCardsService } from '../src/jobs/sync-cards.service.js';
 import { SyncPricesService } from '../src/jobs/sync-prices.service.js';
 import { SyncSetsService } from '../src/jobs/sync-sets.service.js';
+import { SyncStateService } from '../src/jobs/sync-state.service.js';
 import { TcgdexSetMappingService } from '../src/jobs/tcgdex-set-mapping.service.js';
+import { PriceQueueService } from '../src/jobs/price-queue.service.js';
+import { ProviderRateGate } from '../src/jobs/provider-rate.gate.js';
 
 const SEED_PAGE_SIZE = 250;
 const SEED_PAGES = 2;
@@ -28,8 +31,11 @@ async function main(): Promise<void> {
   const priceProvider = new TcgdexProvider();
   const syncSets = new SyncSetsService(prisma, provider);
   const mapping = new TcgdexSetMappingService(prisma, redis, priceProvider);
-  const syncPrices = new SyncPricesService(prisma, redis, mapping, priceProvider);
-  const syncCards = new SyncCardsService(prisma, syncSets, redis, provider);
+  const gate = new ProviderRateGate(prisma, priceProvider);
+  const queue = new PriceQueueService(prisma);
+  const syncPrices = new SyncPricesService(prisma, redis, gate, queue, mapping, priceProvider);
+  const syncState = new SyncStateService(prisma, provider);
+  const syncCards = new SyncCardsService(prisma, syncSets, syncState, provider);
   try {
     const before = await prisma.$transaction([
       prisma.cardSet.count(),

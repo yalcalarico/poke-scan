@@ -5,6 +5,7 @@ import { PrismaService } from '../src/prisma/prisma.service.js';
 import { RedisService } from '../src/redis/redis.service.js';
 import { SyncCardsService } from '../src/jobs/sync-cards.service.js';
 import { SyncSetsService } from '../src/jobs/sync-sets.service.js';
+import { SyncStateService } from '../src/jobs/sync-state.service.js';
 
 const PAGE_SIZE = 250;
 
@@ -21,7 +22,8 @@ async function main(): Promise<void> {
 
   const provider = new PokemonTcgIoProvider();
   const syncSets = new SyncSetsService(prisma, provider);
-  const syncCards = new SyncCardsService(prisma, syncSets, redis, provider);
+  const syncState = new SyncStateService(prisma, provider);
+  const syncCards = new SyncCardsService(prisma, syncSets, syncState, provider);
 
   try {
     const before = await prisma.card.count();

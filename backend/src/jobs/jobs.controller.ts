@@ -27,8 +27,8 @@ const SYSTEM_USER_EMAIL = 'system@pokemon-cards-scanner.app';
  *
  * El TTL es la red de seguridad para el caso de que el proceso muera a mitad
  * del sync. Si fuera más corto que el sync, el lock se vencería solo y una
- * segunda corrida empezaría a trabajar sobre el mismo cursor de Redis. Por eso
- * se renueva: el lock vive lo que vive el trabajo, y se vence solo si el
+ * segunda corrida empezaría a trabajar sobre el mismo cursor de `sync_state`. Por
+ * eso se renueva: el lock vive lo que vive el trabajo, y se vence solo si el
  * proceso deja de responder.
  */
 const LOCK_RENEW_MS = (SYNC_LOCK_TTL_SECONDS * 1000) / 2;
@@ -156,7 +156,7 @@ export class JobsController {
         // proceso tomó el lock. Se avisa porque el segundo sync puede haber
         // trabajado sobre el mismo cursor.
         this.logger.warn(
-          'No se pudo soltar el lock de sync: venció su TTL o Redis no respondió. Si había otro sync corriendo, va a compartir el cursor de Redis.',
+          'No se pudo soltar el lock de sync: venció su TTL o Redis no respondió. Si había otro sync corriendo, va a compartir el cursor de sync_state.',
         );
       }
     }

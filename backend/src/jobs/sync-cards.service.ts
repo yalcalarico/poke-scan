@@ -7,15 +7,10 @@ import {
   type RemoteCard,
 } from '../modules/providers/card-provider.interface.js';
 import { PrismaService } from '../prisma/prisma.service.js';
-import { RedisService } from '../redis/redis.service.js';
 import { withPageRetry } from './retry.js';
 import { SyncSetsService } from './sync-sets.service.js';
-import {
-  DEFAULT_PAGE_SIZE,
-  KEY_CARDS_COMPLETE,
-  KEY_CARDS_LAST_PAGE,
-  REQUEST_PAUSE_MS,
-} from './sync.constants.js';
+import { SyncStateService } from './sync-state.service.js';
+import { DEFAULT_PAGE_SIZE, REQUEST_PAUSE_MS } from './sync.constants.js';
 
 const wait = (ms: number): Promise<void> =>
   new Promise((resolve) => setTimeout(resolve, ms));
@@ -39,7 +34,7 @@ export class SyncCardsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly syncSetsService: SyncSetsService,
-    private readonly redis: RedisService,
+    private readonly syncState: SyncStateService,
     @Inject(CARD_DATA_PROVIDER) private readonly provider: CardDataProvider,
   ) {}
 
@@ -54,7 +49,8 @@ export class SyncCardsService {
 
     await this.syncSetsService.syncAll(pageSize);
 
-    const alreadyComplete = !options.force && (await this.redis.get(KEY_CARDS_COMPLETE)) !== null;
+    const state = await this.syncState.readCards();
+    const alreadyComplete = !options.force && state.isComplete;
     if (alreadyComplete) {
       this.logger.log(
         'Sync cards omitido: el catálogo ya está completo. Usá { force: true } para rehacerlo.',
@@ -65,9 +61,7 @@ export class SyncCardsService {
       return { processed: 0, total: probe?.total ?? 0, skipped: true };
     }
 
-    const resumeFrom = options.force
-      ? 0
-      : ((await this.redis.getNumber(KEY_CARDS_LAST_PAGE)) ?? 0);
+    const resumeFrom = options.force ? 0 : state.lastPage;
     if (resumeFrom > 0) {
       this.logger.log(`Sync cards reanudando desde la página ${resumeFrom + 1}`);
     }
@@ -91,7 +85,7 @@ export class SyncCardsService {
 
     if (resumeFrom === 0 && first.data.length > 0) {
       processed += await this.upsertBatch(first.data);
-      await this.redis.set(KEY_CARDS_LAST_PAGE, '1');
+      await this.syncState.saveCards(1, totalPages);
       this.logger.log(
         `Sync cards: página 1/${totalPages} — ${processed} cartas (${first.data.length} guardadas)`,
       );
@@ -114,7 +108,13 @@ export class SyncCardsService {
       }
       const saved = await this.upsertBatch(result.data);
       processed += saved;
-      await this.redis.set(KEY_CARDS_LAST_PAGE, String(page));
+      /*
+       * El cursor se escribe **después** del `upsert`, nunca antes. Si el proceso
+       * muere entre los dos, la página se reprocesa y el `upsert` la deja igual;
+       * al revés, la página se pierde en silencio y el sync se declararía
+       * completo con un hueco en el medio.
+       */
+      await this.syncState.saveCards(page, totalPages);
       this.logger.log(
         `Sync cards: página ${page}/${totalPages} — ${processed} cartas (${saved} guardadas)`,
       );
@@ -123,7 +123,7 @@ export class SyncCardsService {
     if (interrupted) {
       this.logger.log(`Sync cards interrumpido tras ${processed} cartas`);
     } else if (lastPage >= totalPages) {
-      await this.redis.set(KEY_CARDS_COMPLETE, new Date().toISOString());
+      await this.syncState.completeCards(totalPages);
       this.logger.log(`Sync cards completado: ${processed} cartas`);
     } else {
       this.logger.log(

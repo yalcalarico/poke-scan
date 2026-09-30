@@ -27,6 +27,7 @@
     "db:seed": "tsc -p tsconfig.seed.json && node --env-file-if-exists=.env dist-seed/scripts/seed.js",
     "db:sync": "tsc -p tsconfig.seed.json && node --env-file-if-exists=.env dist-seed/scripts/sync-full.js",
     "db:map-tcgdex": "tsc -p tsconfig.seed.json && node --env-file-if-exists=.env dist-seed/scripts/map-tcgdex-sets.js",
+    "db:migrate-sync-state": "tsc -p tsconfig.seed.json && node --env-file-if-exists=.env dist-seed/scripts/migrate-sync-state.js",
     "db:dev-user": "tsc -p tsconfig.seed.json && node --env-file-if-exists=.env dist-seed/scripts/dev-user.js",
     "db:measure-near-dups": "tsc -p tsconfig.seed.json && node --env-file-if-exists=.env dist-seed/scripts/measure-near-duplicates.js"
   },

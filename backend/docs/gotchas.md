@@ -49,6 +49,8 @@
 31. [Un lock se suelta con compare-and-delete, nunca con `DEL`](#31-un-lock-se-suelta-con-compare-and-delete-nunca-con-del)
 20. [`getUsdArsBoth` podía tirar un 500 si caía el tipo preferido — **arreglado**](#20-getusdarsboth-podía-tirar-un-500-si-el-tipo-preferido-fallaba--arreglado)
 32. [Un `LEFT JOIN` de precios sin filtro de proveedor compila y miente](#32-un-left-join-de-precios-sin-filtro-de-proveedor-compila-y-miente)
+33. [Un rate limit en memoria es un rate limit por proceso](#33-un-rate-limit-en-memoria-es-un-rate-limit-por-proceso)
+34. [Un `null` de Redis puede ser "todavía no conectó"](#34-un-null-de-redis-puede-ser-todavía-no-conectó-y-en-un-script-de-migración-es-un-no-op-silencioso)
 
 ---
 
@@ -675,12 +677,13 @@ De ahí salen, todas obligatorias:
 - El catálogo espejado (20.670 cartas) y **nunca** re-pedido por request.
 - Los precios **bajo demanda** con 2 capas de caché.
 - `REQUEST_PAUSE_MS = 2100` entre páginas del sync.
-- `MIN_GAP_MS = 2300` en `withProviderSlot` (~26 req/min), la única puerta al
+- `MIN_GAP_MS = 2300` en `ProviderRateGate` (~26 req/min), la única puerta al
   proveedor de precios. Es cortesía hacia TCGdex, no parte de la cuota de
-  pokemontcg.io. La comparten la cola y el lote del admin. `getPricesForCard`
-  devuelve el precio disponible y encola los vencidos sin esperar el slot; un
-  camino nuevo que llame al proveedor por afuera queda **sin throttle** y puede
-  comerse el presupuesto entero con un pico.
+  pokemontcg.io. La comparten la cola y el lote del admin, y el reloj vive en
+  Postgres (`provider_rate_limits`) para que sea global y no uno por proceso.
+  `getPricesForCard` devuelve el precio disponible y encola los vencidos sin
+  esperar el slot; un camino nuevo que llame al proveedor por afuera queda **sin
+  throttle** y puede comerse el presupuesto entero con un pico.
 - Los precios van a tcgdex, que no tiene límite publicado; el gap se mantiene
   como cortesía a esa infraestructura comunitaria. El sync del catálogo va a
   pokemontcg.io y respeta por separado sus límites publicados.
@@ -1258,6 +1261,72 @@ lo es. Por eso el fallback existe en `getPricesForCard` y no existe en el
 filas legacy y ninguna del proveedor activo, `sort=price` y los totales devuelven
 cero. Es el estado correcto de una base cuyo proveedor activo todavía no escribió
 nada, y la forma de arreglarlo es que escriba, no abrir el filtro.
+
+## 33. Un rate limit en memoria es un rate limit por proceso
+
+**Qué pasó**: el ritmo hacia TCGdex eran dos números en `SyncPricesService` —un
+`queue: string[]` y un `lastProviderCallAt = 0`—. Con una sola instancia
+funcionaba: los requests salían espaciados 2,3 s y la cola drenaba sola.
+
+El día que la cola pasó a ser una tabla, la primera pregunta legítima era si
+sigue valiendo. Y no: `lastProviderCallAt` era **un reloj por proceso**, así que
+con dos instancias del backend cada una contaba su propio gap y el ritmo agregado
+hacia el proveedor era el doble. Todo lo demás de la app es shared —el catálogo
+espejado, las colecciones, los locks por token—, así que la cola era lo único
+que delataba que el resto del diseño ya era multi-instancia y esta parte no.
+
+**Por qué no lo agarró ningún test**: los tests usan un solo
+`SyncPricesService`, y con un solo proceso la implementación en memoria y la
+persistida dan exactamente el mismo resultado. La diferencia solo aparece con dos
+consumidores concurrentes, que es el estado en el que nadie escribe tests porque
+"no pasa en desarrollo".
+
+**Cómo queda el código**: el ritmo es `ProviderRateGate` sobre la tabla
+`provider_rate_limits`, una fila por proveedor. Tomar el hueco es un `UPDATE`
+condicional (`WHERE "lastCalledAt" <= now() - gap`), y si no matchea el que
+espera lee cuándo se liberó y duerme esa diferencia exacta. `MIN_GAP_MS` no
+vive en ningún servicio.
+
+**Y la regla que se generaliza**: si un valor tiene que ser **único** —un lock, un
+cursor, un reloj compartido, una secuencia— no puede vivir en la memoria de un
+proceso. El síntoma de que está en el lugar equivocado es que "funciona en
+desarrollo" y falla con dos réplicas. Redis alcanza mientras haya una sola
+instancia y es un lugar de basura para lo que Postgres ya resuelve con una fila.
+
+Lo mismo se aplicó al cursor del sync (`sync:cards:lastPage` era una clave Redis
+de granularidad global, y un `flushall` reiniciaba el sync desde la página 1):
+ahora es una fila de `sync_state` con id `cards:<providerId>`.
+
+## 34. Un `null` de Redis puede ser "todavía no conectó", y en un script de migración es un no-op silencioso
+
+**Qué pasó**: `scripts/migrate-sync-state.ts` tiene que pasar el cursor del sync
+de Redis a `sync_state`. Su primera versión leía las claves y, si no había nada,
+decía "no hay cursor que migrar" y salía con código 0.
+
+Corrida de prueba: `redis-cli GET sync:cards:lastPage` devolvía `8`, y el script
+dijo que no había nada. La clave existía.
+
+**Por qué**: `RedisService.onModuleInit()` no espera la conexión —es a propósito,
+para que la app arranque igual sin Redis— y `get()` devuelve `null` cuando
+`isAvailable()` es falso. El script leía `null` por una conexión que todavía no
+estaba lista, no por una clave ausente. Los dos `null` son indistinguibles para
+la API.
+
+**Por qué importa tanto acá**: en la app, un `null` de Redis es inocuo —es un
+cache miss— y el diseño degradado lo asume. En un script de migración, un `null`
+indeterminado hace que el script reporte un éxito que no ocurrió, que es la peor
+forma de fallar: el operador cree que migró y el cursor se perdió igual. La
+migración de todas formas habría sido un no-op en este caso, porque el destino
+estaba vacío; el daño real es **creer** que se corrió.
+
+**Cómo queda el código**: el script espera a que Redis esté listo y **aborta con
+error** si no lo está, distinguiendo "Redis no disponible" de "no hay cursor". Y
+`onModuleInit` sigue sin esperar, porque en el camino de un request esperar la
+conexión sería peor que la cache miss.
+
+**Lo mismo aplica a cualquier `map-tcgdex-sets.ts`**, que también usa Redis con
+`onModuleInit` y no espera: hoy le funciona por suerte. No se cambió porque está
+fuera de esta etapa, pero es la misma trampa.
 
 ## Cross-references
 
