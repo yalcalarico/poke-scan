@@ -98,10 +98,30 @@ export class SyncSetsService {
           rawJson: set.raw as Prisma.InputJsonValue,
           syncedAt: new Date(),
         };
-        await this.prisma.cardSet.upsert({
-          where: { id: set.id },
-          create: { id: set.id, ...data },
-          update: data,
+        await this.prisma.$transaction(async (tx) => {
+          const where = {
+            provider_externalId: { provider: this.provider.id, externalId: set.id },
+          };
+          const externalId = await tx.cardSetExternalId.findUnique({
+            where,
+            select: { setId: true },
+          });
+          const canonicalSetId = externalId?.setId ?? set.id;
+
+          await tx.cardSet.upsert({
+            where: { id: canonicalSetId },
+            create: { id: canonicalSetId, ...data },
+            update: data,
+          });
+          if (!externalId) {
+            await tx.cardSetExternalId.create({
+              data: {
+                provider: this.provider.id,
+                externalId: set.id,
+                setId: canonicalSetId,
+              },
+            });
+          }
         });
       } catch (error) {
         this.logger.error(

@@ -105,14 +105,14 @@ buscar precios sin volver a pegarle a la API.
 `RemoteCardPrice.source`, que indica el mercado. Las PK existentes siguen siendo
 canónicas: `card_external_ids` y `card_set_external_ids` guardan las relaciones
 entre proveedor e IDs externos. La primera migración las carga para pokemontcg.io
-y preserva los mappings TCGdex actuales. El mapper TCGdex ya las mantiene junto
-con el campo transitorio `tcgdexSetId`; el sync del catálogo todavía tiene que
-resolver sus IDs contra estas tablas antes de cambiar de fuente.
+y preserva los mappings TCGdex actuales. `SyncSetsService` y `SyncCardsService`
+ya resuelven y registran aliases al sincronizar el proveedor actual; los jobs
+rechazan otro `CARD_DATA_PROVIDER` hasta que se implemente una importación en
+sombra que reconcilie sus IDs.
 
-Mientras ese paso no esté hecho, los jobs de sync rechazan un
-`CARD_DATA_PROVIDER` que no sea pokemontcg.io: hoy el upsert del catálogo todavía
-usa IDs externos como PK y no debe apuntarse a otra fuente por un simple cambio
-de binding.
+El mapper TCGdex mantiene los aliases junto con el campo transitorio
+`tcgdexSetId`. También falla al iniciar si se intenta enlazarlo con otro
+`PRICE_PROVIDER`; hace falta un mapper genérico antes de cambiar la fuente.
 
 ### `CARD_IDENTIFICATION_PROVIDER`
 

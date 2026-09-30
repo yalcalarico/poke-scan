@@ -136,6 +136,29 @@ export class SyncCardsService {
 
   private async upsertBatch(cards: RemoteCard[]): Promise<number> {
     let saved = 0;
+    const [cardAliases, setAliases] = await Promise.all([
+      this.prisma.cardExternalId.findMany({
+        where: {
+          provider: this.provider.id,
+          externalId: { in: cards.map((card) => card.id) },
+        },
+        select: { externalId: true, cardId: true },
+      }),
+      this.prisma.cardSetExternalId.findMany({
+        where: {
+          provider: this.provider.id,
+          externalId: { in: [...new Set(cards.map((card) => card.setId))] },
+        },
+        select: { externalId: true, setId: true },
+      }),
+    ]);
+    const cardIdByExternalId = new Map(
+      cardAliases.map((alias) => [alias.externalId, alias.cardId]),
+    );
+    const setIdByExternalId = new Map(
+      setAliases.map((alias) => [alias.externalId, alias.setId]),
+    );
+
     for (const card of cards) {
       try {
         if (!card.setId) {
@@ -144,6 +167,15 @@ export class SyncCardsService {
           );
           continue;
         }
+        const canonicalSetId = setIdByExternalId.get(card.setId);
+        if (!canonicalSetId) {
+          this.logger.warn(
+            `La carta ${card.id} apunta al set externo ${card.setId}, que no está mapeado para ${this.provider.id}: se omite`,
+          );
+          continue;
+        }
+        const canonicalCardId = cardIdByExternalId.get(card.id) ?? card.id;
+        const hasExternalId = cardIdByExternalId.has(card.id);
         const data = {
           name: card.name,
           supertype: card.supertype,
@@ -160,11 +192,25 @@ export class SyncCardsService {
           rawJson: card.raw as Prisma.InputJsonValue,
           syncedAt: new Date(),
         };
-        await this.prisma.card.upsert({
-          where: { id: card.id },
-          create: { id: card.id, setId: card.setId, ...data },
-          update: { setId: card.setId, ...data },
+        const upsert = this.prisma.card.upsert({
+          where: { id: canonicalCardId },
+          create: { id: canonicalCardId, setId: canonicalSetId, ...data },
+          update: { setId: canonicalSetId, ...data },
         });
+        if (hasExternalId) {
+          await upsert;
+        } else {
+          await this.prisma.$transaction([
+            upsert,
+            this.prisma.cardExternalId.create({
+              data: {
+                provider: this.provider.id,
+                externalId: card.id,
+                cardId: canonicalCardId,
+              },
+            }),
+          ]);
+        }
         saved += 1;
       } catch (error) {
         this.logger.error(

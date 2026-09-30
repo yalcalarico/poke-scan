@@ -160,15 +160,39 @@ corta el sync pero conserva el cursor.
 
 ```ts
 private async upsertBatch(cards: RemoteCard[]): Promise<number> {
+  const [cardAliases, setAliases] = await Promise.all([
+    this.prisma.cardExternalId.findMany({
+      where: { provider: this.provider.id, externalId: { in: cards.map((c) => c.id) } },
+      select: { externalId: true, cardId: true },
+    }),
+    this.prisma.cardSetExternalId.findMany({
+      where: { provider: this.provider.id, externalId: { in: [...new Set(cards.map((c) => c.setId))] } },
+      select: { externalId: true, setId: true },
+    }),
+  ]);
+  const cardIdByExternalId = new Map(cardAliases.map((a) => [a.externalId, a.cardId]));
+  const setIdByExternalId = new Map(setAliases.map((a) => [a.externalId, a.setId]));
   let saved = 0;
   for (const card of cards) {
     try {
       if (!card.setId) { this.logger.warn(`Carta ${card.id} (${card.name}) sin setId: se omite`); continue; }
-      await this.prisma.card.upsert({
-        where: { id: card.id },
-        create: { id: card.id, setId: card.setId, ...data },
-        update: { setId: card.setId, ...data },
+      const cardId = cardIdByExternalId.get(card.id) ?? card.id;
+      const setId = setIdByExternalId.get(card.setId);
+      if (!setId) continue;
+      const upsert = this.prisma.card.upsert({
+        where: { id: cardId },
+        create: { id: cardId, setId, ...data },
+        update: { setId, ...data },
       });
+      if (cardIdByExternalId.has(card.id)) await upsert;
+      else {
+        await this.prisma.$transaction([
+          upsert,
+          this.prisma.cardExternalId.create({
+            data: { provider: this.provider.id, externalId: card.id, cardId },
+          }),
+        ]);
+      }
       saved += 1;
     } catch (error) { this.logger.error(`No se pudo guardar la carta ${card.id}: ...`); }
   }
@@ -176,10 +200,9 @@ private async upsertBatch(cards: RemoteCard[]): Promise<number> {
 }
 ```
 
-Un `upsert` por carta, **no** un `createMany`: cada carta tiene su `rawJson` y
-`setId` distintos, así que un lote homogeneo no se puede armar sin serializar.
-Son ~2.100 inserts por página de 250, contra la base local: rápido comparado con
-el 2.1 s de pausa entre páginas.
+Cada página precarga sus aliases; los `upsert` escriben sobre la PK canónica y
+los aliases nuevos se guardan junto al registro. Para IDs ya conocidos, el
+`cardId` externo nunca reemplaza la PK que usan las colecciones.
 
 Las cartas sin `setId` se omiten (puede pasar si el set no se sincronizó) y los
 errores de una carta no cortan la página.

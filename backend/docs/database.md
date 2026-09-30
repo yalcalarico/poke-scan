@@ -129,7 +129,9 @@ sin reemplazarlas durante una migración de proveedor.
 
 La migración inicial registra los IDs existentes de pokemontcg.io y copia los
 mappings TCGdex que ya estaban en `card_sets.tcgdexSetId`. Esa columna se conserva
-como compatibilidad temporal; el sync todavía no consume las tablas nuevas.
+como compatibilidad temporal. Los syncs resuelven las PK canónicas a través de
+estos aliases; mientras no haya una importación en sombra, solo se permite
+sincronizar pokemontcg.io.
 
 ### CardPrice (`card_prices`)
 
