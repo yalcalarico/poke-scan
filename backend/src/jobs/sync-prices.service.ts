@@ -7,6 +7,8 @@ import {
 } from '../modules/providers/card-provider.interface.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { RedisService } from '../redis/redis.service.js';
+import { ProviderRateGate } from './provider-rate.gate.js';
+import { PriceQueueService } from './price-queue.service.js';
 import { TCGDEX_SET_MAPPING, TcgdexSetMappingService } from './tcgdex-set-mapping.service.js';
 
 const MAX_AGE_MS = 24 * 60 * 60 * 1000;
@@ -24,8 +26,6 @@ const CACHE_TTL_SECONDS = 60 * 60;
  * en vez de 1 h, así no se le pega en cada vista de una carta sin respuesta.
  */
 const NEGATIVE_CACHE_TTL_SECONDS = 6 * 60 * 60;
-/** Cortesía actual hacia TCGdex; sus requests no consumen la cuota de pokemontcg.io. */
-const MIN_GAP_MS = 2300;
 
 export interface CardPriceView {
   cardId: string;
@@ -75,31 +75,37 @@ function toView(row: {
   };
 }
 
+export class PriceFetchError extends Error {
+  constructor(
+    readonly cardId: string,
+    message: string,
+  ) {
+    super(message);
+    this.name = 'PriceFetchError';
+  }
+}
+
 @Injectable()
 export class SyncPricesService {
   private readonly logger = new Logger(SyncPricesService.name);
-  private readonly queue: string[] = [];
-  private readonly pending = new Set<string>();
   /**
    * Refrescos en vuelo por carta. `getPricesForCard` corre en el camino de un
    * request público: sin esto, N clientes abriendo la misma carta vencida
    * dispararían N llamadas al proveedor por la misma fila.
+   *
+   * Es la **única** deduplicación que queda en memoria, y a propósito: la cola
+   * ya deduplica por `processing` y de forma cross-proceso, pero el lote admin
+   * (`refreshMany`) llama directo y no pasa por la cola. Contra el worker
+   * concurrente de otra instancia esto no protege —esa fila la tiene tomada
+   * otra—, aunque el ritmo global sí se respeta en los dos casos.
    */
   private readonly inFlight = new Map<string, Promise<CardPriceView[]>>();
-  /** Serializa las llamadas al proveedor para poder espaciarlas en el tiempo. */
-  private gate: Promise<unknown> = Promise.resolve();
-  private lastProviderCallAt = 0;
-  /**
-   * Separación mínima entre dos llamadas al proveedor. Es una propiedad
-   * inyectable solo para que los tests no tarden 2,3 s por caso: el valor de
-   * producción es `MIN_GAP_MS` y no debería cambiarlo nadie más.
-   */
-  private minGapMs = MIN_GAP_MS;
-  private draining = false;
 
   constructor(
     private readonly prisma: PrismaService,
     private readonly redis: RedisService,
+    private readonly gate: ProviderRateGate,
+    private readonly queue: PriceQueueService,
     @Inject(TCGDEX_SET_MAPPING)
     private readonly mapping: Pick<TcgdexSetMappingService, 'resolve'>,
     @Inject(PRICE_PROVIDER) private readonly priceProvider: PriceProvider,
@@ -153,42 +159,32 @@ export class SyncPricesService {
   /**
    * Refresco con el ritmo del proveedor.
    *
-   * Es el camino que corre en background y en el lote admin. La lectura pública
-   * no espera esta promesa: devuelve lo último conocido y encola el refresh.
-   * Este método aplica dos barreras a todos los refresh efectivos:
+   * Es el camino **directo**: el lote admin y cualquier llamada explícita. El
+   * camino de una lectura pública no usa esto —encola y devuelve lo último
+   * conocido— y el worker de la cola tampoco: toma el slot él mismo.
    *
-   * - **dedupe por carta**: si la carta ya se está refrescando, se espera esa
-   *   misma promesa en vez de abrir un segundo request al proveedor.
-   * - **gap mínimo del proveedor activo**: `MIN_GAP_MS` se aplica acá, no solo en `drain`.
-   *   Antes, dos requests simultáneos sobre cartas vencidas distintas salían
-   *   los dos juntos, y un `refreshMany` (endpoint admin) podía saltarse el
-   *   ritmo configurado. Todos los refresh pasan por la misma puerta y
-   *   comparten el mismo reloj dentro de este proceso.
+   * Lo que queda acá es la deduplicación por carta (`inFlight`) y el
+   * `PriceFetchError` degradado a "lo último conocido", que es lo que espera un
+   * endpoint que tiene que devolver algo.
    */
   private refreshThrottled(cardId: string): Promise<CardPriceView[]> {
     const existing = this.inFlight.get(cardId);
     if (existing) return existing;
 
-    const run = this.withProviderSlot(() => this.refreshUnthrottled(cardId)).finally(() => {
-      this.inFlight.delete(cardId);
-    });
+    const run = this.gate
+      .wait()
+      .then(() => this.fetchAndStore(cardId))
+      .catch((error: unknown) => {
+        if (!(error instanceof PriceFetchError)) throw error;
+        this.logger.warn(
+          `Fallo el fetch de precios de ${cardId}: ${error.message}. Queda lo último conocido`,
+        );
+        return this.latestKnownPrices(cardId);
+      })
+      .finally(() => {
+        this.inFlight.delete(cardId);
+      });
     this.inFlight.set(cardId, run);
-    return run;
-  }
-
-  /**
-   * Serializa el acceso al proveedor y espera lo que falte para respetar el
-   * gap. El reloj se toma al empezar, no al terminar: dos llamadas lentas
-   * seguidas no acumulan el gap dos veces.
-   */
-  private async withProviderSlot<T>(task: () => Promise<T>): Promise<T> {
-    const run = this.gate.then(async () => {
-      const wait = this.lastProviderCallAt + this.minGapMs - Date.now();
-      if (wait > 0) await this.sleep(wait);
-      this.lastProviderCallAt = Date.now();
-      return task();
-    });
-    this.gate = run.catch(() => undefined);
     return run;
   }
 
@@ -201,15 +197,31 @@ export class SyncPricesService {
    * último conocido con la TTL negativa para reintentar más tarde.
    *
    * Habla con el proveedor sin gap propio a propósito: el ritmo lo impone
-   * `withProviderSlot`, por el que pasan todos los caminos. Si se pusiera
-   * también acá, la cola y el lote admin medirían el tiempo por separado y
+   * `ProviderRateGate`, por el que pasan el lote admin y el worker de la cola.
+   * Si se pusiera también acá, los dos caminos medirían el tiempo por separado y
    * volvería a haber dos relojes.
    */
   async refresh(cardId: string): Promise<CardPriceView[]> {
     return this.refreshThrottled(cardId);
   }
 
-  private async refreshUnthrottled(cardId: string): Promise<CardPriceView[]> {
+  /**
+   * El refresco, sin nada de ritmo ni de deduplicación alrededor.
+   *
+   * Es la unidad de trabajo que consume la cola: el worker ya tomó el slot, así
+   * que si esto tomara otro, la carta esperaría 2,3 s al slot que ella misma
+   * acaba de liberar.
+   *
+   * ## Por qué `PriceFetchError` es un error y no un `catch` silencioso
+   *
+   * Antes este método se tragaba el fallo del proveedor y devolvía "lo último
+   * conocido", que para un endpoint es lo correcto. Para la cola no lo es: un
+   * 500 de tcgdex y una carta que tcgdex no tiene se veían **igual**, así que
+   * un proveedor caído se guardaba como "terminado" y no se volvía a pedir
+   * nunca. Ahora el fallo sale, la cola lo anota con backoff, y es
+   * `refresh()` —el camino que tiene que devolver algo— el que degrada.
+   */
+  async fetchAndStore(cardId: string): Promise<CardPriceView[]> {
     const card = await this.prisma.card.findUnique({
       where: { id: cardId },
       select: {
@@ -228,6 +240,12 @@ export class SyncPricesService {
       tcgdexSetId = (await this.mapping.resolve(card.set.id))?.tcgdexSetId ?? null;
     }
     if (tcgdexSetId === null) {
+      /*
+       * Sin mapeo no es un fallo: es una condición estable y conocida
+       * (`cel25c` y `me55c` no mapean a propósito). Reintentar no lo arregla y
+       * cada intento es un request que se gasta, así que se responde con lo
+       * último conocido y el job termina como `completed`.
+       */
       this.logger.warn(
         `Sin mapeo a tcgdex para el set ${card.set.name} (${card.set.id}): no se pueden refrescar los precios de ${cardId}`,
       );
@@ -238,10 +256,7 @@ export class SyncPricesService {
     try {
       remote = await this.priceProvider.getCardPrices(card.id, tcgdexSetId, card.number);
     } catch (error) {
-      this.logger.warn(
-        `Fallo el fetch de precios de tcgdex para ${cardId}: ${(error as Error).message}`,
-      );
-      return this.latestKnownPrices(cardId);
+      throw new PriceFetchError(cardId, (error as Error).message);
     }
 
     const currentQuotes = remote.filter(
@@ -292,10 +307,11 @@ export class SyncPricesService {
   /**
    * Refresco por lote del endpoint admin.
    *
-    * Cada carta pasa por `refresh`, así que un lote grande tampoco puede
-    * gastar el presupuesto de un saque: N cartas son N requests espaciados
-   * por `MIN_GAP_MS`. Es lento a propósito, y la alternativa era comerse el
-   * rate limit del proveedor.
+   * Cada carta pasa por `refresh`, así que un lote grande tampoco puede gastar
+   * el presupuesto de un saque: N cartas son N requests espaciados por el gap
+   * global, y además este lote compite en el **mismo** reloj que el worker de la
+   * cola. Es lento a propósito, y la alternativa era comerse el rate limit del
+   * proveedor.
    */
   async refreshMany(cardIds: string[]): Promise<{
     refreshed: number;
@@ -326,46 +342,12 @@ export class SyncPricesService {
    * la colección valía $0 pese a que el precio existe. Encolarlo al agregar lo
    * resuelve sin bloquear la respuesta ni pelar el rate limit.
    *
-    * El ritmo (≈26 peticiones/minuto) lo aplica `withProviderSlot` dentro de
-    * `refresh`. Las lecturas públicas stale-while-revalidate encolan acá y
-    * devuelven el dato disponible sin esperar el slot.
+   * No es más que una delegación a la cola: la deduplicación, el backoff y la
+   * persistencia viven en `PriceQueueService`. El ritmo (≈26 peticiones/minuto)
+   * lo aplica el worker de la cola antes de cada llamada al proveedor.
    */
   enqueueRefresh(cardId: string): void {
-    if (!cardId || this.pending.has(cardId)) return;
-    this.pending.add(cardId);
-    this.queue.push(cardId);
-    if (!this.draining) void this.drain();
-  }
-
-  /** Cartas esperando refresco. Pensado para diagnóstico y tests. */
-  get queueSize(): number {
-    return this.queue.length;
-  }
-
-  private async drain(): Promise<void> {
-    this.draining = true;
-    try {
-      while (this.queue.length > 0) {
-        const cardId = this.queue.shift()!;
-        try {
-          await this.refresh(cardId);
-        } catch (error) {
-          this.logger.warn(
-            `Fallo el refresco en background de ${cardId}: ${(error as Error).message}`,
-          );
-        } finally {
-          this.pending.delete(cardId);
-        }
-        // Sin `sleep` acá: `refresh` pasa por `withProviderSlot`, que mantiene
-        // el límite también para los lotes admin.
-      }
-    } finally {
-      this.draining = false;
-    }
-  }
-
-  private sleep(ms: number): Promise<void> {
-    return new Promise((resolve) => setTimeout(resolve, ms));
+    this.queue.enqueue(cardId);
   }
 
   /**

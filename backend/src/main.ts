@@ -32,6 +32,15 @@ async function bootstrap() {
     new ValidationPipe({ whitelist: true, transform: true }),
   );
 
+  /*
+   * Sin esto, Nest ignora SIGTERM y los hooks de ciclo de vida no corren: el
+   * proceso muere sin que `onModuleDestroy` llegue a frenar el worker de precios
+   * ni `RedisService` a cerrar la conexión. Con un despliegue que manda SIGTERM
+   * y después SIGKILL, el worker se queda sin draining y la fila que tenía
+   * tomada queda en `processing` hasta que la recovers el arranque siguiente.
+   */
+  app.enableShutdownHooks();
+
   await app.listen(process.env.PORT ?? 3001);
 }
 await bootstrap();

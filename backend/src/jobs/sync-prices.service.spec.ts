@@ -7,6 +7,8 @@ import {
 } from '../modules/providers/card-provider.interface.js';
 import { PrismaService } from '../prisma/index.js';
 import { RedisService } from '../redis/index.js';
+import { PriceQueueService } from './price-queue.service.js';
+import { ProviderRateGate } from './provider-rate.gate.js';
 import { SyncPricesService } from './sync-prices.service.js';
 import { TCGDEX_SET_MAPPING } from './tcgdex-set-mapping.service.js';
 
@@ -59,15 +61,29 @@ describe('SyncPricesService', () => {
   const prismaClient = new PrismaClient();
   let moduleRef: TestingModule;
   let service: SyncPricesService;
+  let gate: ProviderRateGate;
+  let queue: PriceQueueService;
   let provider: StubProvider;
   let mapping: { resolve: ReturnType<typeof vi.fn> };
   let redisStore: ReturnType<typeof stubRedis>['_store'];
 
   const setMinGap = (ms: number) => {
     // El gap de producción son 2,3 s. Los tests fijan el ritmo cuando lo
-    // necesitan, y lo dejan en cero en el resto del suite.
-    (service as unknown as { minGapMs: number }).minGapMs = ms;
+    // necesitan, y lo dejan en cero en el resto del suite. El gap vive en el
+    // gate, que es compartido y persistente: bajarlo acá no desactiva nada
+    // globalmente porque cada test corre con el suyo.
+    gate.setGapMs(ms);
   };
+
+  /**
+   * Las filas de cola de **esta** carta.
+   *
+   * No se usa `pendingCount()` a propósito: cuenta la tabla entera, así que la
+   * aserción dependería de lo que otro spec haya dejado. Además `pendingCount`
+   * incluye `processing`, y un job tomado ya no es "pendiente".
+   */
+  const jobsFor = (cardId: string) =>
+    prismaClient.priceRefreshJob.findMany({ where: { cardId } });
 
   beforeAll(async () => {
     const redis = stubRedis();
@@ -84,6 +100,8 @@ describe('SyncPricesService', () => {
     moduleRef = await Test.createTestingModule({
       providers: [
         SyncPricesService,
+        PriceQueueService,
+        ProviderRateGate,
         { provide: PrismaService, useValue: prismaClient },
         { provide: RedisService, useValue: redis },
         { provide: PRICE_PROVIDER, useValue: provider },
@@ -92,9 +110,14 @@ describe('SyncPricesService', () => {
     }).compile();
 
     service = moduleRef.get(SyncPricesService);
+    gate = moduleRef.get(ProviderRateGate);
+    queue = moduleRef.get(PriceQueueService);
   });
 
   afterAll(async () => {
+    await prismaClient.priceRefreshJob.deleteMany({
+      where: { cardId: { startsWith: TEST_CARD_PREFIX } },
+    });
     await prismaClient.cardPrice.deleteMany({
       where: { cardId: { startsWith: TEST_CARD_PREFIX } },
     });
@@ -110,6 +133,9 @@ describe('SyncPricesService', () => {
 
   beforeEach(async () => {
     setMinGap(0);
+    await prismaClient.priceRefreshJob.deleteMany({
+      where: { cardId: { startsWith: TEST_CARD_PREFIX } },
+    });
     await prismaClient.cardPrice.deleteMany({
       where: { cardId: { startsWith: TEST_CARD_PREFIX } },
     });
@@ -286,19 +312,34 @@ describe('SyncPricesService', () => {
     const prices = await service.getPricesForCard(TEST_CARD_ID);
 
     expect(prices.map((p) => p.market)).toEqual([0.5]);
-    await vi.waitFor(() => expect(provider.getCardPrices).toHaveBeenCalledTimes(1));
 
-    // La lectura ya devolvió stale; el proveedor sigue bloqueado y el handler
-    // no quedó esperando el gap ni la llamada externa.
-    expect(resolveProvider).toBeDefined();
-    resolveProvider!([remote()]);
+    // La lectura devolvió stale y encoló, pero no esperó ni al gap ni al
+    // proveedor: la fila del proveedor sigue sin tocarse.
     await vi.waitFor(async () => {
-      const latest = await prismaClient.cardPrice.findFirst({
-        where: { cardId: TEST_CARD_ID },
-        orderBy: { fetchedAt: 'desc' },
-      });
-      expect(Number(latest?.market)).toBe(3.25);
+      expect(await jobsFor(TEST_CARD_ID)).toHaveLength(1);
     });
+    expect(provider.getCardPrices).not.toHaveBeenCalled();
+    expect(resolveProvider).toBeUndefined();
+
+    // Y el trabajo de la cola lo hace el worker, que acá no corre: se toma el
+    // job a mano para comprobar que la ruta cola → proveedor sigue en pie y que
+    // la fila nueva se escribe.
+    const job = await queue.claimNext('test-worker');
+    expect(job).not.toBeNull();
+    // `fetchAndStore` no se espera de entrada: primero lee la carta de la base
+    // y recién ahí llama al proveedor —mockeado con una promesa que nadie
+    // resuelve—, así que hay que esperar a que la llamada ocurra.
+    const fetching = service.fetchAndStore(job!.cardId);
+    await vi.waitFor(() => expect(provider.getCardPrices).toHaveBeenCalledTimes(1));
+    resolveProvider!([remote()]);
+    await fetching;
+    await queue.complete(job!.id);
+
+    const latest = await prismaClient.cardPrice.findFirst({
+      where: { cardId: TEST_CARD_ID },
+      orderBy: { fetchedAt: 'desc' },
+    });
+    expect(Number(latest?.market)).toBe(3.25);
   });
 
   it('deduplica el histórico: una variante refrescada 2 veces se devuelve 1 vez', async () => {
@@ -344,29 +385,33 @@ describe('SyncPricesService', () => {
     ]);
   });
 
-  it('enqueueRefresh deduplica la misma carta mientras espera', () => {
-    // El drain corre en background; el dedupe se ve en que queda una sola
-    // entrada mientras el primero sigue en vuelo.
-    let release: () => void = () => undefined;
-    provider.getCardPrices.mockImplementationOnce(
-      () => new Promise((resolve) => { release = () => resolve([]); }),
-    );
-
+  it('enqueueRefresh deja una sola fila en la cola, aunque se llame dos veces', async () => {
     service.enqueueRefresh(TEST_CARD_ID);
     service.enqueueRefresh(TEST_CARD_ID);
-    expect(service.queueSize).toBe(0);
+    // El encolado no es `await`ed a propósito (va en el camino de una lectura
+    // pública), así que se espera a que la fila exista.
+    await vi.waitFor(async () => {
+      expect(await jobsFor(TEST_CARD_ID)).toHaveLength(1);
+    });
 
-    release();
+    const rows = await prismaClient.priceRefreshJob.findMany({
+      where: { cardId: TEST_CARD_ID },
+    });
+    expect(rows).toHaveLength(1);
+    expect(rows[0]!.status).toBe('pending');
   });
 
-  it('enqueueRefresh no encola un id vacío', () => {
+  it('enqueueRefresh no encola un id vacío', async () => {
     service.enqueueRefresh('');
-    expect(service.queueSize).toBe(0);
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    expect(
+      await prismaClient.priceRefreshJob.count({ where: { cardId: '' } }),
+    ).toBe(0);
   });
 
-  // Estas pruebas fijan que TODA llamada pasa por `withProviderSlot`: antes el
-  // gap solo vivía en `drain` y los requests concurrentes sobre cartas distintas
-  // salían en el mismo instante sin pasar por una compuerta compartida.
+  // Estas pruebas fijan que TODA llamada al proveedor pasa por el gate: antes
+  // el gap solo vivía en `drain` y los requests concurrentes sobre cartas
+  // distintas salían en el mismo instante sin pasar por una compuerta compartida.
   describe('throttle de llamadas al proveedor', () => {
     const createCard = (id: string, number: string) =>
       prismaClient.card.create({
@@ -499,6 +544,31 @@ describe('SyncPricesService', () => {
       await expect(service.refresh(other)).resolves.toHaveLength(1);
 
       await prismaClient.card.delete({ where: { id: other } });
+    });
+
+    it('fetchAndStore propaga el fallo, y refresh lo degrada a lo último conocido', async () => {
+      // La distinción que hace posible el backoff de la cola: un 500 del
+      // proveedor no es lo mismo que una carta que el proveedor no tiene. El
+      // primer caso tiene que salir del trabajo para que la cola lo reintente;
+      // el segundo no.
+      provider.getCardPrices.mockRejectedValue(new Error('tcgdex 503'));
+
+      await expect(service.fetchAndStore(TEST_CARD_ID)).rejects.toThrow('tcgdex 503');
+      // Y el camino que tiene que devolver algo degrada a lo último conocido, sin
+      // perder la fila que ya había.
+      await prismaClient.cardPrice.create({
+        data: {
+          cardId: TEST_CARD_ID,
+          variant: 'holofoil',
+          market: 1.11,
+          provider: 'tcgdex',
+          source: 'tcgplayer',
+          currency: 'USD',
+          fetchedAt: new Date(Date.now() - 60 * 60 * 1000),
+        },
+      });
+      const prices = await service.refresh(TEST_CARD_ID);
+      expect(prices.map((p) => p.market)).toEqual([1.11]);
     });
   });
 });
