@@ -21,6 +21,7 @@
 | `price-queue.service.ts` | La cola de refresco, en `price_refresh_jobs` |
 | `price-queue.worker.ts` | El loop que drena la cola |
 | `provider-rate.gate.ts` | El ritmo hacia el proveedor, compartido por proceso |
+| `card-prices-retention.service.ts` | Consolida y poda `card_prices`. **No corre solo**: es un script con dry run |
 | `tcgdex-set-mapping.service.ts` | Traduce nuestros set IDs a los de tcgdex |
 | `sync.constants.ts` | Los valores compartidos del sync |
 | `retry.ts` | `withPageRetry`, el retry de paginación |

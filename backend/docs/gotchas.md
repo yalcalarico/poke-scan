@@ -51,6 +51,7 @@
 32. [Un `LEFT JOIN` de precios sin filtro de proveedor compila y miente](#32-un-left-join-de-precios-sin-filtro-de-proveedor-compila-y-miente)
 33. [Un rate limit en memoria es un rate limit por proceso](#33-un-rate-limit-en-memoria-es-un-rate-limit-por-proceso)
 34. [Un `null` de Redis puede ser "todavía no conectó"](#34-un-null-de-redis-puede-ser-todavía-no-conectó-y-en-un-script-de-migración-es-un-no-op-silencioso)
+35. [Podar `card_prices` por edad rompe el delta de 30 días, sin error](#35-podar-card_prices-por-edad-rompe-el-delta-de-30-días-sin-error)
 
 ---
 
@@ -1327,6 +1328,40 @@ conexión sería peor que la cache miss.
 **Lo mismo aplica a cualquier `map-tcgdex-sets.ts`**, que también usa Redis con
 `onModuleInit` y no espera: hoy le funciona por suerte. No se cambió porque está
 fuera de esta etapa, pero es la misma trampa.
+
+## 35. Podar `card_prices` por edad rompe el delta de 30 días, sin error
+
+**Qué pasó**: al definir la retención de `card_prices`, la primera y más obvia
+versión de la política era `DELETE WHERE "fetchedAt" < now() - 90 days`. Antes de
+escribirla se miró qué leía esa tabla, y el precio de referencia del delta no es
+el que uno pensaría.
+
+**Por qué importa**: `CardsService.referencePrices` —el precio de referencia del
+delta de 30 días— toma *"la fila más reciente que **ya era más vieja que la
+ventana**"*. No es un promedio, no es una interpolación y no es un valor
+guardado aparte: es una fila real de `card_prices`, elegida por estar fuera de la
+ventana. Borrar lo viejo la borra a ella.
+
+**El síntoma**: el delta de las cartas viejas pasa a ser `null` y la píldora de
+variación desaparece. Sin error, sin log, sin 500. La ficha sigue mostrando el
+precio actual, así que parece que el número "no tiene histórico" —que es un
+estado legítimo y que la UI ya sabe mostrar—. Un bug de datos presentándose
+como un estado honesto de la app, que es la peor forma de bug.
+
+**Cómo queda el código**: la política es **consolidar, no borrar**
+(`CardPricesRetentionService`). Los días fuera de la ventana de detalle se
+colapsan a un punto por día —la forma de la serie no cambia, porque el endpoint
+ya mostraba una fila por día— y la poda dura nunca borra la última fila de su
+grupo, así que una carta con un solo precio de hace dos años conserva ese precio
+viejo y sigue mostrando fallback.
+
+**La regla**: antes de borrar de una tabla append-only, hay que leer **qué la
+leen todos** y preguntarse qué fila es la que cada query da por perdida. Acá
+"la más vieja que todavía está dentro de la ventana" es justo la que un
+`WHERE fetchedAt < X` se lleva. El test que lo fija se llama "el precio de
+referencia del delta sobrevive" y pone 10 refreshes fuera de la ventana de
+detalle: si la consolidación no deja un punto usable, el delta queda sin
+referencia.
 
 ## Cross-references
 

@@ -4,6 +4,7 @@ import { ProvidersModule } from '../modules/providers/providers.module.js';
 import { RedisModule } from '../redis/redis.module.js';
 import { JobsController } from './jobs.controller.js';
 import { JobsRecoveryService } from './jobs-recovery.service.js';
+import { CardPricesRetentionService } from './card-prices-retention.service.js';
 import { PriceQueueWorker } from './price-queue.worker.js';
 import { PriceQueueService } from './price-queue.service.js';
 import { ProviderRateGate } from './provider-rate.gate.js';
@@ -33,6 +34,9 @@ import { TCGDEX_SET_MAPPING, TcgdexSetMappingService } from './tcgdex-set-mappin
     SyncPricesService,
     ProviderRateGate,
     PriceQueueService,
+    // No se exporta ni corre solo: la retención es un script explícito con dry
+    // run, no algo que se ejecute sin que alguien lo pida.
+    CardPricesRetentionService,
     // Recovery primero: reconcilia los jobs del proceso anterior antes de que
     // el worker empiece a tomar trabajo nuevo.
     JobsRecoveryService,

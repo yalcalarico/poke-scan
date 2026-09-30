@@ -444,6 +444,85 @@ Cinco cosas a respetar si la tocás:
 5. **El poll del worker es inyectable solo para tests.** Con 250 ms..2 s de
    producción, cualquier test que espere al worker es flaky por construcción.
 
+## Retención: `card_prices` es append-only y por eso crece sin techo
+
+Cada refresh **agrega** filas: una carta refrescada seis veces el mismo día tiene
+seis filas. Eso es lo que le da al gráfico sus puntos y al delta su referencia,
+y también es lo que hace que la tabla crezca lineal en el tiempo.
+
+La política está en
+[`card-prices-retention.service.ts`](../src/jobs/card-prices-retention.service.ts)
+y se corre a mano, con **dry run por default**:
+
+```bash
+pnpm run prices:retention                          # dice qué haría, no borra
+pnpm run prices:retention -- --apply               # borra
+pnpm run prices:retention -- --apply --detail-days=30 --horizon-days=400
+```
+
+### Consolidar, no borrar
+
+Un `DELETE WHERE "fetchedAt" < now() - X` rompería dos cosas, y ninguna se ve en
+los tests de la poda: se ven en la ficha.
+
+1. **El delta de 30 días.** `referencePrices` toma *"la fila más reciente que ya
+   era más vieja que la ventana"* como precio de referencia. No es un promedio:
+   es una fila real. Si se borra, el delta pasa a ser `null` y la píldora de
+   variación **desaparece** para las cartas viejas. De un día para otro y sin
+   ningún error.
+2. **El último precio conocido.** El fallback de una carta que solo tiene filas
+   de otro provider viene de acá. Borrar su última fila la convierte en "sin
+   precio" en vez de "con precio viejo".
+
+Por eso lo que hay más allá de la ventana de detalle **se colapsa a un punto por
+día** en vez de borrarse: la forma de la serie no cambia, porque el endpoint de
+histórico ya mostraba una fila por día. Solo deja de haber seis filas donde el
+gráfico iba a mostrar una.
+
+| | Default | Por qué |
+|---|---|---|
+| `detailDays` | 90 | Tres ventanas de 30, y alcanza para ver el seasonality de un trimestre. Es un número de producto. |
+| `horizonDays` | 730 | La app permite ventanas de hasta **365** días, así que la poda necesita margen. 730 es el doble: un año de holgura para que cambiar el máximo de la ventana no venga con una pérdida de datos detrás. |
+
+La agrupación de la consolidación es
+`(cardId, provider, source, currency, variant, día)` y de cada grupo se
+conserva **la última** del día, que es justo lo que el endpoint elige. `provider`
+entra en la clave porque hay filas de más de una fuente y mezclar dos
+procedencias en un mismo día produciría una serie que no existe.
+
+La poda dura nunca borra la última fila de su grupo, así que una carta cuyo único
+precio es de hace dos años conserva ese precio viejo y sigue mostrando fallback
+en vez de quedarse sin nada. Y como la consolidación corrió antes, lo que se
+borra son **días completos**: la poda no puede dejar un hueco en medio de una
+serie.
+
+### Lo que se midió antes de decidir
+
+Con 184 filas en la base de desarrollo (6 días de datos):
+
+| | |
+|---|---|
+| Filas | 184 (180 legacy + 4 de tcgdex) |
+| Tamaño | 32 kB de tabla + **176 kB de índices** = 248 kB |
+| Índices | 3: el `pkey`, uno de 3 columnas y uno de 5 |
+
+Dos cosas que salieron de la medición y que **no** se actuaron:
+
+- **Los índices pesan 5,5x la tabla.** Es lo que domina el costo, no las filas.
+- **`card_prices_cardId_variant_fetchedAt_idx` (3 columnas) tiene `idx_scan = 0`**
+  desde que las lecturas filtran por `provider`/`source`/`currency` y usan el
+  índice de 5 columnas. Parecería un índice muerto para dropear.
+
+No se dropea, y la razón es que **`idx_scan` de una base de 184 filas no es
+evidencia**: a esa escala Postgres resuelve por seq scan aunque el índice sirva,
+así que un `0` no distingue "nadie lo usa" de "el planner no lo eligió". La
+decisión necesita las estadísticas del volumen real (el histórico documentado
+habla de ~142.000 filas), donde el planner se comporta distinto. Con
+`card_prices` en 248 kB, drops índices son una optimización prematura.
+
+Lo que sí crece sin límite es el **número de filas**, y eso es lo que la
+retención acota.
+
 ## El histórico de precios: dos endpoints, una sola tabla
 
 `card_prices` es append-only, así que **el histórico ya está guardado**: una fila

@@ -28,6 +28,7 @@
     "seed": "pnpm --dir backend run db:seed",
     "sync": "pnpm --dir backend run db:sync",
     "sync-state:migrate": "pnpm --dir backend run db:migrate-sync-state",
+    "prices:retention": "pnpm --dir backend run prices:retention",
     "user:dev": "pnpm --dir backend run db:dev-user",
     "cache:clear": "docker exec pokemon-scanner-redis redis-cli FLUSHDB && echo 'caché vaciada'",
     "check": "pnpm run lint && pnpm run typecheck && pnpm run test && pnpm run build",
