@@ -34,7 +34,6 @@
 19. [Los 40 endpoints sin API key: 30/min, 1.000/día](#19-los-límites-de-la-api-sin-key-30min-1000día)
 
 **Bugs y debt que quedaron documentados**
-20. [`getUsdArsBoth` puede tirar un 500](#20-getusdarsboth-puede-tirar-un-500-si-el-tipo-preferido-falla)
 21. [`cardsMissingPrice` no cuenta los `market: null`](#21-cardsmissingprice-no-cuenta-los-market-null)
 22. [`sort=price` ya está implementado (antes caía al orden por nombre)](#22-sortprice-ya-está-implementado-antes-caía-al-orden-por-nombre)
 23. [`rarity` y `supertype` son igualdad, no substring](#23-rarity-y-supertype-son-igualdad-case-insensitive-no-substring)
@@ -45,6 +44,10 @@
 28. [El `DISTINCT ON` de `card_prices` es lo que hace barato el delta de 30 días](#28-el-distinct-on-de-card_prices-es-lo-que-hace-que-el-delta-de-30-días-sea-barato)
 29. [El `orderBy` de Prisma no llega a `card_prices`, y un filtro escrito dos veces diverge](#29-el-orderby-de-prisma-no-llega-a-card_prices-y-un-filtro-escrito-dos-veces-diverge)
 30. [`printedTotal` y `total` no son lo que la carta imprime](#30-printedtotal-y-total-no-son-lo-que-la-carta-imprime)
+
+**Lo que ya se arregló y queda como registro**
+31. [Un lock se suelta con compare-and-delete, nunca con `DEL`](#31-un-lock-se-suelta-con-compare-and-delete-nunca-con-del)
+20. [`getUsdArsBoth` podía tirar un 500 si caía el tipo preferido — **arreglado**](#20-getusdarsboth-podía-tirar-un-500-si-el-tipo-preferido-fallaba--arreglado)
 
 ---
 
@@ -671,7 +674,11 @@ De ahí salen, todas obligatorias:
 - El catálogo espejado (20.670 cartas) y **nunca** re-pedido por request.
 - Los precios **bajo demanda** con 2 capas de caché.
 - `REQUEST_PAUSE_MS = 2100` entre páginas del sync.
-- `MIN_GAP_MS = 2300` en la cola de refresco (~26 req/min).
+- `MIN_GAP_MS = 2300` en `withProviderSlot` (~26 req/min), la única puerta al
+  proveedor. La comparten la cola y el lote del admin. `getPricesForCard`
+  devuelve el precio disponible y encola los vencidos sin esperar el slot; un
+  camino nuevo que llame al proveedor por afuera queda **sin throttle** y puede
+  comerse el presupuesto entero con un pico.
 - Los precios van a tcgdex, que no tiene límite publicado, pero el gap se
   mantiene: es infra comunitaria compartida y pokemontcg.io sigue consumiendo
   del mismo presupuesto mientras sea la fuente del catálogo.
@@ -682,10 +689,12 @@ De ahí salen, todas obligatorias:
 **Si agregás un endpoint que consulta la fuente**, rompés el presupuesto entero.
 Ver [pricing.md](pricing.md) para el cálculo.
 
-## 20. `getUsdArsBoth` puede tirar un 500 si el tipo preferido falla
+## 20. `getUsdArsBoth` podía tirar un 500 si el tipo preferido fallaba — **arreglado**
 
-**Bug real, no documentado en el código.** En
-`currency.service.ts:187`:
+**Arreglado el 2026-09-29.** La sección queda como registro de qué pasaba y por
+qué, porque el motivo del arreglo no es obvio desde el código.
+
+En `currency.service.ts:187` había:
 
 ```ts
 const blueView     = blue.status     === 'fulfilled' ? blue.value     : null;
@@ -703,27 +712,34 @@ const payload: BothRatesView = {
 };
 ```
 
-El comentario del método dice explícitamente: "Un tipo puede faltar sin tumbar
-al otro: `blue` o `oficial` en `null`". Pero si el cliente pidió
-`?type=blue`, DolarApi está caído **solo para blue** y hay un valor cacheado de
-`oficial`, entonces `blueView` es `null`, se pasa el `if` porque `oficialView`
-existe, y `preferredView!.rate` explota con un `TypeError` → **500**.
+El comentario del método decía explícitamente: "Un tipo puede faltar sin tumbar
+al otro: `blue` o `oficial` en `null`". Pero si el cliente pidió `?type=blue`,
+DolarApi estaba caído **solo para blue** y había un valor cacheado de `oficial`,
+entonces `blueView` era `null`, se pasaba el `if` porque `oficialView` existía, y
+`preferredView!.rate` explotaba con un `TypeError` → **500**.
 
-**Cómo se reproduce**: con Redis precargado solo `currency:usd:oficial` y
+**Cómo se reproducía**: con Redis precargado solo `currency:usd:oficial` y
 `globalThis.fetch` tirando para blue.
 
-**Cómo se arregla** (cuando toque): elegir el disponible como fallback en vez
-de asumir que el preferido existe.
+### El arreglo
 
-```ts
-const preferredView =
-  (preferred === 'oficial' ? oficialView : blueView) ??
-  (preferred === 'oficial' ? blueView : oficialView);
-```
+`pickPrimary(preferred, blue, oficial)` elige la preferida y, si falta, la otra.
+Tres cosas importan y por eso no es un `??` cualquiera:
 
-**Workaround mientras tanto**: si el tipo preferido está caído, el cliente ve el
-503 (ambos caídos) o el `null` de `blue`/`oficial` y tiene que elegir el otro a
-mano. No dependas del campo de primer nivel cuando viene `null` uno de los dos.
+- **Devuelve el `rateType` real**, no el pedido. Servir el número del `oficial`
+  etiquetado como `blue` sería mentirle al cliente sobre qué tipo de cambio está
+  mirando, y el `Money` formatea distinto según el tipo.
+- **503 solo si fallan las dos.** La guarda está dentro de `pickPrimary` como
+  red de seguridad, no como camino alcanzable: los callers ya tiran antes.
+- **Loguea el fallback.** Un `blue` caído que se sirve como `oficial` es una
+  degradación que alguien tiene que notar.
+
+`reorder()` (el camino de la caché) tenía el mismo problema en silencio: si la
+preferida no estaba en la caché, devolvía la vista con el `rateType` de la
+cacheada, sin avisar. Ahora pasa por el mismo `pickPrimary`.
+
+Hay 5 tests que cubren las combinaciones: las dos vivas, cada una cayendo, el
+`reorder` por caché, y las dos caídas.
 
 ## 21. `cardsMissingPrice` no cuenta los `market: null`
 
@@ -1127,7 +1143,7 @@ justo donde el usuario mira si hay más.
 lugares. Si algún día duele, el arreglo es una query de items completa en SQL (con
 `toItemDto` hecho a mano), no dejar que los dos filtros se separen.
 
-## 30. `printedTotal` y `total` no son lo que la carta imprime
+## 31. [Un lock se suelta con compare-and-delete, nunca con `DEL`](#31-un-lock-se-suelta-con-compare-and-delete-nunca-con-del)
 
 `card_sets` tiene dos totales y pokemontcg.io los llena distinto: `printedTotal`
 es el número regular y `total` suma las variants raras y secretas. Difieren en
@@ -1159,6 +1175,55 @@ impreso (`ptcgoCode`, ver `api.md` → "El código de set").
 **Regla**: un dato de la fuente que se usa para matchear contra algo que el
 usuario tiene en la mano físico hay que contrastarlo contra la realidad antes de
 confiar en él. Acá se detectó con una foto, no con un test.
+
+## 31. Un lock se suelta con compare-and-delete, nunca con `DEL`
+
+**Agregado el 2026-09-29**, con el lock de `POST /api/jobs/sync-catalog`.
+
+Un lock distribuido son tres operaciones, y la tercera es la que everybody
+olvida:
+
+```ts
+// ❌ Mal: si el TTL de A venció y B tomó el lock, esto le borra el lock a B.
+await redis.del(key);
+
+// ✅ Con token único, y la comparación + el delete en una sola operación.
+await redis.eval(
+  'if redis.call("get", KEYS[1]) == ARGV[1] then return redis.call("del", KEYS[1]) else return 0 end',
+  1, key, token,
+);
+```
+
+La ventana del `DEL` a secas no es teórica: entre el `GET` y el `DEL` de una
+implementación ingenua, el TTL puede vencer y otro sync tomar el lock. Con el
+`EVAL` la comparación y el borrado son atómicos, así que la sola forma de borrar
+el lock de otro es tener su token.
+
+Lo mismo aplica a la renovación (`extendLock`), que también compara antes de
+expirar.
+
+**La segunda lección es dónde va el `acquire`.** El lock se toma **antes** de
+crear el `ScanJob`:
+
+```ts
+// ❌ Mal: la ventana entre el create y el acquire alcanza para que entren dos.
+const job = await this.prisma.scanJob.create({ … });
+if (!(await this.redis.acquireLock(…))) throw new ConflictException(…);
+```
+
+Un `create` que se usa para "avisarle al otro que ya hay uno corriendo" tiene una
+ventana entre el `create` y el `acquire`, y en esa ventana el segundo proceso ve
+una base sin jobs, pasa el chequeo y entra igual. El registro es una consecuencia
+del lock, no la condición para tomarlo.
+
+**Y el TTL es una red, no un mecanismo.** Si el TTL fuera más corto que el sync
+(que tarda 15-20 min), el lock se vencería solo y un segundo sync empezaría a
+trabajar sobre el mismo cursor. Por eso `runSync` renueva el TTL a mitad de vida
+con un `setInterval` (`unref`, para no impedir que el proceso baje), y el TTL
+solo expira cuando el proceso **realmente** murió.
+
+**Regla**: un lock sin token es un boolean con TTL, y un boolean con TTL no es un
+lock. Es dos locks que se pisan.
 
 ## Cross-references
 

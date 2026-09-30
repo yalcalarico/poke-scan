@@ -5,6 +5,7 @@ import { CollectionDetailScreen } from '@/components/collections';
 export const metadata: Metadata = {
   title: 'Colección',
   description: 'Las cartas de tu colección, sus duplicados y su valor de mercado.',
+  robots: { index: false, follow: false },
 };
 
 /**
@@ -20,6 +21,21 @@ export const metadata: Metadata = {
  * `/carta/[id]`: el nombre de la colección no se conoce en el servidor. Además
  * esta pantalla responde 200 aunque la colección no exista (`docs/gotchas.md`
  * #10 y #12): el 404 de negocio se resuelve en el cliente con un `EmptyState`.
+ *
+ * ## Por qué la `key`
+ *
+ * El cuerpo client es un Client Component con estado propio —el encabezado, el
+ * `lastGood` que evita vaciar la pantalla al refrescar, la selección, los
+ * filtros— y `useAsync` **conserva** el `data` de la corrida anterior mientras
+ * la nueva resuelve. Sin `key`, navegar de la colección A a la B mostraba el
+ * nombre, los totales y las stats **de A** encima de la grilla de B hasta que
+ * las tres requests de B terminaban: un flicker de la colección equivocada que
+ * ningún estado de carga marca, porque para el hook la carga ya terminó.
+ *
+ * Montar de cero por colección es lo más simple que funciona y no necesita un
+ * efecto que resetee nada: es el mismo patrón de `key` que usa la lista de
+ * resultados de `/buscar` y el `CardPriceSection` de la ficha
+ * (`docs/gotchas.md` #3).
  */
 export default async function CollectionDetailPage({
   params,
@@ -28,5 +44,5 @@ export default async function CollectionDetailPage({
 }) {
   const { id } = await params;
 
-  return <CollectionDetailScreen collectionId={id} />;
+  return <CollectionDetailScreen key={id} collectionId={id} />;
 }

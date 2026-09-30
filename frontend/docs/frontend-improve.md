@@ -105,6 +105,37 @@
 > `Alert` que ya tenía. Un usuario nuevo no lo descubre, y no se fingió lo
 > contrario.
 >
+> ### Estado de las fases — corregido el 2026-09-29
+>
+> La tabla de fases que estaba más abajo decía "Fase 3 ⏳ Pendiente" y
+> "Fase 4 ⏳ Pendiente" cuando las cuatro estaban aplicadas (decía lo mismo en
+> el encabezado, 100 líneas antes). Las dos son **✅ aplicadas**:
+>
+> | Fase | Estado real |
+> |---|---|
+> | **Fase 1 — Correcciones** | ✅ Aplicada. Los 11 ítems, `scroll-padding-top`, `touch-action`, `overscroll-behavior-y`, y la baja de `share_target` y `window_controls_overlay` del manifest. |
+> | **Fase 2 — Contraste y tacto** | ✅ Aplicada. `--focus-ring` + migración a `outline`, `--border-control` (que hubo que oscurecer a `#8a8a96` para cumplir el 3:1 del comentario), `--switch-track-off`, shimmer, `overline` a 11 px, `forced-colors`, `md` a 44 px, y `haptics.ts`. |
+> | **Fase 3 — Tests de las primitivas** | ✅ Aplicada. Hay 25 archivos de test y las primitivas a11y-sensitive tienen cobertura de componente. Ver [`testing.md`](testing.md). |
+> | **Fase 4 — Producto** | ✅ Aplicada. P6.1 a P6.6 están en producción, y la Fase 4 no agregó rutas: las capacidades se consumieron desde las 11 pantallas de siempre. Ver el detalle más abajo. |
+>
+> **Pendiente que quedó de la Fase 2:** los cuatro indicadores del scanner siguen
+> usando `outline-on-media-text` en vez de `--focus-ring-on-media`. Es el mismo blanco,
+> así que no cambia nada de lo que se ve; es un cambio de componente pendiente.
+>
+> ### Lo que la Fase 4 entró sin rutas, y cómo se cerró
+>
+> La Fase 4 se aplicó **entera** y el resultado en pantalla fue *"no hay ninguna
+> opción que me lleve a las pantallas nuevas"*. El motivo no es que las features
+> estuvieran mal: es que **no se agregó ninguna ruta**. Se cerró con tres cambios:
+>
+> 1. La `CollectionCard` de `/colecciones` tiene una franja de pie con el link
+>    "Progreso por set", que es la entrada de primer nivel a `/colecciones/[id]/sets`.
+> 2. Los dos estados sin colecciones —sin sesión y con sesión pero vacía— listan
+>    las cuatro cosas que una colección abre (`CollectionCapabilities`).
+> 3. El filtro de intercambio y el orden de `/buscar` ahora son **server-side**
+>    y su control está en el `Sheet` de filtros que ya existía, así que se
+>    venden solos. Ver `redesign-2026.md` §10.2 (B2, B3, B6 y B9 cerradas).
+>
 > ### Lo que quedó afuera, a propósito
 >
 > - **`share_target`**: se **sacó** del manifest en vez de arreglarlo. El
@@ -113,12 +144,12 @@
 > - **Acciones masivas**: no hay endpoint de bulk, así que la acción itera el
 >   `PATCH` uno por uno, **secuencialmente**, con tope de 60 y el costo declarado
 >   en la propia UI. No se inventó un endpoint.
+> - **Histórico por colección**: el histórico **por carta** existe (sparkline y
+>   `PriceDelta` real en `/carta/[id]`), pero el agregado "tu colección subió $47
+>   este mes" no. Falta decidir qué pasa con las cartas sin precio.
 > - **`--rarity-*`**: la señal de rareza usa tokens que ya existen
 >   (`--info` y `--warning`); no se agregaron tokens nuevos al palette.
-> - **`docs/design-system.md`** se re-sincronizó por completo contra el código,
->   y en el proceso aparecieron tres tokens (`--transition-duration-*`, los
->   siete `--z-index-*` y los cinco `--animate-*`) que la doc **exigía pero
->   nunca mostraba**.
+> - **`docs/design-system.md`** se re-sincronizó por completo contra el código.
 
 ---
 
@@ -133,8 +164,8 @@
 |---|---|
 | **Fase 1 — Correcciones** | ✅ **Aplicada.** Los 11 ítems, incluido `scroll-padding-top`, `touch-action`, `overscroll-behavior-y` en `html`, y la baja de `share_target` y `window_controls_overlay` del manifest. |
 | **Fase 2 — Contraste y tacto** | ✅ **Aplicada.** `--focus-ring` + migración a `outline` en toda la app, `--border-control`, `--switch-track-off`, shimmer, `overline` a 11 px, `--positive`/`--brand` de light, `md` a 44 px, bloque `forced-colors`, y `haptics.ts` con el shutter y el scan exitoso. |
-| **Fase 3 — Tests de las primitivas** | ⏳ **Pendiente.** |
-| **Fase 4 — Producto** | ⏳ **Pendiente.** |
+| **Fase 3 — Tests de las primitivas** | ✅ **Aplicada.** 25 archivos de test; las primitivas a11y-sensitive tienen cobertura de componente. |
+| **Fase 4 — Producto** | ✅ **Aplicada.** P6.1 a P6.6 en producción, consumidas desde las 11 pantallas de siempre. Sin rutas nuevas. |
 
 Las consecuencias de la Fase 2 que **no** están en este plan y sí están
 documentadas en `design-system.md`: el `outline-offset: 2px` exige 4 px de aire que

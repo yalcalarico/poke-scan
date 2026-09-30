@@ -159,16 +159,25 @@ const MAX_PAGES = 20;
 async function loadCollectionItems(
   collectionId: string,
   setId: string | null,
+  signal: AbortSignal,
 ): Promise<CollectionItemDto[]> {
   const items: CollectionItemDto[] = [];
   let page = 1;
 
   for (;;) {
-    const result = await listItems(collectionId, {
-      setId: setId ?? undefined,
-      page,
-      pageSize: ITEMS_PAGE_SIZE,
-    });
+    // El signal va a cada página: una colección grande son hasta 20 requests
+    // encadenados, y sin esto el binder seguiría paginando después de que el
+    // usuario ya salió de la pantalla.
+    throwIfAborted(signal);
+    const result = await listItems(
+      collectionId,
+      {
+        setId: setId ?? undefined,
+        page,
+        pageSize: ITEMS_PAGE_SIZE,
+      },
+      signal,
+    );
     items.push(...result.data);
     if (result.data.length === 0) break;
     if (page >= result.totalPages) break;
@@ -411,10 +420,10 @@ function toEntry(
 /**
  * Corta antes de gastar requests si la pantalla ya se desmontó.
  *
- * `getSets` y `loadCollectionItems` (que van por `/collections/:id/items`) no
- * aceptan `AbortSignal`, así que no se pueden abortar una vez emitidos; lo que
- * sí se puede es no emitirlos. El `AbortError` lo ignora `useAsync` (es una
- * corrida vieja, no un error de pantalla).
+ * `getSets` y `getStats` no aceptan `AbortSignal`, así que no se pueden abortar
+ * una vez emitidos; lo que sí se puede es no emitirlos, y abortar las páginas de
+ * `loadCollectionItems`, que son hasta 20 requests encadenadas. El `AbortError` lo
+ * ignora `useAsync` (es una corrida vieja, no un error de pantalla).
  */
 function throwIfAborted(signal: AbortSignal): void {
   if (signal.aborted) throw new DOMException('La pantalla se cerró antes de pedir los datos.', 'AbortError');
@@ -456,7 +465,7 @@ const API_SET_PROGRESS_SOURCE: SetProgressSource = {
     throwIfAborted(signal);
     const [response, items] = await Promise.all([
       getSetCards(setId, signal),
-      loadCollectionItems(collectionId, setId),
+      loadCollectionItems(collectionId, setId, signal),
     ]);
     return buildBinderSnapshot(response, items);
   },

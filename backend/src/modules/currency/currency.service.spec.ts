@@ -369,6 +369,51 @@ describe('CurrencyService', () => {
       expect(result.oficial).toBeNull();
     });
 
+    // El caso que daba 500: el usuario prefería `blue`, `blue` caía, `oficial`
+    // vivía. El `!` sobre el valor preferido reventaba en un 500.
+    it('si la preferida cae, sirve la que hay con SU rateType real', async () => {
+      globalThis.fetch = vi.fn(async (url: string) => {
+        if (url.endsWith('blue')) throw new Error('solo blue caido');
+        return dolarApiResponse({ casa: 'oficial', compra: 1495, venta: 1545 });
+      }) as unknown as typeof fetch;
+
+      const result = await service.getUsdArsBoth('blue');
+
+      expect(result.rate).toBe(1545);
+      // No se miente sobre de dónde salió el número.
+      expect(result.rateType).toBe('oficial');
+      expect(result.blue).toBeNull();
+      expect(result.oficial?.rate).toBe(1545);
+    });
+
+    it('preferir un tipo que sí funciona no necesita el camino de fallback', async () => {
+      globalThis.fetch = vi.fn(async (url: string) => {
+        if (url.endsWith('blue')) throw new Error('solo blue caido');
+        return dolarApiResponse({ casa: 'oficial', compra: 1495, venta: 1545 });
+      }) as unknown as typeof fetch;
+
+      const result = await service.getUsdArsBoth('oficial');
+
+      expect(result.rate).toBe(1545);
+      expect(result.rateType).toBe('oficial');
+    });
+
+    it('reorder por cache también degrada en vez de mentir el rateType', async () => {
+      // Se precarga la cache con solo `oficial` (blue ausente, como quedaría
+      // después de una corrida donde blue cayó).
+      globalThis.fetch = vi.fn(async (url: string) => {
+        if (url.endsWith('blue')) throw new Error('solo blue caido');
+        return dolarApiResponse({ casa: 'oficial', compra: 1495, venta: 1545 });
+      }) as unknown as typeof fetch;
+
+      await service.getUsdArsBoth('oficial');
+      // La segunda llamada pega en la cache de `both` y pasa por `reorder`.
+      const result = await service.getUsdArsBoth('blue');
+
+      expect(result.rate).toBe(1545);
+      expect(result.rateType).toBe('oficial');
+    });
+
     it('si ambos tipos caen, tira ServiceUnavailableException', async () => {
       globalThis.fetch = failingFetch();
 

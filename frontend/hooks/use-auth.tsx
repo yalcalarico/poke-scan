@@ -36,9 +36,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<UserDto | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
+  /**
+   * Releer el usuario desde la API.
+   *
+   * El `setIsLoading(false)` va en un `finally` y **no** solo en el camino del
+   * `try`: el `return` temprano de "no hay sesión" saltaba el `finally` de la
+   * versión anterior y dejaba `isLoading` en `true` para siempre. Hoy el
+   * bootstrap del `useEffect` tapa ese caso, así que no se ve —pero cualquier
+   * llamada futura a `refreshUser()` desde un estado ya montado (un "reintentar",
+   * un refresh al volver de la PWA) dejaba la app colgada en el skeleton.
+   */
   const refreshUser = useCallback(async (): Promise<UserDto | null> => {
     if (!hasSession()) {
       setUser(null);
+      setIsLoading(false);
       return null;
     }
     try {

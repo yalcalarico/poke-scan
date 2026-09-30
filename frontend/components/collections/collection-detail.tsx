@@ -47,24 +47,11 @@ import { CollectionStats, CollectionSummary } from './collection-summary';
 import { ItemSheet } from './item-sheet';
 
 /**
- * El copy del filtro de intercambio, en un solo lugar.
- *
- * Antes decía "En esta página no hay cartas marcadas para intercambio", que es la
- * definición exacta del bug: la respuesta honesta es "no hay en **esta
- * página**", y el usuario la leía como "no hay en tu colección".
- */
-const TRADE_FILTER_COPY = {
-  title: 'Filtro sobre lo que cargaste',
-  body: 'El filtro de intercambio se aplica a las cartas que ya están en pantalla, no a toda la colección. Cargá el resto para ver todas las que marcaste.',
-} as const;
-
-/**
  * El copy de la acción masiva, en un solo lugar.
  *
- * Mismo criterio que el filtro de intercambio: el número de cartas que se
- * **pidieron** cambiar y el número de cartas que **quedaron** cambiadas no son
- * el mismo, y el texto dice el segundo. Un "listo" después de un bucle con
- * errores sería la versión silenciosa de mentir.
+ * El número de cartas que se **pidieron** cambiar y el número de cartas que
+ * **quedaron** cambiadas no son el mismo, y el texto dice el segundo. Un "listo"
+ * después de un bucle con errores sería la versión silenciosa de mentir.
  */
 const BULK_TRADE_COPY = {
   marked: (count: number) =>
@@ -170,31 +157,30 @@ export interface CollectionDetailScreenProps {
  *
  * ## El filtro de "Para intercambio"
  *
- * Filtrar `isForTrade` en el cliente sobre los 20 items de la página actual da
+ * Filtrar `isForTrade` en el cliente sobre los items de la página actual daba
  * "0 resultados" en la página 3 de una colección con 200 cartas para
- * intercambiar. El backend **no** tiene `forTradeOnly` y las otras dos salidas
- * no eran mejores:
+ * intercambiar. Cuando no había otra salida, el filtro se quedaba en el cliente
+ * con un `Alert` que decía la verdad a medias —"se aplica a lo que ya
+ * cargaste"—
+ * y un estado vacío que no decía "0 resultados" mientras quedaban páginas.
  *
- * 1. *Sacarlo de la lista paginada y ofrecerlo aparte, consultando toda la
- *    colección.* No hay endpoint que devuelva todos los items: `listItems` está
- *    paginado y `getDuplicates` solo trae los duplicados. "Consultarla entera"
- *    desde el cliente es un bucle de requests, que es el N+1 que `AGENTS.md`
- *    prohíbe con otro nombre.
- * 2. *Pasar el parámetro igual y marcarlo como pendiente de backend.* El DTO no
- *    lo valida, así que el backend lo ignora en silencio (con `whitelist: true`
- *    lo tira) y el filtro vuelve a mentir, pero con más pasos.
- * 3. *Dejarlo en el cliente, pero sin mentir.* Es lo implementado: el chip
- *    muestra un `Alert` de que el filtro corre sobre lo cargado, el contador
- *    dice "N de M cargadas", y el estado vacío **nunca** afirma "0 resultados"
- *    mientras queden páginas — ofrece "Cargar más". Cuando el backend acepte el
- *    flag, el cambio es borrar el `Alert`, pasarlo a `listItems` y sacar el
- *    `.filter()`.
+ * Hoy **es server-side**: `ListItemsDto` acepta `forTradeOnly`, compone con
+ * `duplicatesOnly` en el mismo `where`, y el `total` sale del `count` con ese
+ * mismo filtro. Eso permite borrar el `Alert`, borrar el `.filter()` y que el
+ * contador y el "Cargar más" sean ciertos sobre la colección entera.
+ *
+ * Lo que el server-side cambia es la **distinción de vacíos**: antes una
+ * respuesta vacía con filtro puesto significaba "no hay entre lo cargado", y
+ * ahora significa "no hay en la colección". Por eso `isEmptyFilter` se separa de
+ * `isEmptyCollection` por el filtro activo y no por `items.length`: sin eso,
+ * activar el filtro sobre una colección sin cartas marcadas mostraba "Esta
+ * colección está vacía" y mandaba a buscar una carta que el usuario ya tenía.
  *
  * ## El sort
  *
  * Server-side, desde que `ListItemsDto` acepta `sort`. Antes no había control
  * de orden **a propósito**, y el JSDOC lo explicaba: un `StatRow` con un popover
- * ordenaría **solo las 24 cartas cargadas** mientras decía "ordenado por valor",
+ * ordenaría **solo las cartas cargadas** mientras decía "ordenado por valor",
  * que es el mismo bug del filtro de intercambio con otro nombre. Con el
  * parámetro en el backend la razón desaparece, así que el control entra y deja
  * de hacerlo la siguiente: es un `Select` con los cuatro `CARD_SORT_FIELDS`, y
@@ -243,7 +229,7 @@ export function CollectionDetailScreen({ collectionId }: CollectionDetailScreenP
    * ya cargadas —la página 3 de "por precio" no es la página 3 de "por nombre"—,
    * y remontar es la forma de que eso no requiera un efecto.
    */
-  const listKey = `${scope}|${forTradeOnly ? 'trade' : 'all'}|${sort}`;
+  const listKey = `${collectionId}|${scope}|${forTradeOnly ? 'trade' : 'all'}|${sort}`;
 
   const ready = overview.data?.kind === 'ready' ? overview.data : null;
 
@@ -286,7 +272,18 @@ export function CollectionDetailScreen({ collectionId }: CollectionDetailScreenP
 
   const handleCloseItem = useCallback(() => setIsItemSheetOpen(false), []);
 
-  const clearTradeFilter = useCallback(() => setForTradeOnly(false), []);
+  /**
+   * Sacar **todos** los filtros de la lista de una vez.
+   *
+   * El botón del vacío de filtro ofrece esto y no "sacar el de intercambio",
+   * porque los dos filtros se combinan y el que está activo puede ser cualquiera
+   * de los dos: sacar solo uno dejaría la pantalla en un estado vacío distinto
+   * del que el usuario pidió.
+   */
+  const clearListFilters = useCallback(() => {
+    setScope('all');
+    setForTradeOnly(false);
+  }, []);
 
   return (
     <>
@@ -383,80 +380,92 @@ export function CollectionDetailScreen({ collectionId }: CollectionDetailScreenP
           />
         ) : null}
 
-        {/* 5 · listo */}
-        {collection && stats ? (
-          <div className="flex flex-col gap-6">
-            {/*
-              El error de refresco que no llegó a tumbar la pantalla. Sin esto,
-              editar una carta y que falle el `reload` dejaría los totales viejo
-              en silencio, que es peor que un aviso: el número se ve como
-              verdadero y no lo es.
-            */}
-            {overview.status === 'error' ? (
-              <Alert
-                tone="warning"
-                size="sm"
-                title="No pudimos actualizar los totales"
-                action={
-                  <Button size="sm" variant="secondary" onClick={overview.reload}>
-                    Reintentar
-                  </Button>
-                }
-              >
-                {overview.error ?? 'Revisá tu conexión y reintentá.'} Mientras tanto vas a ver los
-                últimos valores que pudimos cargar.
-              </Alert>
-            ) : null}
+        {/* 5 · datos del encabezado */}
+        <div className="flex flex-col gap-6">
+          {collection && stats ? (
+            <div className="flex flex-col gap-6">
+              {/*
+                El error de refresco que no llegó a tumbar la pantalla. Sin esto,
+                editar una carta y que falle el `reload` dejaría los totales viejos
+                en silencio, que es peor que un aviso: el número se ve como
+                verdadero y no lo es.
+              */}
+              {overview.status === 'error' ? (
+                <Alert
+                  tone="warning"
+                  size="sm"
+                  title="No pudimos actualizar los totales"
+                  action={
+                    <Button size="sm" variant="secondary" onClick={overview.reload}>
+                      Reintentar
+                    </Button>
+                  }
+                >
+                  {overview.error ?? 'Revisá tu conexión y reintentá.'} Mientras tanto vas a ver los
+                  últimos valores que pudimos cargar.
+                </Alert>
+              ) : null}
 
-            <CollectionSummary
-              name={collection.name}
-              subtitle={`${formatCount(collection.itemCount)} ${pluralize(
-                collection.itemCount,
-                'carta',
-                'cartas',
-              )} · creada el ${formatDate(collection.createdAt)}`}
-              totalValueUsd={stats.totalValueUsd}
-              isDefault={collection.isDefault}
-            />
+              <CollectionSummary
+                name={collection.name}
+                subtitle={`${formatCount(collection.itemCount)} ${pluralize(
+                  collection.itemCount,
+                  'carta',
+                  'cartas',
+                )} · creada el ${formatDate(collection.createdAt)}`}
+                totalValueUsd={stats.totalValueUsd}
+                isDefault={collection.isDefault}
+              />
 
-            <CollectionStats stats={stats} />
+              <CollectionStats stats={stats} />
 
-            {/*
-              `warning` y no `error` (§2.3): las cartas sin precio están en la
-              colección igual y el usuario puede seguir usando la pantalla. Lo que
-              no puede es confiar en el total, y el copy lo dice. El backend las
-              suma con el `LEFT JOIN` de `latestPriceJoin()`, así que un `market`
-              nulo aporta cero al valor.
+              {/*
+                `warning` y no `error` (§2.3): las cartas sin precio están en la
+                colección igual y el usuario puede seguir usando la pantalla. Lo que
+                no puede es confiar en el total, y el copy lo dice. El backend las
+                suma con el `LEFT JOIN` de `latestPriceJoin()`, así que un `market`
+                nulo aporta cero al valor.
 
-              `cardsMissingPrice` es opcional en `CollectionStatsResponse`
-              (`?` en el tipo del cliente) porque no está en el `CollectionStatsDto`
-              del contrato: el backend lo agrega en `getStats`, pero un cliente
-              viejo hablando con un backend viejo no lo recibe. Por eso el
-              `?? 0` y no un `!`.
-            */}
-            {missingPriceCount > 0 ? (
-              <Alert tone="warning" size="sm" title="Te faltan precios">
-                {formatCount(missingPriceCount)}{' '}
-                {pluralize(
-                  missingPriceCount,
-                  'carta no tiene precio de mercado',
-                  'cartas no tienen precio de mercado',
-                )}{' '}
-                y por eso no suman al valor.
-              </Alert>
-            ) : null}
+                `cardsMissingPrice` es opcional en `CollectionStatsResponse`
+                (`?` en el tipo del cliente) porque no está en el `CollectionStatsDto`
+                del contrato: el backend lo agrega en `getStats`, pero un cliente
+                viejo hablando con un backend viejo no lo recibe. Por eso el
+                `?? 0` y no un `!`.
+              */}
+              {missingPriceCount > 0 ? (
+                <Alert tone="warning" size="sm" title="Te faltan precios">
+                  {formatCount(missingPriceCount)}{' '}
+                  {pluralize(
+                    missingPriceCount,
+                    'carta no tiene precio de mercado',
+                    'cartas no tienen precio de mercado',
+                  )}{' '}
+                  y por eso no suman al valor.
+                </Alert>
+              ) : null}
 
-            <CollectionFilters
-              scope={scope}
-              onScopeChange={setScope}
-              forTradeOnly={forTradeOnly}
-              onForTradeChange={setForTradeOnly}
-              setsHref={`/colecciones/${encodeURIComponent(collectionId)}/sets`}
-              showTradeNotice
-            />
+              <CollectionFilters
+                scope={scope}
+                onScopeChange={setScope}
+                forTradeOnly={forTradeOnly}
+                onForTradeChange={setForTradeOnly}
+                setsHref={`/colecciones/${encodeURIComponent(collectionId)}/sets`}
+                showTradeNotice
+              />
 
-            <CollectionSortControl value={sort} onChange={setSort} />
+              <CollectionSortControl value={sort} onChange={setSort} />
 
+            </div>
+          ) : null}
+
+          {/*
+            Montar la lista apenas se resuelve la sesión solapa su request con
+            colección + stats. Antes esperaba a que ambas terminaran y recién
+            entonces pedía `/items`, un waterfall entero antes de ver una carta.
+            La lista se conserva oculta hasta tener ownership/encabezado válidos;
+            así no se muestra un 404 intermedio si el id no existe.
+          */}
+          {!isAuthLoading && isAuthenticated ? (
             <CollectionItems
               key={listKey}
               collectionId={collectionId}
@@ -464,23 +473,25 @@ export function CollectionDetailScreen({ collectionId }: CollectionDetailScreenP
               forTradeOnly={forTradeOnly}
               sort={sort}
               listKey={listKey}
-              onClearTradeFilter={clearTradeFilter}
+              enabled={!isMissing && (overview.status !== 'error' || Boolean(lastGood))}
+              isVisible={Boolean(collection && stats && !isMissing)}
+              onClearListFilters={clearListFilters}
               selectedItem={selectedItem}
               isItemSheetOpen={isItemSheetOpen}
               onOpenItem={handleOpenItem}
               onCloseItem={handleCloseItem}
               onItemsChanged={overview.reload}
             />
+          ) : null}
 
-            {/*
-              El total de la barra y el de la `CollectionSummary` salen de la
-              misma fila de `/stats`, así que no pueden desincronizarse: es el
-              criterio de aceptación "el total de la barra coincide con el de la
-              CollectionSummary", y se cumple por construcción y no por cuidado.
-            */}
+          {/*
+            El total de la barra y el de la `CollectionSummary` salen de la
+            misma fila de `/stats`, así que no pueden desincronizarse.
+          */}
+          {collection && stats && !isMissing ? (
             <CollectionBottomBar totalCards={stats.totalCards} totalValueUsd={stats.totalValueUsd} />
-          </div>
-        ) : null}
+          ) : null}
+        </div>
       </ScreenContainer>
 
       {collection ? (
@@ -554,6 +565,8 @@ function CollectionSortControl({
 
 interface CollectionItemsProps {
   collectionId: string;
+  enabled: boolean;
+  isVisible: boolean;
   scope: CollectionScope;
   forTradeOnly: boolean;
   sort: SortValue;
@@ -565,7 +578,8 @@ interface CollectionItemsProps {
    * resultado anterior pintadas al lado del nuevo.
    */
   listKey: string;
-  onClearTradeFilter: () => void;
+  /** Saca scope y forTradeOnly juntos. Lo usa el botón del vacío de filtro. */
+  onClearListFilters: () => void;
   selectedItem: CollectionItemDto | null;
   isItemSheetOpen: boolean;
   onOpenItem: (item: CollectionItemDto) => void;
@@ -582,11 +596,13 @@ interface CollectionItemsProps {
  */
 function CollectionItems({
   collectionId,
+  enabled,
+  isVisible,
   scope,
   forTradeOnly,
   sort,
   listKey,
-  onClearTradeFilter,
+  onClearListFilters,
   selectedItem,
   isItemSheetOpen,
   onOpenItem,
@@ -637,29 +653,26 @@ function CollectionItems({
     reload,
     sentinelRef,
   } = useInfiniteList<CollectionItemDto>(
-    // `listItems` no acepta `signal`: `useInfiniteList` descarta la respuesta
-    // vieja por número de corrida, así que la request que llega tarde no pisa la
-    // nueva. Es el mismo criterio que usa `CatalogSearch` con `searchCards`.
-    (page) =>
+    // La lista pasa el AbortSignal hasta fetch: al cambiar colección, filtros o
+    // sort, el request anterior se cancela en vez de seguir ocupando trabajo.
+    (page, signal) =>
       listItems(collectionId, {
         page,
         pageSize: COLLECTION_PAGE_SIZE,
-        // `duplicatesOnly` sí es server-side: el `where` del backend es
-        // `quantity: { gt: 1 }` y el `total` viene del `count` con el mismo
-        // filtro, así que el contador y el "Cargar más" son ciertos. El filtro de
-        // intercambio, en cambio, es local — ver el JSDoc de la pantalla.
+        // Los dos filtros son server-side: el `where` del backend compone
+        // `quantity: { gt: 1 }` con `isForTrade: true`, y el `total` sale del
+        // `count` con el mismo filtro. Antes el de intercambio se filtraba en el
+        // cliente, lo que hacía que "0 resultados" en la página 3 no significara
+        // que la colección no tuviera.
         duplicatesOnly: scope === 'duplicates',
+        forTradeOnly,
         // `undefined` y no `'none'`: `buildQueryString` saltea los `undefined`, y
         // mandar un valor que no está en `CARD_SORT_FIELDS` haría que el
         // `ValidationPipe` lo rechace con un 400.
         sort: sort === 'none' ? undefined : sort,
-      }),
+    }, signal),
     COLLECTION_PAGE_SIZE,
-    // Sin `enabled: false`: `CollectionItems` solo se monta cuando el encabezado
-    // resolvió, o sea con sesión y con la colección verificada, así que no hay
-    // estado en el que la lista pueda dispararle un 401 a `apiFetch` — que lo
-    // leería como token vencido, intentaría un refresh y haría un
-    // `window.location.assign('/login')` que recarga la pantalla.
+    { enabled },
   );
 
   const handleLoadMore = useCallback(() => {
@@ -693,19 +706,20 @@ function CollectionItems({
     target.scrollIntoView({ behavior: prefersReduced ? 'auto' : 'smooth', block: 'start' });
   }, [error, items.length]);
 
-  const visible = useMemo(
-    () => (forTradeOnly ? items.filter((item) => item.isForTrade) : items),
-    [forTradeOnly, items],
-  );
-
   /*
    * La poda de la selección, en el render.
+   *
+   * `items` es lo que se muestra: el filtro de intercambio ya lo hizo el
+   * servidor, así que no hay una segunda lista "visible" que pueda discrepar de
+   * lo que se está pintando.
    *
    * Es el mismo criterio que el reset de `useChunkedList`: si la lista cambió
    * —cambió el filtro, se borró una carta— y el `Set` tiene ids que ya no
    * existen, se podan acá. Es un render extra y no una cascada, y garantiza que
    * la barra de la acción masiva nunca cuente cartas que no están en pantalla.
    */
+  const visible = items;
+
   const liveIdsKey = visible.map((item) => item.id).join('|');
   const [lastLiveKey, setLastLiveKey] = useState(liveIdsKey);
   if (lastLiveKey !== liveIdsKey) {
@@ -903,12 +917,62 @@ function CollectionItems({
     [itemsToRender, onOpenItem, selectedIds, toggleSelected],
   );
 
-  const isEmptyFilter = visible.length === 0 && items.length > 0;
-  const isEmptyCollection = !isLoading && !error && items.length === 0;
+  /*
+   * Los dos filtros de la lista son **server-side**, así que una respuesta vacía
+   * ya es la respuesta completa: `items.length === 0` con un filtro puesto no
+   * significa que la colección esté vacía, sino que el filtro no	matchea nada.
+   * Sin esta distinción, activar "para intercambiar" en una colección sin cartas
+   * marcadas mostraba "Esta colección está vacía" y mandaba a buscar una carta
+   * que el usuario ya tenía.
+   */
+  const hasFilter = scope !== 'all' || forTradeOnly;
+  const isEmptyResult = !isLoading && !error && items.length === 0;
+  const isEmptyCollection = isEmptyResult && !hasFilter;
+  const isEmptyFilter = isEmptyResult && hasFilter;
 
-  const loadedLabel = forTradeOnly
-    ? `${formatCount(visible.length)} ${pluralize(visible.length, 'carta', 'cartas')} para intercambiar de ${formatCount(items.length)} cargadas`
-    : `${formatCount(items.length)} de ${formatCount(total)} ${pluralize(total, 'carta', 'cartas')}`;
+  /**
+   * El copy del vacío nombra el filtro que no matcheó.
+   *
+   * Los dos filtros se pueden combinar ("duplicadas para intercambiar"), así
+   * que hay cuatro combinaciones y el texto tiene que decir la correcta. Decir
+   * "no hay resultados" sin decir por qué deja al usuario adivinando si el
+   * botón que acaba de tocar funcionó.
+   */
+  const emptyFilterCopy = (() => {
+    if (scope === 'duplicates' && forTradeOnly) {
+      return {
+        filterLabel: 'los filtros',
+        title: 'Ninguna duplicada está para intercambiar',
+        description:
+          'Buscaste las cartas que tienen más de una copia y que marcaste para intercambiar, y no hay ninguna en esta colección.',
+      };
+    }
+    if (scope === 'duplicates') {
+      return {
+        filterLabel: 'el filtro',
+        title: 'No tenés cartas duplicadas',
+        description:
+          'Ninguna carta de esta colección tiene más de una copia. Agregá la misma carta dos veces y va a aparecer acá.',
+      };
+    }
+    return {
+      filterLabel: 'el filtro',
+      title: 'Ninguna está para intercambiar',
+      description:
+        'Ninguna de las cartas de esta colección está marcada para intercambiar. Abrí una carta y activá el intercambio para sumar una.',
+    };
+  })();
+
+  /*
+   * El `total` es el del filtro puesto, porque viene del mismo `where` que la
+   * lista. Con el filtro de intercambio server-side, "12 de 40 cartas para
+   * intercambiar" cuenta sobre la colección entera y no sobre la página.
+   */
+  const loadedLabel = `${formatCount(items.length)} de ${formatCount(total)} ${pluralize(
+    total,
+    'carta',
+    'cartas',
+  )}${forTradeOnly ? ' para intercambiar' : ''}`;
 
   const selectedCount = selectedIds.size;
   /*
@@ -926,7 +990,7 @@ function CollectionItems({
   const canSelect = visible.length > 1 && !isLoading && error === null;
 
   return (
-    <div className="flex flex-col gap-4">
+    <div hidden={!isVisible} className="flex flex-col gap-4">
       {/*
         `aria-live="polite"` y no `role="status"`: el texto cambia con cada
         "Cargar más", y `role="status"` en un elemento que ya se está anunciando
@@ -949,17 +1013,6 @@ function CollectionItems({
           </Button>
         ) : null}
       </div>
-
-      {forTradeOnly ? (
-        <Alert
-          tone="info"
-          size="sm"
-          id="aviso-intercambio"
-          title={TRADE_FILTER_COPY.title}
-        >
-          {TRADE_FILTER_COPY.body}
-        </Alert>
-      ) : null}
 
       {/*
         La barra de la acción masiva aparece **arriba** de la grilla y no abajo,
@@ -1019,37 +1072,23 @@ function CollectionItems({
       ) : null}
 
       {/*
-        3' · vacío **del filtro**, que es un estado distinto del anterior: hay
-        cartas, pero ninguna de las cargadas pasa el filtro. El copy repite el
-        criterio y ofrece las dos salidas —cargar el resto, o sacar el filtro— en
-        vez de afirmar que la colección no tiene cartas para intercambiar. Es el
-        criterio de la pantalla: el filtro no dice "0 resultados" teniendo
-        cartas.
+        Vacío **del filtro**. Con los filtros server-side el backend ya devolvió
+        la respuesta completa, así que el copy puede nombrar el criterio que no
+        matchea y ofrecer sacarlo. Antes tenía que pedir "cargar más", porque
+        con el filtrado en el cliente la respuesta vacía no distinguía "no hay"
+        de "todavía no cargaste".
       */}
       {isEmptyFilter ? (
         <EmptyState
           kind="no-results"
           size="sm"
           icon={Search}
-          title="Ninguna de las cargadas está para intercambiar"
-          description={`De las ${formatCount(items.length)} cartas que ya cargaste, ninguna está marcada para intercambiar. Puede que haya más en las páginas que todavía no viste.`}
+          title={emptyFilterCopy.title}
+          description={emptyFilterCopy.description}
           action={
-            <>
-              {hasMore ? (
-                <Button
-                  variant="secondary"
-                  size="md"
-                  onClick={handleLoadMore}
-                  loading={isLoadingMore}
-                  pendingLabel="Cargando…"
-                >
-                  Cargar más cartas
-                </Button>
-              ) : null}
-              <Button variant="ghost" size="md" onClick={onClearTradeFilter}>
-                Ver todas
-              </Button>
-            </>
+            <Button variant="ghost" size="md" onClick={onClearListFilters}>
+              Quitar {emptyFilterCopy.filterLabel}
+            </Button>
           }
         />
       ) : null}

@@ -223,7 +223,7 @@ export function CollectionsScreen() {
 
             <div className={GRID}>
               {collections.map((collection) => (
-                <CollectionCard key={collection.id} collection={collection} />
+                <CollectionCard key={collection.id} collection={collection} cover={collection.cover} />
               ))}
             </div>
 

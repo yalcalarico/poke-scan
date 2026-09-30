@@ -71,8 +71,10 @@ export {
  * comentario en `session-storage.ts`.
  */
 export {
+  appendSessionEntry,
   clearSession,
   MAX_SESSION_ENTRIES,
+  normalizeSession,
   readSession,
   writeSession,
 } from './session-storage';

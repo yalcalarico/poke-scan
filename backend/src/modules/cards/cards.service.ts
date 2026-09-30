@@ -48,47 +48,35 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 const NUMERIC_NUMBER = NUMERIC_CARD_NUMBER;
 
 /**
- * Último precio de mercado por carta, para `sort=price`.
+ * Una cotización actual por carta para `sort=price`, desde el histórico.
  *
- * Es un `DISTINCT ON ("cardId", variant)` **global** a propósito, y por eso
- * **no** es el `latestMarketPriceJoin` de `common/sql/latest-price.ts` (que usa
- * un `LATERAL` anclado en el item, porque ahí sí se sabe qué carta se va a
- * usar). Acá el filtro de precio es justamente lo que todavía no está decidido,
- * así que no hay a qué anclarse: hay que mirar todas las cartas que matchean.
+ * El orden público pone primero las cartas con precio y deja las que no tienen
+ * cotización al final, alfabéticamente. Materializamos el conjunto **sparse** de
+ * cartas con precio y consultamos aparte el tramo sin precio: unirlo como LEFT
+ * JOIN a `cards` obligaba a leer los 20k registros (incluido su `rawJson`) para
+ * devolver la primera página. La página habitual ahora hace heap lookup solo de
+ * las cartas cotizadas; el fallback recorre el índice de nombre únicamente al
+ * llegar a la parte sin precio.
  *
- * Tres diferencias a propósito respecto de "el último precio por variante":
+ * El `MAX` colapsa las variantes al mejor precio disponible, igual que el orden
+ * anterior. El resultado es determinista y no elige una variante fija que dejaría
+ * sin cotización a cartas que solo tienen reverse holo/first edition.
  *
- * 1. El `DISTINCT ON` no lleva `WHERE` (Postgres no lo permite: gotcha 16), así
- *    que el filtro de `market IS NOT NULL` va en el subselect externo, ya
- *    desduplicado.
- * 2. Arriba se agrega `MAX(market)` por carta para colapsar las variantes a **un**
- *    precio. Elegimos el **mejor disponible** y no la `holofoil`:
- *
- *    - No hay una "variante de la carta" en el catálogo: la holofoil es la más
- *      cara casi siempre, pero hay cartas que solo tienen `reverseHolofoil` o
- *      `firstEdition`, y con una preferencia fija quedaría sin precio — que es
- *      justo lo que el orden tiene que evitar.
- *    - `MAX` es determinista y no depende del orden físico de las filas, así que
- *      dos requests seguidos devuelven el mismo `ORDER BY` (importante porque
- *      esto pagina).
- *
- * Es un `LEFT JOIN` a propósito: las cartas sin precio tienen que seguir
- * apareciendo en la búsqueda.
+ * Va como CTE `MATERIALIZED` porque la usan dos subconsultas del mismo statement
+ * (`searchByCurrentPrice`): sin materializar, Postgres evalúa la pirámide del
+ * `DISTINCT ON` dos veces. Con ~60 cartas cotizadas sobre 20.670 del catálogo,
+ * esa diferencia es la que separa dos round-trips de cuatro.
  */
-const LATEST_PRICE_JOIN = Prisma.sql`
-  LEFT JOIN (
-    SELECT best."cardId" AS "cardId", MAX(best.market) AS "price"
-    FROM (
-      SELECT DISTINCT ON (p."cardId", p.variant)
-        p."cardId" AS "cardId",
-        p.variant AS "variant",
-        p.market AS "market"
-      FROM card_prices p
-      ORDER BY p."cardId", p.variant, p."fetchedAt" DESC
-    ) best
-    WHERE best.market IS NOT NULL
-    GROUP BY best."cardId"
-  ) cp ON cp."cardId" = c.id
+const CURRENT_CARD_MARKET_PRICES = Prisma.sql`
+  SELECT latest."cardId", MAX(latest.market) AS price
+  FROM (
+    SELECT DISTINCT ON (p."cardId", p.variant)
+      p."cardId", p.variant, p.market
+    FROM card_prices p
+    ORDER BY p."cardId", p.variant, p."fetchedAt" DESC
+  ) latest
+  WHERE latest.market IS NOT NULL
+  GROUP BY latest."cardId"
 `;
 
 export interface SetDto {
@@ -301,6 +289,30 @@ interface CardSearchRow {
   setLogoUrl: string | null;
   setSymbolUrl: string | null;
 }
+
+/** Campos del DTO de catálogo; el orden por precio los usa en sus dos tramos. */
+const CARD_SEARCH_COLUMNS = Prisma.sql`
+  c.id,
+  c.name,
+  c.supertype,
+  c.subtypes,
+  c.hp,
+  c.types,
+  c.number,
+  c.rarity,
+  c.artist,
+  c."setId" AS "setId",
+  c."imageSmall" AS "imageSmall",
+  c."imageLarge" AS "imageLarge",
+  s.id AS "setIdSet",
+  s.name AS "setName",
+  s.series AS "setSeries",
+  s."printedTotal" AS "setPrintedTotal",
+  s.total AS "setTotal",
+  s."releaseDate" AS "setReleaseDate",
+  s."logoUrl" AS "setLogoUrl",
+  s."symbolUrl" AS "setSymbolUrl"
+`;
 
 /**
  * Una fila de `getSetCards`. `cardCount` es el `COUNT(*) OVER ()`: el total real
@@ -541,56 +553,47 @@ export class CardsService {
         ? Prisma.sql` WHERE ${Prisma.join(conditions, ' AND ')}`
         : Prisma.empty;
 
-    const run = async (client: Prisma.TransactionClient) => {
-      const rows = await client.$queryRaw<CardSearchRow[]>(Prisma.sql`
-        SELECT
-          c.id,
-          c.name,
-          c.supertype,
-          c.subtypes,
-          c.hp,
-          c.types,
-          c.number,
-          c.rarity,
-          c.artist,
-          c."setId" AS "setId",
-          c."imageSmall" AS "imageSmall",
-          c."imageLarge" AS "imageLarge",
-          s.id AS "setIdSet",
-          s.name AS "setName",
-          s.series AS "setSeries",
-          s."printedTotal" AS "setPrintedTotal",
-          s.total AS "setTotal",
-          s."releaseDate" AS "setReleaseDate",
-          s."logoUrl" AS "setLogoUrl",
-          s."symbolUrl" AS "setSymbolUrl"
-        ${query ? Prisma.sql`, ${this.buildScore(query, useTrigram, searchBy)} AS score` : Prisma.empty}
-        FROM cards c
-        LEFT JOIN card_sets s ON s.id = c."setId"
-        ${byPrice ? LATEST_PRICE_JOIN : Prisma.empty}
-        ${where}
-        ORDER BY ${this.buildOrderBy(dto, query !== undefined, searchBy)}
-        LIMIT ${pageSize} OFFSET ${offset}
-      `);
+    const run = async (client: Prisma.TransactionClient, parallel: boolean) => {
+      const selectRows = () =>
+        client.$queryRaw<CardSearchRow[]>(Prisma.sql`
+          SELECT
+            ${CARD_SEARCH_COLUMNS}
+            ${query ? Prisma.sql`, ${this.buildScore(query, useTrigram, searchBy)} AS score` : Prisma.empty}
+          FROM cards c
+          LEFT JOIN card_sets s ON s.id = c."setId"
+          ${where}
+          ORDER BY ${this.buildOrderBy(dto, query !== undefined, searchBy)}
+          LIMIT ${pageSize} OFFSET ${offset}
+        `);
+      const countRows = () =>
+        client.$queryRaw<{ count: number }[]>(Prisma.sql`
+          SELECT COUNT(*)::int AS count
+          FROM cards c
+          ${where}
+        `);
 
-      const counts = await client.$queryRaw<{ count: number }[]>(Prisma.sql`
-        SELECT COUNT(*)::int AS count
-        FROM cards c
-        ${where}
-      `);
+      // `parallel` solo vale afuera de una transacción. La interactiva de
+      // Prisma (el `set_config` de trigram) usa **una** conexión: las dos
+      // consultas comparten el mismo `pg_backend_pid()` y el motor las encola,
+      // así que el `Promise.all` no paraleliza nada, sólo esconde que el orden
+      // de ejecución es el mismo que el de las líneas. Verificado, no supuesto.
+      const [rows, counts] = parallel
+        ? await Promise.all([selectRows(), countRows()])
+        : [await selectRows(), await countRows()];
 
       return { rows, total: counts[0]?.count ?? 0 };
     };
 
-
-    const { rows, total } = useTrigram
-      ? await this.prisma.$transaction(async (tx) => {
-          await tx.$executeRaw(
-            Prisma.sql`SELECT set_config('pg_trgm.similarity_threshold', ${TRIGRAM_THRESHOLD}, true)`,
-          );
-          return run(tx);
-        })
-      : await run(this.prisma);
+    const { rows, total } = byPrice
+      ? await this.searchByCurrentPrice(dto, conditions, pageSize, offset)
+      : useTrigram
+        ? await this.prisma.$transaction(async (tx) => {
+            await tx.$executeRaw(
+              Prisma.sql`SELECT set_config('pg_trgm.similarity_threshold', ${TRIGRAM_THRESHOLD}, true)`,
+            );
+            return run(tx, false);
+          })
+        : await run(this.prisma, true);
 
     return {
       data: rows.map((row) => this.toCardDto(row)),
@@ -601,10 +604,133 @@ export class CardsService {
     };
   }
 
+  /**
+   * `sort=price` sobre el catálogo entero, partido en dos tramos.
+   *
+   * El orden público pone primero las cartas con precio y las que no tienen
+   * cotización al final, alfabéticas. Casi ninguna carta del catálogo tiene
+   * precio actual (60 de 20.670), así que un `LEFT JOIN` + `ORDER BY` global
+   * gastaba un seq scan de la tabla ancha y un sort de 20k filas para devolver
+   * 24. Acá se consulta primero el conjunto chico de cotizadas y sólo, si la
+   * página llega al final de ese tramo, se entra al de las sin precio.
+   *
+   * ## Dos round-trips en la página habitual, tres en el cruce
+   *
+   * 1. El `SELECT` del tramo cotizado.
+   * 2. En paralelo, un statement con los dos conteos (`total` y cuántas
+   *    cotizadas hay): son dos subescalares del mismo `SELECT`, así que salen
+   *    en una sola ida y vuelta, y el `MATERIALIZED` evita repetir el
+   *    `DISTINCT ON` de `card_prices`.
+   * 3. Sólo si el tramo cotizado no llenó la página, el `SELECT` del tramo sin
+   *    precio, con el offset corrido por las cotizadas que ya se devolvieron.
+   *
+   * ## Por qué el desempate no necesita dirección
+   *
+   * `NULLS LAST` explícito en el `ORDER BY` viejo era necesario porque el
+   * `LEFT JOIN` metía las ~20.600 cartas sin precio en el mismo sort: en `DESC`
+   * el default de Postgres (`NULLS FIRST`) las hubiera puesto arriba. Acá cada
+   * tramo se ordena solo, así que el precio nunca es `NULL` dentro del primero
+   * y `NULLS LAST` no tiene a qué aplicarse. Las dos direcciones comparten
+   * entonces el mismo criterio de desempate: `name ASC, id ASC`, que es
+   * exactamente lo que aplicaba el `ORDER BY` viejo.
+   */
+  private async searchByCurrentPrice(
+    dto: SearchCardsDto,
+    conditions: Prisma.Sql[],
+    pageSize: number,
+    offset: number,
+  ): Promise<{ rows: CardSearchRow[]; total: number }> {
+    const where =
+      conditions.length > 0
+        ? Prisma.sql`WHERE ${Prisma.join(conditions, ' AND ')}`
+        : Prisma.empty;
+    const direction: Prisma.Sql =
+      dto.direction === 'desc' ? Prisma.sql`DESC` : Prisma.sql`ASC`;
+
+    const [counts, priced] = await Promise.all([
+      this.prisma.$queryRaw<{ total: number; priced: number }[]>(Prisma.sql`
+        WITH current_prices AS MATERIALIZED (${CURRENT_CARD_MARKET_PRICES})
+        SELECT
+          (SELECT COUNT(*)::int FROM cards c ${where}) AS total,
+          (
+            SELECT COUNT(*)::int
+            FROM current_prices cp
+            JOIN cards c ON c.id = cp."cardId"
+            ${where}
+          ) AS priced
+      `),
+      this.prisma.$queryRaw<CardSearchRow[]>(Prisma.sql`
+        WITH current_prices AS MATERIALIZED (${CURRENT_CARD_MARKET_PRICES})
+        SELECT ${CARD_SEARCH_COLUMNS}
+        FROM current_prices cp
+        JOIN cards c ON c.id = cp."cardId"
+        LEFT JOIN card_sets s ON s.id = c."setId"
+        ${where}
+        ORDER BY cp.price ${direction}, c.name ASC, c.id ASC
+        LIMIT ${pageSize} OFFSET ${offset}
+      `),
+    ]);
+
+    const total = counts[0]?.total ?? 0;
+    const pricedCount = counts[0]?.priced ?? 0;
+
+    if (priced.length >= pageSize) {
+      return { rows: priced, total };
+    }
+
+    // La página cruzó el límite entre los dos tramos (o cayó entera en el
+    // segundo). `offset - pricedCount` saltea las cotizadas que ya salieron
+    // arriba: sin ese corrimiento, la página 4 repetiría el comienzo de la sin
+    // precio y la paginación mostraría repetidos.
+    const unpricedOffset = Math.max(0, offset - pricedCount);
+    const unpricedWhere =
+      conditions.length > 0
+        ? Prisma.sql`${where} AND NOT EXISTS (SELECT 1 FROM current_prices cp WHERE cp."cardId" = c.id)`
+        : Prisma.sql`WHERE NOT EXISTS (SELECT 1 FROM current_prices cp WHERE cp."cardId" = c.id)`;
+    const unpriced = await this.prisma.$queryRaw<CardSearchRow[]>(Prisma.sql`
+      WITH current_prices AS MATERIALIZED (${CURRENT_CARD_MARKET_PRICES})
+      SELECT ${CARD_SEARCH_COLUMNS}
+      FROM cards c
+      LEFT JOIN card_sets s ON s.id = c."setId"
+      ${unpricedWhere}
+      ORDER BY c.name ASC, c.id ASC
+      LIMIT ${pageSize - priced.length} OFFSET ${unpricedOffset}
+    `);
+
+    return { rows: [...priced, ...unpriced], total };
+  }
+
   async getById(id: string): Promise<CardDto> {
+    // La ficha solo usa estos campos: `include: { set: true }` también leía los
+    // rawJson completos de carta y set, aunque se descartaban al armar el DTO.
     const card = await this.prisma.card.findUnique({
       where: { id },
-      include: { set: true },
+      select: {
+        id: true,
+        name: true,
+        supertype: true,
+        subtypes: true,
+        hp: true,
+        types: true,
+        number: true,
+        rarity: true,
+        artist: true,
+        setId: true,
+        imageSmall: true,
+        imageLarge: true,
+        set: {
+          select: {
+            id: true,
+            name: true,
+            series: true,
+            printedTotal: true,
+            total: true,
+            releaseDate: true,
+            logoUrl: true,
+            symbolUrl: true,
+          },
+        },
+      },
     });
 
     if (!card) {

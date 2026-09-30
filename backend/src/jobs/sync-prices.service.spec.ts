@@ -63,6 +63,12 @@ describe('SyncPricesService', () => {
   let mapping: { resolve: ReturnType<typeof vi.fn> };
   let redisStore: ReturnType<typeof stubRedis>['_store'];
 
+  const setMinGap = (ms: number) => {
+    // El gap de producción son 2,3 s. Los tests fijan el ritmo cuando lo
+    // necesitan, y lo dejan en cero en el resto del suite.
+    (service as unknown as { minGapMs: number }).minGapMs = ms;
+  };
+
   beforeAll(async () => {
     const redis = stubRedis();
     redisStore = redis._store;
@@ -96,6 +102,7 @@ describe('SyncPricesService', () => {
   });
 
   beforeEach(async () => {
+    setMinGap(0);
     await prismaClient.cardPrice.deleteMany({
       where: { cardId: { startsWith: TEST_CARD_PREFIX } },
     });
@@ -250,7 +257,7 @@ describe('SyncPricesService', () => {
     expect(provider.getCardPrices).not.toHaveBeenCalled();
   });
 
-  it('getPricesForCard refresca cuando la fila de Postgres tiene más de 24 h', async () => {
+  it('getPricesForCard responde con el precio viejo y encola el refresh sin esperarlo', async () => {
     await prismaClient.cardPrice.create({
       data: {
         cardId: TEST_CARD_ID,
@@ -261,12 +268,27 @@ describe('SyncPricesService', () => {
         fetchedAt: new Date(Date.now() - 25 * 60 * 60 * 1000),
       },
     });
-    provider.getCardPrices.mockResolvedValue([remote()]);
+    let resolveProvider: ((prices: RemoteCardPrice[]) => void) | undefined;
+    provider.getCardPrices.mockImplementationOnce(
+      () => new Promise((resolve) => { resolveProvider = resolve; }),
+    );
 
     const prices = await service.getPricesForCard(TEST_CARD_ID);
 
-    expect(provider.getCardPrices).toHaveBeenCalledTimes(1);
-    expect(prices.map((p) => p.market)).toEqual([3.25]);
+    expect(prices.map((p) => p.market)).toEqual([0.5]);
+    await vi.waitFor(() => expect(provider.getCardPrices).toHaveBeenCalledTimes(1));
+
+    // La lectura ya devolvió stale; el proveedor sigue bloqueado y el handler
+    // no quedó esperando el gap ni la llamada externa.
+    expect(resolveProvider).toBeDefined();
+    resolveProvider!([remote()]);
+    await vi.waitFor(async () => {
+      const latest = await prismaClient.cardPrice.findFirst({
+        where: { cardId: TEST_CARD_ID },
+        orderBy: { fetchedAt: 'desc' },
+      });
+      expect(Number(latest?.market)).toBe(3.25);
+    });
   });
 
   it('deduplica el histórico: una variante refrescada 2 veces se devuelve 1 vez', async () => {
@@ -327,5 +349,145 @@ describe('SyncPricesService', () => {
   it('enqueueRefresh no encola un id vacío', () => {
     service.enqueueRefresh('');
     expect(service.queueSize).toBe(0);
+  });
+
+  // El ritmo hacia el proveedor es el límite más importante del proyecto
+  // (30/min, y ~26 para dejarle lugar al catálogo). Estas pruebas fijan que
+  // TODA llamada pasa por `withProviderSlot`: antes el gap solo vivía en
+  // `drain`, así que N requests simultáneos sobre cartas distintas salían en el
+  // mismo instante y un batch del admin vaciaba el presupuesto de un saque.
+  describe('throttle de llamadas al proveedor', () => {
+    const createCard = (id: string, number: string) =>
+      prismaClient.card.create({
+        data: {
+          id,
+          name: `Carta ${number}`,
+          supertype: 'Pokémon',
+          subtypes: [],
+          types: [],
+          number,
+          setId: TEST_SET_ID,
+          imageSmall: 'https://example.test/small.png',
+          imageLarge: 'https://example.test/large.png',
+          rawJson: {},
+        },
+      });
+
+    beforeEach(() => setMinGap(20));
+
+    it('dedupe: N requests concurrentes de la misma carta hacen 1 sola llamada', async () => {
+      // Con una sola llamada no hay gap que esperar, así que acá el minGap chico
+      // no le regala nada al test: lo que se cuenta es el número de llamadas.
+      provider.getCardPrices.mockResolvedValue([remote()]);
+
+      const [, , third] = await Promise.all([
+        service.refresh(TEST_CARD_ID),
+        service.refresh(TEST_CARD_ID),
+        service.refresh(TEST_CARD_ID),
+      ]);
+
+      expect(provider.getCardPrices).toHaveBeenCalledTimes(1);
+      expect(third.map((p) => p.market)).toEqual([3.25]);
+    });
+
+    it('cartas distintas salen espaciadas, no en paralelo', async () => {
+      // El gap tiene que ser mucho mayor que el tiempo que tarda una query a
+      // Postgres, o el test pasaría por serialización y no por el throttle:
+      // mutar `wait` a 0 lo tiene que hacer fallar.
+      setMinGap(300);
+      const other = `${TEST_CARD_PREFIX}-otra`;
+      await createCard(other, '7');
+      const started: number[] = [];
+      provider.getCardPrices.mockImplementation(async (cardId: string) => {
+        started.push(Date.now());
+        return [remote({ cardId })];
+      });
+
+      await Promise.all([
+        service.refresh(TEST_CARD_ID),
+        service.refresh(other),
+        service.refresh(TEST_CARD_NO_SET_ID),
+      ]);
+
+      // La de set sin mapeo corta antes del proveedor, así que son 2.
+      expect(started).toHaveLength(2);
+      expect(started[1]! - started[0]!).toBeGreaterThanOrEqual(250);
+
+      await prismaClient.card.delete({ where: { id: other } });
+    });
+
+    it('el batch del admin tampoco puede gastar el presupuesto de un saque', async () => {
+      setMinGap(300);
+      const ids = ['a', 'b', 'c', 'd'].map((suffix) => `${TEST_CARD_PREFIX}-${suffix}`);
+      await prismaClient.card.createMany({
+        data: ids.map((id, index) => ({
+          id,
+          name: `Carta ${index}`,
+          supertype: 'Pokémon',
+          subtypes: [],
+          types: [],
+          number: String(index + 1),
+          setId: TEST_SET_ID,
+          imageSmall: 'https://example.test/small.png',
+          imageLarge: 'https://example.test/large.png',
+          rawJson: {},
+        })),
+      });
+      const started: number[] = [];
+      provider.getCardPrices.mockImplementation(async (cardId: string) => {
+        started.push(Date.now());
+        return [remote({ cardId })];
+      });
+
+      const result = await service.refreshMany(ids);
+
+      expect(result.refreshed).toBe(4);
+      expect(started).toHaveLength(4);
+      // 4 cartas con gap de 300 ms: sin control, el lote sería instantáneo.
+      expect(started[3]! - started[0]!).toBeGreaterThanOrEqual(850);
+
+      await prismaClient.card.deleteMany({ where: { id: { in: ids } } });
+    });
+
+    it('el gap no se suma a la latencia de la llamada anterior', async () => {
+      // La puerta serializa, así que la segunda llamada igual espera a que
+      // termine la primera: la separación entre arranques es
+      // max(latencia, gap), nunca latencia + gap. Con 150 ms de latencia y
+      // 100 ms de gap, medir el reloj al terminar daría ~250 ms.
+      setMinGap(100);
+      const other = `${TEST_CARD_PREFIX}-lenta`;
+      await createCard(other, '9');
+      const started: number[] = [];
+      provider.getCardPrices.mockImplementation(async (cardId: string) => {
+        started.push(Date.now());
+        await new Promise((resolve) => setTimeout(resolve, 150));
+        return [remote({ cardId })];
+      });
+
+      await Promise.all([
+        service.refresh(TEST_CARD_ID),
+        service.refresh(other),
+      ]);
+
+      expect(started[1]! - started[0]!).toBeLessThan(200);
+
+      await prismaClient.card.delete({ where: { id: other } });
+    });
+
+    it('un fallo del proveedor no rompe la puerta para el siguiente', async () => {
+      const other = `${TEST_CARD_PREFIX}-despues`;
+      await createCard(other, '11');
+      // El `catch` del gate es lo que evita que la cadena quede envenenada y
+      // que toda llamada posterior rechace sin llegar al proveedor.
+      provider.getCardPrices.mockRejectedValueOnce(new Error('tcgdex 503'));
+      provider.getCardPrices.mockImplementation(async (cardId: string) => [
+        remote({ cardId }),
+      ]);
+
+      await expect(service.refresh(TEST_CARD_ID)).resolves.toEqual([]);
+      await expect(service.refresh(other)).resolves.toHaveLength(1);
+
+      await prismaClient.card.delete({ where: { id: other } });
+    });
   });
 });

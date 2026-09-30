@@ -13,6 +13,7 @@ import type { ReactNode } from 'react';
 export const metadata: Metadata = {
   title: 'Escanear',
   description: 'Escaneá una carta con la cámara y agrejala a tu colección al instante.',
+  robots: { index: false, follow: false },
 };
 
 export default function ScanLayout({ children }: { children: ReactNode }) {

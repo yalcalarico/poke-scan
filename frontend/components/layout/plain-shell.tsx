@@ -6,7 +6,7 @@ import { OfflineToast } from '@/components/layout/offline-toast';
  * Shell de las pantallas que **no** llevan `BottomNav`: auth y la vista
  * pública de una colección compartida.
  *
- * La nav manda a buscar, escanear, colecciones y ajustes: cuatro pantallas de
+ * La nav manda a inicio, buscar, escanear, colecciones y ajustes: pantallas de
  * *tu* cuenta. Abajo de un formulario de dos campos, o arriba de la colección
  * de otra persona, es un convite a salir de la pantalla. En la pública además
  * puede no haber cuenta, y el "Iniciar sesión" sería un pitched fuera de lugar.

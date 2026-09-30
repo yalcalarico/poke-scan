@@ -105,9 +105,11 @@ export function deleteCollection(id: string): Promise<void> {
 export function listItems(
   collectionId: string,
   params: ListItemsParams = {},
+  signal?: AbortSignal,
 ): Promise<Paginated<CollectionItemDto>> {
   return apiFetch<Paginated<CollectionItemDto>>(
     `/collections/${encodeURIComponent(collectionId)}/items${buildQueryString(params)}`,
+    { signal },
   );
 }
 

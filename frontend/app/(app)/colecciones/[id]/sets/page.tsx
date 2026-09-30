@@ -7,6 +7,7 @@ import { SetProgressScreen } from '@/components/set-progress/set-progress-screen
 export const metadata: Metadata = {
   title: 'Progreso por set',
   description: 'Cuántas cartas de cada set tenés, cuánto valen y cuáles te faltan.',
+  robots: { index: false, follow: false },
 };
 
 /**

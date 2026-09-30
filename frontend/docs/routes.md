@@ -1,6 +1,6 @@
 # Rutas y pantallas
 
-Las 11 rutas del frontend: quién las puede ver, si son Server o Client Component,
+Las 13 rutas del frontend: quién las puede ver, si son Server o Client Component,
 de dónde sacan los datos y por qué están donde están. El detalle de los
 componentes está en [`components.md`](components.md); las reglas de estilo, en
 [`design-system.md`](design-system.md); el modo de trabajo, en
@@ -21,7 +21,9 @@ haciendo de parche.
 
 | URL | Carpeta | Tipo | Sesión | Raíz (server) | Cuerpo (client) |
 |---|---|---|---|---|---|
-| `/` | `app/(app)/` | Server | no | `page.tsx` | `HomeCta` |
+| `/` | `app/(marketing)/` | Server | no | `page.tsx` | `LandingPage` |
+| `/faq` | `app/(marketing)/faq/` | Server | no | `page.tsx` | `FaqSection` |
+| `/inicio` | `app/(app)/inicio/` | Server | no | `page.tsx` | `HomeCta`, `ScanSessionResume` |
 | `/buscar` | `app/(app)/buscar/` | Server | no | `page.tsx` | `CatalogSearch` |
 | `/carta/[id]` | `app/(app)/carta/[id]/` | Server async | no | `page.tsx` | `CardActions`, `CardPriceSection` |
 | `/escanear` | `app/(app)/escanear/` | **Client** | no | — (la página es client) | la página entera |
@@ -33,12 +35,13 @@ haciendo de parche.
 | `/registro` | `app/(auth)/registro/` | Server | no | `page.tsx` | `RegisterForm` |
 | `/share/[slug]` | `app/share/[slug]/` | Server async | no | `page.tsx` | ninguno (todo server) |
 
-Además hay dos rutas que no son pantallas:
+Además hay rutas que no son pantallas:
 
 | Ruta | Qué es |
 |---|---|
 | `/perfil` | `app/(app)/perfil/route.ts`, un **308** a `/ajustes`. Ver §7. |
 | `/escanear` (metadata) | `app/(app)/escanear/layout.tsx` existe **solo** por el `metadata`. Ver §4. |
+| `/robots.txt` · `/sitemap.xml` | Metadata routes para el rastreo SEO; el sitemap lista landing, catálogo y FAQ. |
 
 Los archivos de chrome del árbol, que no son rutas pero se heredan:
 
@@ -46,7 +49,8 @@ Los archivos de chrome del árbol, que no son rutas pero se heredan:
 |---|---|
 | `app/layout.tsx` | **todo**: `<html>`, fuentes, metadata global, el script anti-flash, el skip link y `<Providers>`. |
 | `app/providers.tsx` | los cuatro providers de la app entera. |
-| `app/(app)/layout.tsx` | las seis pantallas de cuenta: `<AppShell>`, con `BottomNav`. |
+| `app/(marketing)/layout.tsx` | `/` y `/faq`: `MarketingShell`, sin navegación de la app. |
+| `app/(app)/layout.tsx` | las pantallas de la app PWA: `<AppShell>`, con `BottomNav`. |
 | `app/(auth)/layout.tsx` | `/login` y `/registro`: `<PlainShell>`, sin nav. |
 | `app/share/layout.tsx` | `/share/[slug]`: `<PlainShell>`, sin nav. |
 | `app/pwa-sw-register.tsx` | el service worker, solo en producción. |
@@ -77,7 +81,7 @@ El corollary que queda: **una URL no se renombra sin motivo.** `/perfil` →
 
 ---
 
-## 2. Las tres ramas, y por qué son carpetas y no route groups
+## 2. Las cuatro ramas, y por qué son carpetas y no route groups
 
 Esta es la parte del árbol que más fácil se equivoca, así que va con el
 razonamiento completo.
@@ -87,26 +91,31 @@ app/
   layout.tsx              ← raíz: providers, skip link, metadata, script anti-flash
   providers.tsx           ← ThemeProvider · AuthProvider · CurrencyProvider · ToastProvider
   not-found.tsx
-  (app)/                  ← RAMA 1: con BottomNav
+  (marketing)/            ← RAMA 1: landing pública, sin BottomNav
+    layout.tsx            ← <MarketingShell>
+    page.tsx               ← /
+    faq/page.tsx           ← /faq
+  (app)/                  ← RAMA 2: app con BottomNav
     layout.tsx            ← <AppShell>
-    page.tsx              ← /
+    inicio/page.tsx       ← /inicio, start_url de la PWA
     buscar/  carta/  escanear/  colecciones/  ajustes/
-  (auth)/                 ← RAMA 2: sin BottomNav
+  (auth)/                 ← RAMA 3: sin BottomNav
     layout.tsx            ← <PlainShell>
     error.tsx
     login/  registro/
-  share/                  ← RAMA 3: sin BottomNav
+  share/                  ← RAMA 4: sin BottomNav
     layout.tsx            ← <PlainShell>
     [slug]/
 ```
 
 | Rama | Carpeta | ¿Lleva `BottomNav`? | Shell |
 |---|---|---|---|
-| 1 | `app/(app)/` | **sí** | `AppShell` |
-| 2 | `app/(auth)/` | no | `PlainShell` |
-| 3 | `app/share/` | no | `PlainShell` |
+| 1 | `app/(marketing)/` | no | `MarketingShell` |
+| 2 | `app/(app)/` | **sí** | `AppShell` |
+| 3 | `app/(auth)/` | no | `PlainShell` |
+| 4 | `app/share/` | no | `PlainShell` |
 
-`(app)` y `(auth)` son route groups: el nombre entre paréntesis **no forma parte
+`(marketing)`, `(app)` y `(auth)` son route groups: el nombre entre paréntesis **no forma parte
 de la URL`**, sirve para compartir un layout entre rutas hermanas, y nada más.
 `share/` **no** es un route group: es una carpeta común, y es una carpeta a secas
 porque no comparte layout con nadie.
@@ -117,7 +126,7 @@ Un route group nombra hermanos, pero **no corta la herencia hacia arriba**. Si l
 ruta pública estuviera en `app/(app)/(public)/share/[slug]/page.tsx`, seguiría
 teniendo `app/(app)/layout.tsx` como ancestro y, por lo tanto, seguiría viendo la
 `BottomNav`. Compila, `next dev` no protesta, y el bug aparece en pantalla. Ese
-razonamiento es [`gotchas.md`](gotchas.md) §17, y es la razón por la que las tres
+razonamiento es [`gotchas.md`](gotchas.md) §17, y es la razón por la que las cuatro
 ramas son carpetas hermanas y no subcarpetas de una.
 
 La forma de verificarlo sin debate: en `.next/types/routes.d.ts`, `LayoutRoutes`
@@ -126,14 +135,14 @@ porque no es una ruta.
 
 ### Por qué `/share/[slug]` no puede tener la `BottomNav`
 
-La `BottomNav` manda a buscar, escanear, colecciones y ajustes: cuatro pantallas de
+La `BottomNav` manda a inicio, buscar, escanear, colecciones y ajustes: pantallas de
 **tu** cuenta. Arriba de la colección de otra persona es un convite a dejar de
 mirarla, y en el peor caso (el visitante no tiene cuenta) el chrome de tu cuenta no
 debería existir. El JSDoc de `app/share/layout.tsx` lo dice sin rodeos.
 
-El `OfflineToast` **sí** va en las tres ramas: la lectura de una colección
-compartida funciona sin conexión y el visitante tiene que enterarse de por qué. Va
-sin `BottomNav` al lado.
+El `OfflineToast` va en las ramas de la app y en la vista compartida: la lectura de
+una colección compartida funciona sin conexión y el visitante tiene que enterarse
+de por qué. El sitio de marketing no muestra chrome de la app.
 
 ### Por qué `/login` y `/registro` tampoco
 
@@ -147,11 +156,13 @@ tiene que saber que existe el login, y la página de auth no debería conocer la
 estructura de la nav. La separación por árbol lo resuelve sin que ninguno de los
 dos se entere del otro.
 
-### Y `/` **sí** lleva `BottomNav`
+### `/` es marketing; `/inicio` sí lleva `BottomNav`
 
-Está en `app/(app)/`, y es lo correcto: es la pantalla de arranque de la app
-instalada, así que las cuatro tabs **son** el producto. Sacarlas sería dejar la PWA
-instalada sin forma de navegar.
+La landing pública vive en `(marketing)` para que el producto tenga una página de
+adquisición y una FAQ indexables, separadas del flujo instalado. La PWA arranca en
+`/inicio` (el `start_url` de `manifest.json`), que vive en `(app)` y hereda
+`BottomNav`. El sitio de marketing no debe dejar a un visitante nuevo dentro del
+chrome de la app antes de entender qué ofrece.
 
 ### Por qué los providers están en el layout raíz y no en cada rama
 
@@ -194,7 +205,9 @@ rama los metería en el bundle de toda esa rama, y no hay forma de colgar un
 
 | Ruta | Por qué server |
 |---|---|
-| `/` | Toda la pantalla es HTML estático; lo único que necesita el navegador es el CTA, que es un client component chico. El mock son 3 cartas del backend. |
+| `/` | Landing pública server-rendered con hero, vista previa de cartas, beneficios, planes y FAQ. La vista previa consulta 3 cartas al backend local. |
+| `/faq` | Preguntas frecuentes server-rendered, compartidas con la sección FAQ de la landing. |
+| `/inicio` | Inicio de la PWA; el server renderiza hero, features y preview. CTA y reanudación son client components pequeños. |
 | `/buscar` | *"Lo único que necesita el servidor es el chrome —el `ScreenHeader` y el `ScreenContainer`, que son puros— y la pantalla es toda de `useSearchParams`, así que el primer render no tiene nada que pedir ni nada que esperar: los datos salen del catálogo espejado y del caché de la API, no del render."* |
 | `/carta/[id]` | Hace el `fetch` de la carta, el de los precios y el de "otras de este set", arma `generateMetadata` y renderiza `next/image` con `priority`. |
 | `/colecciones` | *"Server Component, pero finito: no pide datos ni calcula nada."* El trabajo está en el cuerpo client. |
@@ -229,6 +242,31 @@ El `fallback` es **el mismo componente** que usa `loading.tsx` (`SearchFallback`
 `SetProgressFallback` respectivamente), no una copia. La razón, textual y repetida
 en los ocho `loading.tsx`: *"dos versiones del mismo skeleton que no coinciden son
 un salto de layout esperando a aparecer"*.
+
+### La URL de `/buscar` es el contrato de la pantalla
+
+`CatalogSearch` no guarda filtros en el estado: `q`, `searchBy`, `setId`,
+`rarity`, `sort`, `direction` y `page` salen de `useSearchParams`. Un link
+reproduce la pantalla exacta y el botón atrás deshace un cambio de filtro sin
+pila de estado.
+
+| Param | Valores | Default |
+|---|---|---|
+| `q` | texto libre | ausente |
+| `searchBy` | `name` · `number` · `artist` | `name` (no se escribe) |
+| `setId` | id de set | ausente |
+| `rarity` | rareza | ausente |
+| `sort` | `name` · `price` · `rarity` · `number` | `name` (no se escribe) |
+| `direction` | `asc` · `desc` | `asc` (no se escribe) |
+| `page` | entero ≥ 1 | `1` |
+
+`name` y `asc` no se escriben por default para que la URL que se comparte siga
+siendo corta: `/buscar?q=charizard` es la que uno manda por WhatsApp.
+
+**`sort` y `direction` se ignoran cuando hay `q`**, porque el backend ordena por
+score de relevancia, que no es invertible. La UI lo refleja deshabilitando ambos
+controles y explicándolo; mandarlos igual mantiene la URL y la pantalla
+coherentes entre sí.
 
 ---
 
@@ -267,19 +305,21 @@ decide.
   existe), y el estado vacío tiene su propio copy, porque "no hay nada que crear
   todavía" y "tenés que explicar para qué sirve una colección" son dos mensajes
   distintos.
-- **`/colecciones/[id]/sets`** es el caso raro: **no consulta la sesión en
-  absoluto**. No usa `useAuth` ni un guard, así que sin sesión la llamada a
-  `getProgress` falla con 401 y la pantalla muestra el `ErrorState` con su botón de
-  reintento. Funciona, pero el mensaje es "no pudimos cargar el progreso" y no
-  "iniciá sesión". Es el estado pendiente de pulir si querés el mismo tratamiento
-  que las otras dos de colecciones.
+- **`/colecciones/[id]/sets`** consulta la sesión con `useAuth` y, sin sesión,
+  muestra un `EmptyState` con "Iniciá sesión para ver el progreso" y un CTA a
+  `/login`. Antes no lo hacía: disparaba el `getProgress`, el 401 caía en el
+  `ErrorState` y la pantalla decía "no pudimos cargar el progreso" con un botón
+  de **Reintentar** que no iba a cambiar nada. Un 401 no es un error, es un
+  estado esperado, y el mensaje tiene que ofrecer la salida.
 - **`/carta/[id]`** es pública, pero `CardActions` pide datos de sesión: sin
   sesión no renderiza los chips "Añadir" e "Intercambio", y en su lugar pone una
   línea con un link a `/login` que explica qué hacer. El razonamiento está en el
   JSDoc: *"un chip deshabilitado sin explicación es un mueble"*.
-- **`/buscar`, `/escanear`, `/` y `/share/[slug]`** son públicas por diseño.
+- **`/`, `/faq`, `/buscar`, `/escanear` y `/share/[slug]`** son públicas por diseño.
   `/escanear` toca endpoints que exigen sesión, pero recién cuando el usuario pide
   guardar.
+- **`/inicio`** es la pantalla de arranque de la PWA instalada (`manifest.json`
+  `start_url`), aunque la landing pública está en `/`.
 - **`/login` y `/registro`** son públicas y no tienen guard.
 
 ---
@@ -294,7 +334,9 @@ así que toda pantalla con título propio hereda el sufijo.
 | URL | `title` | Fuente | `description` |
 |---|---|---|---|
 | raíz (`app/layout.tsx`) | `PokéScan` (default + template) | `layout.tsx` | sí |
-| `/` | `PokéScan` (`absolute`) | `page.tsx` | sí |
+| `/` | `PokéScan — tu colección Pokémon, más clara` | `(marketing)/page.tsx` | sí, + Open Graph |
+| `/faq` | `Preguntas frecuentes` | `(marketing)/faq/page.tsx` | sí |
+| `/inicio` | `Inicio · PokéScan` | `(app)/inicio/page.tsx` | sí, `noindex` |
 | `/buscar` | `Buscar` | `page.tsx` | sí |
 | `/carta/[id]` | `{card.name}` o `'Carta no encontrada'` | `generateMetadata` | sí, + `openGraph` |
 | `/colecciones` | `Colecciones` | `page.tsx` | sí |
@@ -308,9 +350,8 @@ así que toda pantalla con título propio hereda el sufijo.
 
 Dos detalles que no se deducen de la tabla:
 
-- **`/` usa `title: { absolute: 'PokéScan' }`** y no un string. `absolute` saltea el
-  `template` del layout raíz; con un string plano, el browser mostraría
-  "PokéScan · PokéScan" en dos pestañas que dicen exactamente lo mismo.
+- **`/` es la landing pública** y tiene su título orientado a adquisición; `/inicio`
+  es el destino separado de la PWA instalada.
 - **`/colecciones/[id]` tiene `metadata` estático y no `generateMetadata`**, a
   diferencia de `/carta/[id]`: el nombre de la colección no se conoce en el server.
   El JSDoc de la página lo dice.
@@ -318,15 +359,11 @@ Dos detalles que no se deducen de la tabla:
 **`generateMetadata` solo en las dos rutas con datos del server**, y las dos
 reparten el mismo `fetch` entre la página y el metadata (§7).
 
-**No hay `robots: noindex` en ninguna parte.** Cuando había dos versiones del
-producto, los tres layouts de la nueva declaraban `robots` a propósito, porque
-`/v2/share/abc` y `/share/abc` habrían sido dos URLs para la misma colección. Con
-una sola versión, cada URL tiene un contenido y `noindex` sería tirar visibilidad
-gratis. Para `/share/[slug]` en particular, el `title` y la `description` **sí**
-importan y por un motivo que no es SEO: *"esta pantalla se abre desde un link de
-WhatsApp o iMessage, y lo que se ve ahí es el *unfurl*, que lee la metadata y no
-le importa el `robots`"*. El `title` es una decisión de producto; se puede tener
-las dos cosas.
+Las rutas privadas de la app tienen `noindex`; la landing, el catálogo y la FAQ
+son públicas. Los links `/share/[slug]` también devuelven `noindex`: son públicos
+para quien recibió el enlace, pero eso no implica que el dueño quiera que Google
+los catalogue. El `title`, la descripción y Open Graph siguen generándose para
+WhatsApp/iMessage; los crawlers sociales pueden leerlos sin indexar la colección.
 
 ### Las fronteras
 
@@ -385,32 +422,28 @@ Ver §4. No figura en la tabla de §6 porque no produce una URL distinta.
 | Ruta | Cómo | Caché | Timeout |
 |---|---|---|---|
 | `/` | `fetch` en el server, `fetchPreviewCards()` | `next: { revalidate: 3600 }` | — |
+| `/inicio` | `fetch` en el server, `fetchPreviewCards()` | `next: { revalidate: 3600 }` | — |
 | `/buscar` | `useAsync` + `useInfiniteList` desde el cliente (`searchCards`, `getSets`) | ninguna | `AbortSignal` de `apiFetch` |
 | `/carta/[id]` — carta | `fetch` en el server | `next: { revalidate: 3600 }` (`REVALIDATE`) | — |
-| `/carta/[id]` — **precios** | `fetch` en el server | **`cache: 'no-store'`** | **`AbortSignal.timeout(1500)`** |
-| `/carta/[id]` — otras del set | `fetch` en el server | `next: { revalidate: 3600 }` | — |
+| `/carta/[id]` — **precios** | `getCardPrices()` en `CardPriceSection` al hidratar | caché Redis/Postgres del backend | estado de carga propio; no bloquea SSR |
+| `/carta/[id]` — otras del set | Server Component bajo `Suspense` | `next: { revalidate: 3600 }` | fallback vacío; no bloquea la ficha |
 | `/colecciones*` | `lib/api/*` desde el cliente | ninguna | `AbortSignal` de `apiFetch` |
 | `/escanear` | `identifyCard` desde el cliente | ninguna | `withTimeout(30_000)` + `SCAN_TIMEOUT_MS = 90_000` |
 | `/ajustes` | `lib/api/*` desde el cliente | ninguna | `AbortSignal` de `apiFetch` |
 | `/share/[slug]` | `fetch` en el server con **`cache()` de React** | `next: { revalidate: 60 }` | — |
 
-### Por qué los precios son `no-store` con timeout
+### Frescura de precio y render de la ficha
 
-Es la regla de `gotchas.md` §4, y el JSDoc de la página la repite: la frescura del
-precio **la decide el backend** (Redis 1 h + Postgres 24 h). Si Next lo cacheara,
-la página podría servir un precio vencido hasta una hora después de que
-correspondía refrescarlo, y el cliente ni se enteraría.
+La frescura del precio **la decide el backend** (Redis 1 h + Postgres 24 h). La
+página server no solicita el precio: `CardPriceSection` consulta al hidratar y
+muestra su propio skeleton. Así una consulta que entra a la cola de la fuente no
+retiene el nombre, la imagen ni los datos estáticos de la carta.
 
-El `AbortSignal.timeout(1500)` existe para que la página **nunca espere al
-precio*: *"los precios pueden tardar varios segundos cuando hay que pegarle a la
-fuente (que tiene un límite de 30 req/min, `AGENTS.md` §3.1)"*. Si no llegan a
-tiempo, `fetchPrices` devuelve `[]` en un `try/catch` y la carta se ve igual;
-`CardPriceSection` lo carga en el cliente con su propio indicador.
-
-`fetchRelated` tiene el mismo tratamiento pero con el motivo invertido: *"es
-contenido complementario: si el scroller no se puede cargar, la ficha se muestra
-igual. Perderlo no puede tumbar la pantalla"*. Y pide `RELATED_LIMIT + 1 = 15`
-cartas para poder cortar una (la propia) sin quedarse a corto.
+Los precios no pasan por caché de Next; las cartas y sets sí usan `REVALIDATE =
+3600`. `fetchRelated` también está bajo una frontera `Suspense`: es contenido
+complementario y no tiene que demorar la ficha si el API responde lento. Pide
+`RELATED_LIMIT + 1 = 15` cartas para poder cortar una (la propia) sin quedarse a
+corto.
 
 ### Por qué `cache()` de React en la ruta pública
 

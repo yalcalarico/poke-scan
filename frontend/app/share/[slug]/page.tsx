@@ -56,7 +56,12 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const result = await fetchSharedCollection(slug);
-  if (result.kind !== 'ok') return { title: 'Colección compartida' };
+  if (result.kind !== 'ok') {
+    return {
+      title: 'Colección compartida',
+      robots: { index: false, follow: false },
+    };
+  }
 
   const { collectionName, ownerDisplayName, stats } = result.data;
 
@@ -76,6 +81,9 @@ export async function generateMetadata({
       description,
       type: 'website',
     },
+    // Un link compartido es público para quien lo recibe, pero no equivale a
+    // aceptar que Google catalogue el binder y el nombre de su dueño.
+    robots: { index: false, follow: false },
   };
 }
 

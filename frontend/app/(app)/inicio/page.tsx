@@ -12,26 +12,17 @@ import {
 import { InstallCta } from '@/components/share';
 import { cn } from '@/lib/cn';
 
-/**
- * El `title` del layout es "PokéScan", que es el nombre de la app y el título
- * correcto para la home: no lleva template ("PokéScan · PokéScan") porque acá
- * el nombre de la app *es* el título.
- */
 export const metadata: Metadata = {
-  /**
-   * `absolute` y no un string: saltea el `template` del layout raíz. Acá el
-   * nombre de la app *es* el título, y con un string plano el browser
-   * mostraría "PokéScan · PokéScan" en dos pestañas que dicen lo mismo.
-   */
-  title: { absolute: 'PokéScan' },
+  title: 'Inicio',
   description:
-    'Escaneá tus cartas Pokémon con la cámara, mirá su valor de mercado y armá tu colección.',
+    'Continuá escaneando, buscá cartas y revisá tus colecciones Pokémon.',
+  robots: { index: false, follow: false },
 };
 
 const HERO_TITLE = 'Escaneá tus cartas y mirá su valor.';
 
 /**
- * `/` — la landing. Server Component.
+ * `/inicio` — el inicio de la app instalada. Server Component.
  *
  * ## Por qué server y no client
  *
@@ -43,10 +34,10 @@ const HERO_TITLE = 'Escaneá tus cartas y mirá su valor.';
  *
  * ## La `BottomNav` sí va acá, y es lo correcto
  *
- * `/` es la pantalla de arranque de la app instalada, así que vive en `(app)` y
- * hereda la nav del layout. Al revés que en `/login` y `/registro`, que viven en
- * `(auth)`: acá las cuatro tabs —escanear, buscar, colecciones y ajustes— son el
- * producto, y sacarlas sería dejar la PWA instalada sin forma de navegar.
+ * La landing pública `/` vive fuera de `(app)`. El `start_url` de la PWA apunta
+ * acá para que instalar PokéScan abra el producto, no la página de marketing.
+ * Esta ruta hereda el `BottomNav`; Inicio más las cuatro secciones —buscar,
+ * escanear, colecciones y ajustes— son el producto y no se sacan.
  *
  * ## El mock
  *

@@ -16,11 +16,9 @@ import { formatCount } from './collection-options';
  *
  * ## Por qué el tipo es más angosto que el campo del backend
  *
- * Cuando `CollectionDto` traiga `cover: [{ imageSmall, cardId }]`, con `cardId`
- * para poder enlazar a la ficha, acá solo se declara `imageSmall`: el `cardId` no
- * se usa para pintar el mosaic, y un tipo más angosto sigue aceptando el objeto
- * más ancho (tipado estructural). Cuando llegue, hay que **borrar el fallback de
- * marca** y nada más.
+ * `CollectionDto.cover` trae `{ imageSmall, cardId }`. Acá solo se declara
+ * `imageSmall`: el `cardId` no se usa para pintar el mosaico, y un tipo más
+ * angosto sigue aceptando el objeto más ancho (tipado estructural).
  */
 export interface CollectionCoverItem {
   imageSmall: string;
@@ -29,16 +27,13 @@ export interface CollectionCoverItem {
 export interface CollectionCardProps {
   collection: CollectionDto;
   /**
-   * Portada de la colección. **Hoy siempre viene `undefined`**: `CollectionDto`
-   * no expone `cover` y traer 4 items por colección sería un N+1, que
-   * `AGENTS.md` prohíbe explícitamente.
+   * Portada de la colección, de `CollectionDto.cover`.
    *
-   * Cuando el DTO lo exponga: pasarlo desde el listado y **borrar el bloque
-   * `hasCover ? mosaic : marca`** de abajo. El endpoint a tocar es
-   * `GET /api/collections` (`collections.service.ts::list`, que ya hace **un**
-   * `$queryRaw` agregado por `aggregateQuery`): el mosaic sale de un
-   * `DISTINCT ON (collectionId)` sobre `collection_items` ordenado por
-   * `quantity DESC`, sin una consulta por colección.
+   * El backend lo arma con **un** `$queryRaw` agregado sobre `collection_items`
+   * (`DISTINCT ON (collectionId)` ordenado por `quantity DESC`) para todas las
+   * colecciones del listado, así que traer la portada no es un N+1
+   * (`AGENTS.md`, "Cero N+1"). Viene `[]` en una colección sin cartas, y ahí
+   * entra el fallback de marca.
    */
   cover?: readonly CollectionCoverItem[];
   /** Solo para ubicación. La forma la decide el componente. */
@@ -71,14 +66,15 @@ const MAX_COVER_ITEMS = 4;
  * total y el acceso al progreso por set. Antes la misma tarjeta tenía tres
  * `Stat` con borde propio para mostrar el dato que hoy dice «24 cartas».
  *
- * ## El mosaic
+ * ## El mosaico
  *
- * Es el salto visual más grande de la pantalla y **todavía no se puede
- * construir**: `CollectionDto` no trae portada y pedir 4 items por colección es
- * un N+1 (`AGENTS.md`, "Cero N+1"). Con `cover` ausente se dibuja una superficie
- * de marca —`bg-brand-soft` con `Layers`— que se ve deliberada en vez de rota.
-* El día que el DTO exponga el campo, se pasa el array y se borra el fallback;
- * la prop ya está escrita para eso.
+ * Es el salto visual más grande de la pantalla, y usa el `cover` que ya arma
+ * `collections.service.ts::list` con **un** `$queryRaw` agregado para todas las
+ * colecciones del listado. Traer la portada no es un N+1.
+ *
+ * El fallback de marca —`bg-brand-soft` con `Layers`— sigue existiendo para la
+ * colección sin cartas, que es el único caso en que `cover` llega vacío. Se ve
+ * deliberada en vez de rota.
  *
  * ## Por qué el `outline` del foco va hacia adentro
  *
@@ -105,8 +101,8 @@ const MAX_COVER_ITEMS = 4;
  * `/colecciones/[id]/sets` —el progreso por set y el binder con el waffle— era
  * alcanzable **solo** desde el chip "Sets" que vive adentro del detalle de una
  * colección ya abierta. O sea: la ruta existía y no había forma de llegar sin
- * saber que existía. Agregar una quinta tab a la `BottomNav` no era una opción
- * (§0.1: mobile-first, y `nav.ts` es la fuente única de cuatro destinos), y una
+ * saber que existía. Agregar otro destino principal a la `BottomNav` no era la
+ * decisión de esa feature (hoy Inicio más cuatro secciones en mobile), y una
  * pantalla nueva es una decisión de rutas.
  *
  * El pie de la tarjeta es el lugar donde el usuario ya está pensando en esa

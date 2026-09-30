@@ -94,16 +94,19 @@ robusto que cualquier heurística de parsing: el catálogo valida por nosotros.
 ```
 Usuario abre /carta/[id]
    │
-   ├─ SSR: fetch a /cards/:id/prices con cache:'no-store' + timeout 1,5 s
-   │        └─ el backend decide: Redis (1 h) → Postgres (24 h) → fuente
+   ├─ SSR: carta y set desde el catálogo local (cache de Next: 1 h)
    │
-   └─ si el SSR no trajo precio o pasó el timeout:
-      el cliente revalida con spinner y skeleton
+   ├─ HTML de la ficha se entrega sin esperar el precio
+   │
+   └─ el cliente pide /cards/:id/prices y el backend decide:
+      Redis (1 h) → Postgres (24 h) → cola/fuente
+      el hero muestra su skeleton mientras tanto
 ```
 
-Las dos capas de caché viven **solo en el backend** a propósito: si el cliente
-tuviera su propia caché, la regla de 24 h podría quedar desalineada entre
-dispositivos.
+Las dos capas autoritativas de caché viven **solo en el backend** a propósito:
+si el cliente tuviera su propia caché, la regla de 24 h podría quedar desalineada
+entre dispositivos. La carga de precio en cliente evita que una respuesta lenta
+de la fuente retenga todo el SSR de la ficha.
 
 ### 3. Compartir
 
@@ -119,7 +122,7 @@ Colección → POST /share → slug aleatorio de 10 chars
 
 ## La estructura del frontend
 
-El `app/` tiene **tres ramas y un layout raíz**, y la razón de que sean carpetas
+El `app/` tiene **cuatro ramas y un layout raíz**, y la razón de que sean carpetas
 hermanas y no route groups anidados está en
 [`frontend/docs/gotchas.md`](../frontend/docs/gotchas.md) §17.
 
@@ -127,7 +130,8 @@ hermanas y no route groups anidados está en
 app/
   layout.tsx      raíz: <html>, metadata, script anti-flash, skip link, <Providers>
   providers.tsx   ThemeProvider · AuthProvider · CurrencyProvider · ToastProvider
-  (app)/          <AppShell> — CON BottomNav: / · /buscar · /carta/[id] ·
+  (marketing)/    <MarketingShell> — SIN BottomNav: / · /faq
+  (app)/          <AppShell> — CON BottomNav: /inicio · /buscar · /carta/[id] ·
                   /escanear · /colecciones* · /ajustes
   (auth)/         <PlainShell> — SIN nav: /login · /registro
   share/          <PlainShell> — SIN nav: /share/[slug]
@@ -138,6 +142,8 @@ Tres cosas que explican el resto del árbol:
 - **Los providers están arriba, en el layout raíz.** Son de la app entera, no de un
   tipo de pantalla. Montarlos por rama los duplicaría y el estado de la moneda y
   del tema se perdería al navegar.
+- **La landing pública y la app instalada son rutas distintas.** `/` explica y
+  promociona el producto; `/inicio` es el `start_url` de la PWA y monta el shell.
 - **La `BottomNav` es navegación de *tu* cuenta.** Por eso no aparece en la vista
   pública de una colección compartida ni en el login: mandar a alguien a buscar,
   escanear, colecciones y ajustes arriba de la colección de otra persona es un

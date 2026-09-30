@@ -57,8 +57,11 @@ export function buildCardsSearchPath(params: CardSearchParams = {}): string {
   return `/cards/search${buildQueryString(params)}`;
 }
 
-export function searchCards(params: CardSearchParams = {}): Promise<Paginated<CardDto>> {
-  return apiFetch<Paginated<CardDto>>(buildCardsSearchPath(params));
+export function searchCards(
+  params: CardSearchParams = {},
+  signal?: AbortSignal,
+): Promise<Paginated<CardDto>> {
+  return apiFetch<Paginated<CardDto>>(buildCardsSearchPath(params), { signal });
 }
 
 export function getCard(id: string): Promise<CardDto> {

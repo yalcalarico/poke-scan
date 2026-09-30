@@ -14,6 +14,7 @@ import {
   PHASE_HEADLINE,
   ScanResults,
   ScanPreview,
+  appendSessionEntry,
   cameraNoticeCopy,
   captureToImageData,
   clearSession,
@@ -149,7 +150,7 @@ export default function ScanPage() {
    *
    * Empieza con lo que haya en `sessionStorage` **leído en un efecto**, no en el
    * `useState` inicial: `sessionStorage` no existe en el server, así que leerlo en
-   * el inicializador daría unahydration mismatch (el HTML del server no tendría
+   * el inicializador daría una hydration mismatch (el HTML del server no tendría
    * las 7 cartas y el primer render del cliente sí) —y con `React 19` eso es un
    * error, no un warning.
    *
@@ -278,7 +279,12 @@ export default function ScanPage() {
 
       // Una entrada por captura. Si el usuario elige otro candidato después,
       // esta misma entrada se reemplaza en vez de sumar una nueva.
-      setSession((current) => [...current, { runId, candidate: best }]);
+      //
+      // El recorte al tope va adentro del setter (`appendSessionEntry`) y no
+      // después: el estado en memoria tiene que respetar el mismo máximo que lo
+      // que se persiste, o la UI anunciaría 30 cartas y mostraría 47 hasta que
+      // el usuario recargara la página.
+      setSession((current) => appendSessionEntry(current, { runId, candidate: best }));
       setStage('results');
     } catch (err) {
       if (runIdRef.current !== runId) return;

@@ -1,6 +1,7 @@
 'use client';
 
-import { ListFilter } from 'lucide-react';
+import { ListFilter, Lock } from 'lucide-react';
+import Link from 'next/link';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useCallback } from 'react';
 
@@ -14,17 +15,17 @@ import {
   type BinderSnapshot,
   type SetProgressSnapshot,
 } from '@/components/set-progress/set-progress-source';
-import { Alert, ErrorState, IconButton } from '@/components/ui';
+import { Alert, buttonVariants, EmptyState, ErrorState, IconButton } from '@/components/ui';
 import { useAsync } from '@/hooks/use-async';
+import { useAuth } from '@/hooks/use-auth';
+import { cn } from '@/lib/cn';
 
 /**
  * El valor "no hay set seleccionado".
  *
- * `useAsync` no tiene `enabled` (no es un hook mío para tocarlo) y los hooks no
- * se pueden llamar condicionalmente, así que el fetch del binder se pide siempre
- * y lo que se resuelve antes de la red es este objeto vacío. La Vista 2 igual no
- * se renderiza sin `?set=`, así que el valor nunca llega a la pantalla: existe
- * para que el hook tenga algo coherente que devolver.
+ * `useAsync` no tiene `enabled` y los hooks no se pueden llamar condicionalmente.
+ * El objeto vacío permite mantener el hook montado sin pedir datos cuando no hay
+ * sesión o todavía no se eligió un set.
  */
 const EMPTY_BINDER: BinderSnapshot = {
   setId: '',
@@ -55,33 +56,39 @@ const EMPTY_BINDER: BinderSnapshot = {
  * de `GET /api/sets`), y traerlo en el server para las dos vistas sería un fetch
  * extra del mismo payload.
  *
- * ## Los dos requests van siempre
+ * ## Los datos se piden solo con sesión
  *
  * El progreso se pide aunque estemos en el binder. Son 3 lecturas de Postgres
  * (no llamadas a pokemontcg.io, `AGENTS.md` §3.1) y es lo que hace que volver
- * a la lista sea instantáneo en vez de mostrar un skeleton de nuevo.
+ * a la lista sea instantáneo en vez de mostrar un skeleton de nuevo. Sin sesión,
+ * ambos hooks resuelven localmente y no mandan requests privados que terminarían
+ * en 401.
  */
 export function SetProgressScreen() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const params = useParams<{ id: string }>();
+  const { isLoading: isAuthLoading, isAuthenticated } = useAuth();
 
   const collectionId = params.id;
   const setId = searchParams.get('set') ?? '';
   const listHref = `/colecciones/${encodeURIComponent(collectionId)}`;
   const setsHref = `${listHref}/sets`;
 
-  const progress = useAsync(
-    (signal) => SET_PROGRESS_SOURCE.getProgress(collectionId, signal),
-    [collectionId],
+  const progress = useAsync<SetProgressSnapshot | null>(
+    (signal) =>
+      isAuthLoading || !isAuthenticated
+        ? Promise.resolve(null)
+        : SET_PROGRESS_SOURCE.getProgress(collectionId, signal),
+    [collectionId, isAuthLoading, isAuthenticated],
   );
 
   const binder = useAsync(
     (signal) =>
-      setId === ''
+      isAuthLoading || !isAuthenticated || setId === ''
         ? Promise.resolve(EMPTY_BINDER)
         : SET_PROGRESS_SOURCE.getBinder(collectionId, setId, signal),
-    [collectionId, setId],
+    [collectionId, setId, isAuthLoading, isAuthenticated],
   );
 
   const openSet = useCallback(
@@ -140,7 +147,32 @@ export function SetProgressScreen() {
       />
 
       <ScreenContainer>
-        {isBinder ? (
+        {/*
+          Sin sesión, esta pantalla no tiene nada que mostrar: el progreso por set
+          es de una colección, y las colecciones son de una cuenta.
+
+          Antes no se chequeaba y la request fallaba con 401, con lo que la
+          pantalla mostraba "No pudimos cargar el progreso" y un botón de
+          "Reintentar" que no iba a cambiar nada. Decir "iniciá sesión" no es
+          comunicación: es el único mensaje que corresponde a un 401, y la
+          diferencia es que uno ofrece la salida y el otro la esconde.
+        */}
+        {!isAuthLoading && !isAuthenticated ? (
+          <EmptyState
+            kind="first-use"
+            icon={Lock}
+            title="Iniciá sesión para ver el progreso"
+            description="El progreso por set se calcula sobre tu colección, y las colecciones viven en tu cuenta."
+            action={
+              <Link
+                href="/login"
+                className={cn(buttonVariants({ variant: 'primary', size: 'lg' }), 'px-5')}
+              >
+                Iniciar sesión
+              </Link>
+            }
+          />
+        ) : isBinder ? (
           <BinderStates
             status={binder.status}
             error={binder.error}

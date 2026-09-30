@@ -26,13 +26,53 @@ const DEFAULT_PAGE_SIZE = 50;
  */
 const COVER_SIZE = 4;
 
-const ITEM_INCLUDE = Prisma.validator<Prisma.CollectionItemInclude>()({
-  card: { include: { set: true } },
+/**
+ * Proyección del `CollectionItemDto`, no `include: { card: { include: { set: true } } }`.
+ * Ese include también traía `cards.rawJson` y `card_sets.rawJson` por cada fila;
+ * no se serializan en el DTO y en una página repetían kilobytes de JSON histórico
+ * que no hace falta leer para dibujar una carta.
+ */
+const ITEM_SELECT = Prisma.validator<Prisma.CollectionItemSelect>()({
+  id: true,
+  collectionId: true,
+  cardId: true,
+  variant: true,
+  condition: true,
+  quantity: true,
+  isForTrade: true,
+  notes: true,
+  addedAt: true,
+  card: {
+    select: {
+      id: true,
+      name: true,
+      supertype: true,
+      subtypes: true,
+      hp: true,
+      types: true,
+      number: true,
+      rarity: true,
+      artist: true,
+      setId: true,
+      imageSmall: true,
+      imageLarge: true,
+      set: {
+        select: {
+          id: true,
+          name: true,
+          series: true,
+          printedTotal: true,
+          total: true,
+          releaseDate: true,
+          logoUrl: true,
+          symbolUrl: true,
+        },
+      },
+    },
+  },
 });
 
-type ItemWithCard = Prisma.CollectionItemGetPayload<{
-  include: { card: { include: { set: true } } };
-}>;
+type ItemWithCard = Prisma.CollectionItemGetPayload<{ select: typeof ITEM_SELECT }>;
 
 export interface SetDto {
   id: string;
@@ -472,7 +512,7 @@ export class CollectionsService {
         return tx.collectionItem.update({
           where: { id: existing.id },
           data: { quantity: { increment: quantity } },
-          include: ITEM_INCLUDE,
+          select: ITEM_SELECT,
         });
       }
 
@@ -486,7 +526,7 @@ export class CollectionsService {
             quantity,
             ...(dto.notes !== undefined ? { notes: dto.notes } : {}),
           },
-          include: ITEM_INCLUDE,
+          select: ITEM_SELECT,
         });
       } catch (error) {
         // Carrera entre dos requests idénticos: el unique ya lo creó el otro.
@@ -499,7 +539,7 @@ export class CollectionsService {
         return tx.collectionItem.update({
           where: { id: winner.id },
           data: { quantity: { increment: quantity } },
-          include: ITEM_INCLUDE,
+          select: ITEM_SELECT,
         });
       }
     });
@@ -582,7 +622,7 @@ export class CollectionsService {
       item = await this.prisma.collectionItem.update({
         where: { id: itemId },
         data,
-        include: ITEM_INCLUDE,
+        select: ITEM_SELECT,
       });
     } catch (error) {
       if (isUniqueViolation(error)) {
@@ -616,7 +656,7 @@ export class CollectionsService {
 
     const items = await this.prisma.collectionItem.findMany({
       where: { collectionId, quantity: { gt: 1 } },
-      include: ITEM_INCLUDE,
+      select: ITEM_SELECT,
     });
 
     const prices = await this.fetchLatestPrices(
@@ -812,7 +852,7 @@ export class CollectionsService {
       const [items, count] = await Promise.all([
         this.prisma.collectionItem.findMany({
           where,
-          include: ITEM_INCLUDE,
+          select: ITEM_SELECT,
           orderBy: this.itemOrderBy(dto.sort),
           take: pageSize,
           skip: offset,
@@ -830,7 +870,7 @@ export class CollectionsService {
 
     const items = await this.prisma.collectionItem.findMany({
       where: { id: { in: ids } },
-      include: ITEM_INCLUDE,
+      select: ITEM_SELECT,
     });
     // `findMany` no garantiza el orden: el que manda es el de la query de ids.
     const byId = new Map(items.map((item) => [item.id, item]));

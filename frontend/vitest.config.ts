@@ -41,9 +41,19 @@ export default defineConfig({
      * lógica pura (el guard de contraste parsea `globals.css` con `node:fs`) y
      * `components/**` lleva `jsdom` en el docblock.
      */
+    /**
+     * Se agrega `hooks/**` a los `lib/**` y `components/**` que ya estaban.
+     *
+     * Los hooks que hacen fetch son donde viven las carreras entre corridas —
+     * el número de corrida, el `AbortSignal`, el `disposed`—, y ninguna se ve
+     * leyendo el componente que los usa: se ven canceling una request vieja y
+     * dejando que su respuesta pinte sobre la nueva.
+     */
     include: [
       'lib/**/*.test.ts',
       'lib/**/*.test.tsx',
+      'hooks/**/*.test.ts',
+      'hooks/**/*.test.tsx',
       'components/**/*.test.ts',
       'components/**/*.test.tsx',
       'app/**/*.test.ts',

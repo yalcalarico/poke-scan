@@ -202,7 +202,7 @@ levantado (`pnpm run dev`), no solo los tests.
 El rediseño de UI/UX **terminó y se activó de golpe** (el "flip", 2026-09-28). No
 hay dos apps, ni un prefijo de versión, ni una carpeta de "código viejo". El árbol
 es el que ves: design system con tokens y tema claro/oscuro, 27 primitivas en
-`components/ui/`, y 11 pantallas.
+`components/ui/`, 13 rutas de página y una landing pública separada de la app PWA.
 
 **No existe la regla "no toques la v1"**, porque no hay v1. Lo que queda de ella es
 una regla de ubicación, que sí importa: si algo del rediseño necesitaba algo de la
@@ -217,15 +217,17 @@ que importa es la de los tipos del contrato (§1).
 | Carpeta | Qué monta | `BottomNav` |
 |---|---|---|
 | `app/layout.tsx` + `app/providers.tsx` | `<html>`, metadata, script anti-flash, skip link, y los cuatro providers (`Theme` · `Auth` · `Currency` · `Toast`) | — |
-| `app/(app)/` | `<AppShell>`: buscar, escanear, colecciones, ajustes y la home | **sí** |
+| `app/(marketing)/` | Landing pública `/` y FAQ `/faq`, con `MarketingShell` | no |
+| `app/(app)/` | `<AppShell>`: inicio `/inicio`, buscar, escanear, colecciones y ajustes | **sí** |
 | `app/(auth)/` | `<PlainShell>`: login y registro | no |
 | `app/share/` | `<PlainShell>`: la colección compartida pública | no |
 
 Los providers están **arriba, en el layout raíz**, y no en los layouts de rama: son
 de la app entera, y montarlos por rama los duplicaría y el estado de la moneda y
 del tema se perdería al navegar. Los layouts de rama solo pintan el canvas y
-deciden si hay `BottomNav`. La razón por la que las tres ramas son carpetas
-hermanas y no route groups anidados está en `frontend/docs/gotchas.md` §17.
+deciden si hay `BottomNav`. La PWA abre `/inicio`; `/` queda para adquisición.
+La razón por la que las cuatro ramas son carpetas hermanas y no route groups
+anidados está en `frontend/docs/gotchas.md` §17.
 
 ### El linter de colores está enganchado
 

@@ -16,7 +16,7 @@ export interface AppMarkProps {
  * La marca de la app: el ícono real, no un SVG dibujado a mano.
  *
  * Referencia histórica: la app anterior tenía dos logos distintos dibujados
- * como `<svg>` inline —uno en `app/page.tsx` y otro en `app/(auth)/layout.tsx`—
+ * como `<svg>` inline —uno en la antigua home y otro en `app/(auth)/layout.tsx`—
  * y el design system pide explícitamente que los SVG sueltos desaparezcan
  * (§8.14). El ícono del manifest ya existe, ya es el que el launcher muestra
  * en el home screen, y usarlo acá garantiza que la web y la PWA instalada
@@ -40,6 +40,9 @@ export function AppMark({ size = 40, className }: AppMarkProps) {
       alt=""
       width={size}
       height={size}
+      // El PNG pesa 5 KB; servirlo directo evita el optimizador y su caché
+      // intermedio para una marca local que no necesita transformación.
+      unoptimized
       // `priority` en todas las pantallas que lo usan: la marca está siempre
       // arriba del fold y es el primer request de la ruta.
       priority

@@ -5,6 +5,7 @@ import { CollectionsScreen } from '@/components/collections';
 export const metadata: Metadata = {
   title: 'Colecciones',
   description: 'Tus colecciones de cartas: cuántas tenés y cuánto valen.',
+  robots: { index: false, follow: false },
 };
 
 /**

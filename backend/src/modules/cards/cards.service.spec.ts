@@ -644,6 +644,210 @@ describe('CardsService', () => {
       });
     });
   });
+
+  // El bloque de arriba filtra siempre por `setId`, así que nunca ejercita el
+  // camino **global** de `searchByCurrentPrice`, que es el que atiende la
+  // consulta real (`/cards/search?sort=price` sin filtros) y el único donde el
+  // salto entre los dos tramos se puede ver de verdad: el set de pruebas tiene
+  // 5 cartas y su tramo cotizado entero entra en la primera página.
+  //
+  // Acá el catálogo es el de verdad y sus precios cambian con cada sync, así que
+  // no se pueden fijar ids a mano. La referencia sale de la **query anterior al
+  // cambio**: el `LEFT JOIN` con el `ORDER BY` global sobre `cards`. Si algún día
+  // divergen, el orden público de `sort=price` cambió, que es exactamente lo que
+  // estos tests tienen que vigilar.
+  describe('sort=price global (tramo cotizado + tramo sin precio)', () => {
+    const PAGE_SIZE = 24;
+
+    /**
+     * "Una cotización actual por carta": la última fila de cada variante y el
+     * mejor `market` entre variantes. Es la referencia que comparten la query
+     * vieja y `CURRENT_CARD_MARKET_PRICES`; si algún día divergieran, el orden
+     * público dejaría de ser el mismo y estos tests lo dicen.
+     */
+    const CURRENT_PRICES = `
+      SELECT best."cardId" AS "cardId", MAX(best.market) AS "price"
+      FROM (
+        SELECT DISTINCT ON (p."cardId", p.variant)
+          p."cardId" AS "cardId", p.variant AS "variant", p.market AS "market"
+        FROM card_prices p
+        ORDER BY p."cardId", p.variant, p."fetchedAt" DESC
+      ) best
+      WHERE best.market IS NOT NULL
+      GROUP BY best."cardId"
+    `;
+
+    /** El `LEFT JOIN` + `ORDER BY` global que `searchByCurrentPrice` reemplaza. */
+    async function legacyIds(
+      direction: 'asc' | 'desc',
+      limit: number,
+      offset: number,
+    ): Promise<string[]> {
+      const rows = await prismaClient.$queryRaw<{ id: string }[]>(Prisma.sql`
+        WITH cp AS (${Prisma.raw(CURRENT_PRICES)})
+        SELECT c.id
+        FROM cards c
+        LEFT JOIN card_sets s ON s.id = c."setId"
+        LEFT JOIN cp ON cp."cardId" = c.id
+        ORDER BY cp.price ${Prisma.raw(direction.toUpperCase())} NULLS LAST,
+                 c.name ASC, c.id ASC
+        LIMIT ${limit} OFFSET ${offset}
+      `);
+      return rows.map((row) => row.id);
+    }
+
+    /** Las primeras cartas sin cotización actual, en el orden del tramo final. */
+    async function firstUnpricedByName(limit: number): Promise<string[]> {
+      const rows = await prismaClient.$queryRaw<{ id: string }[]>(Prisma.sql`
+        WITH cp AS (${Prisma.raw(CURRENT_PRICES)})
+        SELECT c.id
+        FROM cards c
+        WHERE NOT EXISTS (SELECT 1 FROM cp WHERE cp."cardId" = c.id)
+        ORDER BY c.name ASC, c.id ASC
+        LIMIT ${limit}
+      `);
+      return rows.map((row) => row.id);
+    }
+
+    /** Cuántas cartas del catálogo entero tienen cotización actual. */
+    async function countPriced(): Promise<number> {
+      const rows = await prismaClient.$queryRaw<{ count: number }[]>(Prisma.sql`
+        WITH cp AS (${Prisma.raw(CURRENT_PRICES)})
+        SELECT COUNT(*)::int AS count
+        FROM cp JOIN cards c ON c.id = cp."cardId"
+      `);
+      return rows[0]?.count ?? 0;
+    }
+
+    async function countCards(): Promise<number> {
+      const rows = await prismaClient.$queryRaw<{ count: number }[]>(
+        Prisma.sql`SELECT COUNT(*)::int AS count FROM cards c`,
+      );
+      return rows[0]?.count ?? 0;
+    }
+
+    it('el catálogo tiene cartas cotizadas: sin esto los tests de abajo no miden nada', async () => {
+      const priced = await countPriced();
+      expect(priced).toBeGreaterThan(0);
+      // El supuesto del que depende la otimización: las cotizadas son una
+      // fracción minúscula del catálogo.
+      expect(priced).toBeLessThan((await countCards()) / 10);
+    });
+
+    it('la primera página global son cartas cotizadas, no el inicio del catálogo', async () => {
+      const result = await service.search(
+        search({ sort: 'price', direction: 'desc', pageSize: PAGE_SIZE }),
+      );
+
+      expect(result.data).toHaveLength(PAGE_SIZE);
+      expect(result.data.map((card) => card.id)).toEqual(
+        await legacyIds('desc', PAGE_SIZE, 0),
+      );
+    });
+
+    it('total y totalPages son los del catálogo entero, no los de las cotizadas', async () => {
+      const total = await countCards();
+      const result = await service.search(
+        search({ sort: 'price', direction: 'desc', pageSize: PAGE_SIZE }),
+      );
+
+      expect(result.total).toBe(total);
+      expect(result.totalPages).toBe(Math.ceil(total / PAGE_SIZE));
+    });
+
+    it('las dos direcciones dan la misma lista invertida, con las sin precio al final', async () => {
+      const desc = await service.search(
+        search({ sort: 'price', direction: 'desc', pageSize: PAGE_SIZE }),
+      );
+      const asc = await service.search(
+        search({ sort: 'price', direction: 'asc', pageSize: PAGE_SIZE }),
+      );
+
+      expect(desc.data.map((card) => card.id)).toEqual(
+        await legacyIds('desc', PAGE_SIZE, 0),
+      );
+      expect(asc.data.map((card) => card.id)).toEqual(
+        await legacyIds('asc', PAGE_SIZE, 0),
+      );
+    });
+
+    it('el cruce de página entre los dos tramos no repite ni saltea filas', async () => {
+      const priced = await countPriced();
+      // Página donde el tramo cotizado se queda corto y hay que completarla con
+      // el de las sin precio: es el único caso que consulta los dos.
+      const crossingPage = Math.floor(priced / PAGE_SIZE) + 1;
+      const crossingOffset = (crossingPage - 1) * PAGE_SIZE;
+      const fromPriced = Math.max(0, priced - crossingOffset);
+
+      const result = await service.search(
+        search({
+          sort: 'price',
+          direction: 'desc',
+          pageSize: PAGE_SIZE,
+          page: crossingPage,
+        }),
+      );
+      const ids = result.data.map((card) => card.id);
+
+      expect(result.data).toHaveLength(PAGE_SIZE);
+      expect(ids).toEqual(await legacyIds('desc', PAGE_SIZE, crossingOffset));
+
+      // Y el corte, explícito: la cola del tramo cotizado arriba y, detrás, el
+      // comienzo alfabético del tramo sin precio. Si el offset del segundo tramo
+      // no estuviera corrido por las cotizadas, esta mitad sería la primera
+      // página sin precio repetida.
+      expect(ids.slice(0, fromPriced)).toEqual(
+        await legacyIds('desc', fromPriced, crossingOffset),
+      );
+      expect(ids.slice(fromPriced)).toEqual(
+        await firstUnpricedByName(PAGE_SIZE - fromPriced),
+      );
+    });
+
+    it('recorrer todas las páginas del tramo cotizado da la lista vieja completa, sin huecos', async () => {
+      const priced = await countPriced();
+      const lastPage = Math.ceil(priced / PAGE_SIZE);
+
+      const seen: string[] = [];
+      for (let page = 1; page <= lastPage; page++) {
+        const result = await service.search(
+          search({
+            sort: 'price',
+            direction: 'desc',
+            pageSize: PAGE_SIZE,
+            page,
+          }),
+        );
+        seen.push(...result.data.map((card) => card.id));
+      }
+
+      // Es la lista vieja partida en trozos: si el paginado del tramo cotizado
+      // se desfasara una sola fila, los ids no empatarían aunque cada página por
+      // separado pareciera correcta.
+      expect(seen).toEqual(await legacyIds('desc', seen.length, 0));
+      expect(new Set(seen).size).toBe(seen.length);
+    });
+
+    it('una página entera dentro del tramo sin precio trae las cartas correctas', async () => {
+      const priced = await countPriced();
+      const deepPage = Math.floor(priced / PAGE_SIZE) + 2;
+      const deepOffset = (deepPage - 1) * PAGE_SIZE;
+
+      const result = await service.search(
+        search({
+          sort: 'price',
+          direction: 'desc',
+          pageSize: PAGE_SIZE,
+          page: deepPage,
+        }),
+      );
+
+      expect(result.data).toHaveLength(PAGE_SIZE);
+      expect(result.data.map((card) => card.id)).toEqual(
+        await legacyIds('desc', PAGE_SIZE, deepOffset),
+      );
+    });
+  });
 });
 
 describe('CardsService · change de 30 días (B10)', () => {

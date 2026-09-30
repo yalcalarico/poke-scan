@@ -16,7 +16,7 @@ tocás un DTO, actualizá el otro lado en el mismo commit.
 | TypeScript | 5.x | `strict: true`, alias `@/*` → raíz del frontend |
 | Tailwind | 4.x | Config por CSS (`app/globals.css`), sin `tailwind.config.js` |
 | tesseract.js | 7.0.0 | **Solo cliente**, nunca en el grafo del server |
-| Vitest | 5.x | `environment: 'node'`, corre solo `lib/**/*.test.ts` |
+| Vitest | 5.x | `node` por default; los tests de componentes usan `jsdom` por archivo |
 | pnpm | 10.17.1 | Único gestor de paquetes. Nunca npm ni yarn |
 
 ## Arrancar
@@ -55,17 +55,19 @@ pnpm run icons        # regenera public/icons/*.png
 ```
 frontend/
 ├── app/                    # App Router
-│   ├── layout.tsx          # root: metadata, viewport, providers, offline banner
-│   ├── page.tsx            # home (/)
+│   ├── layout.tsx          # root: metadata, viewport, providers, service worker
+│   ├── (marketing)/        # landing pública (/) + FAQ (/faq)
 │   ├── not-found.tsx       # 404 global
 │   ├── providers.tsx       # AuthProvider > CurrencyProvider
 │   ├── pwa-sw-register.tsx # registra /sw.js solo en producción
-│   ├── globals.css         # Tailwind 4 + reglas PWA (safe-area, standalone)
-│   ├── (app)/              # route group: app con sesión (top bar + bottom nav)
+│   ├── globals.css         # Tailwind 4 + tokens y reglas PWA
+│   ├── robots.ts           # reglas de rastreo
+│   ├── sitemap.ts          # landing, catálogo y FAQ
+│   ├── (app)/              # app PWA: inicio (/inicio), catálogo y colecciones
 │   ├── (auth)/             # route group: login/registro, layout centrado
 │   └── share/[slug]/       # público, FUERA de (app) a propósito
-├── components/             # 33 archivos, 24 con 'use client'
-│   ├── layout/ auth/ cards/ collections/ prices/ scanner/ search/ share/ ui/
+├── components/             # design system, app y sitio público
+│   ├── layout/ marketing/ auth/ cards/ collections/ prices/ scanner/ search/ share/ ui/
 ├── hooks/
 │   ├── use-auth.tsx        # AuthContext (user, isLoading, login, logout…)
 │   └── use-currency.tsx    # CurrencyContext (USD/ARS, blue/oficial, formatMoney)

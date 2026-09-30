@@ -14,6 +14,7 @@ import { SearchFallback } from '@/components/search/search-fallback';
 export const metadata: Metadata = {
   title: 'Buscar',
   description: 'Buscá una carta por nombre o por set y mirá su valor de mercado.',
+  alternates: { canonical: '/buscar' },
 };
 
 /**

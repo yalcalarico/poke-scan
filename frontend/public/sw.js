@@ -10,7 +10,7 @@
  * Bump de VERSION para forzar el renuevo del cache en el siguiente activate.
  */
 
-const VERSION = 'v1';
+const VERSION = 'v3';
 const SHELL_CACHE = `pokescan-shell-${VERSION}`;
 const IMAGE_CACHE = `pokescan-images-${VERSION}`;
 const OCR_CACHE = `pokescan-ocr-${VERSION}`;
@@ -20,6 +20,7 @@ const CURRENT_CACHES = [SHELL_CACHE, IMAGE_CACHE, OCR_CACHE, API_CACHE];
 /** El shell minimo que hace falta para arrancar la app sin red. */
 const SHELL_ASSETS = [
   '/',
+  '/inicio',
   '/buscar',
   '/login',
   '/registro',
@@ -104,6 +105,15 @@ function isImageRequest(url) {
 
 function isApiRequest(url) {
   return url.pathname.startsWith('/api/');
+}
+
+/** Las respuestas Flight de Next son estado de navegación, no assets reusables. */
+function isNextRscRequest(request, url) {
+  return (
+    url.searchParams.has('_rsc') ||
+    request.headers.get('RSC') === '1' ||
+    request.headers.get('Accept')?.includes('text/x-component') === true
+  );
 }
 
 /** Nunca cachear requests autenticadas: la respuesta depende del token. */
@@ -194,6 +204,11 @@ self.addEventListener('fetch', (event) => {
   const sameOrigin = url.origin === self.location.origin;
   if (!sameOrigin && !IMAGE_HOSTS.includes(url.hostname)) return;
 
+  // Un stream Flight cacheado puede ser el fallback de Suspense de una
+  // navegación anterior. No se cachea ni reproduce; el bump de VERSION purga
+  // además las entradas `_rsc` viejas de las instalaciones existentes.
+  if (sameOrigin && isNextRscRequest(request, url)) return;
+
   if (request.mode === 'navigate') {
     event.respondWith(networkFirstNavigation(request));
     return;
@@ -218,8 +233,9 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Resto de assets same-origin (/_next/static, etc.): cache first.
-  if (sameOrigin) {
+  // Solo los chunks hasheados e inmutables de Next usan cache-first acá. Los
+  // requests dinámicos same-origin (incluidas respuestas App Router) van a red.
+  if (sameOrigin && url.pathname.startsWith('/_next/static/')) {
     event.respondWith(
       cacheFirst(request, SHELL_CACHE).catch(() => fetch(request)),
     );

@@ -245,10 +245,50 @@ documentado entero en [pricing.md](pricing.md). Lo único que vive en este doc:
 
 - `MAX_AGE_MS = 24h` (frescura en Postgres), `CACHE_TTL_SECONDS = 1h` (Redis),
   `NEGATIVE_CACHE_TTL_SECONDS = 6h` (cuando la fuente todavía no cotiza).
-- `MIN_GAP_MS = 2300` en la cola en background (~26 req/min).
+- `MIN_GAP_MS = 2300` se aplica en `withProviderSlot`, la única puerta al
+  proveedor, y la comparten la cola y el lote del admin (~26 req/min). La
+  lectura pública es stale-while-revalidate y no espera ese slot: ver
+  [pricing.md](pricing.md).
 - `refreshMany(cardIds)` es **bloqueante y en serie** (lo usa el endpoint admin).
+  Con N cartas tarda N × 2,3 s a propósito, para no gastar el presupuesto de un
+  saque.
 - `refresh(cardId)` **sí hace HTTP**: resuelve el set (lazy si hace falta) y
-  pide el precio a tcgdex por (set, localId).
+  pide el precio a tcgdex por (set, localId), pasando por el gap compartido.
+  Desde un handler público de lectura, usá `getPricesForCard`: devuelve el dato
+  disponible y encola los vencidos, sin bloquear la respuesta.
+
+### La cola es en memoria, y eso es una limitación
+
+`enqueueRefresh` procesa en un `setTimeout` sobre un array del proceso. Dos
+consecuencias, y conviene conocerlas antes de tocar nada acá:
+
+1. **Un reinicio del backend pierde lo pendiente.** No es un error ni una
+   inconsistencia: el precio de esa carta simplemente queda para la próxima
+   lectura, que lo encola de nuevo. Pero si el reinicio cae en el medio de un
+   lote grande, las primeras cartas quedan sin refrescar hasta que alguien las
+   mira.
+2. **No sobrevive a un despliegue con más de una instancia.** El catálogo
+   espejado es compartido, pero la cola no: cada proceso tendría la suya.
+
+El diseño de la cola persistente (tabla `price_refresh_jobs` con
+`deduplicationKey`, `attempts`, `availableAt` y recuperación de `processing`
+abandonados al arrancar) está en
+[`docs/plans/02-backend-production.md`](../../docs/plans/02-backend-production.md).
+No está hecho a propósito: toca el path que maneja el rate limit externo, que es
+la restricción más dura del proyecto, y merece su propio commit con su propia
+verificación de que el `MIN_GAP_MS` se sigue respetando.
+
+## No hay scheduler
+
+`@nestjs/schedule` está en `package.json` y **no hay ningún `@Cron` en el
+proyecto**. El sync del catálogo es manual (`pnpm run sync` o el endpoint de
+admin) y el de precios es bajo demanda.
+
+El motivo de no automatizar el sync de catálogo todavía es de producto: la fuente
+es deprecada y las keys mueren el **1 de marzo de 2027**, así que un cron que la
+mantenga al día puede quedar viejo antes de necesitarse. El de precios sí tendría
+sentido, pero convive mal con la cola en memoria: dos planificadores disparando
+sobre una cola que no persiste es peor que uno solo.
 
 ## Endpoints de admin
 
@@ -259,15 +299,37 @@ responden `403 ADMIN_KEY no está configurado: endpoint deshabilitado`.
 ### `POST /api/jobs/sync-catalog` → 202
 
 ```ts
-const job = await this.prisma.scanJob.create({
-  data: { userId, status: 'running', jobType: 'sync-catalog', startedAt: new Date() },
-});
-void this.runSync(job.id, dto);      // ← fire and forget
+// El lock va ANTES de crear el ScanJob: si el segundo proceso esperara al
+// registro para ver que ya hay uno corriendo, la ventana entre el create y el
+// acquire alcanza para que entren los dos.
+const lockToken = randomUUID();
+if (!(await this.redis.acquireLock(SYNC_LOCK_KEY, lockToken, SYNC_LOCK_TTL_SECONDS))) {
+  throw new ConflictException('Ya hay un sync de catálogo en curso.');
+}
+const job = await this.prisma.scanJob.create({ /* … */ });
+void this.runSync(job.id, dto, lockToken);      // ← fire and forget
 return { started: true, jobId: job.id };
 ```
 
 El request devuelve **de inmediato** y el sync corre en background. El progreso
 se consulta con `GET /jobs/:id`. El body es `{ "force": boolean }` opcional.
+
+**Un sync a la vez.** El cursor (`sync:cards:lastPage`) es un único número
+compartido, así que dos syncs simultáneos se pisan la página reanudable —el
+primero que retoma, reanuda desde donde está el otro— y multiplican los requests
+contra la fuente externa, que es el recurso más escaso del proyecto
+(`AGENTS.md` §3.1). El lock es un `SET NX EX` en Redis con **token único**, y la
+liberación es un `EVAL` de compare-and-delete: un `DEL` a secas no distinguiría
+"mi lock" de "el lock de otro" y podría borrar el de un sync que ya había
+tomado el relevo.
+
+El TTL (30 min) es la **red de seguridad**, no el mecanismo: `runSync` lo renueva
+a mitad de vida mientras el trabajo sigue vivo, así que el lock solo expira solo
+si el proceso muere. Si la liberación falla porque el TTL ya venció, se loguea
+un warning —no es un error, pero significa que otro sync pudo haber trabajado
+sobre el mismo cursor.
+
+Un `409` significa que hay otro sync corriendo, no que este endpoint esté roto.
 
 El `ScanJob` se cuelga del **primer usuario por `createdAt`**, o de un usuario
 `system@pokemon-cards-scanner.app` con `passwordHash: 'not-usable'` si la base

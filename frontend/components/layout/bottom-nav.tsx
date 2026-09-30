@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
+import { AppMark } from '@/components/brand';
 import { NAV_ITEMS, isNavItemActive } from '@/components/nav';
 import { cn } from '@/lib/cn';
 
@@ -10,8 +11,8 @@ import { cn } from '@/lib/cn';
  * La navegación principal, y **la misma barra en dos lugares**.
  *
  * Abajo hasta `lg`, arriba de `lg` en adelante. No son dos componentes ni dos
- *rutas: es la misma barra con los mismos cuatro items y el mismo ícono de
- * pestaña activa, que se apoya en el borde de arriba en vez del de abajo.
+ * rutas: en móvil muestra los cinco destinos; en desktop el enlace de marca
+ * reemplaza la tab Inicio y quedan cuatro secciones a la derecha.
  *
  * ## Por el corte en `lg` y no en `md`
  *
@@ -47,55 +48,78 @@ export function BottomNav() {
       )}
     >
       {/*
-        `max-w-lg` evita que los 4 items queden tirados en un monitor de 1920, y
-        en `lg:` se abre a `max-w-6xl` para acompañar el ancho del contenido y
-        dejar la marca a la izquierda con las pestañas a la derecha, que es la
-        convención de un navbar de sitio.
+        El contenedor evita que las tabs queden tiradas en un monitor de 1920.
+        En `lg:` se abre a `max-w-6xl`, con la marca a la izquierda y las secciones
+        a la derecha, que es la convención de un navbar de sitio.
       */}
-      <ul
-        className={cn(
-          'mx-auto flex h-16 max-w-lg items-stretch',
-          // En `lg:` los items se alinean a la derecha y el ícono y el label
-          // van en fila: hay ancho de sobra y en vertical con el ícono al lado
-          // del texto la barra queda más baja y más parecida a un navbar.
-          'lg:h-14 lg:max-w-6xl lg:items-center lg:justify-end lg:gap-1',
-          'lg:px-6',
-        )}
-      >
-        {NAV_ITEMS.map((item) => {
-          const isActive = isNavItemActive(pathname, item.href);
-          const Icon = item.icon;
+      <div className="mx-auto flex h-16 max-w-lg items-stretch lg:h-14 lg:max-w-6xl lg:px-6">
+        <Link
+          href="/inicio"
+          aria-label="PokéScan, inicio de la app"
+          className="hidden shrink-0 items-center gap-2 rounded-control focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--focus-ring)] lg:flex"
+        >
+          <AppMark size={32} />
+          <span className="text-body-strong text-primary">PokéScan</span>
+        </Link>
 
-          return (
-            <li key={item.href} className="flex-1 lg:flex-none">
-              <Link
-                href={item.href}
-                aria-current={isActive ? 'page' : undefined}
+        <ul
+          className={cn(
+            'mx-auto flex h-full max-w-lg flex-1 items-stretch',
+            // En `lg:` los items se alinean a la derecha y el ícono y el label
+            // van en fila: hay ancho de sobra y en vertical con el ícono al lado
+            // del texto la barra queda más baja y más parecida a un navbar.
+            'lg:ml-auto lg:flex-none lg:items-center lg:justify-end lg:gap-1',
+          )}
+        >
+          {NAV_ITEMS.map((item) => {
+            const isActive = isNavItemActive(pathname, item.href);
+            const Icon = item.icon;
+
+            return (
+              <li
+                key={item.href}
                 className={cn(
-                  'flex h-full flex-col items-center justify-center gap-1 px-1 transition-colors duration-fast',
-                  // En `lg:` el texto del item activo pasa a tener la misma
-                  // forma que el link de texto de un navbar (subrayado), porque
-                  // la banda de color del ícono sola alcanza menos cuando el
-                  // label está al lado y no debajo.
-                  'lg:flex-row lg:gap-2 lg:rounded-control lg:px-3 lg:py-2 lg:hover:bg-surface-2',
-                  isActive ? 'text-brand' : 'text-tertiary hover:text-secondary',
+                  'min-w-0 flex-1 lg:flex-none',
+                  item.href === '/inicio' && 'lg:hidden',
                 )}
               >
-                <Icon className="h-6 w-6" strokeWidth={isActive ? 2.25 : 1.75} aria-hidden="true" />
-                <span
+                <Link
+                  href={item.href}
+                  aria-label={item.label}
+                  aria-current={isActive ? 'page' : undefined}
                   className={cn(
-                    'text-caption leading-none lg:text-body',
-                    isActive && 'font-semibold',
-                    isActive && 'lg:underline lg:decoration-2 lg:underline-offset-4',
+                    'flex h-full flex-col items-center justify-center gap-1 px-1 transition-colors duration-fast',
+                    // En `lg:` el texto del item activo pasa a tener la misma
+                    // forma que el link de texto de un navbar (subrayado), porque
+                    // la banda de color del ícono sola alcanza menos cuando el
+                    // label está al lado y no debajo.
+                    'lg:flex-row lg:gap-2 lg:rounded-control lg:px-3 lg:py-2 lg:hover:bg-surface-2',
+                    isActive ? 'text-brand' : 'text-tertiary hover:text-secondary',
                   )}
                 >
-                  {item.label}
-                </span>
-              </Link>
-            </li>
-          );
-        })}
-      </ul>
+                  <Icon className="h-6 w-6" strokeWidth={isActive ? 2.25 : 1.75} aria-hidden="true" />
+                  <span
+                    className={cn(
+                      'text-caption leading-none lg:text-body',
+                      isActive && 'font-semibold',
+                      isActive && 'lg:underline lg:decoration-2 lg:underline-offset-4',
+                    )}
+                  >
+                    {item.href === '/colecciones' ? (
+                      <>
+                        <span className="sm:hidden">Cartas</span>
+                        <span className="hidden sm:inline">Colecciones</span>
+                      </>
+                    ) : (
+                      item.label
+                    )}
+                  </span>
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
     </nav>
   );
 }

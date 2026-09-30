@@ -59,8 +59,8 @@ otro lado.**
 | Pantalla | Qué resuelve |
 |---|---|
 | **Escanear** | Apunta la cámara → OCR en el dispositivo → identifica la carta en el catálogo y te muestra el precio. Sin internet. |
-| **Buscar** | Catálogo completo de 20.670 cartas con búsqueda difusa (tolerante a typos), filtros por set, rareza y tipo. |
-| **Colecciones** | Nombres y duplicados, valor total, qué marcar para intercambio. |
+| **Buscar** | Catálogo completo de 20.670 cartas con búsqueda difusa (tolerante a typos), búsqueda por nombre, número o artista, filtros por set y rareza, y orden por nombre, precio, rareza o número. |
+| **Colecciones** | Nombres y duplicados, valor total, portada con tus cartas, progreso por set y binder, qué marcar para intercambio. |
 | **Comparte** | Link público de solo lectura, o el sistema de amigos. |
 | **Perfil** | Moneda (USD/ARS), enlaces compartidos, cuenta. |
 
@@ -87,11 +87,12 @@ convenciones de código.
 ## Estado
 
 - ✅ 20.670 cartas · 176 sets sincronizados
-- ✅ 104 tests backend · 70 frontend
+- ✅ 223 tests backend · 336 frontend
 - ✅ Autenticación con rotación de tokens y detección de reuso
 - ✅ Escáner por cámara con OCR (acierta ~7/8 cartas, la UI siempre confirma)
 - ✅ Precios USD y ARS con caché de 2 capas
 - ✅ Links públicos + sistema de amigos
+- ✅ Orden por precio en el catálogo y en la colección
 - ⏳ Deploy a producción
 
 ### Limitaciones conocidas
@@ -103,5 +104,23 @@ convenciones de código.
   manual y búsqueda a mano.
 - **El OCR necesita ~12 MB** en el primer uso (ya auto-hospedados, cacheados
   por el service worker).
+- **La cola de refresco de precios vive en memoria.** Un reinicio del backend
+  pierde lo pendiente.
+- **El histórico de precios no tiene poda.** `card_prices` es append-only y
+  crece sin techo.
+- **Los jobs no están programados.** El sync de catálogo es manual; hay un lock
+  distribuido que impide dos syncs a la vez, pero ningún cron.
+- **La E2E es mínima.** Solo health; falta auth, ownership, precios y sharing.
 - **Las rutas inexistentes devuelven HTTP 200** renderizando la 404, por el
   streaming de Next 16. Ver `frontend/docs/routes.md`.
+
+## Planes de trabajo
+
+| | |
+|---|---|
+| [`docs/plans/01-frontend-product.md`](docs/plans/01-frontend-product.md) | Integraciones de producto, robustez del scanner y sincronización de docs |
+| [`docs/plans/02-backend-production.md`](docs/plans/02-backend-production.md) | Cotizaciones, lock de jobs y lo que falta para producción |
+
+Los dos planes marcan **qué se hizo** y **qué quedó con su motivo**. No son una
+lista de deseos: son el registro de por qué el backend tieneScheduler pero no
+tiene cron, y de por qué la cola de precios no se persistió todavía.

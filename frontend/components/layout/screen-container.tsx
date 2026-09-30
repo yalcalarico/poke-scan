@@ -19,7 +19,7 @@ export interface ScreenContainerProps extends ContainerRest {
   /** Azúcar de `aria-labelledby`; el nombre de la prop sigue siendo el del design system. */
   labelledBy?: string;
   as?: ContainerTag;
-  /** Sin `max-w` ni `px`: para el scanner y la home, que son full-bleed. */
+  /** Sin `max-w` ni `px`: para el scanner y el inicio de la app, que son full-bleed. */
   bleed?: boolean;
 }
 

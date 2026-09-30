@@ -19,7 +19,8 @@ import { getSets, searchCards } from '@/lib/api';
 import type { CardSearchField as SearchField } from '@/lib/api';
 import { toUserFacingMessage } from '@/lib/api/user-message';
 import { pluralize } from '@/lib/format';
-import type { CardDto, SetDto } from '@/types/api';
+import { applySearchParamChanges } from '@/lib/search-params';
+import type { CardDto, CardSort, CardSortDirection, SetDto } from '@/types/api';
 
 import { CATALOG_PAGE_SIZE, SEARCH_DEBOUNCE_MS } from './catalog-options';
 import { SearchControls } from './search-controls';
@@ -87,6 +88,20 @@ export function CatalogSearch() {
   const urlSearchBy: SearchField =
     rawSearchBy === 'number' || rawSearchBy === 'artist' ? rawSearchBy : 'name';
 
+  /**
+   * Orden y sentido, también en la URL por la misma razón que el resto: un link
+   * a `/buscar?sort=price&direction=desc` tiene que abrir exactamente esa
+   * pantalla, y el botón atrás deshace un cambio de orden sin pila de filtros.
+   *
+   * `name` es el default y no se escribe, igual que `searchBy=name`: la URL que
+   * se comparte tiene que seguir siendo corta.
+   */
+  const rawSort = searchParams.get('sort');
+  const urlSort: CardSort =
+    rawSort === 'price' || rawSort === 'rarity' || rawSort === 'number' ? rawSort : 'name';
+  const urlDirection: CardSortDirection =
+    searchParams.get('direction') === 'desc' ? 'desc' : 'asc';
+
   const [inputValue, setInputValue] = useState(urlQuery);
 
   /**
@@ -102,7 +117,8 @@ export function CatalogSearch() {
   const pushedQueryRef = useRef<string | null>(null);
 
   /**
-   * Los `searchParams` en un ref, para que `updateUrl` sea **estable**.
+   * La query string efectiva va en un ref, para que `updateUrl` sea **estable**
+   * y varias acciones seguidas compongan sobre el último cambio solicitado.
    *
    * No es una micro-optimización: `pushQuery` entra en las deps del efecto del
    * debounce, y si su identidad cambiara en cada render el timer se rearma
@@ -110,22 +126,50 @@ export function CatalogSearch() {
    * `pushQuery`) no dependen de nada y el efecto solo se rearma cuando cambia
    * lo que el usuario escribe o lo que hay en la URL.
    *
-   * El ref se actualiza en un efecto y no en el render: los efectos corren
-   * antes de que venciera el timer de 300 ms, así que nunca se lee viejo.
+   * `updateUrl` actualiza el ref sincrónicamente; el efecto lo reconcilia cuando
+   * Next confirma la navegación. Así el segundo click no parte de un
+   * `useSearchParams()` anterior mientras el primer RSC sigue en vuelo.
    */
-  const searchParamsRef = useRef(searchParams);
+  const searchParamsRef = useRef(searchParams.toString());
+  const pendingSearchParamsRef = useRef<string | null>(null);
   useEffect(() => {
-    searchParamsRef.current = searchParams;
+    const committed = searchParams.toString();
+    if (pendingSearchParamsRef.current === committed) {
+      pendingSearchParamsRef.current = null;
+      searchParamsRef.current = committed;
+      return;
+    }
+
+    // Las navegaciones de `router.push` pueden resolver fuera de orden. Seguir
+    // componiendo desde la última URL solicitada evita que una respuesta RSC
+    // anterior borre un filtro más nuevo.
+    if (pendingSearchParamsRef.current !== null) {
+      searchParamsRef.current = pendingSearchParamsRef.current;
+      return;
+    }
+
+    searchParamsRef.current = committed;
   }, [searchParams]);
+
+  useEffect(() => {
+    const syncAfterHistoryNavigation = () => {
+      const committed = window.location.search.slice(1);
+      pendingSearchParamsRef.current = null;
+      searchParamsRef.current = committed;
+    };
+    window.addEventListener('popstate', syncAfterHistoryNavigation);
+    return () => window.removeEventListener('popstate', syncAfterHistoryNavigation);
+  }, []);
 
   const updateUrl = useCallback(
     (next: Record<string, string | null>) => {
-      const params = new URLSearchParams(searchParamsRef.current.toString());
-      for (const [key, value] of Object.entries(next)) {
-        if (value === null || value === '') params.delete(key);
-        else params.set(key, value);
-      }
-      const queryString = params.toString();
+      const queryString = applySearchParamChanges(searchParamsRef.current, next);
+      if (queryString === searchParamsRef.current) return;
+      // `useSearchParams` only updates after the RSC navigation commits. Update
+      // synchronously so rapid control changes compose instead of losing the
+      // first change while that request is in flight.
+      searchParamsRef.current = queryString;
+      pendingSearchParamsRef.current = queryString;
       // `scroll: false` es obligatorio: sin eso, cada tecla que pasa el debounce
       // saltaba al top de la página.
       router.push(queryString ? `/buscar?${queryString}` : `/buscar`, {
@@ -190,6 +234,32 @@ export function CatalogSearch() {
     [updateUrl],
   );
 
+  /**
+   * El orden resetea `page` por la misma razón que los filtros: la página 7 de
+   * un catálogo ordenado por nombre no es la página 7 del mismo catálogo
+   * ordenado por precio.
+   *
+   * Cambiar el `sort` pone la dirección en `desc` cuando el criterio es `price`
+   * o `number`, porque "las más caras primero" es lo que se busca y "la más
+   * barata primero" es la lectura literal de un `asc`. El nombre sigue en `asc`
+   * porque alfabético descendente no lo pide nadie.
+   */
+  const sortChange = useCallback(
+    (sort: CardSort) => {
+      const direction: CardSortDirection = sort === 'price' || sort === 'number' ? 'desc' : 'asc';
+      updateUrl({ sort: sort === 'name' ? null : sort, direction, page: null });
+    },
+    [updateUrl],
+  );
+
+  const directionChange = useCallback(
+    (direction: CardSortDirection) => {
+      // `asc` es el default del backend: no hace falta mandarlo.
+      updateUrl({ direction: direction === 'asc' ? null : direction, page: null });
+    },
+    [updateUrl],
+  );
+
   const hasCriteria = urlQuery.trim() !== '' || urlSetId !== '' || urlRarity !== '';
 
   const clearFilters = useCallback(() => {
@@ -211,12 +281,12 @@ export function CatalogSearch() {
    * el efecto URL → input y un estado local recién escrito.
    */
   const clearFilterParams = useCallback(() => {
-    updateUrl({ searchBy: null, setId: null, rarity: null, page: null });
+    updateUrl({ searchBy: null, setId: null, rarity: null, sort: null, direction: null, page: null });
   }, [updateUrl]);
 
   const sets = useAsync<SetDto[]>(() => getSets(), []);
 
-  const listKey = `${urlSearchBy}|${urlQuery}|${urlSetId}|${urlRarity}|${urlPage}`;
+  const listKey = `${urlSearchBy}|${urlQuery}|${urlSetId}|${urlRarity}|${urlSort}|${urlDirection}|${urlPage}`;
 
   return (
     <div className="flex flex-col gap-6">
@@ -251,6 +321,11 @@ export function CatalogSearch() {
         onSetIdChange={setChange}
         rarity={urlRarity}
         onRarityChange={rarityChange}
+        sort={urlSort}
+        onSortChange={sortChange}
+        direction={urlDirection}
+        onDirectionChange={directionChange}
+        hasQuery={urlQuery.trim() !== ''}
         sets={sets.data ?? []}
         setsLoading={sets.status === 'loading'}
         setsError={sets.status === 'error' ? sets.error : null}
@@ -264,6 +339,8 @@ export function CatalogSearch() {
         setId={urlSetId}
         rarity={urlRarity}
         initialPage={urlPage}
+        sort={urlSort}
+        direction={urlDirection}
         hasCriteria={hasCriteria}
         listKey={listKey}
         onClearFilters={clearFilters}
@@ -278,6 +355,8 @@ interface CardResultsProps {
   setId: string;
   rarity: string;
   initialPage: number;
+  sort: CardSort;
+  direction: CardSortDirection;
   hasCriteria: boolean;
   /**
    * La identidad del criterio, que es la `key` del remontaje.
@@ -307,6 +386,8 @@ function CardResults({
   setId,
   rarity,
   initialPage,
+  sort,
+  direction,
   hasCriteria,
   listKey,
   onClearFilters,
@@ -328,12 +409,12 @@ function CardResults({
     reload,
     sentinelRef,
   } = useInfiniteList<CardDto>(
-    // `searchCards` no acepta `signal`: `useInfiniteList` descarta la respuesta
-    // vieja por número de corrida, así que la request que llega tarde no pisa la
-    // nueva. Cancelar de verdad el fetch pediría duplicar la construcción de la
-    // query acá, y la forma de la query tiene que quedar en un solo lugar para
-    // que "un link reproduce la pantalla" sea cierto.
-    (page) =>
+    // El `signal` se pasa tal cual: el fetcher de `useInfiniteList` lo encadena
+    // hasta `fetch`, así que cambiar de filtro o de página **cancela** el
+    // request anterior en vez de dejarlo occupying trabajo hasta que responde.
+    // La query se sigue armando en un solo lugar —acá— para que "un link
+    // reproduce la pantalla" siga siendo cierto.
+    (page, signal) =>
       searchCards({
         q: query || undefined,
         searchBy,
@@ -341,11 +422,14 @@ function CardResults({
         rarity: rarity || undefined,
         page,
         pageSize: CATALOG_PAGE_SIZE,
-        // El backend ignora el `sort` cuando hay `q` (ordena por score de
-        // relevancia, que no es invertible) y con `price` cae en el mismo
-        // `ORDER BY` que `name`. Se pide el que sí ordena.
-        sort: 'name',
-      }),
+        // Con texto el backend ignora `sort` y `direction` (manda el score de
+        // relevancia) y con `price` cae en el `ORDER BY` de precio de mercado.
+        // Se mandan igual porque el filtro de la UI ya está apagado en ese caso
+        // y la URL sigue reproducida: mandar lo que el usuario eligió es lo que
+        // hace que la pantalla y la URL digan lo mismo.
+        sort,
+        direction,
+      }, signal),
     CATALOG_PAGE_SIZE,
     { initialPage },
   );

@@ -53,6 +53,32 @@ const SESSION_KEY = 'pcs.scanSession';
 /** Máximo de entradas que se conservan. Ver el JSDOC del módulo. */
 export const MAX_SESSION_ENTRIES = 30;
 
+/**
+ * Recorta una sesión al tope, conservando las **más nuevas**.
+ *
+ * Es la única función que aplica el tope, y es la que usan tanto la escritura
+ * como el alta en memoria. Eso es deliberado: antes el recorte vivía solo en
+ * `writeSession`, así que el estado de React de `/escanear` podía crecer sin
+ * límite durante la sesión —la UI anunciaba un máximo de 30 y la grilla llegaba
+ * a mostrar 47—, y al recargar desaparecían las primeras 17 sin avisar. Un tope
+ * que solo está en un call site no es un tope.
+ */
+export function normalizeSession<T>(entries: readonly T[]): T[] {
+  return entries.length > MAX_SESSION_ENTRIES
+    ? entries.slice(-MAX_SESSION_ENTRIES)
+    : [...entries];
+}
+
+/**
+ * Agrega una entrada a la sesión y devuelve la siguiente, ya recortada.
+ *
+ * Se usa en el `setSession` de `/escanear` para que el estado en memoria y lo
+ * que se persiste no puedan divergir: los dos caminos pasan por acá.
+ */
+export function appendSessionEntry<T>(current: readonly T[], entry: T): T[] {
+  return normalizeSession([...current, entry]);
+}
+
 /** La forma que se guarda. Sin envoltura: el array pelado es el contrato. */
 type StoredEntry = {
   runId: number;
@@ -140,7 +166,9 @@ export function readSession(): StoredEntry[] {
 
     valid.push({ runId, candidate });
   }
-  return valid;
+  // El recorte también va en la lectura: una sesión escrita por una versión
+  // anterior del tope, o editada a mano desde el devtools, entra recortada.
+  return normalizeSession(valid);
 }
 
 /**
@@ -156,7 +184,7 @@ export function writeSession(entries: readonly StoredEntry[]): void {
     write([]);
     return;
   }
-  write(entries.slice(-MAX_SESSION_ENTRIES));
+  write(normalizeSession(entries));
 }
 
 export function clearSession(): void {

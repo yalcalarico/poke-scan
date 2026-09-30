@@ -135,4 +135,68 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
       this.logger.warn(`del falló: ${(error as Error).message}`);
     }
   }
+
+  /**
+   * Toma un lock distribuido. Devuelve el token si lo consiguió, `null` si ya
+   * lo tiene otro.
+   *
+   * El token es lo que hace seguro el par `acquire`/`release`: es lo único que
+   * distingue "mi lock" de "el lock de otro". Un `del` a secas no puede, y por
+   * eso `releaseLock` compara antes de borrar.
+   *
+   * `SET NX EX` es atómico en Redis: o se escribe con TTL, o no se escribe. Por
+   * eso no hace falta `SETNX` + `EXPIRE`, que dejaría una ventana sin TTL si el
+   * proceso muere entre las dos.
+   */
+  async acquireLock(key: string, token: string, ttlSeconds: number): Promise<boolean> {
+    if (!this.isAvailable()) return false;
+    try {
+      const result = await this.client!.set(key, token, 'EX', Math.floor(ttlSeconds), 'NX');
+      return result === 'OK';
+    } catch (error) {
+      this.logger.warn(`acquireLock(${key}) falló: ${(error as Error).message}`);
+      return false;
+    }
+  }
+
+  /**
+   * Suelta el lock **solo si el token es el nuestro**.
+   *
+   * El `EVAL` con compare-and-delete es una operación: entre el `GET` y el
+   * `DEL` un TTL podría expirar y otro proceso tomar el lock, y el `DEL` le
+   * borraría el lock ajeno. Devuelve `true` solo si efectivamente lo soltamos.
+   */
+  async releaseLock(key: string, token: string): Promise<boolean> {
+    if (!this.isAvailable()) return false;
+    try {
+      const result = (await this.client!.eval(
+        'if redis.call("get", KEYS[1]) == ARGV[1] then return redis.call("del", KEYS[1]) else return 0 end',
+        1,
+        key,
+        token,
+      )) as number;
+      return result === 1;
+    } catch (error) {
+      this.logger.warn(`releaseLock(${key}) falló: ${(error as Error).message}`);
+      return false;
+    }
+  }
+
+  /** Renueva el TTL de un lock que sigue siendo nuestro. */
+  async extendLock(key: string, token: string, ttlSeconds: number): Promise<boolean> {
+    if (!this.isAvailable()) return false;
+    try {
+      const result = (await this.client!.eval(
+        'if redis.call("get", KEYS[1]) == ARGV[1] then return redis.call("expire", KEYS[1], ARGV[2]) else return 0 end',
+        1,
+        key,
+        token,
+        String(Math.floor(ttlSeconds)),
+      )) as number;
+      return result === 1;
+    } catch (error) {
+      this.logger.warn(`extendLock(${key}) falló: ${(error as Error).message}`);
+      return false;
+    }
+  }
 }

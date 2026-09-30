@@ -24,6 +24,7 @@ import { ShareLinksSection } from '@/components/share/share-links-section';
 export const metadata: Metadata = {
   title: 'Ajustes',
   description: 'Tu perfil, el tema, la moneda y los enlaces que compartiste.',
+  robots: { index: false, follow: false },
 };
 
 export default function SettingsPage() {

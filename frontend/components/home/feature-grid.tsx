@@ -27,7 +27,7 @@ const FEATURES: readonly Feature[] = [
     href: `/buscar`,
     icon: Search,
     title: 'Buscá',
-    description: 'Mirá el valor de mercado al instante, incluso sin internet.',
+    description: 'Encontrá cartas por nombre, número o artista en el catálogo.',
   },
   {
     href: `/colecciones`,

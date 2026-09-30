@@ -129,13 +129,15 @@ export function priceWindowDelta(prices: readonly PriceDto[]): PriceWindowDelta 
  *
  * ## Por qué el precio se vuelve a pedir en el cliente
  *
- * El servidor trae los precios con `no-store` y un timeout de 1,5 s, así que la
- * pantalla nunca espera a la fuente. Si ese request se_timeouta o la carta no
- * tiene precio, el HTML llega igual y es **esta** parte la que reintenta, en el
- * cliente y con su propio estado de carga. Ese reintento no se dispara cuando
- * el precio que trajo el servidor es fresco: cada llamada a `/cards/:id/prices`
- * que no esté en la caché de 24 h del backend puede pegarle a pokemontcg.io, y
- * su límite es de 1.000 requests por día (`AGENTS.md` §3.1).
+ * La ficha renderiza primero la carta y este componente carga el precio en
+ * cliente. Antes el Server Component esperaba hasta 1,5 s a que terminara el
+ * endpoint de precios; en una carta vencida ese request puede esperar a la
+ * fuente externa y retenía también el nombre, la imagen y los datos estáticos.
+ * El precio tiene su propio skeleton y no bloquea la navegación principal.
+ *
+ * El endpoint sigue pasando por la caché de 24 h del backend y su cola
+ * throttled. No se debe agregar polling ni requests por tile: cada refresco que
+ * vence la caché puede gastar presupuesto externo (`AGENTS.md` §3.1).
  */
 export function CardPriceSection({ cardId, initialPrices = [] }: CardPriceSectionProps) {
   const [prices, setPrices] = useState<PriceDto[]>(() => [...initialPrices]);
@@ -162,9 +164,11 @@ export function CardPriceSection({ cardId, initialPrices = [] }: CardPriceSectio
   useEffect(() => {
     if (!needsRefresh) return;
 
-    // `getCardPrices` no acepta `AbortSignal` (no hay signal en la capa de API),
+    // `getCardPrices` no acepta `AbortSignal` (la capa de precios no lo expone),
     // así que la cancelación es lógica: el flag descarta la respuesta de una
-    // corrida vieja cuando el componente se desmonta o el `cardId` cambia.
+    // corrida vieja cuando el componente se desmonta o el `cardId` cambia. Con el
+    // `key={card.id}` de la ficha, cambiar de carta **remonta** el componente y
+    // por lo tanto la corrida vieja muere con el nodo.
     let disposed = false;
 
     // El arranque va en una microtask: llamar al setter sincrónico desde el

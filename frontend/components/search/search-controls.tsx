@@ -16,7 +16,7 @@ import {
   type SelectOptionItem,
 } from '../ui';
 import { cn } from '@/lib/cn';
-import type { SetDto } from '@/types/api';
+import type { CardSort, CardSortDirection, SetDto } from '@/types/api';
 
 export type SearchMode = 'name' | 'number' | 'artist';
 
@@ -60,6 +60,33 @@ const MODE_LABELS: Record<SearchMode, string> = {
   artist: 'Artista',
 };
 
+/**
+ * Los cuatro criterios de orden que el backend acepta en `sort`.
+ *
+ * `price` es el que responde a "¿cuál de estas cartas vale más?", que es la
+ * pregunta que hace volver a alguien a la pantalla. La fuente ya lo soporta
+ * (`cards.service.ts::buildOrderBy`) y ordena por el mejor precio de mercado,
+ * con las cartas sin precio al final en las dos direcciones.
+ */
+const SORT_OPTIONS: readonly { value: CardSort; label: string }[] = [
+  { value: 'name', label: 'Nombre' },
+  { value: 'price', label: 'Precio' },
+  { value: 'rarity', label: 'Rareza' },
+  { value: 'number', label: 'Número' },
+];
+
+const SORT_LABELS: Record<CardSort, string> = {
+  name: 'Nombre',
+  price: 'Precio',
+  rarity: 'Rareza',
+  number: 'Número',
+};
+
+const DIRECTION_OPTIONS: readonly { value: CardSortDirection; label: string }[] = [
+  { value: 'asc', label: 'Ascendente' },
+  { value: 'desc', label: 'Descendente' },
+];
+
 export interface SearchControlsProps {
   /** Valor controlado del input. Lo maneja `catalog-search`, no este bloque. */
   value: string;
@@ -72,6 +99,16 @@ export interface SearchControlsProps {
   onSetIdChange: (value: string) => void;
   rarity: string;
   onRarityChange: (value: string) => void;
+  sort: CardSort;
+  onSortChange: (value: CardSort) => void;
+  direction: CardSortDirection;
+  onDirectionChange: (value: CardSortDirection) => void;
+  /**
+   * Si hay texto en el input. El backend **ignora** `sort` y `direction` cuando
+   * viene `q` (manda el score de relevancia), así que la UI lo dice en vez de
+   * ofrecer un control que no hace nada.
+   */
+  hasQuery: boolean;
   sets: SetDto[];
   setsLoading?: boolean;
   setsError?: string | null;
@@ -120,6 +157,11 @@ export function SearchControls({
   onSetIdChange,
   rarity,
   onRarityChange,
+  sort,
+  onSortChange,
+  direction,
+  onDirectionChange,
+  hasQuery,
   sets,
   setsLoading = false,
   setsError = null,
@@ -322,6 +364,53 @@ export function SearchControls({
             */}
             <RarityFilter value={rarity} onChange={onRarityChange} />
           </div>
+
+          {/*
+            El orden va en el `Sheet` y no en la barra porque son cuatro
+            opciones más una dirección: en la barra serían otro bloque de
+            controles siempre visible, y ella está pensada para input + un
+            botón.
+
+            Con texto en el input el backend **ignora** `sort` y `direction`
+            (manda el score de relevancia, que no es invertible), así que el
+            control se apaga entero y se explica por qué. Un control que acepta
+            un toque y después no cambia el orden es peor que uno apagado.
+          */}
+          <fieldset className="flex min-w-0 flex-col gap-2">
+            <legend className="text-overline text-tertiary">Ordenar por</legend>
+            <SegmentedControl
+              label="Ordenar resultados por"
+              value={sort}
+              options={SORT_OPTIONS.map((option) => ({
+                value: option.value,
+                label: option.label,
+                disabled: hasQuery,
+              }))}
+              onChange={onSortChange}
+            />
+
+            {/*
+              La dirección solo tiene sentido con un orden real, así que se apaga
+              junto con el `sort` cuando hay texto.
+            */}
+            <SegmentedControl
+              label="Sentido del orden"
+              value={direction}
+              options={DIRECTION_OPTIONS.map((option) => ({
+                value: option.value,
+                label: option.label,
+                disabled: hasQuery,
+              }))}
+              onChange={onDirectionChange}
+            />
+
+            {hasQuery ? (
+              <p className="text-caption text-tertiary">
+                Con una búsqueda por texto el orden es por relevancia. Buscá sin
+                texto para ordenar por {SORT_LABELS[sort].toLowerCase()}.
+              </p>
+            ) : null}
+          </fieldset>
         </div>
       </Sheet>
     </div>

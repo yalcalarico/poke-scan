@@ -47,7 +47,8 @@ símbolo están citados, la afirmación es verificable con un grep.
 | `settings/` | identidad, apariencia, moneda, sesión, `RequireAuth` | `RequireAuth` + las 5 secciones |
 | `share/` | enlaces del usuario, vista pública, `InstallCta` | `PublicCollectionView` / `ShareLinksSection` |
 | `auth/` | `AuthShell`, `LoginForm`, `RegisterForm` | `AuthShell` |
-| `home/` | hero, features, mock, CTA | `app/(app)/page.tsx` (server) |
+| `home/` | inicio PWA: reanudación, mock y CTA de sesión | `app/(app)/inicio/page.tsx` (server) |
+| `marketing/` | landing pública, planes y FAQ | `app/(marketing)/page.tsx` (server) |
 | `brand/` | `AppMark` | `AppMark` |
 
 ---
@@ -775,7 +776,7 @@ están arriba.
 | `PlainShell` | server | Canvas + `OfflineToast`, **sin** `BottomNav`. Lo usan `app/(auth)/layout.tsx` y `app/share/layout.tsx`. |
 | `ScreenHeader` | **server** | El header de una pantalla. Por pantalla, no global. |
 | `ScreenContainer` | server | El `<main id="contenido">` con el ancho, el ritmo y el `pb` de la nav. |
-| `BottomNav` | client | Las 4 tabs de `NAV_ITEMS`, con `usePathname()`. |
+| `BottomNav` | client | Cinco destinos en mobile; desktop usa el wordmark como Inicio y deja cuatro secciones a la derecha. |
 | `OfflineToast` | client | El aviso de "Sin conexión", como toast. |
 
 ### `AppShell` y `PlainShell` — por qué son dos y no uno con una prop
@@ -982,9 +983,11 @@ la envoltura que reemplaza la regla de §9.2 (`''` → `—` con
 
 Lo no obvio:
 
-- **La URL es la fuente de verdad.** `q`, `setId`, `rarity` y `page` salen de
-  `useSearchParams`. Un link reproduce la pantalla exacta y el botón atrás
-  deshace un filtro sin pila de estado.
+- **La URL es la fuente de verdad.** `q`, `setId`, `rarity`, `sort`,
+  `direction` y `page` salen de `useSearchParams`. Un link reproduce la pantalla
+  exacta y el botón atrás deshace un filtro sin pila de estado. `name` y `asc` son
+  los defaults y no se escriben, para que la URL que se comparte siga siendo
+  corta.
 - **La lista se remonta con `key`, no con un efecto que llame a `reload()`.**
   `<CardResults key={listKey} />` se remonta cuando cambia cualquier criterio. La
   alternativa es exactamente `gotchas.md` #9, y con `key` el contador de "cartas ya
@@ -992,14 +995,21 @@ Lo no obvio:
   sin resetearlo a mano.
 - **El input no se borra al navegar**, y la sincronización vive en un solo lugar
   (`catalog-search.tsx`), no repartida: `SearchControls` es controlado y "pinta
-  exactamente lo que le pasaron". El patrón del ref "este cambio de la URL es
+  exactamente lo que le pasó". El patrón del ref "este cambio de la URL es
   mío" es el de `gotchas.md` #3.
-- **`SEARCH_MODES` declara qué existe de verdad**: `name` con
-  `available: true`, `number` y `artist` con `available: false`, porque
-  `SearchCardsDto` hoy solo busca por `name` (B1 de §6 del plan). El control se ve,
-  se toca con el teclado y **dice que no está**. El razonamiento: *"Un chip que no
-  hace nada y no lo dice es peor que un chip ausente"*. Cuando el backend sume los
-  campos, el cambio es `available: true` más un parámetro más.
+- **`SEARCH_MODES` declara qué existe de verdad, y hoy los tres están
+  disponibles**: `name`, `number` y `artist` con `available: true`, porque
+  `SearchCardsDto` acepta los tres. El campo `available` sigue declarado porque
+  es el que evita tocar la pantalla entera si uno vuelve a quedar deshabilitado,
+  pero hoy ningún chip se ve apagado: *"la función existe y la app no la ofrece"*
+  es un defecto, no una prudencia.
+- **El `sort` y la `direction` viven en el `Sheet` de filtros**, no en la barra:
+  son cuatro criterios más un sentido, y la barra está pensada para input + un
+  botón. Con texto en el input **ambos se deshabilitan y se explica por qué**,
+  porque el backend ignora el orden cuando viene `q` (manda el score de
+  relevancia, que no es invertible). Cambiar el `sort` pone la `direction` en
+  `desc` para `price` y `number` —"las más caras primero"— y en `asc` para los
+  otros dos, porque alfabético descendente no lo pide nadie.
 - `SearchFallback` se usa **tanto** en el `fallback` del `Suspense` como en
   `loading.tsx`, en vez de duplicar el skeleton. Las tres carpetas que tienen
   `loading.tsx` hacen lo mismo, con la misma justificación: *"dos versiones del
@@ -1082,26 +1092,27 @@ Lo que hay que saber:
 
 Lo no obvio:
 
-- **El mosaic de portada es 2×2 con huecos resueltos estirando la primera**: con
+- **El mosaico de portada es 2×2 con huecos resueltos estirando la primera**: con
   1 no hay grilla, con 2 son dos mitades verticales, con 3 la izquierda completa y
   dos apiladas, con 4 llena. El tipo `CollectionCoverItem` declara **solo**
-  `imageSmall`, más angosto que el `cover: [{ imageSmall, cardId }]` que propone
-  B9, y el comentario explica que *"un tipo más angosto sigue aceptando el objeto
-  más ancho (tipado estructural), así que cuando B9 aterrice hay que borrar el
-  fallback de marca y nada más"*.
+  `imageSmall`, más angosto que el `cover: [{ imageSmall, cardId }]` del DTO: el
+  `cardId` no se usa para pintar, y un tipo más angosto sigue aceptando el objeto
+  más ancho (tipado estructural). `collections-screen.tsx` pasa `collection.cover`
+  y el fallback de marca queda solo para la colección sin cartas, que es el único
+  caso en que `cover` llega `[]`. Traer la portada no es un N+1: el backend la
+  arma con un `$queryRaw` agregado para todas las colecciones del listado.
 - **`CollectionSummary` pone el total en `text-display`, no en un `Stat`.** El
   total es la cifra que el usuario vino a ver; un `Stat` la pone en `text-h3` al
   lado de cuatro contadores y la vuelve una más.
-- **"Intercambio" no es una tercera pestaña.** En la v1 era un checkbox al lado
-  de un tablist y se podían combinar. Acá es un `Chip` más, y **sigue filtrando en
-  el cliente, a propósito y declarándolo**: el JSDoc de `collection-detail.tsx`
-  descarta explícitamente las dos otras salidas (traer toda la colección en un bucle
-  = el N+1 que `AGENTS.md` prohíbe; mandar el parámetro que el DTO no valida =
-  el mismo filtro mintiendo con más pasos) y elige la tercera: *"`Alert` de que el
-  filtro corre sobre lo cargado, el contador dice 'N de M cargadas', y el estado
-  vacío **nunca** afirma '0 resultados' mientras queden páginas"*. Cuando exista
-  B6 (`forTradeOnly` en el backend), el cambio es borrar el `Alert`, pasar el flag
-  a `listItems` y sacar el `.filter()`.
+- **"Intercambio" no es una tercera pestaña.** Es un `Chip` más, y se combina
+  con el filtro de duplicadas. Ambos son **server-side**: `listItems` los pasa al
+  backend, que compone los dos en el mismo `where` y hace el `count` con ese
+  mismo filtro. No hay `Alert` de honestidad ni `.filter()` en el cliente.
+  Lo que sí cambia con el server-side es la distinción de vacíos: una respuesta
+  vacía con filtro puesto ahora significa "no hay en la colección", así que
+  `isEmptyFilter` se separa de `isEmptyCollection` por **el filtro activo** y no
+  por `items.length`. El copy nombra el filtro que no matcheó, porque los dos se
+  pueden combinar y hay cuatro combinaciones.
 - **"Sets" es un `Link`, no un `Chip`.** Porque cambia la URL. Se arma con
   `chipVariants` sobre un `<Link>` con `aria-current="page"`: *"el `Chip` es un
   `<button>` y un botón no navega"*.
@@ -1156,11 +1167,12 @@ Lo no obvio:
   `scrollHeight` a 20 celdas por vez, el scroll da saltos en un set de 300 y el
   find-in-page deja de encontrar las cartas no pintadas. Trocear es predecible:
   el DOM nunca pasa de 120 slots.
-- **La pantalla no consulta la sesión.** No usa `useAuth` ni un guard: sin sesión
-  la llamada a `getProgress` falla con 401 y cae al `ErrorState` con su reintento.
-  Funciona, pero el mensaje es "no pudimos cargar el progreso" y no "iniciá
-  sesión". Es el punto pendiente de pulir más obvio de las tres pantallas de
-  colección.
+- **La pantalla consulta la sesión.** `SetProgressScreen` usa `useAuth` y, sin
+  sesión, muestra un `EmptyState` con "Iniciá sesión para ver el progreso" en
+  lugar de disparar la request y dejar que un 401 caiga en el `ErrorState`
+  genérico. El motivo es concreto: "No pudimos cargar el progreso" con un botón
+  de "Reintentar" que no iba a cambiar nada es un mensaje que esconde la causa,
+  y el caso de un 401 no es un error — es un estado esperado.
 - `partitionSetProgress` separa `owned` / `suggested` / `orphan` (B9), y
   `compareCardNumbers` ordena los números de carta de verdad (`4` antes que `102`).
 
@@ -1181,10 +1193,16 @@ Lo no obvio:
   corresponde a la moneda que el visitante tiene activa.
 - **`PriceDelta` tiene dos salidas en un componente** porque las dos ocupan el
   mismo lugar en la composición y nunca aparecen juntas. Lo que **no** hace es
-  inventar el dato: sin `changeUsd` y `changePercent` (B10, no implementado) no
-  hay píldora, hay "Actualizado hace 3 h". El `Alert` de "esto está viejo" lo pone
+  inventar el dato: sin `changeUsd` y `changePercent` no hay píldora, hay
+  "Actualizado hace 3 h". El `Alert` de "esto está viejo" lo pone
   `CardPriceSection`, *"porque un `Alert` no es una píldora y esta caja no debe
   crecer de ancho completo"*.
+- **B10 está implementado.** `PriceDto.change` y `PriceHistoryDto` llegan del
+  backend, así que `changeUsd`/`changePercent` ya no llegan `undefined`: el
+  `PriceDelta` muestra la variación real y `PriceHistory` el sparkline. El
+  caption sigue siendo el que dice cuántos días hay —nunca "0 %" cuando el
+  backend devuelve `change: null`— y el color de la línea sale **solo** del
+  `change` del servidor, para que el sparkline no pueda contradecir a la píldora.
 - **`PriceDelta` tiene un tercer tono, `flat`.** *"Sin cambio no es 'ni una cosa ni
   la otra': es un precio quieto, y pintar un 0 % de rojo dice 'cayó' cuando no cayó
   nada"*.
@@ -1295,32 +1313,37 @@ Lo no obvio:
 - El 409 del registro (email tomado) se maneja como estado propio del formulario,
   no como un error genérico.
 
-## 2.11 `home/` y `brand/`
+## 2.11 `home/`, `marketing/` y `brand/`
 
-Dos carpetas distintas: `brand/` es de la app entera, `home/` es de la landing.
+Tres áreas: `brand/` es de la app entera, `home/` es el inicio tras abrir la PWA,
+y `marketing/` es la página pública de adquisición y su FAQ.
 
 | Componente | Tipo | Qué hace |
 |---|---|---|
-| `brand/app-mark.tsx` | server | El logo. Vive en `@/components/brand` y lo usan también `auth/auth-shell.tsx` y la home. |
+| `brand/app-mark.tsx` | server | El icono de marca. Lo usan la navegación desktop, auth y el marketing shell. |
 | `home/app-preview.tsx` | server | El mock con `CardTile`. |
-| `home/feature-grid.tsx` | server | Las 3 features con ícono de lucide. |
-| `home/home-cta.tsx` | client | El CTA, que depende de la sesión. |
+| `home/feature-grid.tsx` | server | Las features del inicio de la app. |
+| `home/home-cta.tsx` | client | El CTA del inicio, que depende de la sesión. |
 | `home/preview-cards.ts` (módulo) | `fetchPreviewCards()`. |
+| `marketing/marketing-shell.tsx` | server | Cabecera, enlaces del sitio y footer público. |
+| `marketing/landing-page.tsx` | server | Hero, prueba de producto, Gratis/Pro y CTA. |
+| `marketing/faq-section.tsx` | server | FAQ compartida por `/` y `/faq`. |
 
-- **La página es server y casi todo es estático.** La única parte que necesita el
+- **`/inicio` es server y casi todo es estático.** La única parte que necesita el
   navegador es el CTA, porque depende de la sesión y la sesión vive en
   `sessionStorage`. Un solo client component chico.
 - **`fetchPreviewCards` nunca tira.** El mock es decorativo: si el backend está
-  caído, la home tiene que mostrar hero, CTA y features igual. Un `throw` mandaría
+  caído, `/inicio` tiene que mostrar hero, CTA y features igual. Un `throw` mandaría
   la pantalla entera al `error.tsx` por tres imágenes. `[]` es un estado vacío
   legítimo y `AppPreview` devuelve `null`.
-- **La CTA de instalar la PWA va en vez de un link a `/privacidad`**: esa ruta no
-  existe, *"y una URL inventada es un 404 en el lugar donde la app pide confianza"*.
-- **El footer va adentro del `<main>`**, no como `<footer>` hermano: *"es la única
-  tierra de la pantalla y el landmark de contenido ya está"*.
-- La home **sí** lleva `BottomNav` (está en `app/(app)/`), y su JSDoc lo justifica:
-  es la pantalla de arranque de la app instalada, y sacarla dejaría la PWA sin
-  forma de navegar.
+- **La landing pública `/` no comparte `BottomNav`**: una persona nueva necesita
+  entender el producto antes de caer en las herramientas. La PWA arranca en
+  `/inicio`, que sí hereda `AppShell` y sus cinco destinos móviles.
+- **Gratis/Pro dice el estado real del producto.** Gratis está disponible hoy;
+  Pro aparece como "En preparación", sin precio ni botón de compra, porque no
+  existe billing todavía. La FAQ aclara qué ideas de Pro no están activas.
+- **No hay testimonios ni rating inventados.** El bloque de prueba usa datos
+  verificables del catálogo y explica límites del OCR, la conexión y los precios.
 
 ---
 

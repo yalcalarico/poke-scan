@@ -1,22 +1,35 @@
 # Tests
 
-Vitest 5, `environment: 'node'`, sin jsdom y sin binding nativo de canvas. **Todos
-los tests del frontend viven en `lib/scanner/__tests__/`**: los componentes no tienen
-tests y el pipeline de OCR sí.
+Vitest 5. El entorno **depende del archivo**: la mayoría son lógica pura y
+corren en `node`; los de componente declaran `// @vitest-environment jsdom` en su
+primera línea.
 
-```ts
-// vitest.config.ts
-export default defineConfig({
-  test: {
-    environment: 'node',
-    include: ['lib/**/*.test.ts'],
-  },
-});
-```
+## Estado actual
 
-El comentario del config explica por qué: *"The parser is DOM-free by design; the
-image helpers are exercised with synthetic ImageData objects, so no jsdom/canvas
-runtime is needed."*
+**25 archivos · 336 tests** (más 2 skipped y 1 `todo`).
+
+| Grupo | Qué cubre | Entorno |
+|---|---|---|
+| `lib/scanner/__tests__/` | El pipeline de OCR completo: parser, preprocesado, PNG, selección de variante | `node` |
+| `lib/__tests__/` | `cn()` y los helpers del `Select` | `node` |
+| `components/ui/__tests__/` | Las primitivas a11y-sensitive: focus trap del `Sheet`, `aria-activedescendant` del `Select`, `aria-labelledby` del `Field`, estados de `Button`/`Switch`/`Divider`/`SegmentedControl` | `jsdom` |
+| `components/cards/__tests__/` | `CardGrid` (el `role="list"` que ya salió una vez) y la señal de rareza | `jsdom` |
+| `components/collections/__tests__/` | El mosaico de portada de `CollectionCard` | `jsdom` |
+| `components/scanner/__tests__/` | `session-storage`: recorte del tope, validación y corrupción | `jsdom` |
+| `components/prices/__tests__/` | Sparkline, `PriceDelta` y la honestidad del caption | `jsdom` |
+| `app/__tests__/` | El guard de contraste sobre `globals.css` | `node` |
+
+## Por qué el setup está condicionado a `document`
+
+`environment` default es `node` y la mayoría de los tests no tienen DOM.
+Importar `@testing-library/react` o `jest-dom` sin `document` revienta, así que
+`vitest.setup.ts` pregunta primero: los tests de `node` no pagan nada, y los que
+declaran `jsdom` reciben los matchers, el `cleanup` y los shims
+(`scrollIntoView`, `matchMedia`, Pointer Events) enteros.
+
+El `cleanup` está **explícito** porque el auto-cleanup de Testing Library solo se
+registra si encuentra un `afterEach` global, y Vitest no expone ninguno con
+`globals: false`.
 
 ## Correr
 
@@ -25,10 +38,15 @@ pnpm run test           # vitest run (lo que corre pnpm run check)
 pnpm run test:watch     # vitest
 
 # un archivo puntual
-pnpm exec vitest run lib/scanner/__tests__/parser.test.ts
+pnpm exec vitest run components/scanner/__tests__/session-storage.test.ts
 ```
 
-Estado actual: **7 archivos, 70 tests, en ~320 ms.**
+## Qué falta
+
+- Tests de integración de las **pantallas** (no de las primitivas): scanner de
+  punta a punta, colección con filtros combinados, refresh 401.
+- `CardTile`, `EmptyState`, `Alert` y `Toast` no tienen cobertura propia.
+- La E2E real vive en el backend y hoy solo verifica health.
 
 ---
 
@@ -264,23 +282,25 @@ Variables que los tests leen:
 
 ## Qué NO está testeado
 
-- **Ningún componente React.** No hay jsdom, ni `@testing-library/react`, ni tests de
-  render. `AppShell`, `CatalogSearch`, `CameraView`, `Sheet`, `Select`, etc. no
-  tienen un solo test.
-- **Ningún hook.** `useAuth`, `useCurrency`, `useTheme`, `useAsync` y
-  `useInfiniteList` no tienen tests.
-- **Ningún `loading.tsx` ni skeleton.** `CardGridSkeleton` y `Skeleton` no se
-  renderizan nunca en un test.
+- **Las pantallas completas.** Hay tests de `CardPriceSection` y del hook
+  `useInfiniteList`, pero no de `AppShell`, `CatalogSearch`, `CameraView`, `Sheet`,
+  `Select` ni de navegación real entre rutas.
+- **La mayoría de los hooks.** `useAuth`, `useCurrency`, `useTheme` y `useAsync`
+  siguen sin tests.
+- **Los skeletons en general.** `CardGridSkeleton` y `Skeleton` no se renderizan
+  directamente en tests.
 - **`lib/format.ts`** sin tests, siendo el módulo del que depende que un precio se
   lea bien.
 - **`lib/api/*`** sin tests. El single-flight del refresh, que es lo más crítico
   del cliente, está verificado **a mano** en la app, no por tests.
-- **`public/sw.js`** sin tests, siendo un service worker con 4 estrategias de caché.
+- **`public/sw.js`** tiene tests de routing para asegurar que RSC y rutas dinámicas
+  no entren a Cache Storage; las estrategias completas offline/cache-first no
+  tienen tests de integración en un navegador.
 - **`getUserMedia` / `captureFrame`**: la geometría sí (`camera-crop.test.ts`,
   `card-frame.test.ts`), pero la cámara real no se puede testear en Node.
 - **`layout.tsx`, `next.config.ts` y `manifest.json`**: nada.
 
-**Nota (deuda técnica).** El `include` de `vitest.config.ts` es `lib/**/*.test.ts`,
-lo que hace que hoy sea imposible agregar un test de componente sin cambiar el
-config. Si se quiere cubrir UI, hay que sumar `jsdom` (o `happy-dom`) y
-`@testing-library/react` al `devDependencies` y ampliar el `include`.
+**Nota (deuda técnica).** `vitest.config.ts` incluye `lib/**`, `hooks/**`,
+`components/**` y tests `.tsx`; los de componentes declaran jsdom por archivo para
+no pagarlo en toda la suite. La limitación actual es la falta de tests de
+integración en navegador para navegación, Service Worker y pantallas completas.

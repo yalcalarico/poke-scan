@@ -184,18 +184,62 @@ export class CurrencyService {
       }
     }
 
-    const preferredView = preferred === 'oficial' ? oficialView : blueView;
     const payload: BothRatesView = {
-      rate: preferredView!.rate,
-      rateType: preferred,
-      fetchedAt: preferredView!.fetchedAt,
-      stale: preferredView!.stale,
+      ...this.pickPrimary(preferred, blueView, oficialView),
       blue: blueView,
       oficial: oficialView,
     };
 
     await this.redis.setJson(BOTH_CACHE_KEY, payload, RATE_CACHE_TTL_SECONDS);
     return payload;
+  }
+
+  /**
+   * Elige la cotización "principal" de entre las dos.
+   *
+   * La preferencia es un *deseo*, no una garantía: `blue` y `oficial` se piden
+   * en paralelo con `allSettled` y cualquiera de los dos puede faltar. Servir la
+   * que hay con su `rateType` real es estrictamente mejor que un 500, y el
+   * cliente siempre muestra qué tipo de cambio está usando, así que no miente.
+   *
+   * El que se cachea en `BOTH_CACHE_KEY` es el resultado de esta elección, así
+   * que el orden de preferencia queda registrado en la propia respuesta.
+   */
+  private pickPrimary(
+    preferred: RateType,
+    blue: RateView | null,
+    oficial: RateView | null,
+  ): { rate: number; rateType: RateType; fetchedAt: string; stale: boolean } {
+    const preferredView = preferred === 'oficial' ? oficial : blue;
+    if (preferredView) {
+      return {
+        rate: preferredView.rate,
+        rateType: preferred,
+        fetchedAt: preferredView.fetchedAt,
+        stale: preferredView.stale,
+      };
+    }
+
+    const fallback = preferred === 'oficial' ? blue : oficial;
+    if (!fallback) {
+      // Sin `blue` ni `oficial` no hay nada que devolver. Los callers de este
+      // método ya tiran 503 antes de llegar acá; es una guarda, no un camino
+      // que se pueda alcanzar.
+      throw new ServiceUnavailableException(
+        'No hay cotización USD/ARS disponible: DolarApi no respondió y no hay valores cacheados.',
+      );
+    }
+
+    const fallbackType = preferred === 'oficial' ? 'blue' : 'oficial';
+    this.logger.warn(
+      `Cotización "${preferred}" no disponible: se sirve "${fallbackType}" como principal`,
+    );
+    return {
+      rate: fallback.rate,
+      rateType: fallbackType,
+      fetchedAt: fallback.fetchedAt,
+      stale: fallback.stale,
+    };
   }
 
   /**
@@ -263,16 +307,13 @@ export class CurrencyService {
     return this.getCachedRate(type);
   }
 
+  /**
+   * Reordena una respuesta ya cacheada para una preferencia nueva. Misma
+   * tolerancia que `pickPrimary`: si la preferida no está en la cache, se
+   * devuelve la que haya con su `rateType` real.
+   */
   private reorder(view: BothRatesView, preferred: RateType): BothRatesView {
-    const preferredView = preferred === 'oficial' ? view.oficial : view.blue;
-    if (!preferredView) return view;
-    return {
-      ...view,
-      rate: preferredView.rate,
-      rateType: preferred,
-      fetchedAt: preferredView.fetchedAt,
-      stale: preferredView.stale,
-    };
+    return { ...view, ...this.pickPrimary(preferred, view.blue, view.oficial) };
   }
 
   private async fetchQuote(type: RateType): Promise<RateQuote> {

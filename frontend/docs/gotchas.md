@@ -218,49 +218,23 @@ con `key` en vez de llamar a `reload()` en un efecto.
 
 ---
 
-## 4. `revalidate` de Next vs la frescura de precios
+## 4. La frescura de precio vive en el backend; el SSR de la ficha no espera al proveedor
 
-`/carta/[id]` servía precios viejos y, peor, un mensaje de "todavía no hay precio"
-**eterno**.
+La regla sigue siendo Redis 1 h + Postgres 24 h. El cambio actual está en dónde
+se hace la llamada: `/carta/[id]` obtiene la carta/set en el server, pero
+`CardPriceSection` pide el precio desde el cliente y muestra un skeleton hasta
+que responde. Antes el server esperaba hasta 1,5 s al endpoint de precio; en una
+carta vencida ese tiempo retenía también la imagen, el nombre y el resto de la
+ficha aunque el precio sea un dato complementario.
 
-La cadena del problema:
+El histórico de precios también se pide desde el cliente y lee Postgres. Las
+relacionadas siguen siendo server data, pero ahora están bajo `Suspense` con un
+fallback vacío: si ese scroller demora, no debe bloquear el contenido principal.
 
-1. La página hacía `fetch` de la carta con `next: { revalidate: 3600 }`. Next
-   cachea la respuesta **1 hora** y no vuelve a preguntar.
-2. El backend tiene su propia regla: un precio de más de 24 h se refresca, y si
-   no hay precio lo pide a la fuente. Pero si Next no le pregunta, **el backend
-   nunca llega a ejecutar esa lógica**.
-3. Si la carta no tenía precio, el HTML cacheado con el mensaje vacío se servía 1 h.
-   Y si volvía a pasar, otro mensaje. El mensaje era eterno: la única forma de
-   refrescar era esperar a que expirara la entrada de Next.
-
-**El fix: dos cosas, juntas.**
-
-```ts
-// app/(app)/carta/[id]/page.tsx — fetchJson
-const response = await fetch(`${getApiBaseUrl()}${path}`, {
-  headers: { Accept: 'application/json' },
-  // Los datos de la carta no cambian: 1 h de caché está bien.
-  ...(opts.noStore ? {} : { next: { revalidate: REVALIDATE } }),
-  // El precio, en cambio, tiene su propia regla de frescura (24 h) que aplica
-  // el backend. Si lo cacheáramos acá, la página podría servir un precio
-  // vencido hasta una hora después de que correspondía refrescarlo, y el
-  // cliente no se enteraría. El backend ya tiene su caché (Redis 1 h), así que
-  // no cuesta nada preguntarle siempre.
-  ...(opts.noStore ? { cache: 'no-store' as const } : {}),
-  // Los precios pueden tardar varios segundos cuando hay que pegarle a la
-  // fuente. Con este tope la página nunca se queda esperando.
-  ...(opts.timeoutMs ? { signal: AbortSignal.timeout(opts.timeoutMs) } : {}),
-});
-```
-
-Con `REVALIDATE = 3600` para la carta y
-`{ timeoutMs: PRICE_TIMEOUT_MS, noStore: true }` para el precio.
-
-`cache: 'no-store'` para que la regla de 24 h del backend sea la única que manda, y
-`AbortSignal.timeout(1500)` para que la página **nunca** espere al precio: si no
-llega a tiempo, se renderiza sin precios y `CardPriceSection` lo carga en el cliente
-con su propio indicador de carga.
+**No vuelvas a agregar el precio a un `Promise.all` que se espera antes del
+return.** Un timeout de 1,5 s todavía es un segundo y medio de ficha en blanco;
+el indicador local de carga es el límite correcto entre datos esenciales y una
+cotización que puede esperar.
 
 **Y el componente tiene la misma defensa desde el otro lado:**
 
@@ -614,13 +588,17 @@ por descuido:
 > *"en dev el SW cachearía el HMR y las páginas con el código viejo, hace imposible
 > iterar"*
 
-El `sw.js` tiene estrategia `NetworkFirst` para navegaciones, pero `CacheFirst` para
-el resto de los assets same-origin, y eso incluye los chunks de HMR en desarrollo. El
-síntoma es un dev server que sirve bundles viejos y que hay que "limpiar a mano"
-borrando el SW desde DevTools.
+El `sw.js` tiene estrategia `NetworkFirst` para navegaciones y `CacheFirst` solo para
+imágenes, OCR y chunks hasheados de `/_next/static/`. Las respuestas Flight/RSC de
+App Router (`?_rsc`, `RSC: 1` o `text/x-component`) y las rutas dinámicas same-origin
+**nunca se cachean**: un stream RSC viejo puede quedarse en el fallback de Suspense
+sin que la navegación llegue a hidratarse. Un bump de `VERSION` purga esas entradas
+viejas del cache de shell.
 
-Si alguna vez el SW se registra en dev y no se puede deshacer, el clearing manual es
-DevTools → Application → Service Workers → Unregister + Clear storage.
+El registro del worker corta con `NODE_ENV !== 'production'`, así que un SW no
+debería interceptar el HMR durante el desarrollo. Si alguna vez se registra en dev y
+no se puede deshacer, el clearing manual es DevTools → Application → Service Workers
+→ Unregister + Clear storage.
 
 ---
 
@@ -762,8 +740,8 @@ funciona en el build y no funciona en pantalla.
 
 ### Síntoma
 
-`/share/[slug]` y `/login` salían con la `BottomNav` de tu cuenta debajo — las
-cuatro tabs de escanear, buscar, colecciones y ajustes — arriba de la colección de
+`/share/[slug]` y `/login` salían con la `BottomNav` de tu cuenta debajo — inicio,
+buscar, escanear, colecciones y ajustes — arriba de la colección de
 otra persona o debajo de un formulario de dos campos.
 
 Y la primera solución que se ocurre (mover la ruta a
@@ -800,6 +778,7 @@ Las carpetas tienen que ser **hermanas**, no hijas:
 
 ```
 app/
+  (marketing)/ layout.tsx → <MarketingShell> (sin BottomNav)
   (app)/     layout.tsx → <AppShell>     (con nav)
   (auth)/    layout.tsx → <PlainShell>   (sin nav)
   share/     layout.tsx → <PlainShell>   (sin nav)
@@ -830,7 +809,7 @@ layout raíz, que envuelve todo.
 Esta es la trampa que **se repite sin que toques una línea de código**, y por eso
 va con dos mitades: la del flag y la del estado generado.
 
-### 18.a. La `BottomNav` exige que existan sus cuatro destinos
+### 18.a. La `BottomNav` exige que existan sus cinco destinos móviles
 
 `tsconfig.json` incluye los tipos de ruta que Next genera:
 
@@ -848,10 +827,10 @@ Y con `typedRoutes` (que en Next 16 se activa por default en el plugin `next` de
 `tsconfig.json`), **un `Link` cuyo `href` no resuelve a una ruta existente es un
 error de typecheck**, no un 404 en runtime.
 
-El efecto raro: como `NAV_ITEMS` declara las cuatro destinos de la `BottomNav` y
-todas son `Link`, agregar una pantalla con una sola ruta rompe el typecheck por
-destinos que no tocaste. La `BottomNav` **exige** que existan sus cuatro, y
-`/buscar` tiene que existir sí o sí aunque la pantalla todavía no esté.
+El efecto raro: como `NAV_ITEMS` declara los cinco destinos móviles de la
+`BottomNav` y todas son `Link`, agregar una pantalla con una sola ruta rompe el
+typecheck por destinos que no tocaste. La `BottomNav` **exige** que existan sus
+cinco, y `/buscar` tiene que existir sí o sí aunque la pantalla todavía no esté.
 
 **Antes de agregar una pantalla, agregá el `page.tsx` de las cuatro que faltan.**
 Es lo inverso a lo intuitivo: no estás agregando una pantalla, estás completando
@@ -1123,7 +1102,7 @@ entera de que está sin conexión.
 
 ### Causa
 
-La trampa #17 obliga a que las tres ramas estén en carpetas distintas del árbol, y
+La trampa #17 obliga a que las ramas estén en carpetas distintas del árbol, y
 cada una necesita su `layout.tsx`. El shell —los providers, el skip link, la nav,
 el offline— está en las tres, y es el mismo código.
 

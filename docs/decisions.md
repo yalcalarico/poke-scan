@@ -269,19 +269,20 @@ diseño. El DTO lo sugiere, pero es intencional. Documentado en
 ## 15. Los precios no se cachean en Next.js
 
 **Contexto:** la página de detalle de carta se renderiza en el server. Si se
-cachea en Next, la regla de 24 h del backend se pisa: la página podría servir un
-precio vencido hasta 1 h después de que correspondía refrescarlo.
+cachea el precio en Next, la regla de 24 h del backend se pisa; y si se espera a
+que la fuente responda, una carta vencida puede retener el SSR mientras la cola
+respeta el rate limit.
 
-**Elegido:** el fetch de precios usa `cache: 'no-store'`, y el de metadata de
-carta sigue con `revalidate: 3600`.
+**Elegido:** el SSR carga la carta/set (metadata estable, `revalidate: 3600`) y
+no pide el precio. El cliente pide `/cards/:id/prices` al montar
+`CardPriceSection`; el precio tiene su skeleton y el backend conserva la única
+política de frescura/cache (Redis 1 h + Postgres 24 h).
 
-**Por qué no cuesta nada:** el backend ya tiene su caché de Redis de 1 h.
-Preguntarle siempre es barato (~15 ms) y garantiza que la regla de 24 h se
-cumpla exactamente.
-
-**Más un timeout de 1,5 s en el SSR:** si la fuente está lenta (8 s), la página
-no debe esperar. Pasado el timeout, el precio se carga en el cliente con su
-indicador de carga.
+**Trade-off:** una carta con precio cacheado también muestra el skeleton por el
+tiempo de hidratación + la request del cliente, en vez de incluir la cifra en el
+primer HTML. A cambio, la navegación de la ficha no queda atada al peor caso del
+proveedor externo. La query de precios sigue siendo pública y pasa por la cola
+throttled; no agregar polling ni refrescos por tile.
 
 ---
 

@@ -249,9 +249,9 @@ respuesta.
 
 ```ts
 /**
- * Disciplina de la cola: tcgdex no publica límite (pide "consideración"), pero
- * es infra comunitaria compartida y el catálogo también usa pokemontcg.io
- * (~26 req/min entre ambos, debajo de los 30/min de esa API).
+ * Disciplina hacia el proveedor: tcgdex no publica límite (pide "consideración"),
+ * pero es infra comunitaria compartida y el catálogo también usa
+ * pokemontcg.io (~26 req/min entre ambos, debajo de los 30/min de esa API).
  */
 const MIN_GAP_MS = 2300;
 
@@ -270,13 +270,71 @@ private async drain(): Promise<void> {
       try { await this.refresh(cardId); }
       catch (error) { /* log warn, la cola sigue */ }
       finally { this.pending.delete(cardId); }
-      if (this.queue.length > 0) await this.sleep(MIN_GAP_MS);
+      // sin sleep: el gap lo mete withProviderSlot
     }
   } finally { this.draining = false; }
 }
 ```
 
-Cuatro cosas a respetar si la tocás:
+### El gap vive en un solo lugar; la lectura pública no lo espera
+
+`withProviderSlot` es la única puerta al proveedor. La comparten la cola en
+background y el lote del endpoint admin (`refreshMany`). La lectura pública
+(`getPricesForCard`) **no espera esa puerta**: devuelve el precio cacheado o el
+último de Postgres, y encola el refresh si ya venció.
+
+Que sea uno solo no es una decisión de estilo. Antes el `sleep(MIN_GAP_MS)`
+vivía en `drain`, así que las otras dos rutas no tenían ningún control:
+
+- **N clientes abriendo N cartas vencidas** salían todos en el mismo instante,
+  porque `getPricesForCard` llamaba a `refresh()` directo. Ahora todos encolan,
+  reciben el último precio conocido sin esperar y el único worker comparte el
+  gap.
+- **`POST /jobs/refresh-prices`** podía mandar un lote de 50 cartas seguidas y
+  vaciar el presupuesto entero de una tacada.
+
+`refreshThrottled` suma el dedupe por carta sobre ese gap: si la carta ya se está
+refrescando, otro caller de `refresh()` espera esa promesa en vez de abrir otro.
+
+```ts
+private refreshThrottled(cardId: string): Promise<CardPriceView[]> {
+  const existing = this.inFlight.get(cardId);
+  if (existing) return existing;                    // dedupe por carta
+  const run = this.withProviderSlot(() => this.refreshUnthrottled(cardId)).finally(() => {
+    this.inFlight.delete(cardId);
+  });
+  this.inFlight.set(cardId, run);
+  return run;
+}
+
+private async withProviderSlot<T>(task: () => Promise<T>): Promise<T> {
+  const run = this.gate.then(async () => {
+    const wait = this.lastProviderCallAt + this.minGapMs - Date.now();
+    if (wait > 0) await this.sleep(wait);
+    this.lastProviderCallAt = Date.now();   // reloj al arrancar, no al terminar
+    return task();
+  });
+  this.gate = run.catch(() => undefined);   // un fallo no envenena la cadena
+  return run;
+}
+```
+
+Dos detalles que los tests fijan, y que son fáciles de romper pensando "es lo
+mismo":
+
+1. **El reloj se toma al arrancar, no al terminar.** Si se tomara al terminar, el
+   gap se sumaría a la latencia de cada llamada y el ritmo real caería por
+   debajo de 26/min sin que nadie lo notara.
+2. **`this.gate` encadena con `.catch`**, no con la promesa directa: un 503 de
+   tcgdex no puede dejar envenenada la cadena y hacer que *toda* llamada
+   posterior rechace sin llegar al proveedor.
+
+`refresh()` es la entrada throttled para jobs y tests; `refreshUnthrottled()` es
+privada y solo corre dentro del slot. La lectura pública no llama a ninguna de
+las dos en forma síncrona: stale-while-revalidate evita que un request de página
+quede esperando atrás de una cola larga.
+
+Cinco cosas a respetar si la tocás:
 
 1. **`MIN_GAP_MS = 2300`** ⇒ 60/2.3 ≈ **26 requests/minuto**. No es un límite de
    tcgdex (no publica ninguno) sino cortesía con una infra comunitaria que el
@@ -289,6 +347,11 @@ Cuatro cosas a respetar si la tocás:
    correrían dos loops en paralelo y el ritmo se rompería.
 4. **Un fallo no frena la cola**: el `catch` loguea y sigue con la siguiente.
    Un error de una carta no puede bloquear las otras 200.
+5. **Toda llamada al proveedor pasa por `withProviderSlot`**, no solo la cola. Si
+   agregás un job, endpoint o script, llamá a `refresh()` (throttled) o
+   `enqueueRefresh()`. No llames a `refreshUnthrottled()`: es privada y solo se
+   ejecuta dentro del slot. Los handlers que lean precios deben usar
+   `getPricesForCard()`, que responde sin esperar el refresh.
 
 **Dónde se encola**:
 

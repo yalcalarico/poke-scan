@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { Suspense } from 'react';
 import { ArrowRight } from 'lucide-react';
 import type { ReactNode } from 'react';
 
@@ -12,50 +13,31 @@ import { ScreenHeader } from '@/components/layout/screen-header';
 import { CardPriceSection } from '@/components/prices';
 import { Badge, Surface } from '@/components/ui';
 import { getApiBaseUrl } from '@/lib/api/api-client';
-import { toCardDto, toCardList, toPriceList } from '@/lib/api/schema';
+import { toCardDto, toCardList } from '@/lib/api/schema';
 import { formatCardNumber, formatDate, pluralize } from '@/lib/format';
 import { subtypeLabels, supertypeLabel, typeLabel } from '@/lib/pokemon';
-import type { CardDto, PriceDto } from '@/types/api';
+import type { CardDto } from '@/types/api';
 
 import { CardActions } from './actions';
 
 /** Los datos de la carta no cambian: 1 h de caché alcanza. */
 const REVALIDATE = 3600;
 
-/**
- * Tope de espera del precio en el servidor.
- *
- * Los precios pueden tardar varios segundos cuando hay que pegarle a la fuente
- * (que tiene un límite de 30 req/min, `AGENTS.md` §3.1). Con este tope la página
- * nunca se queda esperando: si no llegan a tiempo, el precio lo carga el cliente
- * con su propio estado de carga, y la carta se ve igual.
- */
-const PRICE_TIMEOUT_MS = 1500;
-
 /** Cuántas cartas del set se traen para el scroller de "otras de este set". */
 const RELATED_LIMIT = 14;
 
-interface FetchOptions {
-  /** `no-store` en vez de `revalidate`: el precio tiene su propia regla de frescura. */
-  noStore?: boolean;
-  timeoutMs?: number;
-}
-
 /**
- * El precio se pide **sin caché de Next** a propósito: su frescura la decide el
- * backend (Redis 1 h + Postgres 24 h). Si lo cacheáramos acá, la página podría
- * servir un precio vencido hasta una hora después de que correspondía refrescarlo
- * y el cliente ni se enteraría.
+ * Los metadatos de cartas y sets pueden vivir una hora en Next. Los precios no
+ * pasan por esta función: el cliente consulta su endpoint con la frescura propia
+ * del backend, pero ese request no bloquea el HTML de la ficha.
  */
 async function fetchJson<T>(
   path: string,
   parse: (raw: unknown) => T | null,
-  { noStore = false, timeoutMs }: FetchOptions = {},
 ): Promise<T | null> {
   const response = await fetch(`${getApiBaseUrl()}${path}`, {
     headers: { Accept: 'application/json' },
-    ...(noStore ? { cache: 'no-store' as const } : { next: { revalidate: REVALIDATE } }),
-    ...(timeoutMs ? { signal: AbortSignal.timeout(timeoutMs) } : {}),
+    next: { revalidate: REVALIDATE },
   });
 
   if (response.status === 404) return null;
@@ -81,26 +63,6 @@ async function fetchCard(id: string): Promise<CardDto | null> {
   return fetchJson(`/cards/${encodeURIComponent(id)}`, toCardDto);
 }
 
-/**
- * `/cards/:id/prices` devuelve `{ card, prices }` y se pide aparte de la carta a
- * propósito: si la fuente está lenta, el timeout de 1,5 s degrada **solo** el
- * precio y la pantalla aparece igual.
- */
-async function fetchPrices(id: string): Promise<PriceDto[]> {
-  try {
-    const prices = await fetchJson(
-      `/cards/${encodeURIComponent(id)}/prices`,
-      toPriceList,
-      { noStore: true, timeoutMs: PRICE_TIMEOUT_MS },
-    );
-    return prices ?? [];
-  } catch {
-    // Incluye el timeout: no es un error de la carta, es un precio que todavía
-    // no llegó. Lo reintenta el cliente.
-    return [];
-  }
-}
-
 async function fetchRelated(setId: string, excludeId: string): Promise<CardDto[]> {
   const params = new URLSearchParams({ setId, pageSize: String(RELATED_LIMIT + 1) });
   try {
@@ -114,6 +76,59 @@ async function fetchRelated(setId: string, excludeId: string): Promise<CardDto[]
     // muestra igual. Perderlo no puede tumbar la pantalla.
     return [];
   }
+}
+
+async function RelatedCardsSection({
+  setId,
+  excludeId,
+  setName,
+}: {
+  setId: string;
+  excludeId: string;
+  setName: string;
+}) {
+  // El fetch vive **adentro** de la frontera y no se le pasa la promesa ya
+  // creada desde el padre: es el patrón de App Router para contenido
+  // complementario. Con la promesa afuera, el cuerpo de la página la dispara
+  // aunque la frontera nunca llegue a renderizarse —un `notFound()` o un error
+  // más arriba— y queda una request al catálogo local sin nadie esperando su
+  // respuesta.
+  const related = await fetchRelated(setId, excludeId);
+  if (related.length === 0) return null;
+
+  return (
+    <section aria-labelledby="otras-del-set" className="mt-8">
+      <div className="flex items-center justify-between gap-3">
+        <h2 id="otras-del-set" className="text-h3 text-primary">
+          Otras de este set
+        </h2>
+        <Link
+          href={`/buscar?setId=${encodeURIComponent(setId)}`}
+          className="inline-flex items-center gap-1 rounded-control text-label text-brand transition-colors duration-fast ease-standard hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--focus-ring)]"
+        >
+          Ver el set
+          <ArrowRight aria-hidden="true" focusable="false" strokeWidth={1.75} className="h-4 w-4" />
+        </Link>
+      </div>
+
+      <p className="mt-0.5 text-caption text-tertiary">
+        {setName} · {pluralize(related.length, 'carta', 'cartas')}
+      </p>
+
+      {/*
+        El scroller complementa la ficha; queda debajo de sus datos para que una
+        respuesta lenta no bloquee la parte que el usuario vino a consultar.
+        `py-1` conserva el aire del indicador de foco que overflow-x recorta.
+      */}
+      <ul role="list" className="-mx-4 mt-3 flex gap-3 overflow-x-auto px-4 py-1 sm:mx-0 sm:px-0">
+        {related.map((relatedCard) => (
+          <li key={relatedCard.id} className="w-24 shrink-0">
+            <CardTile card={relatedCard} />
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
 }
 
 export async function generateMetadata({
@@ -131,6 +146,7 @@ export async function generateMetadata({
   return {
     title: card.name,
     description,
+    alternates: { canonical: `/carta/${encodeURIComponent(id)}` },
     openGraph: {
       title: card.name,
       description,
@@ -165,11 +181,6 @@ export default async function CardDetailPage({ params }: { params: Promise<{ id:
   const card = await fetchCard(id);
   if (!card) notFound();
 
-  const [prices, related] = await Promise.all([
-    fetchPrices(id),
-    fetchRelated(card.setId, card.id),
-  ]);
-
   const set = card.set ?? null;
   const setTotal = set?.total ?? set?.printedTotal ?? null;
   const image = card.imageLarge || card.imageSmall;
@@ -177,7 +188,6 @@ export default async function CardDetailPage({ params }: { params: Promise<{ id:
   const alt = `Carta ${card.name}${card.rarity ? ` ${card.rarity}` : ''} del set ${setName}`;
   const types = card.types.map(typeLabel);
   const subtypes = subtypeLabels(card.subtypes);
-  const searchHref = `/buscar?setId=${encodeURIComponent(card.setId)}`;
 
   return (
     <>
@@ -236,9 +246,11 @@ export default async function CardDetailPage({ params }: { params: Promise<{ id:
           </div>
 
           <div className="flex flex-col gap-5">
-            <CardPriceSection cardId={card.id} initialPrices={prices} />
+            {/* La carga del precio vive en cliente: un refresh externo lento no
+                retrasa el render de la carta, y el hero muestra su skeleton. */}
+            <CardPriceSection key={`${card.id}:price`} cardId={card.id} />
 
-            <CardActions cardId={card.id} cardName={card.name} />
+            <CardActions key={`${card.id}:actions`} cardId={card.id} cardName={card.name} />
 
             <Surface as="section" padded={false} className="px-4 py-1">
               <h2 className="sr-only">Datos de la carta</h2>
@@ -276,53 +288,22 @@ export default async function CardDetailPage({ params }: { params: Promise<{ id:
           </div>
         </div>
 
-        {related.length > 0 ? (
-          <section aria-labelledby="otras-del-set" className="mt-8">
-            <div className="flex items-center justify-between gap-3">
-              <h2 id="otras-del-set" className="text-h3 text-primary">
-                Otras de este set
-              </h2>
-              <Link
-                href={searchHref}
-                className="inline-flex items-center gap-1 rounded-control text-label text-brand transition-colors duration-fast ease-standard hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--focus-ring)]"
-              >
-                Ver el set
-                <ArrowRight aria-hidden="true" focusable="false" strokeWidth={1.75} className="h-4 w-4" />
-              </Link>
-            </div>
+        {/*
+          La frontera envuelve **solo** el scroller de relacionadas, que es
+          contenido complementario: el nombre, la imagen, los datos y el precio
+          no dependen de él. Por eso el fallback es `null` y no un skeleton —no
+          hay un hueco que tapar—.
 
-            <p className="mt-0.5 text-caption text-tertiary">
-              {setName} · {pluralize(related.length, 'carta', 'cartas')}
-            </p>
-
-            {/*
-              Scroller horizontal de relacionadas. El `py-1` es **load-bearing**,
-              no espaciado: `overflow-x: auto` hace computar `overflow-y: auto`
-              (CSS Overflow 3), así que la fila recorta también en vertical, y el
-              `CardTile` lleva su indicador de foco 4 px por fuera del borde
-              (`outline-width: 2px` + `outline-offset: 2px`). Sin `pt-1` el
-              borde de arriba del indicador queda partido contra el `<ul>` en
-              cada tile. El `pb-1` estaba desde antes y hoy es el mínimo exacto
-              del lado de abajo.
-
-              Ojo con el `-mx-4` + `px-4` + `sm:mx-0 sm:px-0`: en mobile la fila
-              llega al borde de la pantalla y el padding compensa el `-mx-4`, que
-              es lo que deja asomar el último pill al scrollear. En `sm` se
-              anulan y la fila queda al ancho del `ScreenContainer`, que no
-              recorta.
-            */}
-            <ul
-              role="list"
-              className="-mx-4 mt-3 flex gap-3 overflow-x-auto px-4 py-1 sm:mx-0 sm:px-0"
-            >
-              {related.map((relatedCard) => (
-                <li key={relatedCard.id} className="w-24 shrink-0">
-                  <CardTile card={relatedCard} />
-                </li>
-              ))}
-            </ul>
-          </section>
-        ) : null}
+          El `key` no es decorativo: la navegación entre dos cartas es una
+          transición, y React mantiene el contenido anterior en pantalla
+          mientras el nuevo resuelve en vez de volver al fallback. Sin cambiar la
+          key, las "otras de este set" de la carta A quedarían pegadas arriba de
+          la carta B. Con la key, la frontera es un nodo nuevo: fallback primero
+          y después el contenido de la carta que se está viendo.
+        */}
+        <Suspense key={card.id} fallback={null}>
+          <RelatedCardsSection setId={card.setId} excludeId={card.id} setName={setName} />
+        </Suspense>
       </ScreenContainer>
     </>
   );

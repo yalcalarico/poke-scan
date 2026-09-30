@@ -1,5 +1,5 @@
 /**
- * API pública de `components/home/` — la landing.
+ * API pública de `components/home/` — el inicio de la PWA instalada.
  *
  * Mezcla server y client a propósito, y por eso el import es explícito:
  * - `AppPreview`, `FeatureGrid` y `fetchPreviewCards` son server-safe (solo

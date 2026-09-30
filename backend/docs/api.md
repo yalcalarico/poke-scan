@@ -1,6 +1,6 @@
 # API — referencia de endpoints
 
-> Los 42 endpoints del backend y cómo llamarlos: método, ruta, auth, query
+> Los endpoints del backend y cómo llamarlos: método, ruta, auth, query
 > params con su validación, body (el DTO real), respuesta (la forma real),
 > errores posibles y un ejemplo. Si vas a tocar un controller, este es el doc.
 
@@ -16,12 +16,17 @@
 | [Salud](#salud) | 1 |
 | [Auth](#auth) | 4 |
 | [Usuarios](#usuarios) | 1 |
-| [Cartas y sets](#cartas-y-sets) | 7 |
+| [Cartas y sets](#cartas-y-sets) | 8 |
 | [Colecciones](#colecciones) | 14 |
 | [Compartir](#compartir) | 6 |
 | [Moneda](#moneda) | 2 |
 | [Amigos](#amigos) | 7 |
 | [Jobs (admin)](#jobs-admin) | 3 |
+| **Total** | **46** |
+
+> El conteo sale de los decorators de ruta de los 12 controllers. Cuando se
+> agrega un endpoint hay que actualizar el número: el índice es la única forma de
+> detectar que la tabla quedó vieja.
 
 ---
 
@@ -568,10 +573,10 @@ precios vienen sin `priceArs` y sin `conversion` — **no falla**. Si el rate
 tiene más de 48 h, `conversion.stale` viene `true` para que el cliente muestre
 un `≈`.
 
-Esta ruta es la única que puede pedirle precios al proveedor externo (tcgdex):
-si el precio tiene más de 24 h (`MAX_AGE_MS`), `getPricesForCard` refresca
-contra tcgdex. Si la fuente todavía no cotiza la carta, devuelve el último
-precio conocido con la lista `prices` vacía, sin error. Ver
+Si el precio tiene más de 24 h (`MAX_AGE_MS`), `getPricesForCard` devuelve el
+último precio conocido y encola el refresh en background; la respuesta pública
+no espera a tcgdex ni se saltea el rate limit. Si no hay precio conocido, la
+lista `prices` puede venir vacía mientras se procesa la cola, sin error. Ver
 [pricing.md](pricing.md).
 
 | Error | Cuándo |

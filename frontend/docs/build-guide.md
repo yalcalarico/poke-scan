@@ -69,7 +69,8 @@ components/
   settings/               identidad, apariencia, moneda, sesión, RequireAuth
   share/                  enlaces del usuario, vista pública, InstallCta
   auth/                   AuthShell, LoginForm, RegisterForm
-  home/                   hero, features, mock, CTA
+  home/                   dashboard inicial de la PWA, mock, CTA
+  marketing/              landing pública, planes y FAQ
   brand/                  AppMark
 ```
 

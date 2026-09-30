@@ -27,7 +27,7 @@ Lo que cambió estructuralmente con el flip:
 |---|---|
 | `components/v2/*` | `components/*` |
 | `app/v2/buscar`, `app/v2/carta`, `app/v2/colecciones`, `app/v2/escanear`, `app/v2/perfil` | `app/(app)/*` |
-| `app/v2/page.tsx` (la home, en `/v2/home`) | `app/(app)/page.tsx` (en `/`) |
+| `app/v2/page.tsx` (la home, en `/v2/home`) | `app/(app)/inicio/page.tsx` (en `/inicio`); `/` queda para la landing pública |
 | `app/(v2auth)/v2/{login,registro}` | `app/(auth)/*` |
 | `app/(v2public)/v2/share/[slug]` + su layout | `app/share/[slug]` + `app/share/layout.tsx` |
 | `V2_BASE` en `components/nav.ts` | **eliminado**: los `href` son absolutos |
@@ -35,6 +35,11 @@ Lo que cambió estructuralmente con el flip:
 | `components/layout/v2-shell.tsx` | `components/layout/{app-shell,plain-shell}.tsx` |
 | Theme/Toast montados en 3 ramas de layout | los cuatro providers en el **layout raíz** (`app/providers.tsx`) |
 | `robots: noindex` en los 3 layouts | **eliminado** (ya no hay dos URLs para el mismo contenido) |
+
+**Actualización posterior:** `/` ahora es la landing pública de PokéScan con planes
+Gratis/Pro y FAQ; el inicio de la PWA instalada se movió a `/inicio`, que es el
+`start_url` del manifest. No hay una segunda app: son dos entradas al mismo
+producto, con shells distintos (`MarketingShell` y `AppShell`).
 
 **Este documento es histórico**: las fases están escritas en el orden en que se
 hicieron, cuando la app nueva convivía con la anterior bajo `/v2`. Cuando una
@@ -679,21 +684,19 @@ Decidilo antes de arrancar la Fase 0.
 |---|---|---|
 | **0 — Cimientos** | ✅ Hecha | `app/globals.css` (tokens, tema claro/oscuro, `prefers-reduced-motion`), `lib/cn.ts`, `lib/theme.tsx`, `lib/theme-script.ts`, `lib/variants.ts`, `lib/pokemon.ts`, `lib/select-utils.ts`, `hooks/use-async.ts`, `hooks/use-infinite-list.ts`, `scripts/check-no-raw-colors.mjs`, y las 27 primitivas de `components/ui/`. |
 | **1 — Chrome de la app** | ✅ Hecha | `components/layout/` (`AppShell`, `PlainShell`, `ScreenHeader`, `ScreenContainer`, `BottomNav`, `OfflineToast`), `error.tsx` y `not-found.tsx` por rama. **La `BottomNav` ya no desaparece en standalone** y la cámara es `z-media` (arriba de la nav). |
-| **2 — Buscar** | ✅ Hecha | `components/search/`, `cards/`, `Chip` de filtros, "Cargar más", `PriceChip`. El modo de búsqueda declara `available: false` en número y artista, con el copy que lo dice. Ver B1 abajo. |
+| **2 — Buscar** | ✅ Hecha | `components/search/`, `cards/`, `Chip` de filtros, "Cargar más", `PriceChip`. Los tres modos de búsqueda están habilitados, y el `sort` con `price` y la `direction` se piden desde la URL. Ver B1–B3 abajo. |
 | **3 — Ficha + precios** | ✅ Hecha | `prices/price-hero.tsx`, `price-delta.tsx`, `price-table.tsx` (filas en mobile, tabla en `lg:`), `SetDto.logoUrl` y `symbolUrl` en uso, "Otras de este set", `app/(app)/carta/[id]/actions.tsx`. |
 | **4 — Escanear** | ✅ Hecha | `components/scanner/` completo: frame, action bar, controles, chip de precio, barra de carta detectada, `matchedText` resaltado, sesión por lotes con `Organize (N)`. El chip de precio **no pide nada**: lee la fila de la respuesta de `identify`. |
-| **5 — Colecciones** | ✅ Hecha | `components/collections/`: `CollectionSummary`, grid denso, `CollectionBottomBar`, sheets de alta/renombre/ítem, y el filtro de intercambio **con su `Alert` de honestidad** (ver B6 abajo). |
+| **5 — Colecciones** | ✅ Hecha | `components/collections/`: `CollectionSummary`, grid denso con mosaico de portada, `CollectionBottomBar`, sheets de alta/renombre/ítem, orden por precio y filtro de intercambio **server-side**. Ver B6 y B9 abajo. |
 | **6 — Set progress / binder** | ✅ Hecha **con backend** | `components/set-progress/` completo (Vista 1 y binder, troceado en 60, `matched` de B11), corriendo sobre `API_SET_PROGRESS_SOURCE`. B7 y B8 **están implementados** y el fallback fue eliminado. Ver §10.2. |
 | **7 — Perfil, auth, share, home, PWA** | ✅ Hecha | `/ajustes` con las 5 secciones, redirect 308 desde `/perfil`, toggle de tema, `PasswordInput` en los dos formularios, home con hero y mock, `PublicCollectionView`, `shareLinkStatus` con los cuatro estados, `InstallCta`. |
 | **8 — Limpieza y flip** | ✅ Hecha | Se borró la app anterior y con ella la deuda del `body {}` de `globals.css` y las clases `.pwa-hide-in-standalone` / `.pwa-content-inset`. **`check-no-raw-colors.mjs` está enganchado a `pnpm run lint`** y sus raíces son hoy `app`, `components`, `lib` y `hooks`. Los `probe-*.ts` de la raíz de `frontend/` que este plan mencionaba ya no están. |
 
-**Lo que sigue abierto de la Fase 0:** la decisión de §9 sobre
-`@testing-library/react` + `jsdom`. Hoy hay 12 archivos de test, pero cubren
-`lib/scanner/**` y dos módulos puros (`lib/__tests__/cn.test.ts` y
-`lib/__tests__/select-utils.test.ts`). **Las primitivas no tienen un solo test de
-componente.** Los dos que existen cubren lo que no era testeable a ojo: el `cn()`
-extendido y los helpers del `Select`. El `Select`, el `Sheet` y el
-`SegmentedControl` son a11y-sensitive y hoy dependen de verificación manual.
+**Lo que sigue abierto de la Fase 0:** nada. `@testing-library/react` + `jsdom`
+ya están instalados y hay tests de las primitivas a11y-sensitive: el focus trap
+del `Sheet`, el `aria-activedescendant` del `Select`, el `aria-labelledby` del
+`Field`, y las de `Button`, `Switch`, `Divider` y `SegmentedControl`. El
+inventario real está en [`testing.md`](testing.md).
 
 ## 10.2 El trabajo de backend
 
@@ -706,28 +709,27 @@ extendido y los helpers del `Select`. El `Select`, el `Sheet` y el
 | B11 | `IdentifiedCandidateDto.matchedText` | ✅ En uso. Era un campo muerto. |
 | B7 | `GET /api/collections/:id/set-progress` | ✅ **Implementado.** `collections.controller.ts::getSetProgress` + `collections.service.ts::getSetProgress` con el `$queryRaw` y `DISTINCT ON`. `SetProgressDto` está en `types/api.ts`. |
 | B8 | `GET /api/sets/:id/cards` | ✅ **Implementado.** `cards/sets.controller.ts` (`@Get(':id/cards')`) + `cards.service.ts`. `SetCardsResponseDto` está en `types/api.ts`. |
-| B1 | `SearchCardsDto`: `searchBy: 'name' \| 'number' \| 'artist'` | ✅ **Backend hecho**: `search-cards.dto.ts` acepta los tres. ⚠️ **Falta el flip del frontend**: los chips de `search-controls.tsx` siguen con `available: false` en número y artista, así que el control todavía dice que no se puede. Ojo: `number` matchea por **igualdad** (el `4` no trae el 40 ni el 104). |
-| B2 | `sort: 'price'` | ✅ **Backend hecho**: `cards.service.ts` ordena por el mejor precio de mercado. ⚠️ **Falta el flip del frontend**: `catalog-search.tsx` sigue pasando `sort: 'name'` con el comentario de que "no hay un sort real todavía". |
-| B3 | `direction: 'asc' \| 'desc'` | ✅ **Backend hecho** (`search-cards.dto.ts`). ⚠️ Sin uso en el frontend todavía. Ojo: **con `q` se ignora** (el score de relevancia no es invertible), así que no lo muestres habilitado mientras el input tenga texto. |
-| B6 | `ListItemsDto`: `forTradeOnly` | ✅ **Backend hecho**: compone con `duplicatesOnly` y el `count` usa el mismo `where`. ⚠️ **Falta el flip del frontend**: `collection-detail.tsx` sigue con el `Alert tone="info"` de honestidad y el `.filter()` client-side. El cambio es borrar el `Alert`, pasar el flag a `listItems` y sacar el `.filter()`. |
-| B9 | `CollectionDto`: `cover: [{ imageSmall, cardId }]` | ✅ **Backend hecho**: `collections.service.ts` arma el cover con un `$queryRaw` agregado (no un N+1) y hay un `describe` entero de tests. ⚠️ **Falta el flip del frontend**: `collections-screen.tsx` renderiza `<CollectionCard collection={collection} />` sin pasarle `cover`, así que la tarjeta cae a la superficie de marca `bg-brand-soft` con `Layers`. El tipo `CollectionCoverItem` del componente es más angosto a propósito (solo `imageSmall`), así que el cambio es pasar la prop y borrar el bloque `hasCover ? mosaic : marca`. |
+| B1 | `SearchCardsDto`: `searchBy: 'name' \| 'number' \| 'artist'` | ✅ **Backend y frontend hechos.** Los tres chips de `search-controls.tsx` están `available: true` y `catalog-search.tsx` manda el `searchBy` que corresponde. Ojo: `number` matchea por **igualdad** (el `4` no trae el 40 ni el 104). |
+| B2 | `sort: 'price'` | ✅ **Backend y frontend hechos.** `catalog-search.tsx` manda `sort` y `direction` desde la URL, y `SearchControls` expone los cuatro criterios y el sentido dentro del `Sheet` de filtros. Con texto en el input el control se apaga y se explica, porque el backend ignora el orden cuando hay `q`. |
+| B3 | `direction: 'asc' \| 'desc'` | ✅ **Backend y frontend hechos.** Vive en el mismo `SegmentedControl` del `sort`, con la misma regla: **con `q` se ignora** (el score de relevancia no es invertible), así que ambos controles se deshabilitan mientras el input tenga texto. |
+| B6 | `ListItemsDto`: `forTradeOnly` | ✅ **Backend y frontend hechos.** `collection-detail.tsx` pasa el flag a `listItems`, ya no hay `.filter()` en el cliente y el `Alert` de honestidad se borró. El filtro compone con `duplicatesOnly` en el mismo `where`, y el `count` usa el mismo filtro. **Consecuencia**: una respuesta vacía con filtro puesto ahora significa "no hay en la colección" y no "no hay entre lo cargado", así que los vacíos se separan por filtro activo y no por `items.length`. |
+| B9 | `CollectionDto`: `cover: [{ imageSmall, cardId }]` | ✅ **Backend y frontend hechos.** `collections-screen.tsx` pasa `collection.cover` a `CollectionCard`, que ya tenía el mosaico escrito. El backend lo arma con un `$queryRaw` agregado (no un N+1). El fallback de marca queda solo para la colección sin cartas, que es el único caso en que `cover` llega `[]`. |
 
-**Las tres que quedan de frontend (B1, B2, B6) son un mismo trabajo**: agarrar una
-capacidad que el backend ya tiene y cuya UI ya está construida con un honesto
-"esto todavía no funciona". Y ninguna bloquea una pantalla: cada una tiene su
-fallback visible y correcto.
+**B2, B3, B6 y B9 están las cuatro cerradas.** Lo que queda de esta lista es
+B10, y es la única que empezó desde cero.
 
 ### B10 — `PriceDto`: `change30d`
 
-**No implementado, en ningún lado.** `PriceDelta` ya acepta `changeUsd` y
-`changePercent` y cae a la fecha de actualización cuando no llegan, así que el
-markup no habría que tocarlo. Es la única de la lista que sigue sin empezar.
+**Hecho, en los dos lados.** `PriceHistoryDto` y el `change` de `PriceDto`
+existen en el contrato, el backend los agrega con un `DISTINCT ON
+(fetchedAt::date)` sobre el índice que `card_prices` ya tenía, y el frontend
+muestra el sparkline, el `PriceDelta` real y el texto de cuántos días hay.
 
-El recordatorio de §6.3 sigue valiendo: `card_prices` es append-only y no tiene job
-de poda, así que el histórico de 30 días sale de un
-`DISTINCT ON (cardId, variant) ... WHERE fetchedAt <= now() - 30 days` sin tabla
-nueva. Pero **no es gratis**: es un query nuevo por cada carta que se muestra, y
-eso multiplica la carga.
+Lo que **no** se hizo, y sigue pendiente: el segundo paso de P6.1, que es el
+histórico **por colección** ("tu colección subió $47 este mes"). El endpoint
+individual ya no gasta una sola request del presupuesto externo —sale del
+índice de Postgres—, pero el agregado por colección sí necesita decidir qué
+pasa con las cartas sin precio.
 
 ## 10.3 El flip
 
