@@ -140,13 +140,44 @@ node -e "fetch('http://localhost:3001/api/cards/search?q=pikachu&pageSize=2').th
 
 ### `GET /api/health`
 
-Público, sin body. Lo único que no requiere ni auth ni infra: devuelve literal.
+Público, sin body, sin auth.
 
 **200**
 
 ```json
-{ "status": "ok" }
+{
+  "status": "ok",
+  "degraded": false,
+  "detail": {
+    "redis": {
+      "configured": true,
+      "available": true,
+      "degradedSince": null,
+      "lastErrorAt": null
+    }
+  }
+}
 ```
+
+**`status` no cambia cuando Redis está caído, y es a propósito.** La app
+funciona sin Redis —es una caché, y cada lectura tiene su camino a Postgres—,
+así que devolver `503` haría que un orquestador matara un pod perfectamente
+funcional: el resultado sería peor que el problema, cero caché y además cero app.
+
+Lo que un health que dice "ok" y nada más esconde es lo que importa: que la
+degradación se manifiesta como latencia y como **más tráfico contra el proveedor
+externo**, y que nada lo indica. Por eso el `status` sigue en `ok` y la
+información va en `detail`, con un `degraded` explícito para alerting.
+
+| Campo | Qué dice |
+|---|---|
+| `configured` | Hay `REDIS_URL`. Distingue "no usamos caché" de "se nos cayó" |
+| `available` | El cliente está listo ahora |
+| `degradedSince` | Desde cuándo no hay caché. Cuenta **desde el arranque del proceso**, no desde la primera pérdida: un backend que arrancó con Redis ya caído está degradado desde que arrancó, y saying `null` ahí esconde el caso más común |
+| `lastErrorAt` | Último error de comando o de conexión |
+
+La respuesta **no** incluye la URL de Redis ni el mensaje del último error: es
+una superficie de monitoring. Para debuggear está el log.
 
 ```bash
 curl -s http://localhost:3001/api/health

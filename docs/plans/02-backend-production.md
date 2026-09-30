@@ -107,23 +107,44 @@ El cursor se migra con `pnpm run sync-state:migrate`, que no puede ser una
 migración de Prisma porque una migración no puede leer Redis. Ver
 [gotchas.md](../../backend/docs/gotchas.md) §34.
 
-## Fase 5: Retención de `card_prices`
+## Fase 5: Retención de `card_prices` ✅ hecho
 
-`card_prices` es **append-only sin poda**. El histórico es una feature válida,
-pero el almacenamiento crece sin techo y las consultas de variación se
-entrecifican.
+`card_prices` es append-only sin poda. Ahora hay una política y un script con dry
+run por default (`pnpm run prices:retention`).
 
-Falta definir la política (conservar N días en detalle y consolidar a un punto
-diario más atrás, nunca borrando el último precio vigente). Antes hay que medir
-filas y tamaño de índices reales; la decisión depende de eso.
+La decisión no fue "borrar lo viejo" sino **consolidar**: los días fuera de la
+ventana de detalle (90) se colapsan a un punto por día, y el histórico (730)
+poda días completos sin tocar nunca la última fila de un grupo.
 
-## Fase 6: Redis degradado
+El motivo está medido, no supuesto: `CardsService.referencePrices` toma la fila
+más reciente **más vieja que la ventana** como precio de referencia del delta de
+30 días. Un `DELETE` por edad rompería el delta de las cartas viejas —pasa a
+`null` y la píldora de variación desaparece sin error— y dejaría sin fallback a
+las cartas que solo tienen precio viejo. Consolidar preserva las dos cosas.
 
-`redis.service.ts` cae a "sin caché" en silencio. Es resiliente, y está bien que
-lo sea, pero una caída sostenida de Redis es indistinguible de un cache miss
-frío: sube la latencia y el tráfico externo sin que nada lo indique. Falta
-exponer el estado en el health detail y limitar el rate de los logs de
-degradación.
+Lo que se midió y quedó documentado en `pricing.md`: los índices pesan 5,5x la
+tabla, y el índice de 3 columnas tiene `idx_scan = 0`. **No se dropea** porque
+`idx_scan` de una base de 184 filas no distingue "nadie lo usa" de "el planner no
+lo eligió": la decisión necesita las estadísticas del volumen real.
+
+## Fase 6: Redis degradado ✅ hecho
+
+`redis.service.ts` caía a "sin caché" en silencio. Ahora:
+
+- `GET /api/health` expone `detail.redis` con `configured`, `available`,
+  `degradedSince` y `lastErrorAt`. **`status` sigue siendo `ok`**: la app
+  funciona sin Redis, y un `503` haría que un orquestador matara un pod sano. Lo
+  que se informa es la degradación, para alerting, y el `status` no miente.
+- Los avisos de degradación tienen **rate limit de 1/min por tipo de
+  operación**, y el siguiente aviso dice cuántos se suprimieron. Sin eso, una
+  Redis que está arriba pero fallando generaba un `warn` por request.
+
+**Hallazgo que la fase destapó y que sigue abierto**: la caché **no se
+recupera sola**. `retryStrategy` abandona a los 3 reintentos y nada reconecta,
+así que después de un corte de Redis el proceso queda sin caché hasta que se
+reinicie. No es una regresión de este commit —ya era así— pero antes era
+invisible; ahora el health lo muestra. Es un follow-up de unas líneas, no lo
+metí porque no estaba en el alcance de la fase.
 
 ## Fase 7: Sets sin mapeo de precios
 

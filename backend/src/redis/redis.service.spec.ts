@@ -136,3 +136,148 @@ describe('RedisService — locks', () => {
     expect(await redis.acquireLock(KEY, 'token-b', 60)).toBe(true);
   });
 });
+
+/**
+ * La degradación: que sea visible en el health y que no inunde el log.
+ *
+ * El escenario que importa no es "Redis no arrancó" —ahí `isAvailable()` es
+ * falso desde el principio y los métodos ni intentan nada—, sino **Redis está
+ * arriba pero cada comando falla**: memoria llena, timeouts, un socket colgado.
+ * Ahí `isAvailable()` da `true`, cada `get` entra, cada `get` lanza y cada
+ * `get` logueaba. Con la app en 30 req/min son 30 líneas por minuto y lo que
+ * pasó queda enterrado.
+ *
+ * Para provocarlo se usa un `WRONGTYPE` real: la clave es una lista y `GET`
+ * sobre una lista falla en el servidor. Es el mismo camino de error que un
+ * timeout, sin necesidad de romper Redis.
+ */
+describe('RedisService — degradación observable', () => {
+  const WRONGTYPE_KEY = 'test:wrongtype:list';
+  let moduleRef: TestingModule;
+  let redis: RedisService;
+  let available = false;
+  let warn: ReturnType<typeof vi.spyOn>;
+
+  const build = (url: string | undefined): RedisService => {
+    const ref = new RedisService({
+      get: (key: string) => (key === 'REDIS_URL' ? url : undefined),
+    } as ConfigService);
+    ref.onModuleInit();
+    return ref;
+  };
+
+  beforeAll(async () => {
+    moduleRef = await Test.createTestingModule({
+      providers: [
+        RedisService,
+        {
+          provide: ConfigService,
+          useValue: {
+            get: (key: string) => (key === 'REDIS_URL' ? REDIS_URL : undefined),
+          },
+        },
+      ],
+    }).compile();
+
+    redis = moduleRef.get(RedisService);
+    redis.onModuleInit();
+    for (let i = 0; i < 50 && !redis.isAvailable(); i += 1) {
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    }
+    available = redis.isAvailable();
+
+    if (available) {
+      // La clave tiene que ser una lista, no un string: `GET` sobre un string
+      // funciona y no probaría nada.
+      await (redis as unknown as { client: { del: (k: string) => Promise<number> } }).client.del(
+        WRONGTYPE_KEY,
+      );
+      await (
+        redis as unknown as { client: { lpush: (k: string, v: string) => Promise<number> } }
+      ).client.lpush(WRONGTYPE_KEY, 'x');
+    }
+  });
+
+  afterAll(async () => {
+    if (available) await redis.del(WRONGTYPE_KEY);
+    await moduleRef.close();
+  });
+
+  it('sin REDIS_URL no está configurado y tampoco degradado', () => {
+    // La distinción importa en una alerta: "no usamos caché" y "la caché se
+    // cayó hace 40 minutos" son incident distintos.
+    const sinUrl = build(undefined);
+
+    const status = sinUrl.status();
+    expect(status.configured).toBe(false);
+    expect(status.available).toBe(false);
+    expect(status.degradedSince).toBeNull();
+  });
+
+  it('con Redis sano el estado no está degradado', async (ctx) => {
+    if (!available) return ctx.skip();
+
+    const status = redis.status();
+    expect(status.configured).toBe(true);
+    expect(status.available).toBe(true);
+    expect(status.degradedSince).toBeNull();
+  });
+
+  it('el estado no filtra la URL de Redis', async (ctx) => {
+    if (!available) return ctx.skip();
+
+    const serializado = JSON.stringify(redis.status());
+    expect(serializado).not.toContain(REDIS_URL);
+    expect(serializado).not.toContain('redis://');
+  });
+
+  it('un comando que falla se degrada en un aviso, no en uno por llamada', async (ctx) => {
+    if (!available) return ctx.skip();
+
+    const logger = (redis as unknown as { logger: { warn: (m: string) => void } }).logger;
+    warn = vi.spyOn(logger, 'warn');
+    try {
+      for (let i = 0; i < 10; i += 1) {
+        expect(await redis.get(WRONGTYPE_KEY)).toBeNull();
+      }
+
+      // Diez `get` fallidos, un solo warn: el resto se cuenta como suprimido.
+      const warns = warn.mock.calls.filter((c) => String(c[0]).includes('WRONGTYPE'));
+      expect(warns.length).toBe(1);
+      // Y el error queda anotado para el health.
+      expect(redis.status().lastErrorAt).not.toBeNull();
+    } finally {
+      warn.mockRestore();
+    }
+  });
+
+  it('el aviso siguiente dice cuántos se suprimieron', async (ctx) => {
+    if (!available) return ctx.skip();
+
+    const logger = (redis as unknown as { logger: { warn: (m: string) => void } }).logger;
+    // Se limpia el rate para que este test sea independiente del anterior: si
+    // compartieran ventana, el aviso ya habría salido y no habría nada que
+    // contar.
+    (redis as unknown as { warnedAt: Map<string, unknown> }).warnedAt.clear();
+    warn = vi.spyOn(logger, 'warn');
+    try {
+      for (let i = 0; i < 4; i += 1) await redis.get(WRONGTYPE_KEY);
+      // Se adelanta la ventana: sin esto, el rate de 60 s lo dejaría esperando.
+      (redis as unknown as { warnedAt: Map<string, { at: number; suppressed: number }> }).warnedAt.set(
+        'get',
+        { at: Date.now() - 10 * 60_000, suppressed: 7 },
+      );
+      await redis.get(WRONGTYPE_KEY);
+
+      const warns = warn.mock.calls.filter((c) => String(c[0]).includes('WRONGTYPE'));
+      // Dos avisos: el primero al abrir la ventana, el segundo cuando la ventana
+      // venció de verdad.
+      expect(warns.length).toBe(2);
+      // Los suprimidos no se pierden: se informan en el próximo aviso.
+      expect(String(warns[0]![0])).not.toContain('suprimidos');
+      expect(String(warns[1]![0])).toContain('+7 avisos suprimidos');
+    } finally {
+      warn.mockRestore();
+    }
+  });
+});

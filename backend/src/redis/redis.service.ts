@@ -9,11 +9,48 @@ import { Redis } from 'ioredis';
 
 const LOG_TAG = 'RedisService';
 
+/**
+ * Ventana de rate para los avisos de degradación, por tipo de operación.
+ *
+ * Sin esto, una Redis que está *arriba pero fallando* —memoria llena, timeouts,
+ * un socket colgado— produce un `warn` por cada `get`/`set` de cada request. Con
+ * la app en 30 req/min son 30 líneas por minuto por operación, y lo que en
+ * realidad pasó (Redis dejó de responder) queda enterrado.
+ *
+ * Un minuto es el orden de magnitud correcto: cukup para que un operador lo vea
+ * sin picar, y bastante corto para que un problema de minutos no parezca de
+ * horas.
+ */
+const DEGRADED_LOG_INTERVAL_MS = 60_000;
+
+/**
+ * Lo que el health endpoint expone de Redis.
+ *
+ * Deliberadamente **no** incluye la URL ni el mensaje del último error: el
+ * health es una superficie de monitoring (un dashboard, un scraper, a veces un
+ * proxy) y las credenciales no tienen por qué estar ahí. Para debuggear está el
+ * log, que es donde corresponde.
+ */
+export interface RedisStatus {
+  /** Hay `REDIS_URL` configurado. Distingue "no configurado" de "caído". */
+  configured: boolean;
+  available: boolean;
+  /** Desde cuándo está caído. `null` si está sano o si nunca estuvo arriba. */
+  degradedSince: string | null;
+  lastErrorAt: string | null;
+}
+
 @Injectable()
 export class RedisService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(LOG_TAG);
   private client: Redis | null = null;
   private available = false;
+  /** Se define en `onModuleInit`; sirve para no reportar "degradado" si nunca hubo Redis. */
+  private configured = false;
+  private degradedSince: Date | null = null;
+  private lastErrorAt: Date | null = null;
+  /** Último aviso por tipo de operación, para el rate limit. */
+  private readonly warnedAt = new Map<string, { at: number; suppressed: number }>();
 
   constructor(private readonly config: ConfigService) {}
 
@@ -23,6 +60,12 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
       this.logger.warn('REDIS_URL no definido: se continúa sin caché Redis');
       return;
     }
+    this.configured = true;
+    // Optimista a propósito: se está por usar la caché, así que desde este
+    // momento el proceso está degradado si no entra. Si entra, `setAvailable(true)`
+    // lo limpia. Lo contrario —contar desde la primera pérdida— deja en `null`
+    // el caso de un backend que arrancó con Redis ya caído.
+    this.degradedSince = new Date();
 
     try {
       const client = new Redis(url, {
@@ -34,37 +77,38 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
       });
 
       client.on('error', (error: Error) => {
-        if (this.available) {
-          this.logger.warn(`Error de Redis: ${error.message}`);
-        }
-        this.available = false;
+        this.warnThrottled('conexión', `Error de Redis: ${error.message}`);
+        this.noteError();
+        this.setAvailable(false);
       });
       client.on('ready', () => {
-        this.available = true;
+        this.setAvailable(true);
       });
       client.on('end', () => {
-        this.available = false;
+        this.setAvailable(false);
       });
 
       client
         .connect()
         .then(() => {
-          this.available = true;
           this.logger.log(`Conectado a Redis en ${url}`);
+          this.setAvailable(true);
         })
         .catch((error: Error) => {
-          this.available = false;
           this.logger.warn(
             `No se pudo conectar a Redis (${error.message}): se continúa sin caché`,
           );
+          this.noteError();
+          this.setAvailable(false);
         });
 
       this.client = client;
     } catch (error) {
-      this.available = false;
+      this.noteError();
       this.logger.warn(
         `Redis no disponible: ${(error as Error).message}. Se continúa sin caché`,
       );
+      this.setAvailable(false);
     }
   }
 
@@ -76,11 +120,73 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
       this.client.disconnect();
     }
     this.client = null;
-    this.available = false;
+    this.setAvailable(false);
   }
 
   isAvailable(): boolean {
     return this.available && this.client?.status === 'ready';
+  }
+
+  /**
+   * El estado de Redis para el health endpoint.
+   *
+   * `degradedSince` se cuenta **desde que el proceso quiere usar la caché**, no
+   * desde la primera conexión perdida. Un backend que arranca con Redis ya caído
+   * está degradado desde que arrancó, y decir `null` ahí esconde el caso más
+   * común. Lo que sí es `null` es cuando no hay `REDIS_URL`: eso no es
+   * degradación, es no usar caché, y la distinción importa en una alerta.
+   */
+  status(): RedisStatus {
+    return {
+      configured: this.configured,
+      available: this.isAvailable(),
+      degradedSince: this.degradedSince?.toISOString() ?? null,
+      lastErrorAt: this.lastErrorAt?.toISOString() ?? null,
+    };
+  }
+
+  /**
+   * Un solo camino para cambiar `available`, para que la transición sea la que
+   * lleva la cuenta de `degradedSince`.
+   *
+   * Asignar el campo en los handlers directamente hacía que la transición se
+   * perdiera en uno de los cuatro lados, y el síntoma es un `degradedSince` que
+   * dice "nunca" con Redis claramente caído.
+   */
+  private setAvailable(value: boolean): void {
+    if (this.available === value) return;
+    this.available = value;
+    if (value) {
+      this.degradedSince = null;
+    } else if (this.degradedSince === null) {
+      this.degradedSince = new Date();
+    }
+  }
+
+  private noteError(): void {
+    this.lastErrorAt = new Date();
+  }
+
+  /**
+   * Loguea un aviso de degradación como máximo una vez por ventana y por tipo.
+   *
+   * Los suprimidos no se pierden: el próximo aviso que sale de la ventana dice
+   * cuántos había, así que "Redis falló 47 veces" sigue siendo visible sin que
+   * el log crezca 47 veces.
+   */
+  private warnThrottled(kind: string, message: string): void {
+    const now = Date.now();
+    const previous = this.warnedAt.get(kind);
+    if (previous && now - previous.at < DEGRADED_LOG_INTERVAL_MS) {
+      previous.suppressed += 1;
+      return;
+    }
+    const suppressed = previous?.suppressed ?? 0;
+    this.warnedAt.set(kind, { at: now, suppressed: 0 });
+    this.noteError();
+    this.logger.warn(
+      suppressed > 0 ? `${message} (+${suppressed} avisos suprimidos)` : message,
+    );
   }
 
   async get(key: string): Promise<string | null> {
@@ -88,7 +194,7 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     try {
       return await this.client!.get(key);
     } catch (error) {
-      this.logger.warn(`get(${key}) falló: ${(error as Error).message}`);
+      this.warnThrottled('get', `get(${key}) falló: ${(error as Error).message}`);
       return null;
     }
   }
@@ -119,7 +225,7 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
         await this.client!.set(key, value);
       }
     } catch (error) {
-      this.logger.warn(`set(${key}) falló: ${(error as Error).message}`);
+      this.warnThrottled('set', `set(${key}) falló: ${(error as Error).message}`);
     }
   }
 
@@ -132,7 +238,7 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     try {
       await this.client!.del(...keys);
     } catch (error) {
-      this.logger.warn(`del falló: ${(error as Error).message}`);
+      this.warnThrottled('del', `del falló: ${(error as Error).message}`);
     }
   }
 
@@ -154,7 +260,7 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
       const result = await this.client!.set(key, token, 'EX', Math.floor(ttlSeconds), 'NX');
       return result === 'OK';
     } catch (error) {
-      this.logger.warn(`acquireLock(${key}) falló: ${(error as Error).message}`);
+      this.warnThrottled('acquireLock', `acquireLock(${key}) falló: ${(error as Error).message}`);
       return false;
     }
   }
@@ -177,7 +283,7 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
       )) as number;
       return result === 1;
     } catch (error) {
-      this.logger.warn(`releaseLock(${key}) falló: ${(error as Error).message}`);
+      this.warnThrottled('releaseLock', `releaseLock(${key}) falló: ${(error as Error).message}`);
       return false;
     }
   }
@@ -195,7 +301,7 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
       )) as number;
       return result === 1;
     } catch (error) {
-      this.logger.warn(`extendLock(${key}) falló: ${(error as Error).message}`);
+      this.warnThrottled('extendLock', `extendLock(${key}) falló: ${(error as Error).message}`);
       return false;
     }
   }
