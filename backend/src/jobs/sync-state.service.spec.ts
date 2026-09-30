@@ -136,6 +136,10 @@ describe('JobsRecoveryService', () => {
   });
 
   afterAll(async () => {
+    // Sin esto, la última fila que crea el test queda `completed` en la base de
+    // desarrollo y aparece en cualquier `SELECT` de la cola.
+    await prismaClient.priceRefreshJob.deleteMany({});
+    await prismaClient.scanJob.deleteMany({ where: { jobType: 'sync-catalog' } });
     await prismaClient.$disconnect();
   });
 
