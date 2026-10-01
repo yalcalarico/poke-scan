@@ -66,6 +66,12 @@ export interface AddItemPayload {
   condition?: CardCondition;
   quantity?: number;
   notes?: string;
+  /**
+   * El checkbox del alta. Estaba en el formulario y **no se mandaba**: el
+   * backend no tenía el campo, `whitelist: true` lo descartaba en silencio, y la
+   * carta entraba sin la marca. Ahora viaja como el resto del payload.
+   */
+  isForTrade?: boolean;
 }
 
 export interface UpdateItemPayload {

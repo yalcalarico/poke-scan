@@ -3,10 +3,24 @@
 # Backend NestJS — imagen de produccion (fase 6, tarea 6.4).
 # Solo se usa con `docker compose --profile deploy up`.
 
+# La versión de pnpm está **fijada**, y no es cosmetico.
+#
+# `corepack enable` a secas descarga la última pnpm publicada. Hoy eso es
+# pnpm 12.x, que ya no lee `pnpm.onlyBuiltDependencies` desde `package.json`
+# (se mudó a `pnpm-workspace.yaml`), así que `pnpm install --frozen-lockfile`
+# falla con ERR_PNPM_IGNORED_BUILDS y **la imagen no construye**. El
+# `packageManager` del package.json raíz tampoco ayuda: el contexto de este
+# build es `./backend`, que no tiene ese campo.
+#
+# Además, una imagen que se construye con "la última pnpm del día" no es
+# reproducible: un major nuevo rompe el build sin que nadie toque el repo.
+ARG PNPM_VERSION=10.17.1
+
 FROM node:22-alpine AS builder
 ENV PNPM_HOME=/pnpm
 ENV PATH="$PNPM_HOME:$PATH"
-RUN corepack enable
+ARG PNPM_VERSION
+RUN corepack enable && corepack prepare pnpm@${PNPM_VERSION} --activate
 WORKDIR /app
 
 COPY package.json pnpm-lock.yaml ./
@@ -23,7 +37,8 @@ RUN pnpm run build && pnpm exec prisma generate
 FROM node:22-alpine AS prod-deps
 ENV PNPM_HOME=/pnpm
 ENV PATH="$PNPM_HOME:$PATH"
-RUN corepack enable
+ARG PNPM_VERSION
+RUN corepack enable && corepack prepare pnpm@${PNPM_VERSION} --activate
 WORKDIR /app
 COPY package.json pnpm-lock.yaml ./
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store \

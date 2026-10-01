@@ -132,12 +132,29 @@ describe('CatalogSyncService', () => {
     expect(jobs).toBe(1);
   });
 
+  /**
+   * Arranca un sync y espera a que termine.
+   *
+   * `start()` dispara `run()` en fire-and-forget, así que esperar el resultado
+   * significa **esperar la fila**, no llamar `run()` otra vez: llamarla las dos
+   * veces corre dos syncs sobre el mismo `ScanJob` y cuál de los dos escribe el
+   * estado final depende del orden.
+   */
+  const startAndWait = async (jobId: string): Promise<void> => {
+    await vi.waitFor(
+      async () => {
+        const job = await prismaClient.scanJob.findUniqueOrThrow({ where: { id: jobId } });
+        expect(['completed', 'skipped', 'failed']).toContain(job.status);
+      },
+      { timeout: 5000, interval: 25 },
+    );
+  };
+
   it('run anota skipped sin processed', async () => {
     await build();
     const started = await service.start(false);
-    const token = 'token-de-test';
 
-    await service.run(started.jobId, false, token);
+    await startAndWait(started.jobId);
 
     const job = await prismaClient.scanJob.findUniqueOrThrow({
       where: { id: started.jobId },
@@ -151,7 +168,7 @@ describe('CatalogSyncService', () => {
     syncCards.syncAll.mockRejectedValueOnce(new Error('boom de pokemontcg.io'));
     const started = await service.start(false);
 
-    await service.run(started.jobId, false, 'token-de-test');
+    await startAndWait(started.jobId);
 
     const job = await prismaClient.scanJob.findUniqueOrThrow({
       where: { id: started.jobId },

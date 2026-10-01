@@ -274,6 +274,52 @@ describe('CollectionsService', () => {
     expect(third.quantity).toBe(5);
   });
 
+  /*
+   * REGRESIÓN: el alta soltaba la marca para intercambio.
+   *
+   * El formulario de alta tiene el checkbox, lo guarda en el estado y lo manda en
+   * el payload. Pero `AddItemDto` no tenía el campo, y con `whitelist: true` el
+   * `ValidationPipe` lo descartaba sin error: la carta entraba a la colección y
+   * el filtro server-side "para intercambio" no la mostraba nunca. Sin error en
+   * ninguna parte, que es lo que lo hacía difícil de encontrar.
+   */
+  it('addItem guarda la marca para intercambio del alta', async () => {
+    const collection = await createCollection(userA);
+
+    const item = await service.addItem(
+      userA,
+      collection.id,
+      addItem(TEST_CARD_ID, { isForTrade: true }),
+    );
+
+    expect(item.isForTrade).toBe(true);
+
+    // Y tiene que aparecer en el filtro, que es server-side.
+    const filtered = await service.listItems(userA, collection.id, {
+      forTradeOnly: true,
+    } as never);
+    expect(filtered.data.some((row) => row.id === item.id)).toBe(true);
+  });
+
+  it('addItem sin la marca la deja en false, y no la pisa si ya estaba marcada', async () => {
+    const collection = await createCollection(userA);
+    const marcada = await service.addItem(
+      userA,
+      collection.id,
+      addItem(TEST_CARD_ID, { isForTrade: true }),
+    );
+    expect(marcada.isForTrade).toBe(true);
+
+    // Volver a agregar la misma carta sin tocar el checkbox no la desmarca.
+    const sumada = await service.addItem(
+      userA,
+      collection.id,
+      addItem(TEST_CARD_ID, { quantity: 1 }),
+    );
+    expect(sumada.quantity).toBe(2);
+    expect(sumada.isForTrade).toBe(true);
+  });
+
   it('addItem con variant distinta crea un item separado', async () => {
     const collection = await createCollection(userA);
 

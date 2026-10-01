@@ -583,7 +583,16 @@ export function AddToCollectionSheet({
     setIsSaving(true);
     setSubmitError(null);
     try {
-      const created = await addItem(collectionId, { cardId, variant, condition, quantity });
+      const created = await addItem(collectionId, {
+        cardId,
+        variant,
+        condition,
+        quantity,
+        // El checkbox se dibujaba y se guardaba en el estado, pero no viajaba en
+        // el payload: el backend no tenía el campo y lo descartaba. Marcar y
+        // guardar, juntos.
+        isForTrade,
+      });
       toast.success(`Agregada a ${selectedCollectionName ?? 'tu colección'}`);
       onAdded?.(created);
       onClose();
@@ -604,6 +613,7 @@ export function AddToCollectionSheet({
     cardId,
     collectionId,
     condition,
+    isForTrade,
     onAdded,
     onClose,
     quantity,

@@ -516,7 +516,15 @@ export class CollectionsService {
       if (existing) {
         return tx.collectionItem.update({
           where: { id: existing.id },
-          data: { quantity: { increment: quantity } },
+          // La marca se "abre" sola: si la carta ya estaba y el usuario la
+          // vuelve a agregar marcándola para intercambio, tiene que quedar
+          // marcada. Si no, el checkbox del alta parecería no funcionar
+          // justamente en el caso de una carta repetida, que es cuando más
+          // fácil es que uno quiera marcarla.
+          data: {
+            quantity: { increment: quantity },
+            ...(dto.isForTrade === true ? { isForTrade: true } : {}),
+          },
           select: ITEM_SELECT,
         });
       }
@@ -529,6 +537,7 @@ export class CollectionsService {
             variant,
             condition,
             quantity,
+            ...(dto.isForTrade !== undefined ? { isForTrade: dto.isForTrade } : {}),
             ...(dto.notes !== undefined ? { notes: dto.notes } : {}),
           },
           select: ITEM_SELECT,
@@ -543,7 +552,10 @@ export class CollectionsService {
         if (!winner) throw error;
         return tx.collectionItem.update({
           where: { id: winner.id },
-          data: { quantity: { increment: quantity } },
+          data: {
+            quantity: { increment: quantity },
+            ...(dto.isForTrade === true ? { isForTrade: true } : {}),
+          },
           select: ITEM_SELECT,
         });
       }

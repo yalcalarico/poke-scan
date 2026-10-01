@@ -189,10 +189,15 @@ describe('PriceBackfillService', () => {
 
     expect(result.enqueued).toBe(2);
     // Se espera a que las dos filas aterricen: el encolado es fire-and-forget, y
-    // comparar el largo de una vez es una carrera.
-    await vi.waitFor(async () => {
-      expect(await queuedCards()).toHaveLength(2);
-    });
+    // comparar el largo de una vez es una carrera. El presupuesto es más que el
+    // default de 1 s porque son dos inserts y la base puede venir cargada de los
+    // specs anteriores.
+    await vi.waitFor(
+      async () => {
+        expect(await queuedCards()).toHaveLength(2);
+      },
+      { timeout: 5000, interval: 25 },
+    );
   });
 
   it('avanza hacia las más viejas, no siempre las mismas', async () => {
