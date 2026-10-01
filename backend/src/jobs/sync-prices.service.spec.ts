@@ -62,7 +62,6 @@ describe('SyncPricesService', () => {
   let moduleRef: TestingModule;
   let service: SyncPricesService;
   let gate: ProviderRateGate;
-  let queue: PriceQueueService;
   let provider: StubProvider;
   let mapping: { resolve: ReturnType<typeof vi.fn> };
   let redisStore: ReturnType<typeof stubRedis>['_store'];
@@ -111,7 +110,6 @@ describe('SyncPricesService', () => {
 
     service = moduleRef.get(SyncPricesService);
     gate = moduleRef.get(ProviderRateGate);
-    queue = moduleRef.get(PriceQueueService);
   });
 
   afterAll(async () => {
@@ -321,19 +319,23 @@ describe('SyncPricesService', () => {
     expect(provider.getCardPrices).not.toHaveBeenCalled();
     expect(resolveProvider).toBeUndefined();
 
-    // Y el trabajo de la cola lo hace el worker, que acá no corre: se toma el
-    // job a mano para comprobar que la ruta cola → proveedor sigue en pie y que
-    // la fila nueva se escribe.
-    const job = await queue.claimNext('test-worker');
-    expect(job).not.toBeNull();
+// Y el trabajo de la cola lo hace el worker, que en este spec no corre. Lo
+    // que se prueba acá es **la unidad de trabajo**: que `fetchAndStore` es la
+    // que escribe la fila nueva. El camino de reclamar el job y anotarlo lo
+    // prueba `price-queue.service.spec.ts`, que es donde vive la cola.
+    //
+    // No se usa `claimNext` a propósito: si hay un backend corriendo en la
+    // máquina —y lo hay, `pnpm run dev`—, su worker compite por la misma cola y
+    // puede llevarse el job antes de que este test lo vea. Un test que asume
+    // ser el único consumidor de la cola no es determinista.
+    //
     // `fetchAndStore` no se espera de entrada: primero lee la carta de la base
     // y recién ahí llama al proveedor —mockeado con una promesa que nadie
     // resuelve—, así que hay que esperar a que la llamada ocurra.
-    const fetching = service.fetchAndStore(job!.cardId);
+    const fetching = service.fetchAndStore(TEST_CARD_ID);
     await vi.waitFor(() => expect(provider.getCardPrices).toHaveBeenCalledTimes(1));
     resolveProvider!([remote()]);
     await fetching;
-    await queue.complete(job!.id);
 
     const latest = await prismaClient.cardPrice.findFirst({
       where: { cardId: TEST_CARD_ID },

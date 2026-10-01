@@ -43,7 +43,8 @@
     "build:frontend": "pnpm --dir frontend run build",
     "build:docker": "docker compose --profile deploy build",
     "doctor": "node scripts/doctor.mjs",
-    "clean": "rm -rf backend/dist backend/dist-seed frontend/.next && echo 'builds borrados'"
+    "clean": "rm -rf backend/dist backend/dist-seed frontend/.next && echo 'builds borrados'",
+    "test:db:setup": "pnpm --dir backend run db:test-setup"
   },
   "dependencies": {
     "ui-ux-pro-max-cli": "^2.15.0"

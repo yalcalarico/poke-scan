@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
+import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { AppController } from './app.controller.js';
 import { JobsModule } from './jobs/jobs.module.js';
@@ -17,6 +18,18 @@ import { RedisModule } from './redis/redis.module.js';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    /*
+     * `ScheduleModule.forRoot()` es lo que activa los `@Cron` de
+     * `ScheduledJobsService`. Estaba en `package.json` desde el principio y sin
+     * esta línea no había ningún cron: los decorators se registraban y no se
+     * ejecutaban nunca.
+     *
+     * Los tres jobs que hay (sync semanal de catálogo, backfill diario de
+     * precios, retención mensual) se apagan con `ENABLE_CATALOG_SYNC_CRON`,
+     * `ENABLE_PRICE_BACKFILL_CRON` y `ENABLE_RETENTION_CRON`. Ver
+     * `jobs.md` §"Los crons".
+     */
+    ScheduleModule.forRoot(),
     ThrottlerModule.forRoot([{ ttl: 60_000, limit: 100 }]),
     PrismaModule,
     RedisModule,

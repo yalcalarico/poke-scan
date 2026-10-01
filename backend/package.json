@@ -30,7 +30,8 @@
     "db:migrate-sync-state": "tsc -p tsconfig.seed.json && node --env-file-if-exists=.env dist-seed/scripts/migrate-sync-state.js",
     "prices:retention": "tsc -p tsconfig.seed.json && node --env-file-if-exists=.env dist-seed/scripts/prune-card-prices.js",
     "db:dev-user": "tsc -p tsconfig.seed.json && node --env-file-if-exists=.env dist-seed/scripts/dev-user.js",
-    "db:measure-near-dups": "tsc -p tsconfig.seed.json && node --env-file-if-exists=.env dist-seed/scripts/measure-near-duplicates.js"
+    "db:measure-near-dups": "tsc -p tsconfig.seed.json && node --env-file-if-exists=.env dist-seed/scripts/measure-near-duplicates.js",
+    "db:test-setup": "tsc -p tsconfig.seed.json && node --env-file-if-exists=.env dist-seed/scripts/setup-test-db.js"
   },
   "dependencies": {
     "@nestjs/common": "^12.0.1",

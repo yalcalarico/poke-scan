@@ -12,9 +12,6 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 const TEST_SET_ID = 'test-retention-set';
 const TEST_CARD_PREFIX = 'test-retention-';
 
-const daysAgo = (days: number, hours = 0): Date =>
-  new Date(Date.now() - days * DAY_MS + hours * 60 * 60 * 1000);
-
 /**
  * Una fecha en una hora concreta de hace N días.
  *

@@ -5,6 +5,9 @@ import { RedisModule } from '../redis/redis.module.js';
 import { JobsController } from './jobs.controller.js';
 import { JobsRecoveryService } from './jobs-recovery.service.js';
 import { CardPricesRetentionService } from './card-prices-retention.service.js';
+import { CatalogSyncService } from './catalog-sync.service.js';
+import { PriceBackfillService } from './price-backfill.service.js';
+import { ScheduledJobsService } from './scheduled-jobs.service.js';
 import { PriceQueueWorker } from './price-queue.worker.js';
 import { PriceQueueService } from './price-queue.service.js';
 import { ProviderRateGate } from './provider-rate.gate.js';
@@ -28,15 +31,22 @@ import { TCGDEX_SET_MAPPING, TcgdexSetMappingService } from './tcgdex-set-mappin
   imports: [ConfigModule, ProvidersModule, RedisModule],
   controllers: [JobsController, ScanCaptureController],
   providers: [
+    // SyncSetsService va porque SyncCardsService lo inyecta: el sync de cartas
+    // espeja los sets primero.
     SyncSetsService,
     SyncCardsService,
     SyncStateService,
     SyncPricesService,
     ProviderRateGate,
     PriceQueueService,
-    // No se exporta ni corre solo: la retención es un script explícito con dry
-    // run, no algo que se ejecute sin que alguien lo pida.
+    // La retención corre a mano (dry run por default) y una vez por mes por el
+    // cron. La misma política, las dos entradas.
     CardPricesRetentionService,
+    // La orquestación del sync, compartida por el endpoint de admin y el cron:
+    // el lock se pide en un solo lugar.
+    CatalogSyncService,
+    PriceBackfillService,
+    ScheduledJobsService,
     // Recovery primero: reconcilia los jobs del proceso anterior antes de que
     // el worker empiece a tomar trabajo nuevo.
     JobsRecoveryService,
@@ -51,6 +61,9 @@ import { TCGDEX_SET_MAPPING, TcgdexSetMappingService } from './tcgdex-set-mappin
     SyncStateService,
     SyncPricesService,
     PriceQueueService,
+    CatalogSyncService,
+    PriceBackfillService,
+    CardPricesRetentionService,
     TCGDEX_SET_MAPPING,
     TcgdexSetMappingService,
   ],
