@@ -84,6 +84,15 @@ describe('mergeBandAttempts', () => {
     expect(mergeBandAttempts([])).toBeNull();
   });
 
+  it('prioriza el nombre repetido sobre una lectura aislada con confianza alta', () => {
+    const merged = mergeBandAttempts([
+      band(['Sal preon ex'], 'Sal preon ex', 0.95),
+      band(['Umbreon ex'], 'Umbreon ex', 0.6),
+      band(['UMBREON EX'], 'UMBREON EX', 0.7),
+    ]);
+    expect(merged!.parsed.nameGuess).toBe('UMBREON EX');
+  });
+
   it('une las líneas de todas las pasadas y se desduplica', () => {
     const merged = mergeBandAttempts([
       band(['STAGE2', 'Chandclugel'], null, 0.4),

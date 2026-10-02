@@ -27,6 +27,7 @@ import {
   type PreprocessVariant,
 } from './preprocess';
 import type { OcrResult, ParsedScan, ScannedCapture } from './types';
+import { extractFooterCode, extractFooterNumber, renderCollectorBand, renderFooter } from './regions';
 
 export interface ScanAttempt {
   variant: PreprocessVariant | 'nameband';
@@ -49,6 +50,19 @@ export interface ScanResult {
   lines: string[];
   /** Card detection + rotation, for diagnostics. */
   normalized: NormalizedCard;
+}
+
+function mapRectToSource(rect: NonNullable<NormalizedCard['rect']>, from: ImageData, to: ImageInput) {
+  const toWidth = 'naturalWidth' in to && to.naturalWidth > 0 ? to.naturalWidth : to.width;
+  const toHeight = 'naturalHeight' in to && to.naturalHeight > 0 ? to.naturalHeight : to.height;
+  const scaleX = toWidth / from.width;
+  const scaleY = toHeight / from.height;
+  return {
+    x: Math.round(rect.x * scaleX),
+    y: Math.round(rect.y * scaleY),
+    width: Math.round(rect.width * scaleX),
+    height: Math.round(rect.height * scaleY),
+  };
 }
 
 /**
@@ -110,6 +124,7 @@ export const SCAN_PASS_LABELS: string[] = [
  * por pre-procesado de la franja del nombre.
  */
 export const SCAN_PASS_COUNT = SCAN_PASS_LABELS.length;
+export const PROGRESSIVE_PASS_COUNT = SCAN_PASS_COUNT + 2;
 
 /**
  * Scores an attempt.
@@ -176,9 +191,9 @@ export function mergeParsed(band: ParsedScan | null, full: ParsedScan): ParsedSc
 /**
  * Fusiona las pasadas de la banda del nombre en una sola.
  *
- * Las líneas van unidas (el backend matchea sobre todas) y el nombre es el de
- * la pasada con más confianza del parser: cada pre-procesado lee una cosa
- * distinta y alguno siempre acierta.
+ * Las líneas van unidas (el backend matchea sobre todas). Para el nombre se
+ * prioriza acuerdo entre pasadas y luego confianza; no garantiza que la
+ * lectura compartida sea correcta.
  */
 export function mergeBandAttempts(attempts: ScanAttempt[]): ScanAttempt | null {
   if (attempts.length === 0) return null;
@@ -189,7 +204,20 @@ export function mergeBandAttempts(attempts: ScanAttempt[]): ScanAttempt | null {
   // el `reduce` reventaba y el escaneo entero moría con "reduce of empty array".
   const withName = attempts.filter((a) => a.parsed.nameGuess !== null);
   const pool = withName.length > 0 ? withName : attempts;
-  const best = pool.reduce((a, b) => (b.parsed.confidence > a.parsed.confidence ? b : a));
+  const nameKey = (attempt: ScanAttempt): string =>
+    attempt.parsed.nameGuess?.toLowerCase().replace(/\s+/g, ' ').trim() ?? '';
+  const counts = new Map<string, number>();
+  for (const attempt of withName) {
+    const key = nameKey(attempt);
+    counts.set(key, (counts.get(key) ?? 0) + 1);
+  }
+  // La confianza de una pasada también puntúa ruido. Un nombre repetido por
+  // varias pasadas tiene prioridad; los empates conservan la confianza.
+  const best = pool.reduce((a, b) => {
+    const supportA = counts.get(nameKey(a)) ?? 0;
+    const supportB = counts.get(nameKey(b)) ?? 0;
+    return supportB > supportA || (supportB === supportA && b.parsed.confidence > a.parsed.confidence) ? b : a;
+  });
 
   return {
     variant: 'nameband',
@@ -206,6 +234,17 @@ export function mergeBandAttempts(attempts: ScanAttempt[]): ScanAttempt | null {
 }
 
 export interface ScanCardOptions {
+  /** Original gallery bitmap, used only for small footer text. */
+  highResolutionSource?: ImageInput;
+  /** Desactivar sólo para comparar el aporte del lector del pie. */
+  readCollector?: boolean;
+  progressive?: boolean;
+  setCodes?: readonly string[];
+  setNames?: readonly string[];
+  signal?: AbortSignal;
+  onPass?: (label: string) => void;
+  /** El catálogo decide si hay evidencia suficiente para ahorrar las otras pasadas. */
+  onCheckpoint?: (parsed: ParsedScan) => Promise<boolean>;
   /** Pre-processing variants to try, in order. Defaults to all of them. */
   variants?: PreprocessVariant[];
   /** Run the extra name-band pass. Default true. */
@@ -242,14 +281,27 @@ export async function scanCardImage(
    */
   captureStep(run, '01-foto-original', source);
 
+  const sourceImage = toImageData(source);
   const normalized = detectCard
-    ? normalizeCardImageData(toImageData(source))
-    : { image: toImageData(source), rect: null, rotation: 0 as const, detected: false };
+    ? normalizeCardImageData(sourceImage)
+    : { image: sourceImage, rect: null, rotation: 0 as const, detected: false };
   const card: ImageData = normalized.image;
+  const canUseHighResolutionFooter = Boolean(
+    options.highResolutionSource && normalized.detected && normalized.rect && normalized.rotation === 0,
+  );
+  const footerSource: ImageInput = canUseHighResolutionFooter
+    ? options.highResolutionSource!
+    : normalized.rotation === 0 ? source : card;
+  const footerRect = canUseHighResolutionFooter
+    ? mapRectToSource(normalized.rect!, sourceImage, footerSource)
+    : normalized.rotation === 0 ? normalized.rect : null;
 
   captureStep(run, `02-carta-${normalized.detected ? 'detectada' : 'sin-detectar'}-rot${normalized.rotation}`, card);
 
   const attempts: ScanAttempt[] = [];
+  const bandAttempts: ScanAttempt[] = [];
+  const footerAttempts: ScanAttempt[] = [];
+  const collectorAttempts: ScanAttempt[] = [];
   let lastOcrError: unknown = null;
 
   /**
@@ -265,6 +317,7 @@ export async function scanCardImage(
     canvas: HTMLCanvasElement,
     pageSegMode?: string,
   ): Promise<void> => {
+    options.signal?.throwIfAborted();
     try {
       const ocr = await recognize(canvas, options.logger, pageSegMode);
       const attempt: ScanAttempt = {
@@ -277,9 +330,56 @@ export async function scanCardImage(
     } catch {
       lastOcrError = new Error(`Falló la pasada ${String(variant)}${pageSegMode ? ` (psm ${pageSegMode})` : ''}`);
     }
+    options.signal?.throwIfAborted();
   };
 
+  const parseCurrent = (): ParsedScan => {
+    const best = pickBestAttempt(attempts);
+    if (!best) throw lastOcrError ?? new Error('El OCR no devolvió ninguna lectura.');
+    const parsed = mergeParsed(mergeBandAttempts(bandAttempts)?.parsed ?? null, best.parsed);
+    if (footerAttempts.length || collectorAttempts.length) {
+      const printed = extractFooterNumber(footerAttempts.map((attempt) => attempt.ocr))
+        ?? extractFooterNumber(collectorAttempts.map((attempt) => attempt.ocr), 30, true);
+      if (printed) {
+        parsed.printedNumberGuess = printed;
+        parsed.numberGuess = parseOcrText(printed).numberGuess;
+        // Sólo el token corroborado llega como evidencia; se descarta el ruido de las bandas.
+        parsed.lines = mergeLines([printed], parsed.lines).slice(0, 60);
+      }
+      const codes = footerAttempts.map((a) => extractFooterCode(a.ocr, options.setCodes ?? [])).filter((code) => code !== null);
+      parsed.setCode = new Set(codes).size === 1 ? codes[0]! : null;
+    }
+    const text = parsed.lines.join(' ').toLowerCase();
+    parsed.setHint = [...(options.setNames ?? [])].sort((a, b) => b.length - a.length)
+      .find((name) => name.length >= 4 && text.includes(name.toLowerCase())) ?? parsed.setHint;
+    return parsed;
+  };
+
+  if (options.progressive) {
+    options.onPass?.('Foto original');
+    await runPass(attempts, 'original', renderVariant(card, 'original'));
+    if (withBand) {
+      options.onPass?.('Nombre');
+      await runPass(bandAttempts, 'nameband', renderNameBand(card, 'grayscale'), '7');
+    }
+    options.onPass?.('Número y colección');
+    await runPass(footerAttempts, 'nameband', renderFooter(footerSource, 'original', footerRect), '6');
+    if (attempts.length && options.onCheckpoint) {
+      try {
+        const stop = await options.onCheckpoint(parseCurrent());
+        options.signal?.throwIfAborted();
+        if (stop) return { best: pickBestAttempt(attempts)!, attempts, band: mergeBandAttempts(bandAttempts), parsed: parseCurrent(), lines: parseCurrent().lines, normalized };
+      } catch (error) {
+        options.signal?.throwIfAborted();
+        // Una búsqueda transitoria fallida no pierde las pasadas de respaldo.
+        if (error instanceof DOMException && error.name === 'AbortError') throw error;
+      }
+    }
+  }
+
   for (const [index, variant] of variants.entries()) {
+    if (options.progressive && variant === 'original') continue;
+    options.onPass?.(`Carta (${variant})`);
     const canvas = renderVariant(card, variant);
     captureStep(run, `03-variante-${index}-${variant}`, canvas);
     await runPass(attempts, variant, canvas);
@@ -290,11 +390,12 @@ export async function scanCardImage(
 
   let band: ScanAttempt | null = null;
   if (withBand) {
-    const bandAttempts: ScanAttempt[] = [];
     let index = 0;
     for (const variant of NAME_BAND_VARIANTS) {
       const bandCanvas = renderNameBand(card, variant);
       for (const pageSegMode of NAME_BAND_PAGE_SEG_MODES) {
+        if (options.progressive && variant === 'grayscale' && pageSegMode === '7') continue;
+        options.onPass?.(`Nombre (${BAND_VARIANT_LABELS[variant]})`);
         captureStep(run, `04-banda-${index}-${variant}-psm${pageSegMode}`, bandCanvas);
         await runPass(bandAttempts, 'nameband', bandCanvas, pageSegMode);
         index += 1;
@@ -303,7 +404,23 @@ export async function scanCardImage(
     band = mergeBandAttempts(bandAttempts);
   }
 
-  const parsed = mergeParsed(band?.parsed ?? null, best.parsed);
+  if (options.progressive) {
+    options.onPass?.('Revisando número y colección');
+    await runPass(footerAttempts, 'nameband', renderFooter(footerSource, 'grayscale', footerRect), '6');
+  }
+
+  for (const reading of options.readCollector === false ? [] : ['number-left', 'number-right'] as const) {
+    for (const outlined of [false, true]) {
+      options.onPass?.('Leyendo el número de la carta');
+      await runPass(
+        collectorAttempts,
+        'nameband',
+        renderCollectorBand(footerSource, footerRect, reading, outlined),
+        '6',
+      );
+    }
+  }
+  const parsed = parseCurrent();
   return { best, attempts, band, parsed, lines: parsed.lines, normalized };
 }
 

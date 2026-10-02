@@ -10,6 +10,7 @@ export interface ScannedCapture {
 export interface OcrLine {
   text: string;
   confidence: number;
+  words?: Array<{ text: string; confidence: number }>;
 }
 
 export interface OcrResult {
@@ -24,15 +25,10 @@ export interface ParsedScan {
   /** Best-effort card name guess (heuristic, no catalog available client-side). */
   nameGuess: string | null;
   numberGuess: string | null;
+  /** Número/total impresos si el lector validó la línea completa del pie. */
+  printedNumberGuess?: string | null;
   setHint: string | null;
-  /**
-   * Código de set impreso abajo a la izquierda, ej `"30C"`.
-   *
-   * Siempre `null`: depende de medir la banda primero (fase 8.1 de
-   * `docs/files/08-VERSION-DISAMBIGUATION.md`). No se deduce de `lines` a
-   * propósito — medido sobre las fixtures reales, buscar cualquier token de 3
-   * caracteres que sea un código de set da 22 falsos positivos y 0 verdaderos.
-   */
+  /** Código validado contra el catálogo y leído exclusivamente en el pie. */
   setCode: string | null;
   /** 0..1 */
   confidence: number;

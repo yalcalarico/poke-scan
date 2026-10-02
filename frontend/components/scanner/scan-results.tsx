@@ -9,17 +9,20 @@ import type { IdentifiedCandidateDto, IdentifyResponseDto } from '@/types/api';
 import { CandidateCard } from './candidate-card';
 import { formatCount } from './copy';
 import { HAPTIC, haptic } from './haptics';
-import { CONFIDENT_SCORE } from './types';
+import { assessCandidates } from '@/lib/scanner/assessment';
 
 export interface ScanResultsProps {
   open: boolean;
   data: IdentifyResponseDto | null;
   /** Lo que entendió el parser local, para el copy si el backend no devolvió nombre. */
   localNameGuess: string | null;
+  /** Número impreso leído por OCR, conservado aunque el API sólo reciba el numerador. */
+  localNumberGuess: string | null;
   /** Candidatos ya sumados a la sesión, para el estado "ya está". */
   sessionCardIds: ReadonlySet<string>;
   onClose: () => void;
-  onChoose: (candidate: IdentifiedCandidateDto) => void;
+  onChoose: (candidate: IdentifiedCandidateDto, remember?: boolean) => void;
+  onForget?: () => void;
   /** `null` = no leímos un nombre: la pantalla destino abre sin query. */
   onManualSearch: (name: string | null) => void;
 }
@@ -35,20 +38,23 @@ export function ScanResults({
   open,
   data,
   localNameGuess,
+  localNumberGuess,
   sessionCardIds,
   onClose,
   onChoose,
+  onForget,
   onManualSearch,
 }: ScanResultsProps) {
   const queryId = useId();
   const [manualName, setManualName] = useState('');
+  const [remember, setRemember] = useState(false);
 
   const candidates = data?.candidates ?? [];
-  const bestScore = candidates[0]?.score ?? 0;
-  const isConfident = bestScore >= CONFIDENT_SCORE;
+  const isConfident = (data?.status ?? assessCandidates(candidates)) === 'confident';
   const extracted = data?.extracted ?? null;
-  const detected = extracted?.name ?? localNameGuess;
+  const detected = localNameGuess ?? extracted?.name ?? null;
   const contextHint = extracted?.setHint ?? null;
+  const numberHint = localNumberGuess ?? extracted?.number;
   const total = data?.totalCandidates ?? 0;
   const hasMatch = candidates.length > 0;
 
@@ -71,8 +77,8 @@ export function ScanResults({
    * acierto es mentirle al tacto.
    */
   useEffect(() => {
-    if (open && hasMatch) haptic(HAPTIC.confirmed);
-  }, [open, hasMatch]);
+    if (open && hasMatch && isConfident) haptic(HAPTIC.confirmed);
+  }, [open, hasMatch, isConfident]);
 
   const handleManualSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -108,14 +114,25 @@ export function ScanResults({
           <p className="mt-1 text-body-strong text-primary">
             {detected ? `Detectamos: ${detected}` : 'No pudimos leer un nombre claro'}
           </p>
-          {contextHint || extracted?.number ? (
+          {contextHint || numberHint ? (
             <p className="mt-1 text-caption text-secondary">
-              {[contextHint, extracted?.number ? `#${extracted.number}` : null]
+              {[contextHint ? `Colección sugerida: ${contextHint}` : null,
+                numberHint ? `Número detectado: ${numberHint}` : null]
                 .filter(Boolean)
                 .join(' · ')}
             </p>
           ) : null}
         </div>
+
+        {candidates.length > 0 ? (
+          <div className="flex flex-col gap-2">
+            <label className="text-caption text-secondary flex items-center gap-2">
+              <input type="checkbox" checked={remember} onChange={(event) => setRemember(event.target.checked)} />
+              Recordar esta lectura en este dispositivo (sin guardar la foto)
+            </label>
+            {onForget ? <Button variant="ghost" size="sm" onClick={onForget}>Borrar lecturas recordadas</Button> : null}
+          </div>
+        ) : null}
 
         {candidates.length > 0 ? (
           <ul className="flex flex-col gap-3">
@@ -125,7 +142,7 @@ export function ScanResults({
                 candidate={candidate}
                 isBest={index === 0}
                 isInSession={sessionCardIds.has(candidate.card.id)}
-                onAdd={() => onChoose(candidate)}
+                onAdd={() => onChoose(candidate, remember)}
               />
             ))}
           </ul>
@@ -145,8 +162,7 @@ export function ScanResults({
 
         {candidates.length > 0 && !isConfident ? (
           <Alert tone="warning" title="No estamos seguros" size="sm">
-            La mejor coincidencia es de{' '}
-            {Math.round(bestScore * 100)} %. Revisá las opciones o escribí el nombre a mano.
+            Revisá la colección y el número antes de sumar la carta. Todavía no confirmamos la edición.
           </Alert>
         ) : null}
 

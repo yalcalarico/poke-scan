@@ -305,7 +305,9 @@ describe('cola de precios persistente', () => {
           lockedAt: new Date(Date.now() - 60 * 60 * 1000),
         },
       });
-      await queue.reconcileAbandoned();
+      // Dejá `availableAt` un segundo en el pasado para que el reloj de Postgres
+      // no lo vea unos milisegundos en el futuro respecto del reloj de Node.
+      await queue.reconcileAbandoned(new Date(Date.now() - 1_000));
 
       const claimed = await queue.claimNext('instancia-nueva');
 

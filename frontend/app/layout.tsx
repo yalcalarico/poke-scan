@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 
 import { Geist, Geist_Mono } from "next/font/google";
+import Script from "next/script";
 import { THEME_SCRIPT } from "@/lib/theme-script";
 import { PwaServiceWorker } from "./pwa-sw-register";
 import { Providers } from "./providers";
@@ -16,6 +17,45 @@ const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
 });
+
+/**
+ * Un service worker de una instalación de producción puede seguir controlando
+ * localhost al volver a `next dev` y servir chunks CacheFirst viejos. Se limpia
+ * solo la registración de PokéScan y sus caches; el `localStorage` del usuario
+ * (incluidas sus lecturas recordadas) queda intacto.
+ */
+const DEV_SERVICE_WORKER_CLEANUP = `
+(() => {
+  if (!('serviceWorker' in navigator)) return;
+
+  const reloadKey = 'pokescan:dev:sw-cleaned';
+  if (sessionStorage.getItem(reloadKey)) {
+    sessionStorage.removeItem(reloadKey);
+    return;
+  }
+
+  void navigator.serviceWorker.getRegistrations().then(async (registrations) => {
+    const appRegistrations = registrations.filter((registration) =>
+      [registration.installing, registration.waiting, registration.active].some((worker) => {
+        if (!worker) return false;
+        const scriptUrl = new URL(worker.scriptURL);
+        return scriptUrl.origin === location.origin && scriptUrl.pathname === '/sw.js';
+      }),
+    );
+    if (appRegistrations.length === 0) return;
+
+    await Promise.all(appRegistrations.map((registration) => registration.unregister()));
+    const cacheNames = await caches.keys();
+    await Promise.all(
+      cacheNames
+        .filter((name) => name.startsWith('pokescan-'))
+        .map((name) => caches.delete(name)),
+    );
+    sessionStorage.setItem(reloadKey, '1');
+    location.reload();
+  }).catch((error) => console.warn('[pwa] no se pudo limpiar el service worker de desarrollo', error));
+})();
+`;
 
 export const metadata: Metadata = {
   /**
@@ -97,6 +137,11 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         {/* Anti-flash del tema: tiene que correr antes de que el navegador
             pinte, y por eso es un script inline y no un efecto de React. */}
         <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
+        {process.env.NODE_ENV !== "production" ? (
+          <Script id="pokescan-dev-service-worker-cleanup" strategy="beforeInteractive">
+            {DEV_SERVICE_WORKER_CLEANUP}
+          </Script>
+        ) : null}
       </head>
       {/*
         El `<body>` no lleva `bg-*`: el fondo lo pone `globals.css` con el

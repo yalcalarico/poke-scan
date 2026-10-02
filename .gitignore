@@ -24,3 +24,8 @@ pgdata/
 
 # Tokens sueltos
 token.txt
+
+# Modelos y caché del experimento visual
+backend/.scanner-models/
+backend/.scanner-index/
+frontend/eng.traineddata

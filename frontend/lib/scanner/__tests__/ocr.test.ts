@@ -22,6 +22,11 @@ const nestedData = {
 } as unknown as RecognizeData;
 
 describe('toOcrResult', () => {
+  it('conserva confianza por palabra para la lectura del pie', () => {
+    const result = toOcrResult({ text: 'ruido 092/128', confidence: 30,
+      lines: [{ text: 'ruido 092/128', confidence: 30, words: [{ text: '092/128', confidence: 96 }] }] });
+    expect(result.lines[0].words).toEqual([{ text: '092/128', confidence: 96 }]);
+  });
   it('normalises and drops empty lines', () => {
     const result = toOcrResult(flatData);
     expect(result.lines).toEqual([

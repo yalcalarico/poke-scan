@@ -1172,7 +1172,13 @@ describe('CardsService · histórico de precios', () => {
   let moduleRef: TestingModule;
   let service: CardsService;
 
-  const daysAgo = (days: number): Date => new Date(Date.now() - days * DAY);
+  // Ancla al mediodía UTC para que `daysAgo(3)` y `daysAgo(2.96)` no caigan
+  // en días distintos cuando la suite corre cerca de medianoche UTC.
+  const todayAtNoonUtc = (() => {
+    const now = new Date();
+    return Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 12);
+  })();
+  const daysAgo = (days: number): Date => new Date(todayAtNoonUtc - days * DAY);
 
   beforeAll(async () => {
     moduleRef = await Test.createTestingModule({

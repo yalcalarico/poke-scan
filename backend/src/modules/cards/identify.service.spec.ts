@@ -73,6 +73,20 @@ afterAll(async () => {
 });
 
 describe('IdentifyService', () => {
+  it('el sufijo ex leído evita que gane un Umbreon sin ese sufijo', async () => {
+    const result = await identify({ lines: ['=X Umbreon €X _'], name: 'Umbreon ex' });
+    expect(result.candidates[0]?.card.name).toBe('Umbreon ex');
+    expect(result.status).toBe('ambiguous');
+    const exact = await identify({ lines: ['Umbreon ex', '270 HP', '092/128'], name: 'Umbreon ex', number: '092', setCode: '30C' });
+    expect(exact.candidates[0]?.card.id).toBe('me55-92');
+  });
+  it('recupera una full-art sólo con código de colección y número', async () => {
+    const result = await identify({ setCode: '30C', number: '145' });
+    expect(result.candidates[0]?.card.id).toBe('me55-145');
+    expect(result.candidates[0]?.signals.setCode).toBe(true);
+    expect(result.candidates[0]?.signals.numberHint).toBe(true);
+  });
+
   it('identifica Charizard a partir de las líneas sucias del OCR', async () => {
     const result = await identify({ lines: CHARIZARD_LINES });
 
@@ -109,6 +123,15 @@ describe('IdentifyService', () => {
     expect(result.candidates[0]!.score).toBe(1);
   });
 
+  it('no usa el rótulo genérico BASIC como si fuera el nombre de una energía', async () => {
+    const result = await identify({ lines: ['BASIC'], name: 'Zeid', limit: 20 });
+
+    expect(result.candidates.some((candidate) => candidate.card.name === 'Basic Fire Energy')).toBe(false);
+
+    const completeName = await identify({ lines: ['Basic Fire Energy'] });
+    expect(completeName.candidates[0]?.card.name).toBe('Basic Fire Energy');
+  });
+
   it('no crashea y devuelve scores bajos cuando el OCR no leyó ningún nombre', async () => {
     const result = await identify({ lines: UNREADABLE_LINES });
 
@@ -124,6 +147,8 @@ describe('IdentifyService', () => {
 
     expect(result).toEqual({
       candidates: [],
+      status: 'low',
+      timings: { matchMs: 0, totalMs: 0 },
       extracted: { name: null, number: null, setHint: null },
       totalCandidates: 0,
     });

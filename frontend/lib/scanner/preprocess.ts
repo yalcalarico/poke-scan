@@ -6,7 +6,7 @@
  * at the bottom are the only part that needs a browser canvas.
  */
 
-export type ImageInput = ImageData | HTMLCanvasElement | HTMLImageElement | OffscreenCanvas;
+export type ImageInput = ImageData | HTMLCanvasElement | HTMLImageElement | ImageBitmap | OffscreenCanvas;
 
 export const DEFAULT_BLOCK_SIZE = 25;
 export const DEFAULT_C = 8;
@@ -792,7 +792,7 @@ export function normalizeCardImageData(imageData: ImageData): NormalizedCard {
 }
 
 /**
- * Agranda el rectángulo detectado **solo en horizontal**, sin salirse de la
+ * Amplía los costados y recupera un pie corto, sin salirse de la
  * imagen.
  *
  * El borde de una funda sobre una frazada oscura muchas veces no se ve, y el
@@ -800,16 +800,23 @@ export function normalizeCardImageData(imageData: ImageData): NormalizedCard {
  * un poco apretado de los costados y **partía el nombre de la carta por la
  * izquierda**, que es justo lo que la banda del nombre no se puede perder.
  *
- * En vertical no se toca nunca, y es lo importante: la banda del nombre se ancla
+ * El borde superior no se mueve: la banda del nombre se ancla
  * en el borde superior de la carta (2% a 13% del alto). Probado: agrandar
  * también arriba corría la banda hacia la funda y el nombre desaparecía de las
  * tres pasadas, que es peor que un caracter clipped.
  */
-function expandRect(rect: CardRect, imageData: ImageData): CardRect {
+export function expandRect(rect: CardRect, imageData: Pick<ImageData, 'width' | 'height'>): CardRect {
   const dx = rect.width * RECT_MARGIN;
   const x = Math.max(0, Math.round(rect.x - dx));
   const right = Math.min(imageData.width, Math.round(rect.x + rect.width + dx));
-  return { x, y: rect.y, width: right - x, height: rect.height };
+  // Un borde interior puede parecer el borde inferior. Recuperamos el alto
+  // esperado sin mover el borde superior que ancla la banda del nombre.
+  const expectedHeight = rect.width / CARD_ASPECT;
+  const missingHeight = expectedHeight - rect.height;
+  const recoverFooter = rect.height > rect.width && missingHeight > 0 &&
+    missingHeight <= rect.height * 0.2;
+  const height = recoverFooter ? Math.ceil(expectedHeight + rect.height * 0.01) : rect.height;
+  return { x, y: rect.y, width: right - x, height: Math.min(height, imageData.height - rect.y) };
 }
 
 interface VariantResult {

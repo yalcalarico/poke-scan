@@ -1,0 +1,558 @@
+{
+  "date": "2026-10-01",
+  "note": "Cinco fotos, etiquetas por nombre. No mide edición ni precisión general. Progresivo sin corte temprano en este diagnóstico.",
+  "baseline": [
+    {
+      "photo": "IMG_4985",
+      "expectedName": "Shining Celebi",
+      "nameTop1": true,
+      "nameTop3": true,
+      "totalMs": 8849,
+      "numberGuess": "108",
+      "setCode": null,
+      "candidates": [
+        {
+          "name": "Shining Celebi",
+          "number": "106",
+          "score": 1
+        },
+        {
+          "name": "Celebi",
+          "number": "12",
+          "score": 1
+        },
+        {
+          "name": "Celebi",
+          "number": "4",
+          "score": 1
+        },
+        {
+          "name": "Celebi",
+          "number": "3",
+          "score": 1
+        },
+        {
+          "name": "Celebi ◇",
+          "number": "19",
+          "score": 1
+        },
+        {
+          "name": "Shining Celebi",
+          "number": "SM79",
+          "score": 1
+        },
+        {
+          "name": "Celebi ★",
+          "number": "100",
+          "score": 1
+        },
+        {
+          "name": "Shining Celebi",
+          "number": "106",
+          "score": 1
+        }
+      ]
+    },
+    {
+      "photo": "IMG_4986",
+      "expectedName": "Pikachu",
+      "nameTop1": true,
+      "nameTop3": true,
+      "totalMs": 2490,
+      "numberGuess": null,
+      "setCode": null,
+      "candidates": [
+        {
+          "name": "Pikachu",
+          "number": "23",
+          "score": 1
+        },
+        {
+          "name": "Pikachu",
+          "number": "24",
+          "score": 1
+        },
+        {
+          "name": "Pikachu",
+          "number": "25",
+          "score": 1
+        },
+        {
+          "name": "Pikachu V",
+          "number": "TG16",
+          "score": 1
+        },
+        {
+          "name": "Pikachu V",
+          "number": "157",
+          "score": 1
+        },
+        {
+          "name": "Pikachu V",
+          "number": "86",
+          "score": 1
+        },
+        {
+          "name": "Pikachu δ",
+          "number": "13",
+          "score": 1
+        },
+        {
+          "name": "Pikachu ★",
+          "number": "104",
+          "score": 1
+        }
+      ]
+    },
+    {
+      "photo": "IMG_4987",
+      "expectedName": "Umbreon",
+      "nameTop1": true,
+      "nameTop3": true,
+      "totalMs": 3406,
+      "numberGuess": null,
+      "setCode": null,
+      "candidates": [
+        {
+          "name": "Umbreon",
+          "number": "91",
+          "score": 1
+        },
+        {
+          "name": "Umbreon",
+          "number": "59",
+          "score": 1
+        },
+        {
+          "name": "Umbreon",
+          "number": "130",
+          "score": 1
+        },
+        {
+          "name": "Umbreon V",
+          "number": "TG22",
+          "score": 0.97
+        },
+        {
+          "name": "Umbreon ★",
+          "number": "17",
+          "score": 0.97
+        },
+        {
+          "name": "Umbreon V",
+          "number": "188",
+          "score": 0.97
+        },
+        {
+          "name": "Umbreon V",
+          "number": "189",
+          "score": 0.97
+        },
+        {
+          "name": "Umbreon ★",
+          "number": "17",
+          "score": 0.97
+        }
+      ]
+    },
+    {
+      "photo": "IMG_4988",
+      "expectedName": "Chandelure",
+      "nameTop1": true,
+      "nameTop3": true,
+      "totalMs": 3602,
+      "numberGuess": null,
+      "setCode": null,
+      "candidates": [
+        {
+          "name": "Chandelure",
+          "number": "137",
+          "score": 1
+        },
+        {
+          "name": "Chandelure",
+          "number": "75",
+          "score": 1
+        },
+        {
+          "name": "Chandelure",
+          "number": "103",
+          "score": 1
+        },
+        {
+          "name": "Lampent",
+          "number": "37",
+          "score": 0.97
+        },
+        {
+          "name": "Lampent",
+          "number": "102",
+          "score": 0.97
+        },
+        {
+          "name": "Lampent",
+          "number": "17",
+          "score": 0.97
+        },
+        {
+          "name": "Chandelure V",
+          "number": "247",
+          "score": 0.97
+        },
+        {
+          "name": "Chandelure V",
+          "number": "39",
+          "score": 0.97
+        }
+      ]
+    },
+    {
+      "photo": "IMG_4989",
+      "expectedName": "Hisuian Zorua",
+      "nameTop1": false,
+      "nameTop3": false,
+      "totalMs": 2530,
+      "numberGuess": null,
+      "setCode": null,
+      "candidates": [
+        {
+          "name": "Piers",
+          "number": "TG28",
+          "score": 0.61
+        },
+        {
+          "name": "Piers",
+          "number": "69",
+          "score": 0.61
+        },
+        {
+          "name": "Piers",
+          "number": "58",
+          "score": 0.61
+        },
+        {
+          "name": "Basic Fire Energy",
+          "number": "230",
+          "score": 0.53
+        },
+        {
+          "name": "Basic Fire Energy",
+          "number": "10",
+          "score": 0.53
+        },
+        {
+          "name": "Basic Fire Energy",
+          "number": "2",
+          "score": 0.53
+        },
+        {
+          "name": "Basic Metal Energy",
+          "number": "99",
+          "score": 0.52
+        },
+        {
+          "name": "Basic Grass Energy",
+          "number": "278",
+          "score": 0.52
+        }
+      ]
+    }
+  ],
+  "progressive": [
+    {
+      "photo": "IMG_4985",
+      "expectedName": "Shining Celebi",
+      "nameTop1": true,
+      "nameTop3": true,
+      "totalMs": 9353,
+      "numberGuess": "108",
+      "setCode": null,
+      "candidates": [
+        {
+          "id": "me55c-106",
+          "name": "Shining Celebi",
+          "number": "106",
+          "score": 1
+        },
+        {
+          "id": "me1-12",
+          "name": "Celebi",
+          "number": "12",
+          "score": 1
+        },
+        {
+          "id": "sv7-4",
+          "name": "Celebi",
+          "number": "4",
+          "score": 1
+        },
+        {
+          "id": "swsh45-3",
+          "name": "Celebi",
+          "number": "3",
+          "score": 1
+        },
+        {
+          "id": "sm8-19",
+          "name": "Celebi ◇",
+          "number": "19",
+          "score": 1
+        },
+        {
+          "id": "smp-SM79",
+          "name": "Shining Celebi",
+          "number": "SM79",
+          "score": 1
+        },
+        {
+          "id": "ex14-100",
+          "name": "Celebi ★",
+          "number": "100",
+          "score": 1
+        },
+        {
+          "id": "neo4-106",
+          "name": "Shining Celebi",
+          "number": "106",
+          "score": 1
+        }
+      ]
+    },
+    {
+      "photo": "IMG_4986",
+      "expectedName": "Pikachu",
+      "nameTop1": true,
+      "nameTop3": true,
+      "totalMs": 9102,
+      "numberGuess": null,
+      "setCode": null,
+      "candidates": [
+        {
+          "id": "base2-60",
+          "name": "Pikachu",
+          "number": "60",
+          "score": 1
+        },
+        {
+          "id": "base1-58",
+          "name": "Pikachu",
+          "number": "58",
+          "score": 1
+        },
+        {
+          "id": "me55-23",
+          "name": "Pikachu",
+          "number": "23",
+          "score": 1
+        },
+        {
+          "id": "swsh11tg-TG16",
+          "name": "Pikachu V",
+          "number": "TG16",
+          "score": 1
+        },
+        {
+          "id": "swsh9-157",
+          "name": "Pikachu V",
+          "number": "157",
+          "score": 1
+        },
+        {
+          "id": "swsh8-86",
+          "name": "Pikachu V",
+          "number": "86",
+          "score": 1
+        },
+        {
+          "id": "pop5-13",
+          "name": "Pikachu δ",
+          "number": "13",
+          "score": 1
+        },
+        {
+          "id": "ex13-104",
+          "name": "Pikachu ★",
+          "number": "104",
+          "score": 1
+        }
+      ]
+    },
+    {
+      "photo": "IMG_4987",
+      "expectedName": "Umbreon",
+      "nameTop1": true,
+      "nameTop3": true,
+      "totalMs": 7759,
+      "numberGuess": "4",
+      "setCode": null,
+      "candidates": [
+        {
+          "id": "me55-91",
+          "name": "Umbreon",
+          "number": "91",
+          "score": 1
+        },
+        {
+          "id": "sv8pt5-59",
+          "name": "Umbreon",
+          "number": "59",
+          "score": 1
+        },
+        {
+          "id": "sv3-130",
+          "name": "Umbreon",
+          "number": "130",
+          "score": 1
+        },
+        {
+          "id": "swsh9tg-TG22",
+          "name": "Umbreon V",
+          "number": "TG22",
+          "score": 0.97
+        },
+        {
+          "id": "cel25c-17_A",
+          "name": "Umbreon ★",
+          "number": "17",
+          "score": 0.97
+        },
+        {
+          "id": "swsh7-188",
+          "name": "Umbreon V",
+          "number": "188",
+          "score": 0.97
+        },
+        {
+          "id": "swsh7-189",
+          "name": "Umbreon V",
+          "number": "189",
+          "score": 0.97
+        },
+        {
+          "id": "pop5-17",
+          "name": "Umbreon ★",
+          "number": "17",
+          "score": 0.97
+        }
+      ]
+    },
+    {
+      "photo": "IMG_4988",
+      "expectedName": "Chandelure",
+      "nameTop1": true,
+      "nameTop3": true,
+      "totalMs": 8496,
+      "numberGuess": null,
+      "setCode": null,
+      "candidates": [
+        {
+          "id": "me55-137",
+          "name": "Chandelure",
+          "number": "137",
+          "score": 1
+        },
+        {
+          "id": "me55-75",
+          "name": "Chandelure",
+          "number": "75",
+          "score": 1
+        },
+        {
+          "id": "rsv10pt5-103",
+          "name": "Chandelure",
+          "number": "103",
+          "score": 1
+        },
+        {
+          "id": "me5-37",
+          "name": "Lampent",
+          "number": "37",
+          "score": 0.97
+        },
+        {
+          "id": "rsv10pt5-102",
+          "name": "Lampent",
+          "number": "102",
+          "score": 0.97
+        },
+        {
+          "id": "rsv10pt5-17",
+          "name": "Lampent",
+          "number": "17",
+          "score": 0.97
+        },
+        {
+          "id": "swsh8-247",
+          "name": "Chandelure V",
+          "number": "247",
+          "score": 0.97
+        },
+        {
+          "id": "swsh8-39",
+          "name": "Chandelure V",
+          "number": "39",
+          "score": 0.97
+        }
+      ]
+    },
+    {
+      "photo": "IMG_4989",
+      "expectedName": "Hisuian Zorua",
+      "nameTop1": false,
+      "nameTop3": false,
+      "totalMs": 9369,
+      "numberGuess": null,
+      "setCode": null,
+      "candidates": [
+        {
+          "id": "swsh10tg-TG28",
+          "name": "Piers",
+          "number": "TG28",
+          "score": 0.61
+        },
+        {
+          "id": "swsh45-69",
+          "name": "Piers",
+          "number": "69",
+          "score": 0.61
+        },
+        {
+          "id": "swsh35-58",
+          "name": "Piers",
+          "number": "58",
+          "score": 0.61
+        },
+        {
+          "id": "sv3-230",
+          "name": "Basic Fire Energy",
+          "number": "230",
+          "score": 0.53
+        },
+        {
+          "id": "sve-10",
+          "name": "Basic Fire Energy",
+          "number": "10",
+          "score": 0.53
+        },
+        {
+          "id": "sve-2",
+          "name": "Basic Fire Energy",
+          "number": "2",
+          "score": 0.53
+        },
+        {
+          "id": "sv6pt5-99",
+          "name": "Basic Metal Energy",
+          "number": "99",
+          "score": 0.52
+        },
+        {
+          "id": "sv2-278",
+          "name": "Basic Grass Energy",
+          "number": "278",
+          "score": 0.52
+        }
+      ]
+    }
+  ]
+}

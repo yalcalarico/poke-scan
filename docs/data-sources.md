@@ -216,7 +216,7 @@ partes**. Las dos opciones son baratas:
 
 | Migrar | Costo | Riesgo |
 |---|---|---|
-| **Solo precios** a Scrydex | ~1 día | Bajo: cambiar `PRICE_PROVIDER` + refazer el mapeo de sets |
+| **Solo precios** a Scrydex | ~1 día | Bajo: cambiar `PRICE_PROVIDER`, mapear sets y ejecutar el backfill de precios |
 | **Vision API** (OCR) | ~1 día | Medio: reemplaza `lib/scanner/`, se puede dejar el OCR como fallback |
 | **Catálogo** a Scrydex | ~1 semana | Alto: los IDs de carta son FK de las colecciones de los usuarios |
 
@@ -242,11 +242,14 @@ Migrar precios no es cambiar un string: es que dos fuentes convivan en
 - La caché de precios está namespaced por proveedor (`prices:v2:<id>:<cardId>`),
   así que el swap no invalida ni pisa la entrada de la otra fuente.
 - Las claves de lectura de friend/share están namespaced por proveedor, porque
-  sus snapshots Siam números de valuación y no solo listas de cartas.
+  sus snapshots son números de valuación y no solo listas de cartas.
 
-Lo que falta para el swap, y es lo único: **un backfill** que escriba las filas
-del proveedor nuevo. Sin él, los totales valen cero desde el punto de vista del
-usuario (que es la decisión correcta, ver `backend/docs/gotchas.md` §32).
+El mecanismo de backfill **ya está implementado**: corre cada hora, en lotes de
+300 y a través de la cola con el ritmo global de 26 requests/min. Va llenando el
+proveedor activo sin mezclar el histórico legacy. En la migración a Scrydex, lo
+que quedaría es cambiar el binding, mapear los sets y dejar que el backfill
+progrese; los totales de una fuente nueva empiezan en cero hasta que esa fuente
+escriba, y eso es correcto (ver `backend/docs/gotchas.md` §32).
 
 ## Reglas para no romper el rate limit
 

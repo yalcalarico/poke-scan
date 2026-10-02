@@ -3,9 +3,11 @@ import { hostname } from 'node:os';
 import {
   Injectable,
   Logger,
+  Optional,
   type OnModuleDestroy,
   type OnModuleInit,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 
 import { ProviderRateGate } from './provider-rate.gate.js';
 import { PriceQueueService, type ClaimedPriceRefresh } from './price-queue.service.js';
@@ -66,6 +68,7 @@ export class PriceQueueWorker implements OnModuleInit, OnModuleDestroy {
     private readonly queue: PriceQueueService,
     private readonly gate: ProviderRateGate,
     private readonly syncPrices: SyncPricesService,
+    @Optional() private readonly config?: ConfigService,
   ) {}
 
   /**
@@ -81,6 +84,13 @@ export class PriceQueueWorker implements OnModuleInit, OnModuleDestroy {
   }
 
   async onModuleInit(): Promise<void> {
+    const enabled =
+      (this.config?.get<string>('PRICE_QUEUE_ENABLED') ?? process.env.PRICE_QUEUE_ENABLED) !==
+      'false';
+    if (!enabled) {
+      this.logger.log('Worker de precios desactivado por PRICE_QUEUE_ENABLED=false.');
+      return;
+    }
     // La recuperación de los jobs que quedaron tomados no es de acá sino de
     // `JobsRecoveryService`, que la hace junto con la de los `ScanJob`: es el
     // mismo problema y quiere un solo lugar donde mirar.

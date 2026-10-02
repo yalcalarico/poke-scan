@@ -20,25 +20,33 @@ import {
   clearSession,
   fileToImageData,
   formatCount,
+  isGalleryImageInput,
   isCameraStage,
   readSession,
   writeSession,
   type CameraNoticeKind,
   type CaptureSource,
+  type GalleryImageInput,
   type ScanPhase,
   type ScanStage,
   type SessionEntry,
 } from '@/components/scanner';
 import { Alert, Button, Progress, Surface, useToast } from '@/components/ui';
-import { ApiError, IDENTIFY_LIMIT, identifyCard } from '@/lib/api';
+import { ApiError } from '@/lib/api/api-client';
+import { getCard } from '@/lib/api/cards';
+import { IDENTIFY_LIMIT, identifyCard } from '@/lib/api/identify';
 import {
   DEFAULT_CAPTURE_WIDTH,
   isCameraSupported,
   isSecureContextForCamera,
 } from '@/lib/scanner/camera';
-import { OcrUnavailableError } from '@/lib/scanner/ocr';
+import { useAuth } from '@/hooks/use-auth';
+import { clearRememberedCards, findRememberedCard, rememberCard } from '@/lib/scanner/memory';
+import { assessCandidates } from '@/lib/scanner/assessment';
+import { createScannerConfigLoader } from '@/lib/scanner/config';
+import { createOcrWorker, OcrUnavailableError } from '@/lib/scanner/ocr';
 import type { ImageInput } from '@/lib/scanner/preprocess';
-import { SCAN_PASS_COUNT, SCAN_PASS_LABELS, scanCardImage } from '@/lib/scanner/pipeline';
+import { PROGRESSIVE_PASS_COUNT, scanCardImage } from '@/lib/scanner/pipeline';
 import type { CameraError, ParsedScan, ScannedCapture } from '@/lib/scanner/types';
 import type { IdentifiedCandidateDto, IdentifyResponseDto } from '@/types/api';
 
@@ -62,8 +70,8 @@ import type { IdentifiedCandidateDto, IdentifyResponseDto } from '@/types/api';
  *
  * ─── El rate limit no aparece en este archivo ───
  *
- * `identifyCard` es el único request de esta pantalla y se dispara **una vez
- * por captura**, nunca por frame de cámara. El chip de precio flotante no pide
+ * `identifyCard` consulta el catálogo local: una búsqueda temprana y, si
+ * falta evidencia, otra al terminar el OCR. Nunca se consulta por frame. El chip de precio flotante no pide
  * nada: lee la fila `price` de la respuesta que ya llegó. El tope de 2,5 s
  * entre requests automáticos es la única defensa extra, y vive acá porque acá
  * es donde se distingue una captura del usuario de una de la máquina.
@@ -72,6 +80,7 @@ import type { IdentifiedCandidateDto, IdentifyResponseDto } from '@/types/api';
 /** Freno de seguridad: si el OCR se cuelga, la app no se queda trabada. */
 const SCAN_TIMEOUT_MS = 90_000;
 const IDENTIFY_TIMEOUT_MS = 30_000;
+const PROGRESSIVE_SCANNER = process.env.NEXT_PUBLIC_SCANNER_PROGRESSIVE === '1';
 
 /**
  * Tope local entre requests a `/cards/identify` disparados **solos**
@@ -132,6 +141,9 @@ interface Notice {
 export default function ScanPage() {
   const router = useRouter();
   const toast = useToast();
+  const { user } = useAuth();
+  const memoryScope = user?.id ?? 'guest';
+  const lastParsedRef = useRef<ParsedScan | null>(null);
 
   const [stage, setStage] = useState<ScanStage>('idle');
   const env = useSyncExternalStore(subscribeToEnv, getBrowserEnv, () => null);
@@ -145,6 +157,7 @@ export default function ScanPage() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [result, setResult] = useState<IdentifyResponseDto | null>(null);
   const [nameGuess, setNameGuess] = useState<string | null>(null);
+  const [printedNumberGuess, setPrintedNumberGuess] = useState<string | null>(null);
   /**
    * La sesión de escaneo.
    *
@@ -169,13 +182,17 @@ export default function ScanPage() {
    * de haberla leído.
    */
   const [isSessionRestored, setIsSessionRestored] = useState(false);
+  const runIdRef = useRef(0);
 
   useEffect(() => {
     let disposed = false;
     queueMicrotask(() => {
       if (disposed) return;
       const stored = readSession();
-      if (stored.length > 0) setSession(stored);
+      if (stored.length > 0) {
+        setSession(stored);
+        runIdRef.current = Math.max(runIdRef.current, ...stored.map((entry) => entry.runId));
+      }
       setIsSessionRestored(true);
     });
     return () => {
@@ -217,12 +234,16 @@ export default function ScanPage() {
    * canceló otra". Es lo que impide que la respuesta de una foto lenta pise el
    * estado de la siguiente (docs/gotchas.md #9).
    */
-  const runIdRef = useRef(0);
+  const abortRef = useRef<AbortController | null>(null);
+  const loadConfig = useMemo(() => createScannerConfigLoader(true), []);
+  const [passLabel, setPassLabel] = useState('');
   const objectUrlRef = useRef<string | null>(null);
   const lastAutoIdentifyRef = useRef(0);
 
   useEffect(() => {
     return () => {
+      abortRef.current?.abort();
+      runIdRef.current += 1;
       if (objectUrlRef.current) URL.revokeObjectURL(objectUrlRef.current);
     };
   }, []);
@@ -247,25 +268,37 @@ export default function ScanPage() {
     [router],
   );
 
-  const runIdentify = useCallback(async (parsed: ParsedScan, runId: number) => {
+  const runIdentify = useCallback(async (parsed: ParsedScan, runId: number, cached?: IdentifyResponseDto) => {
     setPhase('searching');
     try {
-      const data = await withTimeout(
+      const data = cached ?? await withTimeout(
         identifyCard({
           lines: parsed.lines.slice(0, 60),
           name: parsed.nameGuess ?? undefined,
           number: parsed.numberGuess ?? undefined,
           setHint: parsed.setHint ?? undefined,
-          // Siempre `undefined` por ahora: el backend ya lo acepta, pero sin
-          // banda medida no hay de dónde sacarlo. Ver `ParsedScan.setCode`.
           setCode: parsed.setCode ?? undefined,
           limit: IDENTIFY_LIMIT,
-        }),
+        }, abortRef.current?.signal),
         IDENTIFY_TIMEOUT_MS,
         'La búsqueda tardó demasiado. Probá de nuevo o buscá a mano.',
       );
       if (runIdRef.current !== runId) return;
 
+      lastParsedRef.current = parsed;
+      const rememberedId = findRememberedCard(memoryScope, parsed);
+      if (rememberedId) {
+        try {
+          const card = await getCard(rememberedId);
+          if (runIdRef.current !== runId) return;
+          const remembered: IdentifiedCandidateDto = { card, score: 0, rawScore: 0, price: null,
+            signals: { numberHint: null, setName: null, setCode: null, printedNumber: null, hp: null, artist: null, rarity: null },
+            matchedText: 'Corrección recordada en este dispositivo. Confirmá la edición.' };
+          data.candidates = [remembered, ...data.candidates.filter((candidate) => candidate.card.id !== card.id)];
+          data.status = 'ambiguous';
+          data.totalCandidates = Math.max(data.totalCandidates, data.candidates.length);
+        } catch { /* Una referencia eliminada no impide consultar el catálogo. */ }
+      }
       setResult(data);
       setPhase('preparing');
 
@@ -284,10 +317,13 @@ export default function ScanPage() {
       // después: el estado en memoria tiene que respetar el mismo máximo que lo
       // que se persiste, o la UI anunciaría 30 cartas y mostraría 47 hasta que
       // el usuario recargara la página.
-      setSession((current) => appendSessionEntry(current, { runId, candidate: best }));
+      if ((data.status ?? assessCandidates(data.candidates)) === 'confident') {
+        setSession((current) => appendSessionEntry(current, { runId, candidate: best }));
+      }
       setStage('results');
     } catch (err) {
       if (runIdRef.current !== runId) return;
+      abortRef.current?.abort();
       setPhase('preparing');
       setErrorTitle('Falló la búsqueda');
       setErrorMessage(
@@ -299,12 +335,15 @@ export default function ScanPage() {
       );
       setStage('error');
     }
-  }, []);
+  }, [memoryScope]);
 
   const runScan = useCallback(
-    async (load: () => Promise<ImageInput>) => {
+    async (load: () => Promise<ImageInput | GalleryImageInput>) => {
       const runId = runIdRef.current + 1;
       runIdRef.current = runId;
+      abortRef.current?.abort();
+      const controller = new AbortController();
+      abortRef.current = controller;
 
       setStage('processing');
       setPhase('preparing');
@@ -313,10 +352,13 @@ export default function ScanPage() {
       setErrorMessage(null);
       setResult(null);
       setNameGuess(null);
+      setPrintedNumberGuess(null);
+      setPassLabel('');
+      lastParsedRef.current = null;
 
-      let source: ImageInput;
+      let loaded: ImageInput | GalleryImageInput;
       try {
-        source = await load();
+        loaded = await load();
       } catch (err) {
         setErrorTitle('No pudimos abrir la foto');
         setErrorMessage(
@@ -326,12 +368,46 @@ export default function ScanPage() {
         return;
       }
 
-      if (runIdRef.current !== runId) return;
+      let source: ImageInput;
+      let highResolutionSource: ImageBitmap | undefined;
+      if (isGalleryImageInput(loaded)) {
+        source = loaded.imageData;
+        highResolutionSource = loaded.highResolutionSource;
+      } else {
+        source = loaded;
+      }
+      if (runIdRef.current !== runId) {
+        highResolutionSource?.close();
+        return;
+      }
 
       try {
+        const config = await withTimeout(loadConfig(), 5000, 'El catálogo tardó demasiado.').catch(() => ({ setCodes: [], setNames: [] }));
+        controller.signal.throwIfAborted();
+        let earlyResult: IdentifyResponseDto | undefined;
         const scanned = await withTimeout(
           scanCardImage(source, {
             captureRun: `run-${runId}`,
+            progressive: PROGRESSIVE_SCANNER,
+            highResolutionSource,
+            signal: controller.signal,
+            setCodes: config.setCodes,
+            setNames: config.setNames,
+            onPass: (label) => { if (runIdRef.current === runId) setPassLabel(label); },
+            onCheckpoint: async (parsed) => {
+              if (!parsed.numberGuess || (!parsed.setCode && !parsed.lines.some((line) => /\d\s*\/\s*\d{2,3}/.test(line)))) return false;
+              const data = await withTimeout(identifyCard({
+                lines: parsed.lines.slice(0, 60),
+                name: parsed.nameGuess ?? undefined,
+                number: parsed.numberGuess ?? undefined,
+                setHint: parsed.setHint ?? undefined,
+                setCode: parsed.setCode ?? undefined,
+                limit: IDENTIFY_LIMIT,
+              }, controller.signal), IDENTIFY_TIMEOUT_MS, 'La búsqueda tardó demasiado.');
+              if ((data.status ?? assessCandidates(data.candidates)) !== 'confident') return false;
+              earlyResult = data;
+              return true;
+            },
             logger: (status, progress) => {
               if (runIdRef.current !== runId) return;
               setPhase(ocrPhaseFor(status));
@@ -357,8 +433,10 @@ export default function ScanPage() {
         }
 
         setNameGuess(scanned.parsed.nameGuess ?? null);
-        await runIdentify(scanned.parsed, runId);
+        setPrintedNumberGuess(scanned.parsed.printedNumberGuess ?? scanned.parsed.numberGuess ?? null);
+        await runIdentify(scanned.parsed, runId, earlyResult);
       } catch (err) {
+        controller.abort();
         if (runIdRef.current !== runId) return;
         setPhase('preparing');
         if (err instanceof OcrUnavailableError) {
@@ -367,13 +445,17 @@ export default function ScanPage() {
         } else {
           setErrorTitle('No pudimos leer la carta');
           setErrorMessage(
-            err instanceof Error ? err.message : 'No pudimos procesar la carta con el OCR.',
+            err instanceof Error && err.message.startsWith('El OCR tardó demasiado.')
+              ? err.message
+              : 'No pudimos procesar la foto. Volvé a intentar o buscá la carta a mano.',
           );
         }
         setStage('error');
+      } finally {
+        highResolutionSource?.close();
       }
     },
-    [runIdentify],
+    [runIdentify, loadConfig],
   );
 
   const handleCapture = useCallback(
@@ -413,7 +495,9 @@ export default function ScanPage() {
     setErrorMessage(null);
     setCaptureMode('camera');
     setStage('camera');
-  }, []);
+    void createOcrWorker().catch(() => {});
+    void loadConfig();
+  }, [loadConfig]);
 
   const handleCameraError = useCallback((kind: CameraError, detail?: string) => {
     setCameraNotice({ kind, detail: detail ?? null });
@@ -450,15 +534,25 @@ export default function ScanPage() {
   }, []);
 
   const handleChoose = useCallback(
-    (candidate: IdentifiedCandidateDto) => {
+    (candidate: IdentifiedCandidateDto, remember = false) => {
+      if (remember && lastParsedRef.current) {
+        const saved = rememberCard(memoryScope, lastParsedRef.current, candidate.card.id);
+        if (saved) toast.info('Recordamos esta lectura en este dispositivo.');
+        else toast.info('No pudimos guardar la lectura en este dispositivo.');
+      }
       setSession((current) => {
-        if (current.length === 0) return current;
-        const last = current[current.length - 1];
-        return [...current.slice(0, -1), { runId: last.runId, candidate }];
+        const runId = runIdRef.current;
+        if (current.some((entry) => entry.runId === runId)) {
+          return current.map((entry) => entry.runId === runId ? { runId, candidate } : entry);
+        }
+        return appendSessionEntry(current, { runId, candidate });
       });
+      toast.success(
+        `Sumamos ${candidate.card.name} a la sesión. Tocá “Organizar la sesión” para guardarla en tu colección.`,
+      );
       setStage(backTo);
     },
-    [backTo],
+    [backTo, memoryScope, toast],
   );
 
   const openOrganize = useCallback(
@@ -469,19 +563,18 @@ export default function ScanPage() {
     [],
   );
 
-  const variantLabel = SCAN_PASS_LABELS[Math.min(attemptsDone, SCAN_PASS_LABELS.length - 1)] ?? '';
+  const variantLabel = passLabel;
 
   /**
-   * El progreso global: las 9 pasadas de `lib/scanner/pipeline` más la búsqueda.
-   * Es la misma cuenta de siempre, pero en una barra inline en vez de una card
-   * modal.
+   * El progreso representa el máximo de pasadas; una lectura corroborada
+   * termina antes y las ambiguas usan las variantes de respaldo.
    */
   const progress = useMemo(() => {
     if (stage !== 'processing') return null;
     if (phase === 'searching') return 0.97;
-    const variantFraction = SCAN_PASS_COUNT > 0 ? attemptsDone / SCAN_PASS_COUNT : 0;
+    const variantFraction = PROGRESSIVE_PASS_COUNT > 0 ? attemptsDone / PROGRESSIVE_PASS_COUNT : 0;
     const within = phase === 'recognizing' ? Math.min(1, Math.max(0, stepProgress)) : 0;
-    return Math.min(0.95, variantFraction + within / Math.max(1, SCAN_PASS_COUNT));
+    return Math.min(0.95, variantFraction + within / Math.max(1, PROGRESSIVE_PASS_COUNT));
   }, [attemptsDone, phase, stage, stepProgress]);
 
   const headline =
@@ -667,9 +760,11 @@ export default function ScanPage() {
         open={stage === 'results'}
         data={result}
         localNameGuess={nameGuess}
+        localNumberGuess={printedNumberGuess}
         sessionCardIds={sessionCardIds}
         onClose={() => setStage(backTo)}
         onChoose={handleChoose}
+        onForget={() => { clearRememberedCards(memoryScope); toast.info('Borramos las lecturas recordadas.'); }}
         onManualSearch={goManualSearch}
       />
 

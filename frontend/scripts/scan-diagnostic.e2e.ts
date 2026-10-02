@@ -53,9 +53,7 @@ vi.mock('../lib/scanner/ocr', async () => {
     ...actual,
     recognize: async (image: unknown, logger?: unknown, pageSegMode?: string) => {
       const worker = await getWorker();
-      if (pageSegMode !== undefined) {
-        await worker.setParameters({ tessedit_pageseg_mode: pageSegMode });
-      }
+      await worker.setParameters({ tessedit_pageseg_mode: pageSegMode ?? actual.OCR_FULL_CARD_PAGE_SEG_MODE });
       // tesseract en Node no entiende un canvas: necesita los bytes, y el shim
       // ya sabe producir un PNG.
       const bytes =
@@ -123,16 +121,17 @@ function loadImage(path: string): ImageData {
 const API = 'http://localhost:3001/api';
 /** Las fotos a resolución completa, que es lo que llega del celular. */
 const DIR = process.env.SCAN_E2E_DIR ?? '/tmp/cards-full';
+const HIGH_RES_DIR = process.env.SCAN_HIGH_RES_DIR;
 const EXPECTED: Record<string, string> = {
   IMG_4985: 'Shining Celebi',
   IMG_4986: 'Pikachu',
-  IMG_4987: 'Umbreon',
+  IMG_4987: 'Umbreon ex',
   IMG_4988: 'Chandelure',
   IMG_4989: 'Hisuian Zorua',
 };
 
 interface Candidate {
-  card: { name: string; number: string | null };
+  card: { id: string; name: string; number: string | null };
   set: { name: string } | null;
   score: number;
   matchedText: string | null;
@@ -146,11 +145,10 @@ it('diagnostica cada foto: qué leyó el OCR y por qué ganó ese resultado', as
     .sort()
     .filter((f) => !only || f.includes(only));
 
-  const session = (await fetch(`${API}/auth/login`, {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ email: 'test@test.com', password: '12345678' }),
-  }).then((r) => r.json())) as { accessToken: string };
+  const progressive = process.env.SCAN_PROGRESSIVE === '1';
+  const skipApi = process.env.SCAN_SKIP_API === '1';
+  const config = !skipApi && (progressive || process.env.SCAN_COLLECTOR !== '0') ? await fetch(`${API}/cards/scanner-config`).then((r) => r.json()) as { setCodes: string[]; setNames: string[] } : { setCodes: [], setNames: [] };
+  const report: unknown[] = [];
 
   let aciertos = 0;
 
@@ -158,36 +156,61 @@ it('diagnostica cada foto: qué leyó el OCR y por qué ganó ese resultado', as
     const run = `diag-${file}`;
     rmSync(join('/tmp/pokemon-scanner-captures', run), { recursive: true, force: true });
 
+    const started = performance.now();
     const seen: string[] = [];
+    const ocrAttempts: Array<{ text: string; lineConfidences: number[]; lines: Array<{ text: string; confidence: number; words: Array<{ text: string; confidence: number }> }> }> = [];
     const result = await scanCardImage(loadImage(`${DIR}/${file}.png`), {
       captureRun: run,
+      highResolutionSource: HIGH_RES_DIR ? loadImage(`${HIGH_RES_DIR}/${file}.png`) : undefined,
+      progressive,
+      readCollector: process.env.SCAN_COLLECTOR !== '0',
+      setCodes: config.setCodes,
+      setNames: config.setNames,
       onAttempt: (attempt) => {
         const tag = attempt.variant === 'nameband' ? 'BANDA' : `CARTA ${attempt.variant}`;
-        seen.push(`${tag.padEnd(16)} ${JSON.stringify(clean(attempt.ocr.text).slice(0, 72))}`);
+        seen.push(`${tag.padEnd(16)} ${JSON.stringify(clean(attempt.ocr.text).slice(0, 180))}`);
+        ocrAttempts.push({
+          text: clean(attempt.ocr.text),
+          lineConfidences: attempt.ocr.lines.map((line) => Math.round(line.confidence)),
+          lines: attempt.ocr.lines.map((line) => ({
+            text: line.text,
+            confidence: Math.round(line.confidence),
+            words: (line.words ?? []).map((word) => ({ text: word.text, confidence: Math.round(word.confidence) })),
+          })),
+        });
       },
     });
     expect(result, `el pipeline no devolvió nada para ${file}`).not.toBeNull();
     if (!result) continue;
 
-    const data = (await fetch(`${API}/cards/identify`, {
+    const data = skipApi ? { candidates: [] as Candidate[] } : (await fetch(`${API}/cards/identify`, {
       method: 'POST',
       headers: {
         'content-type': 'application/json',
-        authorization: `Bearer ${session.accessToken}`,
       },
       body: JSON.stringify({
         lines: result.parsed.lines.slice(0, 60),
         name: result.parsed.nameGuess ?? undefined,
         number: result.parsed.numberGuess ?? undefined,
         setHint: result.parsed.setHint ?? undefined,
+        setCode: result.parsed.setCode ?? undefined,
         limit: 8,
       }),
-    }).then((r) => r.json())) as { candidates?: Candidate[] };
+    }).then((r) => r.json())) as { candidates?: Candidate[]; timings?: { matchMs: number; totalMs: number }; status?: string };
 
     const n = result.normalized;
     const expected = EXPECTED[file]!;
     const cands = data.candidates ?? [];
     const ok = cands[0]?.card.name.startsWith(expected);
+    const expectedCardId = file === 'IMG_4987' ? 'me55-92' : null;
+    report.push({ photo: file, expected, expectedCardId, ocrAttempts,
+      exactTop1: expectedCardId ? cands[0]?.card.id === expectedCardId : null,
+      exactTop8: expectedCardId ? cands.some((c) => c.card.id === expectedCardId) : null,
+      top1: Boolean(ok),
+      top3: cands.slice(0, 3).some((c) => c.card.name.startsWith(expected)),
+      totalMs: Math.round(performance.now() - started), matchTimings: data.timings, status: data.status, parsed: result.parsed,
+      candidates: cands.map((c) => ({ id: c.card.id, name: c.card.name, number: c.card.number, score: c.score })),
+    });
     if (ok) aciertos += 1;
 
     console.log(`\n${'═'.repeat(72)}`);
@@ -217,6 +240,10 @@ it('diagnostica cada foto: qué leyó el OCR y por qué ganó ese resultado', as
   }
 
   console.log(`\n${'═'.repeat(72)}`);
+  if (process.env.SCAN_REPORT_FILE) {
+    const { writeFileSync } = await import('node:fs');
+    writeFileSync(process.env.SCAN_REPORT_FILE, JSON.stringify(report, null, 2));
+  }
   console.log(`TOTAL: ${aciertos}/${files.length} con el nombre correcto en el top-1`);
   console.log('capturas en /tmp/pokemon-scanner-captures/diag-*');
 }, 40 * 60_000);

@@ -63,13 +63,9 @@ export interface OrganizeSheetProps {
  * lista, cada una con su destino y su cantidad, y el footer las agrega todas en
  * una pasada.
  *
- * ─── El 409 es un éxito ───
- *
  * Si la carta ya está en esa colección con la misma variante y condición, el
- * backend responde 409 y **sumó la cantidad**. Tratarlo como error haría que
- * "agregar las 20" reportara 20 fallas en una colección llena de duplicados, que
- * es el estado normal de un coleccionista. Es el mismo criterio que usa
- * `ItemSheet` al cambiar la cantidad de una carta que ya está en la colección.
+ * backend suma la cantidad y devuelve el ítem actualizado como éxito. Una
+ * respuesta de error no confirma que la carta se haya guardado.
  */
 export function OrganizeSheet({ open, entries, onClose, onSaved, onRemove }: OrganizeSheetProps) {
   const toast = useToast();
@@ -82,19 +78,19 @@ export function OrganizeSheet({ open, entries, onClose, onSaved, onRemove }: Org
       // `listCollections` no acepta `AbortSignal`: el wrapper es el que
       // documenta la guía para estos casos, y evita escribir un `fetch` a mano.
       void signal;
-      return listCollections();
+      // La hoja queda montada al escanear como invitado. Pedir colecciones
+      // estando cerrada dispararía el refresh de sesión de un endpoint privado.
+      return open ? listCollections() : Promise.resolve([]);
     },
-    [],
+    [open],
   );
 
   const collections = useMemo(() => data ?? [], [data]);
 
-  /**
-   * Contador de corrida: el usuario puede tocar "agregar" dos veces seguidas o
-   * abrir y cerrar la hoja, y sin esto una respuesta vieja puede pisar el
-   * estado de una fila que ya se editó (docs/gotchas.md #9).
-   */
-  const runIdRef = useRef(0);
+  // Cada fila tiene su propio bloqueo: una respuesta de otra carta no puede
+  // invalidarla, y dos clicks antes del próximo render no duplican el POST.
+  const savingRunIds = useRef(new Set<number>());
+  const savingAllRef = useRef(false);
 
   /**
    * La colección por defecto se **deriva** en cada render en vez de sembrarse
@@ -113,11 +109,10 @@ export function OrganizeSheet({ open, entries, onClose, onSaved, onRemove }: Org
 
   const patch = useCallback((runId: number, values: Partial<Draft>) => {
     setDrafts((current) => {
-      const draft = current[runId];
-      if (!draft) return current;
+      const draft = current[runId] ?? initialDraft(defaultCollectionId);
       return { ...current, [runId]: { ...draft, ...values } };
     });
-  }, []);
+  }, [defaultCollectionId]);
 
   const remove = useCallback(
     (runId: number) => {
@@ -142,43 +137,37 @@ export function OrganizeSheet({ open, entries, onClose, onSaved, onRemove }: Org
         });
         return false;
       }
-      if (draft.status === 'saving') return false;
+      if (savingRunIds.current.has(entry.runId) || draft.status === 'done') return false;
 
-      const runId = runIdRef.current + 1;
-      runIdRef.current = runId;
+      savingRunIds.current.add(entry.runId);
       patch(entry.runId, { status: 'saving', message: null });
 
       try {
-        await addItem(draft.collectionId, {
+        const item = await addItem(draft.collectionId, {
           cardId: entry.candidate.card.id,
           quantity: draft.quantity,
         });
-        if (runIdRef.current !== runId) return false;
-        patch(entry.runId, { status: 'done', message: null });
+        patch(entry.runId, {
+          status: 'done',
+          message: item.quantity > draft.quantity ? 'Sumada a una copia que ya tenías.' : null,
+        });
         return true;
       } catch (err) {
-        if (runIdRef.current !== runId) return false;
-        // 409 = la variante ya estaba y el backend sumó la cantidad. Es un
-        // éxito, y el copy lo dice para que el usuario no lo lea como un error.
-        if (err instanceof ApiError && err.status === 409) {
-          patch(entry.runId, {
-            status: 'done',
-            message: 'Sumada a una copia que ya tenías.',
-          });
-          return true;
-        }
         patch(entry.runId, {
           status: 'error',
           message: messageOf(err, 'No pudimos guardar esta carta.'),
         });
         return false;
+      } finally {
+        savingRunIds.current.delete(entry.runId);
       }
     },
     [draftFor, patch],
   );
 
   const saveAll = useCallback(async () => {
-    if (isSavingAll) return;
+    if (savingAllRef.current || savingRunIds.current.size > 0) return;
+    savingAllRef.current = true;
     setIsSavingAll(true);
     setBulkError(null);
 
@@ -190,6 +179,7 @@ export function OrganizeSheet({ open, entries, onClose, onSaved, onRemove }: Org
     const savedCount = savedRunIds.length;
 
     setIsSavingAll(false);
+    savingAllRef.current = false;
 
     if (savedCount === 0) {
       setBulkError('No pudimos guardar ninguna de las cartas. Revisá la conexión y reintentá.');
@@ -211,7 +201,15 @@ export function OrganizeSheet({ open, entries, onClose, onSaved, onRemove }: Org
     setBulkError(
       `Guardamos ${formatCount(savedCount)} de ${formatCount(entries.length)}. Las que faltaron siguen en la lista, con el motivo al lado.`,
     );
-  }, [entries, isSavingAll, onClose, onSaved, saveOne, toast]);
+  }, [entries, onClose, onSaved, saveOne, toast]);
+
+  const saveSingle = useCallback(async (entry: SessionEntry) => {
+    if (savingAllRef.current) return;
+    if (await saveOne(entry)) {
+      onSaved([entry.runId]);
+      toast.success('Guardamos esta carta en tu colección.');
+    }
+  }, [onSaved, saveOne, toast]);
 
   const collectionOptions = useMemo(
     () =>
@@ -246,7 +244,7 @@ export function OrganizeSheet({ open, entries, onClose, onSaved, onRemove }: Org
             onClick={() => void saveAll()}
             loading={isSavingAll}
             pendingLabel="Guardando…"
-            disabled={isEmpty || status !== 'ready'}
+            disabled={isEmpty || status !== 'ready' || Object.values(drafts).some((draft) => draft.status === 'saving')}
             className="flex-1"
           >
             {isEmpty ? 'Nada que guardar' : `Agregar todas (${formatCount(entries.length)})`}
@@ -321,6 +319,7 @@ export function OrganizeSheet({ open, entries, onClose, onSaved, onRemove }: Org
 
                   <button
                     type="button"
+                    disabled={isSavingAll || draft.status === 'saving'}
                     onClick={() => remove(entry.runId)}
                     aria-label={`Sacar ${card.name} de la sesión`}
                     title="Sacar de la sesión"
@@ -356,6 +355,7 @@ export function OrganizeSheet({ open, entries, onClose, onSaved, onRemove }: Org
                       // sin error en ningún lado.
                       aria-labelledby={`${collectionId}-label`}
                       options={collectionOptions}
+                      disabled={isSavingAll || draft.status === 'saving'}
                       value={draft.collectionId}
                       onChange={(value) =>
                         patch(entry.runId, { collectionId: value, status: 'idle', message: null })
@@ -372,6 +372,7 @@ export function OrganizeSheet({ open, entries, onClose, onSaved, onRemove }: Org
                       min={1}
                       max={MAX_QUANTITY}
                       value={draft.quantity}
+                      disabled={isSavingAll || draft.status === 'saving'}
                       aria-describedby={`${quantityId}-hint`}
                       onChange={(event) => {
                         const parsed = Number.parseInt(event.target.value, 10);
@@ -405,10 +406,10 @@ export function OrganizeSheet({ open, entries, onClose, onSaved, onRemove }: Org
                 <Button
                   variant="secondary"
                   size="sm"
-                  onClick={() => void saveOne(entry)}
+                  onClick={() => void saveSingle(entry)}
                   loading={draft.status === 'saving'}
                   pendingLabel="Guardando…"
-                  disabled={draft.collectionId === null}
+                  disabled={draft.collectionId === null || draft.status === 'done' || isSavingAll}
                   className="self-start"
                 >
                   {draft.status === 'done' ? 'Guardada' : 'Agregar'}

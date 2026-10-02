@@ -1,0 +1,449 @@
+[
+  {
+    "photo": "IMG_4985",
+    "expected": "Shining Celebi",
+    "expectedCardId": "me55c-106",
+    "exactTop1": true,
+    "exactTop8": true,
+    "top1": true,
+    "top3": true,
+    "totalMs": 8520,
+    "matchTimings": {
+      "matchMs": 1151,
+      "totalMs": 1154
+    },
+    "status": "ambiguous",
+    "parsed": {
+      "lines": [
+        "| { Shining Celebi ¥",
+        "far Celebi",
+        "| * Shining Celebs",
+        "| i pr Celebi",
+        "I Chining Celli",
+        "| \\ 2 MO £ Celebi in your dedic i t",
+        "! A up © :",
+        "A >",
+        "ol 17 |",
+        "| = £ > 2 < ( A",
+        "ENE |",
+        "TE PUES wey",
+        "__ Timetravel Pokémon. Length: 2' 0\", Weight: //",
+        "; Se Healing Water Remove a number of dam-:- -ouncer",
+        "at: ie) from | of your Benched Pokémon equal to the 1 irber of",
+        "ig * @ Energy cards attached to Shining Celebi. if the Pokémon |",
+        "Baa has fewer damage counters than that, remove all of them.",
+        "2 EE Miracle Leaf Flip 2 number of coins equal to the",
+        "S Bi number of Energy attached to the Defending",
+        "oa K-) ro) Pokémon. If you get | or more heads, the Defending | 0",
+        "fr Pokémon is now Asleep, Confused, or Poisoned (your",
+        "og © choice). fs Ts :",
+        "i kness resistance ln | retreat cost",
+        "3 ®y i Shei 1 3A Ra",
+        "A Ya he ” RRC, oH",
+        "LE vpped 13.8, 0d of the fo ves Bothy gl",
+        "Ete i — SR",
+        "g : > 2000 Niende Creature CAMEREARINEE. 108/105 ++ +",
+        "L EB to IA, (SERRE",
+        "EARS Men CZ eg St,"
+      ],
+      "nameGuess": "Celebi",
+      "numberGuess": "108",
+      "setHint": null,
+      "setCode": null,
+      "confidence": 0.645
+    },
+    "candidates": [
+      {
+        "id": "me55c-106",
+        "name": "Shining Celebi",
+        "number": "106",
+        "score": 1
+      },
+      {
+        "id": "me1-12",
+        "name": "Celebi",
+        "number": "12",
+        "score": 1
+      },
+      {
+        "id": "sv7-4",
+        "name": "Celebi",
+        "number": "4",
+        "score": 1
+      },
+      {
+        "id": "swsh45-3",
+        "name": "Celebi",
+        "number": "3",
+        "score": 1
+      },
+      {
+        "id": "sm8-19",
+        "name": "Celebi ◇",
+        "number": "19",
+        "score": 1
+      },
+      {
+        "id": "smp-SM79",
+        "name": "Shining Celebi",
+        "number": "SM79",
+        "score": 1
+      },
+      {
+        "id": "ex14-100",
+        "name": "Celebi ★",
+        "number": "100",
+        "score": 1
+      },
+      {
+        "id": "neo4-106",
+        "name": "Shining Celebi",
+        "number": "106",
+        "score": 1
+      }
+    ]
+  },
+  {
+    "photo": "IMG_4986",
+    "expected": "Pikachu",
+    "expectedCardId": "me55-23",
+    "exactTop1": false,
+    "exactTop8": false,
+    "top1": true,
+    "top3": true,
+    "totalMs": 2489,
+    "matchTimings": {
+      "matchMs": 117,
+      "totalMs": 119
+    },
+    "status": "ambiguous",
+    "parsed": {
+      "lines": [
+        "| se=pikachu",
+        "£ $2 Pikachu : | : ;",
+        "at Pikachu",
+        "| e=pikachu",
+        "Asie See TT",
+        "| - “Pikachu",
+        "I i",
+        "[|< Pilachu",
+        "{"
+      ],
+      "nameGuess": "Pikachu",
+      "numberGuess": null,
+      "setHint": null,
+      "setCode": null,
+      "confidence": 0.68
+    },
+    "candidates": [
+      {
+        "id": "bw1-115",
+        "name": "Pikachu",
+        "number": "115",
+        "score": 1
+      },
+      {
+        "id": "base6-86",
+        "name": "Pikachu",
+        "number": "86",
+        "score": 1
+      },
+      {
+        "id": "base4-87",
+        "name": "Pikachu",
+        "number": "87",
+        "score": 1
+      },
+      {
+        "id": "swsh11tg-TG16",
+        "name": "Pikachu V",
+        "number": "TG16",
+        "score": 1
+      },
+      {
+        "id": "swsh9-157",
+        "name": "Pikachu V",
+        "number": "157",
+        "score": 1
+      },
+      {
+        "id": "swsh8-86",
+        "name": "Pikachu V",
+        "number": "86",
+        "score": 1
+      },
+      {
+        "id": "pop5-13",
+        "name": "Pikachu δ",
+        "number": "13",
+        "score": 1
+      },
+      {
+        "id": "ex13-104",
+        "name": "Pikachu ★",
+        "number": "104",
+        "score": 1
+      }
+    ]
+  },
+  {
+    "photo": "IMG_4987",
+    "expected": "Umbreon ex",
+    "expectedCardId": "me55-92",
+    "exactTop1": true,
+    "exactTop8": true,
+    "top1": true,
+    "top3": true,
+    "totalMs": 3430,
+    "matchTimings": {
+      "matchMs": 785,
+      "totalMs": 787
+    },
+    "status": "ambiguous",
+    "parsed": {
+      "lines": [
+        "CTY EE - Ls Sy n",
+        "STAGE] of oT.",
+        "7 Sal preon &X",
+        "3 ~~ Ca",
+        "V7. VL ——",
+        "=X Umbreon €X _",
+        "gem qe 3 3 ’% : . SV",
+        "7 2 L nbreon €X",
+        "of Frormhrac roam FOVAB uit abi didi",
+        "aE Oh CX EE",
+        "Ps ~ ) ’ _ - sp —————tok th",
+        ")7/8 Nort ns Eaves . aaa"
+      ],
+      "nameGuess": "Sal preon ex",
+      "numberGuess": null,
+      "setHint": null,
+      "setCode": null,
+      "confidence": 0.53
+    },
+    "candidates": [
+      {
+        "id": "me55-92",
+        "name": "Umbreon ex",
+        "number": "92",
+        "score": 0.9
+      },
+      {
+        "id": "sv8pt5-161",
+        "name": "Umbreon ex",
+        "number": "161",
+        "score": 0.9
+      },
+      {
+        "id": "sv8pt5-60",
+        "name": "Umbreon ex",
+        "number": "60",
+        "score": 0.9
+      },
+      {
+        "id": "me55-91",
+        "name": "Umbreon",
+        "number": "91",
+        "score": 0.7
+      },
+      {
+        "id": "sv8pt5-59",
+        "name": "Umbreon",
+        "number": "59",
+        "score": 0.7
+      },
+      {
+        "id": "sv3-130",
+        "name": "Umbreon",
+        "number": "130",
+        "score": 0.7
+      },
+      {
+        "id": "swsh9tg-TG22",
+        "name": "Umbreon V",
+        "number": "TG22",
+        "score": 0.67
+      },
+      {
+        "id": "cel25c-17_A",
+        "name": "Umbreon ★",
+        "number": "17",
+        "score": 0.67
+      }
+    ]
+  },
+  {
+    "photo": "IMG_4988",
+    "expected": "Chandelure",
+    "expectedCardId": "me55-137",
+    "exactTop1": false,
+    "exactTop8": false,
+    "top1": true,
+    "top3": true,
+    "totalMs": 3576,
+    "matchTimings": {
+      "matchMs": 769,
+      "totalMs": 771
+    },
+    "status": "ambiguous",
+    "parsed": {
+      "lines": [
+        "Ra Nw tad",
+        "ll srace2, om 8 11g Ele",
+        "[ec Ema",
+        "|B Nb 4308 Ah oy irom sm a",
+        ": IEREIN + 2",
+        "STAGES pe gm ph SBP ERS",
+        "#assst Chandelunes",
+        "| a A ART BANE (",
+        "vb | Evolves fromlamoante",
+        "| se Chapdeidl .",
+        "| Chandelure!",
+        "| FEN . : asad Ness",
+        "hI Yoo yf from LamPent sien on"
+      ],
+      "nameGuess": "Chapdeidl",
+      "numberGuess": null,
+      "setHint": null,
+      "setCode": null,
+      "confidence": 0.7499999999999999
+    },
+    "candidates": [
+      {
+        "id": "bw4-101",
+        "name": "Chandelure",
+        "number": "101",
+        "score": 1
+      },
+      {
+        "id": "bw4-20",
+        "name": "Chandelure",
+        "number": "20",
+        "score": 1
+      },
+      {
+        "id": "bw3-60",
+        "name": "Chandelure",
+        "number": "60",
+        "score": 1
+      },
+      {
+        "id": "bw4-19",
+        "name": "Lampent",
+        "number": "19",
+        "score": 0.97
+      },
+      {
+        "id": "bw3-59",
+        "name": "Lampent",
+        "number": "59",
+        "score": 0.97
+      },
+      {
+        "id": "me5-37",
+        "name": "Lampent",
+        "number": "37",
+        "score": 0.97
+      },
+      {
+        "id": "swsh8-247",
+        "name": "Chandelure V",
+        "number": "247",
+        "score": 0.97
+      },
+      {
+        "id": "swsh8-39",
+        "name": "Chandelure V",
+        "number": "39",
+        "score": 0.97
+      }
+    ]
+  },
+  {
+    "photo": "IMG_4989",
+    "expected": "Hisuian Zorua",
+    "expectedCardId": "me55-145",
+    "exactTop1": false,
+    "exactTop8": false,
+    "top1": false,
+    "top3": false,
+    "totalMs": 2562,
+    "matchTimings": {
+      "matchMs": 166,
+      "totalMs": 167
+    },
+    "status": "ambiguous",
+    "parsed": {
+      "lines": [
+        "nn fifa C010 =",
+        "{ y 4 4",
+        "| pie Zeus oH",
+        "BASIC Rh",
+        "» itor ors Ne",
+        "7 BE RR",
+        "» 7 Bitororu,",
+        "BASIC 7 TT Ta",
+        "y TR. 2h",
+        "i | HisiiZnZEORUR: __",
+        "| CEE",
+        "| A iO .",
+        "2,"
+      ],
+      "nameGuess": "Zeus",
+      "numberGuess": null,
+      "setHint": null,
+      "setCode": null,
+      "confidence": 0.32
+    },
+    "candidates": [
+      {
+        "id": "swsh10tg-TG28",
+        "name": "Piers",
+        "number": "TG28",
+        "score": 0.61
+      },
+      {
+        "id": "swsh45-69",
+        "name": "Piers",
+        "number": "69",
+        "score": 0.61
+      },
+      {
+        "id": "swsh35-58",
+        "name": "Piers",
+        "number": "58",
+        "score": 0.61
+      },
+      {
+        "id": "sv3-230",
+        "name": "Basic Fire Energy",
+        "number": "230",
+        "score": 0.53
+      },
+      {
+        "id": "sve-10",
+        "name": "Basic Fire Energy",
+        "number": "10",
+        "score": 0.53
+      },
+      {
+        "id": "sve-2",
+        "name": "Basic Fire Energy",
+        "number": "2",
+        "score": 0.53
+      },
+      {
+        "id": "sv6pt5-99",
+        "name": "Basic Metal Energy",
+        "number": "99",
+        "score": 0.52
+      },
+      {
+        "id": "sv2-278",
+        "name": "Basic Grass Energy",
+        "number": "278",
+        "score": 0.52
+      }
+    ]
+  }
+]

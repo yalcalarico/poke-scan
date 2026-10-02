@@ -296,8 +296,9 @@ describe('CollectionsService', () => {
 
     // Y tiene que aparecer en el filtro, que es server-side.
     const filtered = await service.listItems(userA, collection.id, {
+      ...DEFAULT_LIST_ITEMS,
       forTradeOnly: true,
-    } as never);
+    });
     expect(filtered.data.some((row) => row.id === item.id)).toBe(true);
   });
 

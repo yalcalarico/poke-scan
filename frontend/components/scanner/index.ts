@@ -40,7 +40,7 @@ export {
   PHASE_HEADLINE,
   type CameraNoticeKind,
 } from './copy';
-export { captureToImageData, fileToImageData } from './image-input';
+export { captureToImageData, fileToImageData, isGalleryImageInput, type GalleryImageInput } from './image-input';
 export { IdlePanel, type IdlePanelProps } from './idle-panel';
 export { MatchedText, type MatchedTextProps } from './matched-text';
 export { OrganizeSheet, type OrganizeSheetProps } from './organize-sheet';

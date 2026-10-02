@@ -3,18 +3,13 @@
 import { ExternalLink, Plus } from 'lucide-react';
 import Link from 'next/link';
 
-import { Button, Meter } from '@/components/ui';
+import { Button } from '@/components/ui';
 import { formatCardNumber } from '@/lib/format';
 import type { IdentifiedCandidateDto } from '@/types/api';
 
 import { CardThumb } from './card-thumb';
 import { CandidatePriceTable } from './detected-bar';
 import { MatchedText } from './matched-text';
-import { CONFIDENT_SCORE } from './types';
-
-function scoreTone(score: number): 'positive' | 'neutral' {
-  return score >= CONFIDENT_SCORE ? 'positive' : 'neutral';
-}
 
 export interface CandidateCardProps {
   candidate: IdentifiedCandidateDto;
@@ -33,9 +28,11 @@ export interface CandidateCardProps {
  * peso por dato.
  */
 export function CandidateCard({ candidate, isBest, isInSession, onAdd }: CandidateCardProps) {
-  const { card, score, matchedText } = candidate;
+  const { card, matchedText, signals } = candidate;
   const setName = card.set?.name ?? card.setId;
-  const percent = Math.round(score * 100);
+  const corroborated = signals.setCode === true || signals.printedNumber === true;
+  const evidence = [signals.setCode === true ? 'Código de colección coincide' : null,
+    signals.printedNumber === true ? 'Número impreso coincide' : null].filter(Boolean).join(' · ');
 
   return (
     <li className="flex flex-col gap-3 rounded-control bg-surface-2 p-3">
@@ -61,30 +58,16 @@ export function CandidateCard({ candidate, isBest, isInSession, onAdd }: Candida
             ) : null}
             <span
               className={
-                score >= CONFIDENT_SCORE
+                corroborated
                   ? 'rounded-full bg-positive-soft px-2 py-0.5 text-overline text-positive'
                   : 'rounded-full bg-warning-soft px-2 py-0.5 text-overline text-warning'
               }
             >
-              {percent}% coincidencia
+              {evidence || 'Edición por confirmar'}
             </span>
           </div>
         </div>
       </div>
-
-      {/*
-        El `Meter` no tiene tono `warning` (los tonos de `Progress` son brand,
-        positive, negative, info y neutral), y `negative` está prohibido acá
-        (§2.3: confianza baja es "no estamos seguros", no un error). Por eso la
-        barra baja a `neutral` y el aviso va en el badge de arriba, que sí
-        puede ser `warning`.
-      */}
-      <Meter
-        value={percent}
-        tone={scoreTone(score)}
-        size="sm"
-        label={`Coincidencia ${percent} por ciento`}
-      />
 
       {matchedText ? <MatchedText text={matchedText} cardName={card.name} /> : null}
 
@@ -93,7 +76,7 @@ export function CandidateCard({ candidate, isBest, isInSession, onAdd }: Candida
       <div className="flex gap-2">
         <Button variant="secondary" size="sm" onClick={onAdd} className="flex-1">
           <Plus aria-hidden="true" focusable="false" strokeWidth={1.75} className="h-4 w-4" />
-          {isInSession ? 'Elegir esta' : 'Sumar'}
+          {isInSession ? 'Elegir esta' : 'Sumar a la sesión'}
         </Button>
 
         <Link

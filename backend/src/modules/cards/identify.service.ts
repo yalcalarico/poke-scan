@@ -114,7 +114,7 @@ const STOPWORDS = new Set([
   'a', 'all', 'and', 'are', 'as', 'at', 'attach', 'attached', 'be', 'bench', 'by',
   'can', 'card', 'choose', 'coin', 'cannot', 'counter', 'counters', 'damage',
   'deck', 'defending', 'does', 'during', 'each', 'energy', 'end', 'ends', 'evolve',
-  'evolves', 'evolution', 'flip', 'for', 'from', 'has', 'have', 'heads', 'hp',
+  'evolves', 'evolution', 'flip', 'for', 'from', 'has', 'have', 'heads', 'hp', 'basic',
   'if', 'in', 'into', 'is', 'it', 'knock', 'more', 'may', 'no', 'not', 'of',
   'off', 'on', 'one', 'only', 'opponent', 'or', 'power', 'pokemon', 'put', 'resist',
   'resistance', 'rest', 'retreat', 'search', 'set', 'shuffle', 'stage', 'tails',
@@ -174,6 +174,8 @@ export interface IdentifyResultDto {
   candidates: IdentifiedCandidateDto[];
   extracted: ExtractedDto;
   totalCandidates: number;
+  status?: 'confident' | 'ambiguous' | 'low';
+  timings?: { matchMs: number; totalMs: number };
 }
 
 interface Candidate {
@@ -329,6 +331,14 @@ function candidateWeight(
 }
 
 /** "4/102" → 4, "006" → 6, "NO.18" → 18, "LV.76" → 76. null si no hay dígitos. */
+function collectorNumber(value: string | undefined): string | null {
+  if (!value) return null;
+  const match = value.trim().toUpperCase().match(/^([A-Z]{0,4}\d{1,4})(?:\s*[/／]|$)/);
+  if (match) return match[1]!.replace(/^([A-Z]*)0+(?=\d)/, '$1');
+  const legacy = firstInteger(value);
+  return legacy === null ? null : String(legacy);
+}
+
 function firstInteger(value: string | undefined): number | null {
   if (!value) return null;
   const groups = value.match(/\d+/g);
@@ -347,7 +357,7 @@ interface CardSignals {
   /** "120 HP" → 120. */
   hp: number | null;
   /** "4/102" → { n: 4, m: 102 }. El denominador es el total impreso del set. */
-  printed: { n: number; m: number } | null;
+  printed: { n: string; m: number } | null;
 }
 
 function extractSignals(lines: string[]): CardSignals {
@@ -368,11 +378,11 @@ function extractSignals(lines: string[]): CardSignals {
   // "4/102" en la esquina inferior derecha. Se exige que el denominador sea
   // plausible como total de un set (30..400) para no agarrar un "1/2" de un
   // porcentaje o de un rango de daño.
-  let printed: { n: number; m: number } | null = null;
-  for (const match of text.matchAll(/(?<![\d/])(\d{1,3})\s*\/\s*(\d{2,3})(?![\d/])/g)) {
-    const n = Number.parseInt(match[1]!, 10);
+  let printed: { n: string; m: number } | null = null;
+  for (const match of text.matchAll(/(?<![\w/])([A-Z]{0,4}\d{1,3})\s*\/\s*(\d{2,3})(?![\w/])/gi)) {
+    const n = collectorNumber(match[1]);
     const m = Number.parseInt(match[2]!, 10);
-    if (Number.isSafeInteger(n) && m >= 30 && m <= 400) {
+    if (n !== null && m >= 30 && m <= 400) {
       printed = { n, m };
       break;
     }
@@ -402,11 +412,36 @@ export class IdentifyService {
     console.log(`[identify:${event}]`, JSON.stringify(data));
   }
 
+  private scannerConfigCache: { expiresAt: number; setCodes: string[]; setNames: string[] } | null = null;
+
+  async scannerConfig(): Promise<{ setCodes: string[]; setNames: string[] }> {
+    if (this.scannerConfigCache && this.scannerConfigCache.expiresAt > Date.now()) {
+      return { setCodes: this.scannerConfigCache.setCodes, setNames: this.scannerConfigCache.setNames };
+    }
+    const sets = await this.prisma.cardSet.findMany({ select: { name: true, ptcgoCode: true } });
+    const config = {
+      setCodes: [...new Set(sets.flatMap((set) => set.ptcgoCode ? [set.ptcgoCode.toUpperCase()] : []))].sort(),
+      setNames: [...new Set(sets.map((set) => set.name))].sort(),
+    };
+    this.scannerConfigCache = { ...config, expiresAt: Date.now() + 3_600_000 };
+    return config;
+  }
+
   async identify(dto: IdentifyDto): Promise<IdentifyResultDto> {
+    const started = performance.now();
     const limit = dto.limit ?? DEFAULT_IDENTIFY_LIMIT;
     const lines = (dto.lines ?? []).slice(0, MAX_LINES);
     const preEvolution = evolutionNames(lines.join(' \n '));
-    const candidates = this.buildCandidates(lines, dto.name, preEvolution);
+    // Código + número pueden recuperar el nombre cuando una full-art no lo deja leer.
+    const collector = collectorNumber(dto.number);
+    const code = dto.setCode?.trim().toUpperCase();
+    const identities = collector && code ? await this.prisma.$queryRaw<Array<{ name: string }>>(Prisma.sql`
+      SELECT DISTINCT c.name FROM cards c JOIN card_sets s ON s.id = c."setId"
+      WHERE upper(s."ptcgoCode") = ${code}
+        AND regexp_replace(upper(c.number), '^([A-Z]*)0+([0-9])', '\\1\\2') = ${collector}
+      LIMIT 8
+    `) : [];
+    const candidates = this.buildCandidates([...lines, ...identities.map((card) => card.name)], dto.name, preEvolution);
 
     if (candidates.length === 0) {
       this.debug('sin candidatos', { lines, name: dto.name, number: dto.number });
@@ -414,6 +449,8 @@ export class IdentifyService {
         candidates: [],
         extracted: { name: null, number: null, setHint: null },
         totalCandidates: 0,
+        status: 'low',
+        timings: { matchMs: 0, totalMs: Math.round(performance.now() - started) },
       };
     }
 
@@ -427,7 +464,7 @@ export class IdentifyService {
     // Qué señales están disponibles, para poder distinguir "no coincidió" de
     // "no se pudo leer". Es lo que hace `signals` en la respuesta.
     const votan = {
-      numberHint: firstInteger(dto.number) !== null,
+      numberHint: collectorNumber(dto.number) !== null,
       setName: Boolean(dto.setHint?.trim()),
       setCode: Boolean(dto.setCode?.trim()),
       printed: signals.printed !== null,
@@ -437,7 +474,9 @@ export class IdentifyService {
       text: signals.text.trim().length > 0,
     };
 
+    const matchStarted = performance.now();
     const rows = await this.match(candidates, this.buildTokens(lines, preEvolution), dto, signals);
+    const matchMs = Math.round(performance.now() - matchStarted);
     const prices = new Map<string, CardPriceDto[]>();
     const picked = this.rank(rows, limit);
     this.debug('respondiendo', {
@@ -468,6 +507,13 @@ export class IdentifyService {
     });
 
     const top = result[0];
+    const next = result[1];
+    const margin = top ? top.rawScore - (next?.rawScore ?? 0) : 0;
+    const corroborated = top?.signals.printedNumber === true ||
+      (top?.signals.setCode === true && top?.signals.numberHint === true);
+    const contradicted = top?.signals.printedNumber === false || top?.signals.setCode === false;
+    const status = !top || top.score < 0.55 ? 'low'
+      : top.score >= 0.85 && margin >= 0.08 && corroborated && !contradicted ? 'confident' : 'ambiguous';
     return {
       candidates: result,
       extracted: {
@@ -476,6 +522,8 @@ export class IdentifyService {
         setHint: top?.card.set?.name ?? null,
       },
       totalCandidates: rows.filter((row) => row.score >= MIN_SCORE).length,
+      status,
+      timings: { matchMs, totalMs: Math.round(performance.now() - started) },
     };
   }
 
@@ -491,7 +539,10 @@ export class IdentifyService {
     const add = (raw: string | undefined): void => {
       if (!raw) return;
       const text = raw.replace(/\s+/g, ' ').trim();
-      if (!isUsable(text)) return;
+      // Una lectura suelta de "BASIC" no identifica una Basic Energy: el
+      // título completo incluye además el tipo (Fire, Water, etc.). Evita que
+      // ese rótulo genérico gane cuando el OCR perdió el resto de la carta.
+      if (!isUsable(text) || isBoilerplate(text)) return;
       const key = text.toLowerCase();
       if (seen.has(key)) return;
       seen.add(key);
@@ -545,7 +596,7 @@ export class IdentifyService {
     const tokens = new Set<string>();
     for (const line of lines.slice(0, MAX_LINES)) {
       for (const token of stripNoise(line).toLowerCase().split(WORDS)) {
-        if (token && !preEvolution.has(token)) tokens.add(token);
+        if (token && !STOPWORDS.has(token) && !preEvolution.has(token)) tokens.add(token);
       }
     }
     return [...tokens].slice(0, MAX_TOKENS);
@@ -563,9 +614,10 @@ export class IdentifyService {
     const patterns = candidates.map((c) => c.pattern);
     const weights = candidates.map((c) => String(c.weight));
     const wordCounts = candidates.map((c) => String(c.wordCount));
-    const number = firstInteger(dto.number);
+    const number = collectorNumber(dto.number);
     const setHint = dto.setHint?.trim() || undefined;
     const setCode = dto.setCode?.trim().toUpperCase() || undefined;
+    const nameSuffix = dto.name?.trim().match(/\s(ex|gx|vmax|vstar|v)$/i)?.[1]?.toLowerCase();
 
     // `base` = trigram + bonus de prefijo + bonus de coincidencia de palabras,
     // con piso de 1.0 cuando el OCR leyó el nombre como una palabra exacta. El
@@ -637,9 +689,14 @@ export class IdentifyService {
       )`;
 
     const parts = this.bonusParts({ number, setHint, setCode }, signals);
+    // «Umbreon» no cubre el nombre «Umbreon ex» aunque ambos compartan la primera palabra.
+    const suffixCoveragePenalty = nameSuffix
+      ? Prisma.sql`CASE WHEN lower(c.name) ~ ${` ${nameSuffix}$`} THEN 0::float8 ELSE ${COVERAGE_PENALTY}::float8 END`
+      : Prisma.sql`0::float8`;
     const total = Prisma.sql`(
       ${parts.numberHint} + ${parts.setName} + ${parts.setCode}
       + ${parts.printedNumber} + ${parts.hp} + ${parts.rarity} + ${parts.artist}
+      - ${suffixCoveragePenalty}
     )::float8`;
 
     return this.prisma.$transaction(async (tx) => {
@@ -745,7 +802,7 @@ export class IdentifyService {
    * final y no en el CTE de hits.
    */
   private bonusParts(
-    hints: { number: number | null; setHint: string | undefined; setCode: string | undefined },
+    hints: { number: string | null; setHint: string | undefined; setCode: string | undefined },
     signals: CardSignals & { text: string },
   ): Record<keyof CandidateSignalsDto, Prisma.Sql> {
     const { number, setHint, setCode } = hints;
@@ -756,8 +813,7 @@ export class IdentifyService {
         ? Prisma.sql`0::float8`
         : Prisma.sql`
             CASE
-              WHEN NULLIF(regexp_replace(c.number, '\\D', '', 'g'), '') ~ '^[0-9]{1,9}$'
-                AND NULLIF(regexp_replace(c.number, '\\D', '', 'g'), '')::bigint = ${number}::bigint
+              WHEN regexp_replace(upper(c.number), '^([A-Z]*)0+([0-9])', '\\1\\2') = ${number}
               THEN ${NUMBER_BONUS}::float8
               ELSE 0::float8
             END`;
@@ -802,8 +858,7 @@ export class IdentifyService {
         ? Prisma.sql`0::float8`
         : Prisma.sql`
             CASE
-              WHEN NULLIF(regexp_replace(c.number, '\\D', '', 'g'), '') ~ '^[0-9]{1,9}$'
-                AND NULLIF(regexp_replace(c.number, '\\D', '', 'g'), '')::bigint = ${printed.n}::bigint
+              WHEN regexp_replace(upper(c.number), '^([A-Z]*)0+([0-9])', '\\1\\2') = ${printed.n}
                 AND (s."printedTotal" = ${printed.m} OR s."total" = ${printed.m})
               THEN ${PRINTED_NUMBER_BONUS}::float8
               ELSE 0::float8

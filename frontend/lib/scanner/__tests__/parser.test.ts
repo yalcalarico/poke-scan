@@ -39,6 +39,19 @@ const NAME_TRUTH: { id: string; name: string }[] = [
 ];
 
 describe('extractNameCandidates (real OCR text)', () => {
+  it('conserva ex y recupera el logo estilizado de la foto de Umbreon', () => {
+    expect(parseOcrText('Umbreon ex\nHP270').nameGuess).toBe('Umbreon ex');
+    expect(parseOcrText('=X Umbreon €X _').nameGuess).toBe('Umbreon ex');
+    expect(parseOcrText('7 Umbreon &X').nameGuess).toBe('Umbreon ex');
+  });
+
+  it('conserva sufijos de identidad sin convertirlos en nombres solos', () => {
+    expect(parseOcrText('Umbreon EX').nameGuess).toBe('Umbreon EX');
+    expect(parseOcrText('Pikachu VMAX').nameGuess).toBe('Pikachu VMAX');
+    expect(parseOcrText('Gengar V').nameGuess).toBe('Gengar V');
+    expect(parseOcrText('ex GX V VMAX VSTAR').nameGuess).toBeNull();
+    expect(parseOcrText('Pokémon ex rule').nameGuess).not.toBe('Pokémon ex');
+  });
   it.each(NAME_TRUTH)('$id → $name', ({ id, name }) => {
     const candidates = extractNameCandidates(textOf(id));
     expect(candidates[0]).toBe(name);
@@ -111,6 +124,13 @@ describe('extractSetHints', () => {
 });
 
 describe('parseOcrText', () => {
+  it('prioriza el nombre completo sobre fragmentos del OCR de IMG_4987', () => {
+    const text = ['CTY EE - Ls Sy n', 'STAGE] of oT.', '7 Sal preon &X',
+      '3 ~~ Ca', 'V7. VL ——', '=X Umbreon €X _',
+      'gem qe 3 3 ’% : . SV', '7 2 L nbreon €X'].join('\n');
+    expect(parseOcrText(text).nameGuess).toBe('Umbreon ex');
+  });
+
   it('parses the full Charizard text', () => {
     const parsed = parseOcrText(textOf('base1-4'));
 

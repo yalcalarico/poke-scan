@@ -1,0 +1,1058 @@
+[
+  {
+    "photo": "IMG_4985",
+    "expected": "Shining Celebi",
+    "expectedCardId": null,
+    "ocrAttempts": [
+      {
+        "text": "Hah Healing Water Remove a number of dam--- : Ww from | of your Benched Pokémon equal to the umber of * @ Energy cards attached to Shining Celebi. if the Pokémon has fewer damage counters than that, remove all of them. Miracle Leaf Flip a number of coins equal to the number of Energy attached to the Defending K-) ro) Pokémon. If you get | or more heads, the Defending | 0 Pokémon is now Asleep, Confused, or Poisoned (your",
+        "lineConfidences": [
+          54,
+          74,
+          78,
+          95,
+          94,
+          95,
+          81,
+          96
+        ]
+      },
+      {
+        "text": "SC — Em —— ou can't have more than | Shining Celebi i) yous deck up ©! eT of dam: ze ¢ d Pokémon pari the Elba of Miracle Leaf Flip a number of coins equal to the Uo number of Energy attached to the Defending Ir) Qo Pokémon. If fe gr more heads, the Defending | 0 or Poisoned Hind",
+        "lineConfidences": [
+          0,
+          79,
+          16,
+          25,
+          61,
+          93,
+          84,
+          58,
+          73
+        ]
+      },
+      {
+        "text": "have move than § Ln Ce 23 0 your deck Frm fd LTC FrAdinon I) ani Le Ce Timetravel Pokémon. Length: 2' 0\", Weight: 11 1. + i TT rep APP 2 mn Healing Water Remove a number of damizx counters from | of your Benched Pokémon equal to the number of § Energy cards attached to Shining Celebi. if the Pokémon has fewer damage counters than that, remove aff of them. Miracle Leaf Flip a number of coins equal to the number of Energy attached to the Defending Xe) 9 Pokémon. If you get | or more heads, the Defending | Pokémon is now Asleep, Confused, or Poisoned (your choice), weakness resistance retreat cost NP ya x ts It is worshipped as a god of the forest, It appears only in P20 undisturbed old-growth forests. LV. 18° #251 § + 5, Hus. Hironobu Yoshida ©1995-2000 Nintendo, Creatures, GAMEFREAK. AE TER uw Cars ey WRT red Ear YN) a $n oo Ae Perae",
+        "lineConfidences": [
+          54,
+          7,
+          0,
+          0,
+          18,
+          75,
+          20,
+          78,
+          92,
+          86,
+          92,
+          93,
+          95,
+          86,
+          94,
+          95,
+          96,
+          39,
+          89,
+          56,
+          61,
+          26,
+          0,
+          30,
+          0
+        ]
+      },
+      {
+        "text": "| { Shining Celebi ¥",
+        "lineConfidences": [
+          63
+        ]
+      },
+      {
+        "text": "far Celebi",
+        "lineConfidences": [
+          53
+        ]
+      },
+      {
+        "text": "| * Shining Celebs",
+        "lineConfidences": [
+          48
+        ]
+      },
+      {
+        "text": "| i pr Celebi",
+        "lineConfidences": [
+          48
+        ]
+      },
+      {
+        "text": "I Chining Celli",
+        "lineConfidences": [
+          10
+        ]
+      },
+      {
+        "text": "",
+        "lineConfidences": []
+      },
+      {
+        "text": "indisturt ed old-growt rare Blade i A lo SRE i A He gd 4 A Ba AT",
+        "lineConfidences": [
+          79,
+          26,
+          23,
+          18
+        ]
+      },
+      {
+        "text": "Tey ee PAS : A Te",
+        "lineConfidences": [
+          18,
+          13,
+          41
+        ]
+      },
+      {
+        "text": "y ne ER — 2 Ho Te 3 108/108 = Ks ts x O% aN a, A Be",
+        "lineConfidences": [
+          72,
+          32,
+          15,
+          11,
+          34,
+          20
+        ]
+      },
+      {
+        "text": "PO RT, rw A ; Ver go Ets . FANE CI. BEF. PR . . . ¢",
+        "lineConfidences": [
+          16,
+          24,
+          12,
+          11,
+          1,
+          33,
+          61
+        ]
+      }
+    ],
+    "exactTop1": null,
+    "exactTop8": null,
+    "top1": true,
+    "top3": true,
+    "totalMs": 5802,
+    "matchTimings": {
+      "matchMs": 1041,
+      "totalMs": 1045
+    },
+    "status": "ambiguous",
+    "parsed": {
+      "lines": [
+        "| { Shining Celebi ¥",
+        "far Celebi",
+        "| * Shining Celebs",
+        "| i pr Celebi",
+        "I Chining Celli",
+        "Hah Healing Water Remove a number of dam--- :",
+        "Ww from | of your Benched Pokémon equal to the umber of",
+        "* @ Energy cards attached to Shining Celebi. if the Pokémon",
+        "has fewer damage counters than that, remove all of them.",
+        "Miracle Leaf Flip a number of coins equal to the",
+        "number of Energy attached to the Defending",
+        "K-) ro) Pokémon. If you get | or more heads, the Defending | 0",
+        "Pokémon is now Asleep, Confused, or Poisoned (your"
+      ],
+      "nameGuess": "Celebi",
+      "numberGuess": null,
+      "setHint": null,
+      "setCode": null,
+      "confidence": 0.86
+    },
+    "candidates": [
+      {
+        "id": "me55c-106",
+        "name": "Shining Celebi",
+        "number": "106",
+        "score": 1
+      },
+      {
+        "id": "me1-12",
+        "name": "Celebi",
+        "number": "12",
+        "score": 1
+      },
+      {
+        "id": "sv7-4",
+        "name": "Celebi",
+        "number": "4",
+        "score": 1
+      },
+      {
+        "id": "swsh45-3",
+        "name": "Celebi",
+        "number": "3",
+        "score": 1
+      },
+      {
+        "id": "sm8-19",
+        "name": "Celebi ◇",
+        "number": "19",
+        "score": 1
+      },
+      {
+        "id": "smp-SM79",
+        "name": "Shining Celebi",
+        "number": "SM79",
+        "score": 1
+      },
+      {
+        "id": "ex14-100",
+        "name": "Celebi ★",
+        "number": "100",
+        "score": 1
+      },
+      {
+        "id": "neo4-106",
+        "name": "Shining Celebi",
+        "number": "106",
+        "score": 1
+      }
+    ]
+  },
+  {
+    "photo": "IMG_4986",
+    "expected": "Pikachu",
+    "expectedCardId": null,
+    "ocrAttempts": [
+      {
+        "text": "$= Pikachu Yr ander Shock ea ch od hen 3 Keémon «",
+        "lineConfidences": [
+          59,
+          24,
+          64,
+          23,
+          66,
+          41
+        ]
+      },
+      {
+        "text": "Pikachu now. Paralyzed. A Flip a coi if",
+        "lineConfidences": [
+          96,
+          87,
+          62
+        ]
+      },
+      {
+        "text": "| | | | | i Pr TIN re 3 hd 3 wo lpiachy W704 cy a SO 1 } oe Co . ; | 1 . : H i i ! “a . ; PI ! co i | | SE DEI JE po NO..0025. Mouse Pokémon HT. 14\" WT. 13.2] fos. ~ weakness (Gf x 2 { resistance retreat x a Ithas small electric sacs on both its | cheeks. Wheninatough spot. this | ED LJ 023/128 (W01/30 Pokemon discharges electron 3 Fee sp Crees aR ® TETRIS Hus. Ken vamos Lows wi",
+        "lineConfidences": [
+          36,
+          81,
+          64,
+          45,
+          59,
+          59,
+          40,
+          51,
+          0,
+          23,
+          75,
+          0,
+          34,
+          14,
+          20,
+          0,
+          10,
+          15,
+          15,
+          38,
+          39,
+          0,
+          44,
+          45,
+          55,
+          56,
+          7,
+          64,
+          70,
+          27,
+          72,
+          57,
+          5,
+          41,
+          20,
+          56
+        ]
+      },
+      {
+        "text": "| se=pikachu",
+        "lineConfidences": [
+          19
+        ]
+      },
+      {
+        "text": "£ $2 Pikachu : | : ;",
+        "lineConfidences": [
+          56
+        ]
+      },
+      {
+        "text": "at Pikachu",
+        "lineConfidences": [
+          68
+        ]
+      },
+      {
+        "text": "| e=pikachu",
+        "lineConfidences": [
+          15
+        ]
+      },
+      {
+        "text": "Asie See TT | - “Pikachu I i",
+        "lineConfidences": [
+          39,
+          21,
+          17
+        ]
+      },
+      {
+        "text": "[|< Pilachu",
+        "lineConfidences": [
+          8
+        ]
+      },
+      {
+        "text": ". Ken Sugimori 023/128 (01/3 : -",
+        "lineConfidences": [
+          91,
+          77,
+          81
+        ]
+      },
+      {
+        "text": "",
+        "lineConfidences": []
+      },
+      {
+        "text": "ic sacson bothits [5 atough spot, this S84 harges electricity. N TEV Te . yo 3 od",
+        "lineConfidences": [
+          56,
+          63,
+          50,
+          34
+        ]
+      },
+      {
+        "text": "icsacsonbothits atough spot, this arges efectricit «",
+        "lineConfidences": [
+          71,
+          67,
+          59
+        ]
+      }
+    ],
+    "exactTop1": null,
+    "exactTop8": null,
+    "top1": true,
+    "top3": true,
+    "totalMs": 4423,
+    "matchTimings": {
+      "matchMs": 1089,
+      "totalMs": 1092
+    },
+    "status": "confident",
+    "parsed": {
+      "lines": [
+        "023/128",
+        "| se=pikachu",
+        "£ $2 Pikachu : | : ;",
+        "at Pikachu",
+        "| e=pikachu",
+        "Asie See TT",
+        "| - “Pikachu",
+        "I i",
+        "[|< Pilachu",
+        "Pikachu",
+        "now. Paralyzed.",
+        "A Flip a coi if"
+      ],
+      "nameGuess": "Pikachu",
+      "numberGuess": "23",
+      "setHint": null,
+      "setCode": null,
+      "confidence": 0.915
+    },
+    "candidates": [
+      {
+        "id": "me55-23",
+        "name": "Pikachu",
+        "number": "23",
+        "score": 1
+      },
+      {
+        "id": "bw4-39",
+        "name": "Pikachu",
+        "number": "39",
+        "score": 1
+      },
+      {
+        "id": "bw1-115",
+        "name": "Pikachu",
+        "number": "115",
+        "score": 1
+      },
+      {
+        "id": "swsh11tg-TG16",
+        "name": "Pikachu V",
+        "number": "TG16",
+        "score": 1
+      },
+      {
+        "id": "swsh9-157",
+        "name": "Pikachu V",
+        "number": "157",
+        "score": 1
+      },
+      {
+        "id": "swsh8-86",
+        "name": "Pikachu V",
+        "number": "86",
+        "score": 1
+      },
+      {
+        "id": "pop5-13",
+        "name": "Pikachu δ",
+        "number": "13",
+        "score": 1
+      },
+      {
+        "id": "ex13-104",
+        "name": "Pikachu ★",
+        "number": "104",
+        "score": 1
+      }
+    ]
+  },
+  {
+    "photo": "IMG_4987",
+    "expected": "Umbreon ex",
+    "expectedCardId": "me55-92",
+    "ocrAttempts": [
+      {
+        "text": "PD Lunatic Claw 100+ © If your opponent's Active Pokémon already has any damage counters on it, this attack does 140 more damage. [ . : is ie ie weakness 7 | xX 2 resistance FF “retreat Fh) co bh 4 | \\ Pokémon €X rule Ve we = | Wilius¥KeisvkeVAzuma) - BRN” “Wie TREE h , (3) E327 20d",
+        "lineConfidences": [
+          66,
+          88,
+          95,
+          0,
+          21,
+          48,
+          67,
+          33,
+          0,
+          6
+        ]
+      },
+      {
+        "text": "4 Lunatic Claw If your opponent's Active Pokémon already has any damage counters on it, this attack does 140 more damage. 2 7 =4 2 ®, wa »* weakness © x2 resistance Vd “7 retreat 4] oF pr Pokémon €X rule v 4 sisukefAzumal ow na hp | - | Ss GE LEDs : -",
+        "lineConfidences": [
+          78,
+          88,
+          89,
+          0,
+          57,
+          54,
+          73,
+          14,
+          37,
+          15,
+          18,
+          49
+        ]
+      },
+      {
+        "text": "gait re exis The Ev Evolves f TS Eevee i 7 o R EO yA K) /7 ™ N-. RY od ’ F- = Sex 2 of | | ol hed - pl v4 ~ ~ Re IB aot ex [ Pokémon eX ruc Sg Sad \"wii an, - hd When yeur Pekimon 8X “J } is Knocked Out, igniusatsitbnniid oppenant takes 2 Prize cards. 1 09271285 AES co —- CRF +s Cranturss GAME FREAK 7 ul",
+        "lineConfidences": [
+          9,
+          68,
+          38,
+          27,
+          34,
+          62,
+          35,
+          0,
+          31,
+          51,
+          13,
+          0,
+          0,
+          43,
+          29,
+          15,
+          43,
+          14,
+          35,
+          53,
+          59,
+          69,
+          21,
+          16,
+          39
+        ]
+      },
+      {
+        "text": "race 1 ATT ah 3 Umbreon &X 8 ALK lt y/ | Evolyes from Eevee i",
+        "lineConfidences": [
+          44,
+          49,
+          24,
+          42
+        ]
+      },
+      {
+        "text": "e=2 Umbreon Z &",
+        "lineConfidences": [
+          26
+        ]
+      },
+      {
+        "text": "race] 4% A on 62 {ll nbreon €X / OF Evolves fro FONE co a",
+        "lineConfidences": [
+          34,
+          54,
+          12
+        ]
+      },
+      {
+        "text": "",
+        "lineConfidences": []
+      },
+      {
+        "text": "sTaGel |. RGN On 7 en Cheat Xd 7 » AS Evolves fromEevee . . . ..gwree;",
+        "lineConfidences": [
+          27,
+          11,
+          27
+        ]
+      },
+      {
+        "text": "r= Joe eoneN] cw od",
+        "lineConfidences": [
+          4
+        ]
+      },
+      {
+        "text": "",
+        "lineConfidences": []
+      },
+      {
+        "text": "oI15V IZUMm@ 092/128",
+        "lineConfidences": [
+          0,
+          94
+        ]
+      },
+      {
+        "text": "4 E",
+        "lineConfidences": [
+          48
+        ]
+      },
+      {
+        "text": ". ol .",
+        "lineConfidences": [
+          20
+        ]
+      }
+    ],
+    "exactTop1": true,
+    "exactTop8": true,
+    "top1": true,
+    "top3": true,
+    "totalMs": 5108,
+    "matchTimings": {
+      "matchMs": 1005,
+      "totalMs": 1008
+    },
+    "status": "confident",
+    "parsed": {
+      "lines": [
+        "092/128",
+        "race 1 ATT ah",
+        "3 Umbreon &X",
+        "8 ALK lt",
+        "y/ | Evolyes from Eevee i",
+        "e=2 Umbreon Z &",
+        "race] 4% A on",
+        "62 {ll nbreon €X",
+        "/ OF Evolves fro FONE co a",
+        "sTaGel |. RGN On 7",
+        "en Cheat Xd",
+        "7 » AS Evolves fromEevee . . . ..gwree;",
+        "r= Joe eoneN] cw od",
+        "4 Lunatic Claw",
+        "If your opponent's Active Pokémon already has any damage",
+        "counters on it, this attack does 140 more damage. 2",
+        "7",
+        "=4 2 ®, wa »*",
+        "weakness © x2 resistance Vd “7 retreat 4] oF pr",
+        "Pokémon €X rule v 4",
+        "sisukefAzumal ow na hp",
+        "| -",
+        "| Ss GE",
+        "LEDs :",
+        "-"
+      ],
+      "nameGuess": "Umbreon ex",
+      "numberGuess": "92",
+      "setHint": null,
+      "setCode": null,
+      "confidence": 0.78
+    },
+    "candidates": [
+      {
+        "id": "me55-92",
+        "name": "Umbreon ex",
+        "number": "92",
+        "score": 1
+      },
+      {
+        "id": "sv8pt5-161",
+        "name": "Umbreon ex",
+        "number": "161",
+        "score": 1
+      },
+      {
+        "id": "sv8pt5-60",
+        "name": "Umbreon ex",
+        "number": "60",
+        "score": 1
+      },
+      {
+        "id": "sv8pt5-167",
+        "name": "Eevee ex",
+        "number": "167",
+        "score": 0.95
+      },
+      {
+        "id": "sv8pt5-75",
+        "name": "Eevee ex",
+        "number": "75",
+        "score": 0.95
+      },
+      {
+        "id": "svp-174",
+        "name": "Eevee ex",
+        "number": "174",
+        "score": 0.95
+      },
+      {
+        "id": "bw5-60",
+        "name": "Umbreon",
+        "number": "60",
+        "score": 0.7
+      },
+      {
+        "id": "bw5-61",
+        "name": "Umbreon",
+        "number": "61",
+        "score": 0.7
+      }
+    ]
+  },
+  {
+    "photo": "IMG_4988",
+    "expected": "Chandelure",
+    "expectedCardId": null,
+    "ocrAttempts": [
+      {
+        "text": "3) * [Eis Gow SpECnents Active] [is] Bunnedgand; he Confused A pe 5 i =a W A d.- i a Wy x * ———————————————————\" hk wets (%) $29) rds ()=80 ~~ wetvt 0 o 2 w b fii vASHiREING OTE Being consumed in Chendslure’s fms bens up the pio, eeving ie body baltiad. a & 8 3% gem vv",
+        "lineConfidences": [
+          65,
+          18,
+          12,
+          48,
+          29,
+          6,
+          29,
+          0,
+          20,
+          0,
+          24,
+          31,
+          0,
+          7
+        ]
+      },
+      {
+        "text": "CPPeREREs Aste [is] Burinedgand] Confused i ~ “x Wl (vi . wy x H fii vASHiREING OTS Being consumed in Chendslune’s fms bens 0 30Ce EER up the pio, leaving ie body baliad. R pi",
+        "lineConfidences": [
+          14,
+          40,
+          54,
+          23,
+          48,
+          24,
+          31,
+          30,
+          0
+        ]
+      },
+      {
+        "text": "«uhh Coa oT STAGES? om | Lr! & ~ l se Baboon £ Nesey + C raakisres (4 AUK vn AR",
+        "lineConfidences": [
+          29,
+          8,
+          9,
+          30,
+          12,
+          54,
+          0,
+          11
+        ]
+      },
+      {
+        "text": "|e cagal",
+        "lineConfidences": [
+          0
+        ]
+      },
+      {
+        "text": "",
+        "lineConfidences": []
+      },
+      {
+        "text": "Yerscez ‘Chandelures 4 ¥ Evolves irom l amOse learns",
+        "lineConfidences": [
+          0,
+          0
+        ]
+      },
+      {
+        "text": "5 Chandelier lyfe. :",
+        "lineConfidences": [
+          37
+        ]
+      },
+      {
+        "text": "{ gyms SYACGE? Com I ER ry ORE li = hinndelure: 1! RRR £77 1 A GP Td 0 % og are fomlampent",
+        "lineConfidences": [
+          21,
+          18,
+          26,
+          31,
+          10
+        ]
+      },
+      {
+        "text": "",
+        "lineConfidences": []
+      },
+      {
+        "text": "ve, VAC Rietoanse } 30Ce cERpRED ©",
+        "lineConfidences": [
+          12,
+          0
+        ]
+      },
+      {
+        "text": "uv YAS IR TTIW 137/128 Le.",
+        "lineConfidences": [
+          30,
+          0,
+          33
+        ]
+      },
+      {
+        "text": "",
+        "lineConfidences": []
+      },
+      {
+        "text": "RE SIR J 8 UE St Wi Bi i\" - EY thy h piel [SS EYED : : . RL AE. Lt",
+        "lineConfidences": [
+          23,
+          17,
+          0,
+          37,
+          13
+        ]
+      }
+    ],
+    "exactTop1": null,
+    "exactTop8": null,
+    "top1": true,
+    "top3": true,
+    "totalMs": 4542,
+    "matchTimings": {
+      "matchMs": 790,
+      "totalMs": 792
+    },
+    "status": "ambiguous",
+    "parsed": {
+      "lines": [
+        "|e cagal",
+        "Yerscez ‘Chandelures 4",
+        "¥ Evolves irom l amOse learns",
+        "5 Chandelier lyfe. :",
+        "{ gyms",
+        "SYACGE? Com I ER ry ORE",
+        "li = hinndelure:",
+        "1! RRR £77 1 A GP",
+        "Td 0 % og are fomlampent",
+        "CPPeREREs Aste [is] Burinedgand]",
+        "Confused",
+        "i ~ “x",
+        "Wl",
+        "(vi .",
+        "wy x H",
+        "fii vASHiREING OTS Being consumed in Chendslune’s fms bens",
+        "0 30Ce EER up the pio, leaving ie body baliad.",
+        "R pi"
+      ],
+      "nameGuess": "Yerscez",
+      "numberGuess": null,
+      "setHint": null,
+      "setCode": null,
+      "confidence": 0.759090909090909
+    },
+    "candidates": [
+      {
+        "id": "bw4-101",
+        "name": "Chandelure",
+        "number": "101",
+        "score": 0.94
+      },
+      {
+        "id": "bw4-20",
+        "name": "Chandelure",
+        "number": "20",
+        "score": 0.94
+      },
+      {
+        "id": "bw3-60",
+        "name": "Chandelure",
+        "number": "60",
+        "score": 0.94
+      },
+      {
+        "id": "swsh8-247",
+        "name": "Chandelure V",
+        "number": "247",
+        "score": 0.65
+      },
+      {
+        "id": "swsh8-39",
+        "name": "Chandelure V",
+        "number": "39",
+        "score": 0.65
+      },
+      {
+        "id": "bw11-77",
+        "name": "Chandelure-EX",
+        "number": "77",
+        "score": 0.61
+      },
+      {
+        "id": "me55-77",
+        "name": "Comfey",
+        "number": "77",
+        "score": 0.56
+      },
+      {
+        "id": "sv7-63",
+        "name": "Comfey",
+        "number": "63",
+        "score": 0.56
+      }
+    ]
+  },
+  {
+    "photo": "IMG_4989",
+    "expected": "Hisuian Zorua",
+    "expectedCardId": null,
+    "ocrAttempts": [
+      {
+        "text": "sry Elo HS (ml [Sot Nrettnned)ioll i ymliesentonen ing [mn (sade lisesi] tote ov les.",
+        "lineConfidences": [
+          33,
+          38,
+          0,
+          0,
+          44,
+          46,
+          23,
+          24,
+          39
+        ]
+      },
+      {
+        "text": "Bvesistance) A freticac x) » honce-depariadon, rammed tie in Ht, B aurggliom resentment, wiih fives as 2 Ef] i eed and tales en the forme of md: wid Was Zor wens MEering males. {Gs",
+        "lineConfidences": [
+          21,
+          39,
+          45,
+          52,
+          12,
+          40
+        ]
+      },
+      {
+        "text": "gm ——— gpa: fa",
+        "lineConfidences": [
+          11,
+          21,
+          50
+        ]
+      },
+      {
+        "text": "BASICud % a Lorre, SRE Hlisuian Zorua “ee",
+        "lineConfidences": [
+          11,
+          10
+        ]
+      },
+      {
+        "text": "| 25 fiir",
+        "lineConfidences": [
+          43
+        ]
+      },
+      {
+        "text": "BASIC ¢ Fy TE Hlisuian Zorua 5",
+        "lineConfidences": [
+          39,
+          10
+        ]
+      },
+      {
+        "text": "",
+        "lineConfidences": []
+      },
+      {
+        "text": "{ . RE 7 dita BASIC 7 RY Apr ST Hid ORR",
+        "lineConfidences": [
+          31,
+          38,
+          11
+        ]
+      },
+      {
+        "text": "",
+        "lineConfidences": []
+      },
+      {
+        "text": "CoOL pf a 30CH IPD) <5",
+        "lineConfidences": [
+          26,
+          7
+        ]
+      },
+      {
+        "text": "' 145/128",
+        "lineConfidences": [
+          73
+        ]
+      },
+      {
+        "text": "FAM LC UR OEN ENT S) ontheformeal |",
+        "lineConfidences": [
+          29,
+          42
+        ]
+      },
+      {
+        "text": "1 I 2d LRN: te + “uli RE AFTON }",
+        "lineConfidences": [
+          22,
+          62,
+          0
+        ]
+      }
+    ],
+    "exactTop1": null,
+    "exactTop8": null,
+    "top1": true,
+    "top3": true,
+    "totalMs": 3845,
+    "matchTimings": {
+      "matchMs": 804,
+      "totalMs": 806
+    },
+    "status": "confident",
+    "parsed": {
+      "lines": [
+        "145/128",
+        "BASICud % a Lorre,",
+        "SRE Hlisuian Zorua “ee",
+        "| 25 fiir",
+        "BASIC ¢ Fy",
+        "TE Hlisuian Zorua 5",
+        "{ . RE 7 dita",
+        "BASIC 7 RY Apr",
+        "ST Hid ORR",
+        "Bvesistance) A freticac x)",
+        "» honce-depariadon, rammed tie in Ht,",
+        "B aurggliom resentment, wiih fives as",
+        "2 Ef] i eed and tales en the forme of",
+        "md: wid Was Zor wens MEering males.",
+        "{Gs"
+      ],
+      "nameGuess": "fiir",
+      "numberGuess": "145",
+      "setHint": null,
+      "setCode": null,
+      "confidence": 0.43
+    },
+    "candidates": [
+      {
+        "id": "me55-145",
+        "name": "Hisuian Zorua",
+        "number": "145",
+        "score": 1
+      },
+      {
+        "id": "bw11-89",
+        "name": "Zorua",
+        "number": "89",
+        "score": 1
+      },
+      {
+        "id": "bw2-66",
+        "name": "Zorua",
+        "number": "66",
+        "score": 1
+      },
+      {
+        "id": "bw1-70",
+        "name": "Zorua",
+        "number": "70",
+        "score": 1
+      },
+      {
+        "id": "me55-122",
+        "name": "Hisuian Zorua",
+        "number": "122",
+        "score": 0.89
+      },
+      {
+        "id": "swsh11-75",
+        "name": "Hisuian Zorua",
+        "number": "75",
+        "score": 0.89
+      },
+      {
+        "id": "me2pt5-136",
+        "name": "N's Zorua",
+        "number": "136",
+        "score": 0.67
+      },
+      {
+        "id": "sv9-97",
+        "name": "N's Zorua",
+        "number": "97",
+        "score": 0.67
+      }
+    ]
+  }
+]

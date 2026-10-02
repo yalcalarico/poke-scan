@@ -14,7 +14,7 @@ import { PriceQueueService } from './price-queue.service.js';
 * El número no es un detalle de performance: es **presupuesto de requests**.
  * Cada carta encolada termina en un request a TCGdex, y el ritmo global son
  * 26/min. 300 cartas son ~12 minutos de cola, que es lo que un proceso que
- * corre una vez por día puede absorber sin jorobarle la latencia a nadie.
+ * corre cada hora puede absorber sin jorobarle la latencia a nadie.
  *
  * Con la cola persistente el costo de pasarse es bajo —la cola simplemente tarda
  * más—, así que el límite existe para que una corrida accidental no se cargue con
@@ -30,6 +30,8 @@ export const BACKFILL_BATCH = 300;
  * backfill y viejas para la lectura, y cada carta tendría dos verdades.
  */
 const FRESH_MS = 24 * 60 * 60 * 1000;
+/** TTL negativa: no volver a poner en backfill una carta que acaba de no cotizar. */
+const NEGATIVE_RETRY_MS = 6 * 60 * 60 * 1000;
 
 export interface BackfillResult {
   /** Cartas encoladas en esta corrida. */
@@ -77,8 +79,10 @@ export interface BackfillOptions {
  *
  * Cada corrida encola las N cartas **más viejas** (o sin precio), no las
  * primeras N. Así el trabajo avanza hacia adelante en vez de reprocesar las
- * mismas, y correrlo dos veces el mismo día no hace daño: el segundo paso
- * encuentra las que ya están en la cola y las ignora.
+ * mismas, y correrlo dos veces en la misma hora no hace daño: las cartas ya
+ * `pending`/`processing` no vuelven a ser candidatas. Una carta que el provider
+ * no cotiza (`completed`, sin fila activa) descansa 6 h, el mismo TTL que la
+ * caché negativa, así que no llena el mismo lote una vez por hora para siempre.
  */
 @Injectable()
 export class PriceBackfillService {
@@ -103,15 +107,22 @@ export class PriceBackfillService {
      * ninguna primero: `NULLS FIRST` pone arriba justamente las que nunca se
      * consultaron, que son las que más falta hacen.
      *
-     * El filtro por `provider`/`source`/`currency` es el mismo de las lecturas:
-     * si el backfill trajera precios de otra fuente, la fila quedaría guardada
-     * como si fuera del proveedor activo y la siguiente corrida la volvería a
-     * encolar, para siempre.
-     */
+      * El filtro por `provider`/`source`/`currency` es el mismo de las lecturas:
+      * si el backfill trajera precios de otra fuente, la fila quedaría guardada
+      * como si fuera del proveedor activo y la siguiente corrida la volvería a
+      * encolar, para siempre.
+      *
+      * Las filas ya en `pending`, `processing` o `failed` quedan fuera: el worker
+      * ya las tiene o ya agotaron los reintentos. Las `completed` solo descansan
+      * durante el TTL negativo de 6 h; después pueden volver al backfill si no
+      * hay precio activo. Sin ese cooldown, las cartas que el provider no cotiza
+      * ocuparían siempre las primeras posiciones del lote y dejarían sin turno
+      * al resto del catálogo.
+      */
     const candidates = await this.prisma.$queryRaw<{ cardId: string }[]>(Prisma.sql`
       SELECT c.id AS "cardId"
       FROM cards c
-      WHERE ${this.pendingConditions(cardIds)}
+      WHERE ${this.candidateConditions(cardIds)}
       ORDER BY (
         SELECT MAX(p."fetchedAt")
         FROM card_prices p
@@ -186,5 +197,29 @@ export class PriceBackfillService {
       )
     `);
     return Prisma.join(conditions, ' AND ');
+  }
+
+  /** Extiende el criterio de precio pendiente con el estado durable de la cola. */
+  private candidateConditions(cardIds?: readonly string[]): Prisma.Sql {
+    return Prisma.join(
+      [
+        this.pendingConditions(cardIds),
+        Prisma.sql`
+          NOT EXISTS (
+            SELECT 1
+            FROM price_refresh_jobs j
+            WHERE j."cardId" = c.id
+              AND (
+                j.status IN ('pending', 'processing', 'failed')
+                OR (
+                  j.status = 'completed'
+                  AND j."completedAt" >= ${new Date(Date.now() - NEGATIVE_RETRY_MS)}
+                )
+              )
+          )
+        `,
+      ],
+      ' AND ',
+    );
   }
 }

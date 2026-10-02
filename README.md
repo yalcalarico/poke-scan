@@ -44,7 +44,7 @@ pokemon-cards-scanner-app/
 ├── docker-compose.yml   Postgres (55432) + Redis (6379)
 ├── AGENTS.md            ← leelo antes de tocar código
 ├── Makefile             atajo equivalente a pnpm run
-└── package.json         33 scripts de orquestación
+└── package.json         comandos de desarrollo, tests y verificación
 ```
 
 Dos proyectos independientes, sin monorepo. Cada uno con su `package.json` y su
@@ -87,13 +87,16 @@ convenciones de código.
 ## Estado
 
 - ✅ 20.670 cartas · 176 sets sincronizados
-- ✅ 223 tests backend · 336 frontend
+- ✅ 320 tests backend · 359 frontend (2 skipped, 1 todo)
 - ✅ Autenticación con rotación de tokens y detección de reuso
 - ✅ Escáner por cámara con OCR (acierta ~7/8 cartas, la UI siempre confirma)
 - ✅ Precios USD y ARS con caché de 2 capas
+- ✅ Identidad/procedencia de proveedores, cola de precios persistente y ritmo global
+- ✅ Backfill horario de precios del proveedor activo
 - ✅ Links públicos + sistema de amigos
-- ✅ Orden por precio en el catálogo y en la colección
-- ⏳ Deploy a producción
+- ✅ Búsqueda por nombre/número/artista, orden por precio, filtro server-side de intercambio
+- ✅ Suite aislada en `pokemon_cards_test`; smoke test end-to-end (`pnpm run verify:app`)
+- ⏳ Deploy de producción: imagen Docker corregida pero build no verificado; faltan secrets de producción y backup/restore probado
 
 ### Limitaciones conocidas
 
@@ -104,13 +107,17 @@ convenciones de código.
   manual y búsqueda a mano.
 - **El OCR necesita ~12 MB** en el primer uso (ya auto-hospedados, cacheados
   por el service worker).
-- **La cola de refresco de precios vive en memoria.** Un reinicio del backend
-  pierde lo pendiente.
-- **El histórico de precios no tiene poda.** `card_prices` es append-only y
-  crece sin techo.
-- **Los jobs no están programados.** El sync de catálogo es manual; hay un lock
-  distribuido que impide dos syncs a la vez, pero ningún cron.
-- **La E2E es mínima.** Solo health; falta auth, ownership, precios y sharing.
+- **Las claves de pokemontcg.io mueren el 1/3/2027.** El sync semanal es
+  configurable; Scrydex sigue pendiente de decisión de producto y costo.
+- **Redis no se reconecta solo** si falla después de agotar los reintentos. El
+  health lo informa como degradado y la app sigue sirviendo sin caché; hace falta
+  reiniciar el backend para que vuelva a conectarse.
+- **El smoke test no reemplaza Playwright/E2E por navegador.** `verify:app`
+  comprueba HTTP real de API y páginas, mientras auth/ownership/UI se cubren
+  parcialmente por tests de servicio y componentes.
+- **El deploy sigue pendiente.** El stack local funciona; la imagen del backend
+  tiene pnpm fijado pero aún no se comprobó el build final, y faltan secrets y
+  backup/restore de producción.
 - **Las rutas inexistentes devuelven HTTP 200** renderizando la 404, por el
   streaming de Next 16. Ver `frontend/docs/routes.md`.
 
@@ -122,5 +129,5 @@ convenciones de código.
 | [`docs/plans/02-backend-production.md`](docs/plans/02-backend-production.md) | Cotizaciones, lock de jobs y lo que falta para producción |
 
 Los dos planes marcan **qué se hizo** y **qué quedó con su motivo**. No son una
-lista de deseos: son el registro de por qué el backend tieneScheduler pero no
-tiene cron, y de por qué la cola de precios no se persistió todavía.
+lista de deseos: registran las decisiones abiertas y los límites operativos del
+producto.

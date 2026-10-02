@@ -103,6 +103,8 @@ export function splitLines(text: string): string[] {
 /** Keeps only letters, digits, spaces, apostrophes and hyphens. */
 export function cleanLine(line: string): string {
   return line
+    // El logo estilizado ex suele salir como €X o &X; sólo se repara junto a un nombre.
+    .replace(/([\p{L}]{3,})\s+(?:€[xX]|&[xX])(?=$|[^\p{L}\p{N}])/gu, '$1 ex')
     .replace(/[\u2018\u2019\u02BC]/g, "'")
     .replace(/[^\p{L}\p{N} '\-]/gu, ' ')
     .replace(/\s+/g, ' ')
@@ -119,6 +121,12 @@ function isUsableToken(token: string): boolean {
   if (/^\d+$/.test(token)) return false;
   if (isNoiseToken(token)) return false;
   return /[\p{L}]/u.test(token);
+}
+
+const NAME_SUFFIXES = new Set(['ex', 'gx', 'v', 'vmax', 'vstar']);
+
+function isNameSuffix(token: string): boolean {
+  return NAME_SUFFIXES.has(token.toLowerCase());
 }
 
 function isTitleCase(token: string): boolean {
@@ -219,9 +227,16 @@ export function collectNameCandidates(
       for (let size = 1; size <= MAX_CANDIDATE_TOKENS; size += 1) {
         if (start + size > tokens.length) break;
         const window = tokens.slice(start, start + size);
-        if (!window.every(isUsableToken)) break;
+        if (!window.every((token, index) => isUsableToken(token) ||
+          (index > 0 && index === window.length - 1 && isNameSuffix(token)))) break;
 
-        let score = windowScore(window, start, lineIndex, start);
+        const hasSuffix = window.length > 1 && isNameSuffix(window[window.length - 1]);
+        // El sufijo identifica el tipo de carta, pero no vuelve más largo ni
+        // cambia la capitalización del nombre que estamos puntuando.
+        const nameWindow = hasSuffix ? window.slice(0, -1) : window;
+        let score = windowScore(nameWindow, 0, lineIndex, start);
+        // Ex/GX/V son parte de la identidad, pero solos continúan siendo ruido.
+        if (hasSuffix) score += 0.45;
         const repeats = window.every(
           (token) => (tokenLineCounts.get(token.toLowerCase()) ?? 0) > 1,
         )
@@ -275,14 +290,14 @@ export function collectNumberCandidates(
   const found: NumberCandidate[] = [];
   const seen = new Set<string>();
   const push = (value: string, score: number, kind: NumberCandidate['kind']) => {
-    const normalized = value.replace(/^0+(?=\d)/, '');
+    const normalized = value.toUpperCase().replace(/^([A-Z]*)0+(?=\d)/, '$1');
     if (!normalized || seen.has(normalized)) return;
     seen.add(normalized);
     found.push({ value: normalized, score, kind });
   };
 
   // "25/203" or "25/203" with full-width slash: number over set total.
-  for (const match of text.matchAll(/\b(\d{1,3})\s*[\/／]\s*(\d{2,4})\b/g)) {
+  for (const match of text.matchAll(/\b([A-Z]{0,4}\d{1,3})\s*[\/／]\s*([A-Z]{0,4}\d{2,4})\b/gi)) {
     push(match[1], 1, 'slash');
   }
 

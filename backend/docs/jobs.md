@@ -369,6 +369,48 @@ planificador ya no sería "dos planificadores sobre una cola que no persiste". E
 lo deja como decisión abierta, no como bloqueo técnico.
 
 
+## Los crons
+
+`ScheduleModule.forRoot()` en `app.module.ts` es lo que activa los `@Cron`.
+Estaba en `package.json` desde el principio y **no estaba en el módulo**: los
+decorators se registraban y no se ejecutaban nunca.
+
+| Job | Cada cuánto | Qué hace |
+|---|---|---|
+| `syncCatalogWeekly` | `7 4 * * 1` (lunes 04:07) | Corre el sync del catálogo con el **mismo lock** que el endpoint de admin |
+| `backfillPricesHourly` | `13 * * * *` | Encola hasta 300 cartas sin precio vigente del proveedor activo |
+| `prunePricesMonthly` | `23 3 1 * *` | Corre la política de retención con los defaults de producción |
+
+**Por qué el sync es semanal y no diario**: 83 requests contra un límite de 1.000
+por día. Diario serían 8,3 % de la cuota diaria en una tarea que el catálogo no
+necesita cada día, y la fuente es deprecada (las keys mueren el 1/3/2027).
+
+**Por qué el backfill es horario y de lotes chicos**: el ritmo lo impone
+`ProviderRateGate` (26/min), el lote no lo cambia. Lo que decide el lote es cuánto
+tarda la cola en vaciarse: 300 cartas son ~12 minutos, así que la cola no le
+queda llena de cartas de backfill por delante de la que el usuario está mirando.
+Con 20.667 cartas pendientes, 300/hora vacía el backlog en tres días.
+
+**El backfill encola, no pide precios.** Es lo que garantiza que compita en el
+mismo reloj que las lecturas públicas. Si llamara al proveedor tendría su propio
+reloj y duplicaría el ritmo en cuanto hubiera dos instancias.
+
+### Los kill switches
+
+```bash
+ENABLE_CATALOG_SYNC_CRON=false   # sync de catálogo
+ENABLE_PRICE_BACKFILL_CRON=false  # backfill de precios
+ENABLE_RETENTION_CRON=false      # retención
+```
+
+Se apagan por variable de entorno y no por código: en un despliegue hay que poder
+desactivar el sync sin tocar la imagen.
+
+**Una variable vacía NO apaga.** `ENABLE_RETENTION_CRON=` cae al default
+(prendido), porque en un compose un valor vacío es mucho más probable que sea un
+olvido que una intención. Si vacío fuera "apagado", un typo dejaría el sync de
+catálogo sin correr hasta que alguien notara que el catálogo está viejo.
+
 ## Endpoints de admin
 
 En [jobs.controller.ts](../src/jobs/jobs.controller.ts). **No piden JWT**: se autentican con

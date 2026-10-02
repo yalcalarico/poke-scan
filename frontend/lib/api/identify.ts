@@ -22,3 +22,7 @@ export async function identifyCard(
     signal,
   });
 }
+
+export function getScannerConfig(signal?: AbortSignal): Promise<import('@/types/api').ScannerConfigDto> {
+  return apiFetch('/cards/scanner-config', { signal });
+}

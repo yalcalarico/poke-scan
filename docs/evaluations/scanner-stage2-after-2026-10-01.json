@@ -1,0 +1,441 @@
+[
+  {
+    "photo": "IMG_4985",
+    "expected": "Shining Celebi",
+    "expectedCardId": "me55c-106",
+    "exactTop1": true,
+    "exactTop8": true,
+    "top1": true,
+    "top3": true,
+    "totalMs": 8350,
+    "matchTimings": {
+      "matchMs": 968,
+      "totalMs": 971
+    },
+    "status": "ambiguous",
+    "parsed": {
+      "lines": [
+        "| { Shining Celebi ¥",
+        "far Celebi",
+        "| * Shining Celebs",
+        "| i pr Celebi",
+        "I Chining Celli",
+        "| \\ 2 MO £ Celebi in your dedic i t",
+        "! A up © :",
+        "A >",
+        "ol 17 |",
+        "| = £ > 2 < ( A",
+        "ENE |",
+        "TE PUES wey",
+        "__ Timetravel Pokémon. Length: 2' 0\", Weight: //",
+        "; Se Healing Water Remove a number of dam-:- -ouncer",
+        "at: ie) from | of your Benched Pokémon equal to the 1 irber of",
+        "ig * @ Energy cards attached to Shining Celebi. if the Pokémon |",
+        "Baa has fewer damage counters than that, remove all of them.",
+        "2 EE Miracle Leaf Flip 2 number of coins equal to the",
+        "S Bi number of Energy attached to the Defending",
+        "oa K-) ro) Pokémon. If you get | or more heads, the Defending | 0",
+        "fr Pokémon is now Asleep, Confused, or Poisoned (your",
+        "og © choice). fs Ts :",
+        "i kness resistance ln | retreat cost",
+        "3 ®y i Shei 1 3A Ra",
+        "A Ya he ” RRC, oH",
+        "LE vpped 13.8, 0d of the fo ves Bothy gl",
+        "Ete i — SR",
+        "g : > 2000 Niende Creature CAMEREARINEE. 108/105 ++ +",
+        "L EB to IA, (SERRE",
+        "EARS Men CZ eg St,"
+      ],
+      "nameGuess": "Celebi",
+      "numberGuess": "108",
+      "setHint": null,
+      "setCode": null,
+      "confidence": 0.645
+    },
+    "candidates": [
+      {
+        "id": "me55c-106",
+        "name": "Shining Celebi",
+        "number": "106",
+        "score": 1
+      },
+      {
+        "id": "me1-12",
+        "name": "Celebi",
+        "number": "12",
+        "score": 1
+      },
+      {
+        "id": "sv7-4",
+        "name": "Celebi",
+        "number": "4",
+        "score": 1
+      },
+      {
+        "id": "swsh45-3",
+        "name": "Celebi",
+        "number": "3",
+        "score": 1
+      },
+      {
+        "id": "sm8-19",
+        "name": "Celebi ◇",
+        "number": "19",
+        "score": 1
+      },
+      {
+        "id": "smp-SM79",
+        "name": "Shining Celebi",
+        "number": "SM79",
+        "score": 1
+      },
+      {
+        "id": "ex14-100",
+        "name": "Celebi ★",
+        "number": "100",
+        "score": 1
+      },
+      {
+        "id": "neo4-106",
+        "name": "Shining Celebi",
+        "number": "106",
+        "score": 1
+      }
+    ]
+  },
+  {
+    "photo": "IMG_4986",
+    "expected": "Pikachu",
+    "expectedCardId": "me55-23",
+    "exactTop1": false,
+    "exactTop8": false,
+    "top1": true,
+    "top3": true,
+    "totalMs": 2495,
+    "matchTimings": {
+      "matchMs": 97,
+      "totalMs": 100
+    },
+    "status": "ambiguous",
+    "parsed": {
+      "lines": [
+        "| se=pikachu",
+        "£ $2 Pikachu : | : ;",
+        "at Pikachu",
+        "| e=pikachu",
+        "Asie See TT",
+        "| - “Pikachu",
+        "I i",
+        "[|< Pilachu",
+        "{"
+      ],
+      "nameGuess": "Pikachu",
+      "numberGuess": null,
+      "setHint": null,
+      "setCode": null,
+      "confidence": 0.68
+    },
+    "candidates": [
+      {
+        "id": "bw1-115",
+        "name": "Pikachu",
+        "number": "115",
+        "score": 1
+      },
+      {
+        "id": "base6-86",
+        "name": "Pikachu",
+        "number": "86",
+        "score": 1
+      },
+      {
+        "id": "base4-87",
+        "name": "Pikachu",
+        "number": "87",
+        "score": 1
+      },
+      {
+        "id": "swsh11tg-TG16",
+        "name": "Pikachu V",
+        "number": "TG16",
+        "score": 1
+      },
+      {
+        "id": "swsh9-157",
+        "name": "Pikachu V",
+        "number": "157",
+        "score": 1
+      },
+      {
+        "id": "swsh8-86",
+        "name": "Pikachu V",
+        "number": "86",
+        "score": 1
+      },
+      {
+        "id": "pop5-13",
+        "name": "Pikachu δ",
+        "number": "13",
+        "score": 1
+      },
+      {
+        "id": "ex13-104",
+        "name": "Pikachu ★",
+        "number": "104",
+        "score": 1
+      }
+    ]
+  },
+  {
+    "photo": "IMG_4987",
+    "expected": "Umbreon ex",
+    "expectedCardId": "me55-92",
+    "exactTop1": true,
+    "exactTop8": true,
+    "top1": true,
+    "top3": true,
+    "totalMs": 3414,
+    "matchTimings": {
+      "matchMs": 742,
+      "totalMs": 744
+    },
+    "status": "ambiguous",
+    "parsed": {
+      "lines": [
+        "race 1 ATT ah",
+        "3 Umbreon &X",
+        "8 ALK lt",
+        "y/ | Evolyes from Eevee i",
+        "e=2 Umbreon Z &",
+        "race] 4% A on",
+        "62 {ll nbreon €X",
+        "/ OF Evolves fro FONE co a",
+        "sTaGel |. RGN On 7",
+        "en Cheat Xd",
+        "7 » AS Evolves fromEevee . . . ..gwree;",
+        "r= Joe eoneN] cw od",
+        "3"
+      ],
+      "nameGuess": "Umbreon ex",
+      "numberGuess": null,
+      "setHint": null,
+      "setCode": null,
+      "confidence": 0.49
+    },
+    "candidates": [
+      {
+        "id": "me55-92",
+        "name": "Umbreon ex",
+        "number": "92",
+        "score": 1
+      },
+      {
+        "id": "sv8pt5-161",
+        "name": "Umbreon ex",
+        "number": "161",
+        "score": 1
+      },
+      {
+        "id": "sv8pt5-60",
+        "name": "Umbreon ex",
+        "number": "60",
+        "score": 1
+      },
+      {
+        "id": "sv8pt5-167",
+        "name": "Eevee ex",
+        "number": "167",
+        "score": 0.95
+      },
+      {
+        "id": "sv8pt5-75",
+        "name": "Eevee ex",
+        "number": "75",
+        "score": 0.95
+      },
+      {
+        "id": "svp-174",
+        "name": "Eevee ex",
+        "number": "174",
+        "score": 0.95
+      },
+      {
+        "id": "base6-74",
+        "name": "Eevee",
+        "number": "74",
+        "score": 0.7
+      },
+      {
+        "id": "base5-55",
+        "name": "Eevee",
+        "number": "55",
+        "score": 0.7
+      }
+    ]
+  },
+  {
+    "photo": "IMG_4988",
+    "expected": "Chandelure",
+    "expectedCardId": "me55-137",
+    "exactTop1": false,
+    "exactTop8": false,
+    "top1": true,
+    "top3": true,
+    "totalMs": 2767,
+    "matchTimings": {
+      "matchMs": 195,
+      "totalMs": 197
+    },
+    "status": "ambiguous",
+    "parsed": {
+      "lines": [
+        "|e cagal",
+        "Yerscez ‘Chandelures 4",
+        "¥ Evolves irom l amOse learns",
+        "5 Chandelier lyfe. :",
+        "{ gyms",
+        "SYACGE? Com I ER ry ORE",
+        "li = hinndelure:",
+        "1! RRR £77 1 A GP",
+        "Td 0 % og are fomlampent"
+      ],
+      "nameGuess": "Yerscez",
+      "numberGuess": null,
+      "setHint": null,
+      "setCode": null,
+      "confidence": 0.759090909090909
+    },
+    "candidates": [
+      {
+        "id": "bw4-101",
+        "name": "Chandelure",
+        "number": "101",
+        "score": 0.94
+      },
+      {
+        "id": "bw4-20",
+        "name": "Chandelure",
+        "number": "20",
+        "score": 0.94
+      },
+      {
+        "id": "bw3-60",
+        "name": "Chandelure",
+        "number": "60",
+        "score": 0.94
+      },
+      {
+        "id": "swsh8-247",
+        "name": "Chandelure V",
+        "number": "247",
+        "score": 0.65
+      },
+      {
+        "id": "swsh8-39",
+        "name": "Chandelure V",
+        "number": "39",
+        "score": 0.65
+      },
+      {
+        "id": "bw11-77",
+        "name": "Chandelure-EX",
+        "number": "77",
+        "score": 0.61
+      },
+      {
+        "id": "me55-77",
+        "name": "Comfey",
+        "number": "77",
+        "score": 0.56
+      },
+      {
+        "id": "sv7-63",
+        "name": "Comfey",
+        "number": "63",
+        "score": 0.56
+      }
+    ]
+  },
+  {
+    "photo": "IMG_4989",
+    "expected": "Hisuian Zorua",
+    "expectedCardId": "me55-145",
+    "exactTop1": false,
+    "exactTop8": true,
+    "top1": false,
+    "top3": false,
+    "totalMs": 2409,
+    "matchTimings": {
+      "matchMs": 138,
+      "totalMs": 140
+    },
+    "status": "ambiguous",
+    "parsed": {
+      "lines": [
+        "BASICud % a Lorre,",
+        "SRE Hlisuian Zorua “ee",
+        "| 25 fiir",
+        "BASIC ¢ Fy",
+        "TE Hlisuian Zorua 5",
+        "{ . RE 7 dita",
+        "BASIC 7 RY Apr",
+        "ST Hid ORR"
+      ],
+      "nameGuess": "fiir",
+      "numberGuess": null,
+      "setHint": null,
+      "setCode": null,
+      "confidence": 0.43
+    },
+    "candidates": [
+      {
+        "id": "bw11-89",
+        "name": "Zorua",
+        "number": "89",
+        "score": 1
+      },
+      {
+        "id": "bw2-66",
+        "name": "Zorua",
+        "number": "66",
+        "score": 1
+      },
+      {
+        "id": "bw1-70",
+        "name": "Zorua",
+        "number": "70",
+        "score": 1
+      },
+      {
+        "id": "me55-122",
+        "name": "Hisuian Zorua",
+        "number": "122",
+        "score": 0.89
+      },
+      {
+        "id": "me55-145",
+        "name": "Hisuian Zorua",
+        "number": "145",
+        "score": 0.89
+      },
+      {
+        "id": "swsh11-75",
+        "name": "Hisuian Zorua",
+        "number": "75",
+        "score": 0.89
+      },
+      {
+        "id": "me2pt5-136",
+        "name": "N's Zorua",
+        "number": "136",
+        "score": 0.67
+      },
+      {
+        "id": "sv9-97",
+        "name": "N's Zorua",
+        "number": "97",
+        "score": 0.67
+      }
+    ]
+  }
+]

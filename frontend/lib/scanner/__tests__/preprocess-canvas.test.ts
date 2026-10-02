@@ -9,6 +9,7 @@ import {
   analyzeVariants,
   cropImageData,
   detectCardRect,
+  expandRect,
   normalizeCardImageData,
   rotateImageData,
   DEFAULT_VARIANT,
@@ -334,6 +335,27 @@ describe('rotateImageData', () => {
 });
 
 describe('normalizeCardImageData', () => {
+  it('recupera un pie corto sin desplazar la banda superior', () => {
+    const result = expandRect({ x: 100, y: 80, width: 630, height: 820 }, { width: 1000, height: 1400 });
+    expect(result.y).toBe(80);
+    expect(result.height).toBeGreaterThanOrEqual(880);
+  });
+
+  it('no alarga cartas completas, apaisadas ni recortes demasiado deformados', () => {
+    for (const rect of [
+      { x: 100, y: 80, width: 630, height: 880 },
+      { x: 100, y: 80, width: 880, height: 630 },
+      { x: 100, y: 80, width: 630, height: 650 },
+    ]) {
+      expect(expandRect(rect, { width: 1400, height: 1400 }).height).toBe(rect.height);
+    }
+  });
+
+  it('limita la recuperación del pie al tamaño de la foto', () => {
+    const result = expandRect({ x: 100, y: 80, width: 630, height: 820 }, { width: 1000, height: 950 });
+    expect(result.y + result.height).toBeLessThanOrEqual(950);
+  });
+
   it('deja la imagen sin tocar cuando no detecta carta', () => {
     const flat = toImageData(asCanvas(gradientCanvas(300, 400)));
     const result = normalizeCardImageData(flat);

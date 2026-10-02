@@ -11,23 +11,70 @@
 | Runner | Vitest 4.1 (`vitest run`) |
 | Config | `vitest.config.ts` (`**/*.spec.ts`) y `vitest.config.e2e.ts` (`**/*.e2e-spec.ts`) |
 | Globals | `globals: true` + `types: ["vitest/globals", "node"]` en `tsconfig.json`: `describe`/`it`/`expect`/`vi` no se importan |
-| Archivos | 11 `.spec.ts` · 1 `.e2e-spec.ts` |
-| Tests | 128, ~12 s |
+| Archivos | 19 `.spec.ts` · 1 `.e2e-spec.ts` |
+| Tests | 320, ~45 s |
 | Lint | oxlint type-aware corre sobre `src/` y `test/` |
 
 | Spec | Qué cubre |
 |---|---|
-| `app.controller.spec.ts` | `GET /health` |
+| `app.controller.spec.ts` | `GET /health`: sano, degradado, sin Redis configurado |
 | `auth.service.spec.ts` | registro, login, hash del refresh, rotación, reuso, expiración, logout |
-| `cards.service.spec.ts` | búsqueda con trigram, `getById` 404, `getCardWithPrices` con rate cacheado |
+| `cards.service.spec.ts` | búsqueda con trigram, `getById` 404, `getCardWithPrices` con rate cacheado, `sort=price` global |
 | `identify.service.spec.ts` | ranking contra **líneas reales** de Tesseract |
-| `collections.service.spec.ts` | increment de `quantity`, ownership, stats, 409, cascadas, filtros |
+| `collections.service.spec.ts` | increment de `quantity`, ownership, stats, 409, cascadas, filtros, marca de intercambio del alta |
 | `share.service.spec.ts` | slug, caché, 404 de enlace vencido, `truncated` |
 | `friends.service.spec.ts` | búsqueda, solicitudes, responder, 403/404, baja, bloqueo |
 | `currency.service.spec.ts` | feature flag, caché 1 h, `stale` >48 h, DolarApi caído, valores saneados |
 | `tcgdex.provider.spec.ts` | mapeo de las 7 variantes, 404 con fallback de padding, retry de 503, parsing defensivo |
 | `tcgdex-set-mapping.service.spec.ts` | matcheo por nombre / por ID, validación, miss marker, error de red sin marcar miss |
-| `sync-prices.service.spec.ts` | refresh en vivo, TTL negativa, no borra previos ante fallo, frescura de 24 h, dedupe de la cola |
+| `sync-prices.service.spec.ts` | refresh en vivo, TTL negativa, no borra previos ante fallo, frescura de 24 h, ritmo global |
+| `price-queue.service.spec.ts` | dedupe, claim con `SKIP LOCKED` entre dos instancias, backoff, recuperación de `processing` abandonados, ritmo global, worker |
+| `price-backfill.service.spec.ts` | qué cartas necesitan precio, orden por antigüedad, límite de corrida, y que **no** llame al proveedor |
+| `card-prices-retention.service.spec.ts` | consolidación a un punto por día, que la última fila de un grupo no se borre nunca, y que el precio de referencia del delta sobreviva |
+| `sync-cards.service.spec.ts` | IDs canónicos + cursor reanudable: reanuda sin re-traer, omite el completo con un request, `force`, parcial no marcado completo |
+| `sync-state.service.spec.ts` | el cursor de `sync_state` y la reconciliación de jobs abandonados al arrancar |
+| `catalog-sync.service.spec.ts` | lock + `ScanJob`, y que un segundo `start` no arranque nada |
+| `scheduled-jobs.service.spec.ts` | kill switches de los tres crons, periodicidades, y que un fallo no tumbe el proceso |
+| `redis.service.spec.ts` | locks, y degradación: `WRONGTYPE` real para ver que 10 fallos dan 1 warn |
+| `test/global-setup.ts` | (no es spec) el guard que impide correr contra la base equivocada o con un backend vivo |
+
+## La base de tests es otra
+
+Los specs corren contra `DATABASE_URL_TEST`, o contra una base **derivada** de
+`DATABASE_URL` con el nombre terminado en `_test`. Por omisión **nunca tocan la
+base de desarrollo**, sin configurar nada.
+
+```bash
+pnpm run test:db:setup    # crea pokemon_cards_test una vez, como copia
+pnpm run test:backend
+```
+
+La copia es una `pg_dump` de la base de desarrollo, y no una base vacía, porque
+varios specs dependen del catálogo espejado: `cards.service.spec` mide el tramo
+cotizado de `sort=price` sobre las 20.670 cartas reales e `identify.service.spec`
+rankea candidatos sobre las mismas. Con una base vacía no tendrían nada que
+medir.
+
+La resolución está en `test/test-env.ts`: `DATABASE_URL_TEST` gana; si no, se
+deriva de `DATABASE_URL`. Y `vitest.config.ts` la inyecta con `test.env`, porque
+**los specs no leen `process.env`**: instancian `PrismaClient` y Prisma carga
+`.env` por su cuenta. Un guard que mirara `process.env.DATABASE_URL` estaría
+viendo una variable vacía y no dispararía nunca.
+
+### El guard del arranque
+
+`test/global-setup.ts` corre antes que cualquier spec y **se niega a correr** si:
+
+1. Hay algo escuchando en el puerto de la API.
+2. La base resuelta no tiene "test" en el nombre.
+
+El primero parece obvio hasta que se explicó: con la cola de precios
+persistente, el worker del backend drena la **misma** `price_refresh_jobs` que
+los specs: un test encolaba un job y el worker se lo llevaba antes de que el test
+lo reclamara. La suite quedaba flaky sin que el código tuviera nada de malo, y
+el mensaje de error —"expected null not to be null"— no señalaba para nada.
+
+**En la práctica: `pnpm run stop` antes de correr los tests.**
 
 ## `fileParallelism: false` — y por qué
 
@@ -40,17 +87,18 @@ export default defineConfig({
     globals: true,
     root: './',
     include: ['**/*.spec.ts'],
-    // Los specs comparten la misma DB de desarrollo y hacen deleteMany() de
-    // `users`: correrlos en paralelo hace que una suite borre los datos de la
-    // otra a mitad de test. Se ejecutan de a uno, en un solo hilo.
+    env: { DATABASE_URL: resolveTestDatabaseUrl() },
+    // Los specs comparten base y hacen deleteMany() de `users`: correrlos en
+    // paralelo hace que una suite borre los datos de la otra a mitad de test.
+    // Se ejecutan de a uno, en un solo hilo.
     fileParallelism: false,
+    globalSetup: ['./test/global-setup.ts'],
   },
 });
 ```
 
-**No es una preferencia de estilo: es una corrección.** Los specs usan el
-**`DATABASE_URL` de desarrollo** (Postgres en `localhost:55432`), no una base
-aparte. Y el cleanup de casi todos es:
+**No es una preferencia de estilo: es una corrección.** Los specs usan la base
+de tests y el cleanup de casi todos es:
 
 ```ts
 await prismaClient.user.deleteMany({ where: { email: { endsWith: '@test.local' } } });
@@ -80,7 +128,7 @@ corriendo en paralelo se pisarían.
 ## Comandos
 
 ```bash
-pnpm run test         # vitest run — la suite completa (~10 s)
+pnpm run test         # vitest run — la suite completa (~45 s)
 pnpm run test:watch   # vitest, watch
 pnpm run test:cov     # vitest run --coverage (v8)
 pnpm run test:debug   # vitest --inspect-brk --no-file-parallelism
@@ -92,6 +140,9 @@ runner se cuelga, y si otro archivo arranca en paralelo el debugger se engancha
 al proceso equivocado.
 
 Desde la raíz del monorepo: `pnpm run test:backend`.
+
+**`pnpm run stop` antes**: el guard del arranque se niega a correr los specs si
+hay un backend escuchando en el puerto de la API.
 
 ## Cómo escribir un spec nuevo
 

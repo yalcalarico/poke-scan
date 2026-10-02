@@ -116,7 +116,7 @@ o en un archivo `'use client'`.
 Todo se corre con **pnpm** desde la raíz o desde la carpeta del proyecto.
 
 ```bash
-pnpm run help            # lista los 33 comandos
+pnpm run help            # lista los comandos
 pnpm run setup           # primera vez: deps + infra + schema
 pnpm run dev             # API + web en paralelo, Ctrl+C baja ambos
 pnpm run doctor          # diagnóstico del entorno
@@ -124,8 +124,15 @@ pnpm run check           # lint + types + tests + build
 pnpm run stop            # liberar puertos 3000/3001
 ```
 
-También existe `make <comando>` (equivalente), pero **el `make` de macOS no
-funciona sin la licencia de Xcode CLItools**. No dependas de él.
+**Antes de correr los tests, `pnpm run stop`.** El guard de arranque de los specs
+se niega a correr si hay un backend escuchando: su worker drena la **misma**
+`price_refresh_jobs` que los tests y se lleva los jobs que un test acaba de
+encolar. Ver `backend/docs/testing.md`.
+
+```bash
+pnpm run test:db:setup   # una vez: crea la base de tests (copia de la de dev)
+pnpm run verify:app      # con el stack arriba: chequeo de humo end-to-end
+```
 
 ### Puertos
 

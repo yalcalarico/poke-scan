@@ -4,6 +4,16 @@ import { DEFAULT_CAPTURE_WIDTH } from '@/lib/scanner/camera';
 import type { ScannedCapture } from '@/lib/scanner/types';
 import type { ImageInput } from '@/lib/scanner/preprocess';
 
+export interface GalleryImageInput {
+  imageData: ImageData;
+  /** Se conserva hasta terminar el OCR para rescatar detalle del pie. */
+  highResolutionSource: ImageBitmap;
+}
+
+export function isGalleryImageInput(input: ImageInput | GalleryImageInput): input is GalleryImageInput {
+  return 'imageData' in input && 'highResolutionSource' in input;
+}
+
 /**
  * Los dos caminos de entrada del escáner (obturador y galería) convergen en
  * `ImageInput`, que es lo que quiere `scanCardImage`.
@@ -23,8 +33,8 @@ function drawToImageData(bitmap: ImageBitmap): ImageData {
   return ctx.getImageData(0, 0, canvas.width, canvas.height);
 }
 
-/** Foto de la galería. Se achica a `maxWidth` para no darle al OCR megapíxeles. */
-export async function fileToImageData(file: File, maxWidth: number): Promise<ImageData> {
+/** La imagen grande se conserva sólo para leer el pie; el OCR general usa la versión reducida. */
+export async function fileToImageData(file: File, maxWidth: number): Promise<GalleryImageInput> {
   const bitmap = await createImageBitmap(file);
   try {
     const scale = Math.min(1, maxWidth / bitmap.width);
@@ -37,9 +47,13 @@ export async function fileToImageData(file: File, maxWidth: number): Promise<Ima
     const ctx = canvas.getContext('2d');
     if (!ctx) throw new Error('No se pudo crear el contexto 2D.');
     ctx.drawImage(bitmap, 0, 0, width, height);
-    return ctx.getImageData(0, 0, width, height);
-  } finally {
+    return {
+      imageData: ctx.getImageData(0, 0, width, height),
+      highResolutionSource: bitmap,
+    };
+  } catch (error) {
     bitmap.close();
+    throw error;
   }
 }
 

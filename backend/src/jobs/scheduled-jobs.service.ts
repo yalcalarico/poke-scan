@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, type OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Cron } from '@nestjs/schedule';
 
@@ -20,7 +20,7 @@ function flag(config: ConfigService, key: string, fallback: boolean): boolean {
 }
 
 @Injectable()
-export class ScheduledJobsService {
+export class ScheduledJobsService implements OnModuleInit {
   private readonly logger = new Logger(ScheduledJobsService.name);
   private readonly catalogSyncEnabled: boolean;
   private readonly backfillEnabled: boolean;
@@ -37,9 +37,18 @@ export class ScheduledJobsService {
     this.retentionEnabled = flag(config, 'ENABLE_RETENTION_CRON', true);
   }
 
+  onModuleInit(): void {
+    const enabled = this.describeSchedule();
+    if (enabled.length === 0) {
+      this.logger.warn('Todos los crons de mantenimiento están desactivados por configuración.');
+      return;
+    }
+    this.logger.log(`Crons de mantenimiento activos: ${enabled.join('; ')}.`);
+  }
+
   /**
-   * Qué quedó prendido. Se loguea al arrancar para que "no_sync_diaria" sea una
-   * decisión visible en el log y no un misterio.
+   * Qué quedó prendido. Se loguea al arrancar para que una bandera de entorno
+   * que apaga un job sea una decisión visible y no un misterio.
    */
   describeSchedule(): string[] {
     const jobs: string[] = [];
@@ -71,9 +80,13 @@ export class ScheduledJobsService {
   @Cron('7 4 * * 1')
   async syncCatalogWeekly(): Promise<void> {
     if (!this.catalogSyncEnabled) return;
-    const result = await this.catalogSync.start(false);
-    if (!result.started) {
-      this.logger.log('Sync de catálogo semanal omitido: ya había uno corriendo.');
+    try {
+      const result = await this.catalogSync.start(false);
+      if (!result.started) {
+        this.logger.log('Sync de catálogo semanal omitido: ya había uno corriendo.');
+      }
+    } catch (error) {
+      this.logger.error(`Falló el sync de catálogo semanal: ${(error as Error).message}`);
     }
   }
 

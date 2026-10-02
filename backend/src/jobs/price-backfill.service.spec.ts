@@ -217,6 +217,54 @@ describe('PriceBackfillService', () => {
     await waitQueued([nueva]);
   });
 
+  it('no vuelve a llenar el lote con jobs que ya están pendientes, fallaron o recién terminaron', async () => {
+    const pendiente = `${TEST_CARD_PREFIX}job-pending`;
+    const fallida = `${TEST_CARD_PREFIX}job-failed`;
+    const negativaReciente = `${TEST_CARD_PREFIX}job-negative-fresh`;
+    const negativaVieja = `${TEST_CARD_PREFIX}job-negative-old`;
+    for (const id of [pendiente, fallida, negativaReciente, negativaVieja]) {
+      await makeCard(id);
+    }
+
+    const now = new Date();
+    await prismaClient.priceRefreshJob.createMany({
+      data: [
+        { id: 'bf-pending', cardId: pendiente, status: 'pending' },
+        { id: 'bf-failed', cardId: fallida, status: 'failed' },
+        {
+          id: 'bf-negative-fresh',
+          cardId: negativaReciente,
+          status: 'completed',
+          completedAt: now,
+        },
+        {
+          id: 'bf-negative-old',
+          cardId: negativaVieja,
+          status: 'completed',
+          completedAt: new Date(now.getTime() - 7 * 60 * 60 * 1000),
+        },
+      ],
+    });
+
+    const result = await service.enqueueStale({
+      limit: 10,
+      cardIds: [pendiente, fallida, negativaReciente, negativaVieja],
+    });
+
+    expect(result.enqueued).toBe(1);
+    await vi.waitFor(async () => {
+      const rows = await prismaClient.priceRefreshJob.findMany({
+        where: { cardId: { in: [pendiente, fallida, negativaReciente, negativaVieja] } },
+        select: { cardId: true, status: true },
+      });
+      const estados = new Map(rows.map((row) => [row.cardId, row.status]));
+      expect(estados.get(pendiente)).toBe('pending');
+      expect(estados.get(fallida)).toBe('failed');
+      expect(estados.get(negativaReciente)).toBe('completed');
+      expect(estados.get(negativaVieja)).toBe('pending');
+    });
+  });
+
   it('pendingCount cuenta lo que falta, no lo que hay', async () => {
     const ok = `${TEST_CARD_PREFIX}ok`;
     const falta = `${TEST_CARD_PREFIX}falta`;
@@ -268,27 +316,20 @@ describe('PriceBackfillService', () => {
     // la deja fuera por accidente.
     expect(await service.pendingCount({ cardIds: [id] })).toBe(1);
 
-    // Sin scope, el que se encola es la carta más necesitada **del catálogo
-    // entero**, que en la base de desarrollo es una carta real y no la de test.
-    // Eso es justamente lo que demuestra que el scope está ausente.
-    const result = await service.enqueueStale({ limit: 1 });
+    // Se usa un queue stub: sin scope, el candidato puede ser cualquier carta
+    // del catálogo copiado y no queremos dejar un job real pendiente en la base
+    // de tests. Este camino comprueba que la query no tira y encuentra un
+    // candidato global.
+    const enqueued: string[] = [];
+    const unscoped = new PriceBackfillService(
+      prismaClient as unknown as PrismaService,
+      { enqueue: (cardId: string) => enqueued.push(cardId) } as unknown as PriceQueueService,
+      provider,
+    );
+    const result = await unscoped.enqueueStale({ limit: 1 });
     expect(result.enqueued).toBe(1);
     expect(result.pending).toBe(total);
-
-    await vi.waitFor(async () => {
-      const todas = await prismaClient.priceRefreshJob.findMany({
-        where: { status: { in: ['pending', 'processing'] } },
-        select: { cardId: true },
-      });
-      expect(todas.length).toBeGreaterThan(0);
-      expect(
-        todas.every((row) => !row.cardId.startsWith(TEST_CARD_PREFIX)),
-      ).toBe(true);
-    });
-
-    // Y se limpia lo que el test metió en la cola real.
-    await prismaClient.priceRefreshJob.deleteMany({
-      where: { cardId: { not: { startsWith: TEST_CARD_PREFIX } } },
-    });
+    expect(enqueued).toHaveLength(1);
+    expect(enqueued[0]).toBeTruthy();
   });
 });

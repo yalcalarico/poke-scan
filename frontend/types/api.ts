@@ -325,9 +325,8 @@ export interface IdentifyRequestDto {
   /**
    * Código de set impreso abajo a la izquierda, ej `"30C"`.
    *
-   * Todavía no lo manda nadie: depende de medir la banda (fase 8.1 de
-   * `docs/files/08-VERSION-DISAMBIGUATION.md`). El backend ya lo acepta y lo
-   * bonusifica; sin él, la señal no vota.
+   * El escáner lo valida contra el catálogo local después de leer el pie.
+   * Si el OCR no lo puede confirmar, la señal no vota.
    */
   setCode?: string;
   limit?: number;
@@ -364,6 +363,11 @@ export interface IdentifiedCandidateDto {
   matchedText?: string | null;
 }
 
+export interface ScannerConfigDto {
+  setCodes: string[];
+  setNames: string[];
+}
+
 export interface IdentifyResponseDto {
   candidates: IdentifiedCandidateDto[];
   extracted: {
@@ -372,6 +376,8 @@ export interface IdentifyResponseDto {
     setHint?: string | null;
   };
   totalCandidates: number;
+  status?: 'confident' | 'ambiguous' | 'low';
+  timings?: { matchMs: number; totalMs: number };
 }
 
 // ─── Compartir ───

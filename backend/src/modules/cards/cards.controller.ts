@@ -43,6 +43,12 @@ export class CardsController {
     return this.cardsService.search(dto);
   }
 
+  @Public()
+  @Get('scanner-config')
+  scannerConfig(): Promise<{ setCodes: string[]; setNames: string[] }> {
+    return this.identifyService.scannerConfig();
+  }
+
   // POST, así que no colisiona con `@Get(':id')`.
   @Public()
   @Post('identify')

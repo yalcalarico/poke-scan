@@ -1,0 +1,105 @@
+[
+  {
+    "photo": "IMG_4987",
+    "expected": "Umbreon ex",
+    "expectedCardId": "me55-92",
+    "exactTop1": true,
+    "exactTop8": true,
+    "top1": true,
+    "top3": true,
+    "totalMs": 7730,
+    "matchTimings": {
+      "matchMs": 1073,
+      "totalMs": 1077
+    },
+    "status": "ambiguous",
+    "parsed": {
+      "lines": [
+        "CTY EE - Ls Sy n",
+        "STAGE] of oT.",
+        "7 Sal preon &X",
+        "3 ~~ Ca",
+        "V7. VL ——",
+        "=X Umbreon €X _",
+        "gem qe 3 3 ’% : . SV",
+        "7 2 L nbreon €X",
+        "of Frormhrac roam FOVAB uit abi didi",
+        "aE Oh CX EE",
+        "Ps ~ ) ’ _ - sp —————tok th",
+        ")7/8 Nort ns Eaves . aaa",
+        "Gig AE 2 4",
+        "T-Ys gp 2",
+        "= A ;",
+        "Evolyes from EVES smi cies #4",
+        ": 4 4 ER k",
+        "Th EY -,",
+        "| Ny. 28 <A 8",
+        "ER A,",
+        "Nt al",
+        "PS Lunatic Claw 100+ =",
+        "If your opponent’s Active Pokémon already has any damage",
+        "counters on it, this attack does 140 more damage. 5 /",
+        "by fe ¥",
+        "\" 7",
+        ": 0. we",
+        "weakness 7 x2 resistance FF “7 retreat Sy pr Vo",
+        "i I Pokémon €X rule ) Vie y 2"
+      ],
+      "nameGuess": "Sal preon ex",
+      "numberGuess": "4",
+      "setHint": null,
+      "setCode": null,
+      "confidence": 0.53
+    },
+    "candidates": [
+      {
+        "id": "me55-92",
+        "name": "Umbreon ex",
+        "number": "92",
+        "score": 0.9
+      },
+      {
+        "id": "sv8pt5-161",
+        "name": "Umbreon ex",
+        "number": "161",
+        "score": 0.9
+      },
+      {
+        "id": "sv8pt5-60",
+        "name": "Umbreon ex",
+        "number": "60",
+        "score": 0.9
+      },
+      {
+        "id": "me55-91",
+        "name": "Umbreon",
+        "number": "91",
+        "score": 0.7
+      },
+      {
+        "id": "sv8pt5-59",
+        "name": "Umbreon",
+        "number": "59",
+        "score": 0.7
+      },
+      {
+        "id": "sv3-130",
+        "name": "Umbreon",
+        "number": "130",
+        "score": 0.7
+      },
+      {
+        "id": "swsh9tg-TG22",
+        "name": "Umbreon V",
+        "number": "TG22",
+        "score": 0.67
+      },
+      {
+        "id": "cel25c-17_A",
+        "name": "Umbreon ★",
+        "number": "17",
+        "score": 0.67
+      }
+    ]
+  }
+]

@@ -57,6 +57,11 @@ for i in $(seq 1 "$WAIT_INFRA"); do
 done
 
 # ──Arrancar ambos ───────────────────────────────────────────────────────────
+# Turbopack puede reutilizar artefactos viejos de la sesión anterior. Limpiar
+# solo el output de `next dev` fuerza una compilación coherente al reiniciar el
+# stack sin tocar el caché de producción ni dependencias descargadas.
+rm -rf "$ROOT/frontend/.next/dev"
+
 pids=()
 STOPPING=0
 

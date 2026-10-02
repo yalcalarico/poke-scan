@@ -40,6 +40,7 @@ export type OcrLogger = (status: string, progress: number) => void;
 
 let workerPromise: Promise<TesseractWorker> | null = null;
 let activeLogger: OcrLogger | null = null;
+let recognitionQueue: Promise<void> = Promise.resolve();
 
 interface TesseractWorker {
   recognize(
@@ -54,6 +55,7 @@ interface TesseractWorker {
 interface RawLine {
   text?: string;
   confidence?: number;
+  words?: Array<{ text?: string; confidence?: number }>;
 }
 
 interface RawParagraph {
@@ -88,6 +90,10 @@ function toOcrLine(line: RawLine): OcrLine {
   return {
     text: (line.text ?? '').replace(/\s+/g, ' ').trim(),
     confidence: Number.isFinite(line.confidence) ? Number(line.confidence) : 0,
+    words: line.words?.map((word) => ({
+      text: (word.text ?? '').trim(),
+      confidence: Number.isFinite(word.confidence) ? Number(word.confidence) : 0,
+    })),
   };
 }
 
@@ -172,12 +178,15 @@ export async function recognize(
   logger?: OcrLogger,
   pageSegMode: string = OCR_FULL_CARD_PAGE_SEG_MODE,
 ): Promise<OcrResult> {
-  const worker = await createOcrWorker(logger);
-  await worker.setParameters({ tessedit_pageseg_mode: pageSegMode });
-  // `blocks: true` is what actually carries the per-line data in v6/v7; the
-  // default output only has `text`, and per-line confidences would be lost.
-  const { data } = await worker.recognize(blobOrCanvas, {}, { text: true, blocks: true });
-  return toOcrResult(data);
+  // Un timeout de la UI no cancela Tesseract: serializar protege su PSM de la siguiente captura.
+  const pending = recognitionQueue.then(async () => {
+    const worker = await createOcrWorker(logger);
+    await worker.setParameters({ tessedit_pageseg_mode: pageSegMode });
+    const { data } = await worker.recognize(blobOrCanvas, {}, { text: true, blocks: true });
+    return toOcrResult(data);
+  });
+  recognitionQueue = pending.then(() => {}, () => {});
+  return pending;
 }
 
 export async function terminateOcrWorker(): Promise<void> {
