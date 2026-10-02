@@ -6,6 +6,7 @@ import {
   writeFile,
   open,
   unlink,
+  rename,
 } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { createHash } from 'node:crypto';
@@ -304,6 +305,14 @@ try {
         orderBy: { id: 'asc' },
         select: { id: true, name: true, imageLarge: true, imageSmall: true },
       });
+      if (cards.length === 0)
+        throw new Error(
+          'No hay cartas para la selección. Revisá --set y --card-ids con scanner:sets.',
+        );
+      if (cardIds && cards.length !== new Set(cardIds.split(',')).size)
+        throw new Error(
+          'Algún ID no existe o no pertenece a la expansión seleccionada.',
+        );
       const pending = cards.filter(
         (card) => !entries.has(card.id) && (card.imageLarge || card.imageSmall),
       );
@@ -358,7 +367,9 @@ try {
             bytes = Buffer.from(await response.arrayBuffer());
             if (bytes.length > 10 * 1024 * 1024)
               throw new Error('Referencia demasiado grande.');
-            await writeFile(imagePath, bytes);
+            const temporaryPath = imagePath + '.tmp';
+            await writeFile(temporaryPath, bytes);
+            await rename(temporaryPath, imagePath);
             downloads++;
           }
           const entry = {

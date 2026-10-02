@@ -31,6 +31,11 @@ const SCRIPTS = [
   ['prices:retention', 'Consolidar/podar card_prices (dry run por default)'],
   ['cache:clear', 'Vaciar la caché de Redis'],
 
+  ['— Escáner visual experimental —', null],
+  ['scanner:sets', 'Listar expansiones del catálogo local'],
+  ['scanner:index', 'Descargar/indexar imágenes: --set ID --limit N (--help)'],
+  ['scanner:evaluate', 'Evaluar fotos etiquetadas contra el índice local'],
+
   ['— Calidad —', null],
   ['check', 'lint + types + tests + build'],
   ['test', 'Todos los tests'],
