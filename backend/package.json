@@ -31,7 +31,10 @@
     "prices:retention": "tsc -p tsconfig.seed.json && node --env-file-if-exists=.env dist-seed/scripts/prune-card-prices.js",
     "db:dev-user": "tsc -p tsconfig.seed.json && node --env-file-if-exists=.env dist-seed/scripts/dev-user.js",
     "db:measure-near-dups": "tsc -p tsconfig.seed.json && node --env-file-if-exists=.env dist-seed/scripts/measure-near-duplicates.js",
-    "db:test-setup": "tsc -p tsconfig.seed.json && node --env-file-if-exists=.env dist-seed/scripts/setup-test-db.js"
+    "db:test-setup": "tsc -p tsconfig.seed.json && node --env-file-if-exists=.env dist-seed/scripts/setup-test-db.js",
+    "scanner:index": "node --env-file-if-exists=.env scripts/scanner-visual-spike.mjs index",
+    "scanner:evaluate": "node --env-file-if-exists=.env scripts/scanner-visual-spike.mjs evaluate",
+    "scanner:sets": "node --env-file-if-exists=.env scripts/scanner-visual-spike.mjs sets"
   },
   "dependencies": {
     "@nestjs/common": "^12.0.1",
