@@ -122,12 +122,12 @@ const API = 'http://localhost:3001/api';
 /** Las fotos a resolución completa, que es lo que llega del celular. */
 const DIR = process.env.SCAN_E2E_DIR ?? '/tmp/cards-full';
 const HIGH_RES_DIR = process.env.SCAN_HIGH_RES_DIR;
-const EXPECTED: Record<string, string> = {
-  IMG_4985: 'Shining Celebi',
-  IMG_4986: 'Pikachu',
-  IMG_4987: 'Umbreon ex',
-  IMG_4988: 'Chandelure',
-  IMG_4989: 'Hisuian Zorua',
+const EXPECTED: Record<string, { cardId: string; name: string; number: string }> = {
+  IMG_4985: { cardId: 'me55c-106', name: 'Shining Celebi', number: '106' },
+  IMG_4986: { cardId: 'me55-23', name: 'Pikachu', number: '23' },
+  IMG_4987: { cardId: 'me55-92', name: 'Umbreon ex', number: '92' },
+  IMG_4988: { cardId: 'me55-137', name: 'Chandelure', number: '137' },
+  IMG_4989: { cardId: 'me55-145', name: 'Hisuian Zorua', number: '145' },
 };
 
 interface Candidate {
@@ -138,28 +138,33 @@ interface Candidate {
 }
 
 const clean = (text: string): string => text.replace(/\s+/g, ' ').trim();
+const percentile = (values: number[], fraction: number): number | null => {
+  if (values.length === 0) return null;
+  const ordered = [...values].sort((a, b) => a - b);
+  return ordered[Math.ceil(fraction * ordered.length) - 1] ?? null;
+};
 
 it('diagnostica cada foto: qué leyó el OCR y por qué ganó ese resultado', async () => {
   const only = process.env.SCAN_E2E_PHOTOS;
-  const files = Object.keys(EXPECTED)
-    .sort()
-    .filter((f) => !only || f.includes(only));
+  const files = Object.keys(EXPECTED).filter((f) => !only || f.includes(only));
 
   const progressive = process.env.SCAN_PROGRESSIVE === '1';
   const skipApi = process.env.SCAN_SKIP_API === '1';
   const config = !skipApi && (progressive || process.env.SCAN_COLLECTOR !== '0') ? await fetch(`${API}/cards/scanner-config`).then((r) => r.json()) as { setCodes: string[]; setNames: string[] } : { setCodes: [], setNames: [] };
   const report: unknown[] = [];
+  const latencies: number[] = [];
 
   let aciertos = 0;
 
-  for (const file of files) {
+  for (const [fileIndex, file] of files.entries()) {
     const run = `diag-${file}`;
     rmSync(join('/tmp/pokemon-scanner-captures', run), { recursive: true, force: true });
 
     const started = performance.now();
     const seen: string[] = [];
     const ocrAttempts: Array<{ text: string; lineConfidences: number[]; lines: Array<{ text: string; confidence: number; words: Array<{ text: string; confidence: number }> }> }> = [];
-    const result = await scanCardImage(loadImage(`${DIR}/${file}.png`), {
+    const sourceImage = loadImage(`${DIR}/${file}.png`);
+    const result = await scanCardImage(sourceImage, {
       captureRun: run,
       highResolutionSource: HIGH_RES_DIR ? loadImage(`${HIGH_RES_DIR}/${file}.png`) : undefined,
       progressive,
@@ -194,27 +199,43 @@ it('diagnostica cada foto: qué leyó el OCR y por qué ganó ese resultado', as
         number: result.parsed.numberGuess ?? undefined,
         setHint: result.parsed.setHint ?? undefined,
         setCode: result.parsed.setCode ?? undefined,
-        limit: 8,
+        limit: 10,
       }),
     }).then((r) => r.json())) as { candidates?: Candidate[]; timings?: { matchMs: number; totalMs: number }; status?: string };
 
     const n = result.normalized;
     const expected = EXPECTED[file]!;
     const cands = data.candidates ?? [];
-    const ok = cands[0]?.card.name.startsWith(expected);
-    const expectedCardId = file === 'IMG_4987' ? 'me55-92' : null;
-    report.push({ photo: file, expected, expectedCardId, ocrAttempts,
-      exactTop1: expectedCardId ? cands[0]?.card.id === expectedCardId : null,
-      exactTop8: expectedCardId ? cands.some((c) => c.card.id === expectedCardId) : null,
+    const ok = cands[0]?.card.name.startsWith(expected.name);
+    const exactTop1 = cands[0]?.card.id === expected.cardId;
+    const exactTop8 = cands.slice(0, 8).some((c) => c.card.id === expected.cardId);
+    const exactTop10 = cands.length >= 10
+      ? cands.slice(0, 10).some((c) => c.card.id === expected.cardId)
+      : null;
+    const totalMs = Math.round(performance.now() - started);
+    latencies.push(totalMs);
+    report.push({ photo: file, sourceWidth: sourceImage.width, sourceHeight: sourceImage.height,
+      latencyScope: 'node-total', coldWorkerRun: fileIndex === 0,
+      expected: expected.name, expectedCardId: expected.cardId, ocrAttempts,
+      exactTop1,
+      exactTop8,
+      exactTop10,
+      numberGuess: result.parsed.numberGuess,
+      numberCovered: result.parsed.numberGuess !== null,
+      numberCorrect: result.parsed.numberGuess?.split('/')[0] === expected.number,
+      setCodeGuess: result.parsed.setCode,
+      setCodeCovered: result.parsed.setCode !== null,
+      acceptanceStatus: data.status ?? null,
+      accepted: data.status === 'confident',
       top1: Boolean(ok),
-      top3: cands.slice(0, 3).some((c) => c.card.name.startsWith(expected)),
-      totalMs: Math.round(performance.now() - started), matchTimings: data.timings, status: data.status, parsed: result.parsed,
+      top3: cands.slice(0, 3).some((c) => c.card.name.startsWith(expected.name)),
+      totalMs, matchTimings: data.timings, status: data.status, parsed: result.parsed,
       candidates: cands.map((c) => ({ id: c.card.id, name: c.card.name, number: c.card.number, score: c.score })),
     });
     if (ok) aciertos += 1;
 
     console.log(`\n${'═'.repeat(72)}`);
-    console.log(`${file}  esperado: ${expected}   ${ok ? '✔ ACIERTA' : '✘ FALLA'}`);
+    console.log(`${file}  esperado: ${expected.name} (${expected.cardId})   ${exactTop1 ? '✔ ID exacto' : '✘ ID distinto'}`);
     console.log(
       n.detected
         ? `carta recortada ${n.rect?.width}x${n.rect?.height}  rot=${n.rotation}  retina ${n.image.width}x${n.image.height}`
@@ -245,5 +266,15 @@ it('diagnostica cada foto: qué leyó el OCR y por qué ganó ese resultado', as
     writeFileSync(process.env.SCAN_REPORT_FILE, JSON.stringify(report, null, 2));
   }
   console.log(`TOTAL: ${aciertos}/${files.length} con el nombre correcto en el top-1`);
+  const exactHits = report.filter((row) => typeof row === 'object' && row !== null && 'exactTop1' in row && row.exactTop1 === true).length;
+  const numberHits = report.filter((row) => typeof row === 'object' && row !== null && 'numberCorrect' in row && row.numberCorrect === true).length;
+  const numberCoverage = report.filter((row) => typeof row === 'object' && row !== null && 'numberCovered' in row && row.numberCovered === true).length;
+  const codeCoverage = report.filter((row) => typeof row === 'object' && row !== null && 'setCodeCovered' in row && row.setCodeCovered === true).length;
+  const accepted = report.filter((row) => typeof row === 'object' && row !== null && 'accepted' in row && row.accepted === true).length;
+  const top8Hits = report.filter((row) => typeof row === 'object' && row !== null && 'exactTop8' in row && row.exactTop8 === true).length;
+  const top10Measured = report.filter((row) => typeof row === 'object' && row !== null && 'exactTop10' in row && row.exactTop10 !== null).length;
+  const top10Hits = report.filter((row) => typeof row === 'object' && row !== null && 'exactTop10' in row && row.exactTop10 === true).length;
+  console.log(`ID exacto top-1: ${exactHits}/${files.length}; top-8: ${top8Hits}/${files.length}; top-10: ${top10Hits}/${top10Measured} medibles; número correcto: ${numberHits}/${files.length} (cobertura ${numberCoverage}/${files.length}); código detectado: ${codeCoverage}/${files.length}; confident: ${accepted}/${files.length}`);
+  console.log(`Latencia Node total: p50=${percentile(latencies, 0.5) ?? 'n/d'} ms, p95=${percentile(latencies, 0.95) ?? 'n/d'} ms (primera foto identificada como worker frío; sin umbral de aceptación configurado)`);
   console.log('capturas en /tmp/pokemon-scanner-captures/diag-*');
 }, 40 * 60_000);
