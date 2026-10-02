@@ -1,5 +1,57 @@
 # Mejoras del escáner — 1 de octubre de 2026
 
+## Revisión de cierre — 2 de octubre de 2026
+
+**El plan completo sigue abierto.** El trabajo de los tres agentes está integrado
+en `master` hasta `f67edaf`. La revisión inicial que sigue describe el punto de
+partida (`38881e1`); la sección «Avances de los tres frentes» y las casillas del
+roadmap reflejan las entregas posteriores y su verificación.
+
+- La estabilización tiene arreglos y regresiones implementados. La última
+  verificación documentada pasó lint, tipos, 323 tests backend, 4 pruebas API,
+  397 frontend y ambos builds. Siguen abiertas las verificaciones de navegador
+  indicadas en la etapa 1 y la prueba de cámara/PWA en dispositivo.
+- El recorte está corregido. La fiabilidad del OCR del pie sigue abierta en la
+  etapa 3; no bloquea considerar implementado el arreglo geométrico.
+- El JSON de etapa 3 registra **3/5 números** (23, 92, 145), **0/5 códigos** y
+  candidatos top-1 compatibles con los IDs corroborados en **4/5 fotos**.
+  Chandelure devuelve `bw4-101` en lugar de `me55-137`. Esto corrige el conteo
+  anterior de 4/5 números. Sólo Umbreon tiene `expectedCardId` en ese JSON;
+  los otros IDs están documentados en el informe de etapa 2, por lo que falta
+  consolidar las etiquetas para obtener métricas automáticas de edición.
+- El modelo visual está descargado, pero el índice local contiene **una sola
+  referencia**. Su evaluación usa `not-labelled` y marca
+  `productionReady: false`; no demuestra precisión sobre el catálogo completo.
+- No hay identificación visual integrada en el flujo público. El OCR progresivo
+  sigue condicionado a `NEXT_PUBLIC_SCANNER_PROGRESSIVE=1`; con el experimento
+  apagado, el loader no carga códigos y no se ejecutan las pasadas del pie que
+  extraen `setCode`. Las pasadas dedicadas al número sí se ejecutan por defecto.
+
+El siguiente bloque es cerrar la lectura de código/número y Chandelure, consolidar
+las etiquetas exactas y ampliar la evaluación. Las etapas 5–9 siguen pendientes
+salvo la preparación del motor visual; mobile permanece como trabajo posterior.
+
+### Avances de los tres frentes
+
+- Se consolidó el manifiesto de cinco IDs exactos en
+  `docs/evaluations/manifest.json` y el diagnóstico distingue edición, número,
+  código, aceptación y latencia. Falta ampliar a 50–100 fotos.
+- La medición OCR a resolución original obtuvo 5/5 IDs y 4/5 números; una
+  aproximación a la galería de 1200 px obtuvo 4/5 IDs y 3/5 números. Chandelure
+  lee 137/128, pero el texto de evolución dañado favorece Lampent. Código: 0/5.
+  Las pasadas extra no mejoraron precisión y se descartaron. Ver
+  `docs/evaluations/ocr-2026-10-02.md`; no demuestra un arreglo de la UI.
+- Se preparó un CLI reanudable por cantidad, set o IDs que guarda imágenes,
+  vectores y metadata: `pnpm run scanner:index`, `scanner:sets` y
+  `scanner:evaluate`. Uso en `docs/evaluations/visual-indexer.md`.
+  La muestra visual obtuvo 5/5 top-1 con sólo cinco referencias; no valida el
+  catálogo completo. Se verificó descarga y reutilización del caché.
+- En la integración pasó `pnpm run check`: lint, tipos, 324 tests backend,
+  4 pruebas API, 398 frontend y ambos builds (2 skip y 1 todo). Después se
+  verificaron sintaxis, ayuda y listado del CLI, y rechazo de selección vacía.
+  La API y la web se volvieron a levantar. La señal SIGINT real y un abort
+  nativo ONNX aislado siguen sin validación definitiva.
+
 ## Implementado
 
 - Inicio anticipado del worker al abrir la cámara; Tesseract sigue siendo cliente.
@@ -103,23 +155,36 @@ después avanzar con reconocimiento visual y optimizaciones.
 
 ### 3. Lectura de número y código — en curso
 
-- [x] Las pasadas OCR dedicadas al número recuperan 4/5 números en las fotos actuales.
+- [x] Medir lectura de número: el JSON histórico registra 3/5 (23, 92 y 145).
+  La nueva corrida original registra 4/5; la aproximación a galería, 3/5.
+  Son entradas distintas, no una mejora demostrada del runtime.
 - [x] Umbreon devuelve 92 y el candidato exacto `me55-92`, en estado `confident`.
 - [ ] Mejorar código de colección: 0/5 códigos se extrajeron con confianza, aunque
   los bloques de código y su extracción ya están implementados. Una pasada
   específica adicional no mejoró el resultado y sumaba latencia.
-- [ ] Reintentar Chandelure: el pie visible es 137/128, pero OCR no lo valida aún.
-  Resultados en `docs/evaluations/scanner-stage3-diagnostic-2026-10-01.json`.
+- [x] Reintentar Chandelure con resolución original y aproximación a galería.
+  Ambas leen 137/128. Evidencia en `docs/evaluations/ocr-2026-10-02.md`.
+- [ ] Resolver su ranking en galería: el texto de evolución dañado favorece
+  Lampent por encima de Chandelure; no se integró un arreglo sin evidencia.
 
 ### 4. Preparar una evaluación de edición exacta
 
-- [ ] Etiquetar las fotos existentes con ID exacto, colección y número.
+- [x] Etiquetar las cinco fotos existentes con ID exacto, colección y número:
+  `docs/evaluations/manifest.json`.
 - [ ] Ampliar a 50–100 fotos con full-art, fundas, reflejos y reimpresiones similares.
-- [ ] Medir top-1/top-10 por ID, ambigüedad, falsos positivos y tiempo frío/caliente.
+- [x] Preparar diagnóstico con métricas por ID, número, código y aceptación,
+  tamaño fuente y primer worker; top-10 sólo con al menos diez candidatos.
+- [ ] Completar mediciones amplias de ambigüedad, falsos positivos y tiempo
+  frío/caliente en navegador/dispositivo, no sólo cinco fotos en Node.
 
 ### 5. Evaluar reconocimiento visual
 
 - [x] Preparar motor DINOv2/ONNX e indexado reanudable.
+- [x] Entregar CLI por cantidad, expansión o IDs con imágenes cacheadas,
+  vectores/metadata, bloqueo de escritor y resumen; comprobar lote y reanudación.
+- [x] Ejecutar muestra de cinco referencias etiquetadas: 5/5 top-1, sin
+  extrapolar al catálogo completo. Ver `docs/evaluations/visual-2026-10-02.md`.
+- [ ] Verificar SIGINT real e investigar el abort nativo ONNX aislado.
 - [ ] Completar índice de referencias del catálogo local.
 - [ ] Ejecutar la evaluación contra el índice completo y pasar los criterios del spike.
 - [ ] Documentar decisión de integración según precisión y latencia.
