@@ -8,10 +8,13 @@ export interface AccessTokenPayload extends AuthUser {
   exp?: number;
 }
 
-export interface AuthTokens {
+export interface AuthResponseDto {
   accessToken: string;
-  refreshToken: string;
   user: PublicUser;
+}
+
+export interface AuthTokens extends AuthResponseDto {
+  refreshToken: string;
 }
 
 export type PublicUser = {

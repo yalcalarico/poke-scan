@@ -7,7 +7,7 @@
 | Archivo | Qué exporta |
 |---|---|
 | `api-client.ts` | `apiFetch`, `ApiError`, `getApiBaseUrl`, `buildQueryString`, `refreshSession` |
-| `token-storage.ts` | `getAccessToken`, `getRefreshToken`, `setTokens`, `clearTokens`, `hasSession` |
+| `token-storage.ts` | `getAccessToken`, `setTokens`, `clearTokens`, `hasSession` |
 | `auth.ts` | `register`, `login`, `logout`, `getMe`, `refreshSessionTokens` |
 | `cards.ts` | `searchCards`, `getCard`, `getCardPrices`, `getSets`, `buildCardsSearchPath` |
 | `collections.ts` | `listCollections`, `getCollection`, `createCollection`, `updateCollection`, `deleteCollection`, `listItems`, `addItem`, `getDuplicates`, `getStats`, `updateItem`, `deleteItem` |
@@ -65,12 +65,13 @@ Flujo:
 
 1. `execute()` arma los headers: `Content-Type: application/json` si hay `body`,
    `Authorization: Bearer …` si hay access token **y no** `skipAuth`. Un `body` que
-   ya sea string se pasa tal cual, si no se `JSON.stringify`.
+   ya sea string se pasa tal cual, si no se `JSON.stringify`. Todos los pedidos
+   usan `credentials: include`; auth agrega `X-Session-Request: 1`.
 2. Si la respuesta es `401` y no es un reintento y no es `skipAuth`:
-   - si hay refresh token → `refreshSession()`; si volvió bien, se reintenta **una**
+   - si hay pista de sesión → `refreshSession()`; si volvió bien, se reintenta **una**
      vez con `isRetry: true`;
    - si el refresh falló → `clearTokens()` + `redirectToLogin()`;
-   - si no había refresh token, tira `ApiError(401, …)` con el mensaje del backend.
+   - si no había pista de sesión, tira `ApiError(401, …)` con el mensaje del backend.
 3. Si no es `ok` → `ApiError(response.status, extractErrorMessage(...))`.
 4. `parseBody<T>()`: `204`/`205` y cuerpo vacío devuelven `undefined`; si el JSON
    no parsea devuelve el texto crudo (así un error HTML de un proxy no se pierde
@@ -101,56 +102,19 @@ return `Request failed with status ${status}`;
 
 ### El single-flight del refresh
 
-**Es la parte más crítica del cliente.** El backend detecta el reuso de un refresh
-token y **revoca todas las sesiones del usuario**. Dos refresh simultáneos =
-sesión perdida.
+`refreshSession()` conserva una promesa por pestaña; otras llamadas esperan
+la misma renovación. Cuando el browser soporta Web Locks también serializa
+renovaciones entre pestañas con `pcs.session-refresh`. El backend detecta
+reuso y revoca las sesiones, así que esto evita carreras legítimas.
 
-```ts
-let refreshInFlight: Promise<AuthResponseDto | null> | null = null;
+El refresh usa `fetch` directo, `credentials: include`,
+`X-Session-Request: 1` y un body vacío. El token lo envía automáticamente el
+browser por cookie HttpOnly; no pasa por JavaScript. Una respuesta exitosa
+contiene únicamente `accessToken` y `user`. Un rechazo borra la pista local;
+un fallo de red devuelve null. El reintento de `apiFetch` sigue limitado a uno.
 
-export function refreshSession(): Promise<AuthResponseDto | null> {
-  if (refreshInFlight) return refreshInFlight;     // ← misma promesa, no otro fetch
-
-  const run = async (): Promise<AuthResponseDto | null> => {
-    const refreshToken = getRefreshToken();
-    if (!refreshToken) return null;
-    try {
-      const response = await fetch(`${BASE_URL}/auth/refresh`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ refreshToken }),
-      });
-      if (!response.ok) { clearTokens(); return null; }
-      const data = await parseBody<AuthResponseDto>(response);
-      if (!data?.accessToken || !data?.refreshToken) { clearTokens(); return null; }
-      setTokens(data.accessToken, data.refreshToken);
-      return data;
-    } catch {
-      return null;
-    }
-  };
-
-  refreshInFlight = run().finally(() => { refreshInFlight = null; });
-  return refreshInFlight;
-}
-```
-
-Cómo funciona:
-
-1. La variable es **a nivel de módulo**, o sea compartida por toda la pestaña.
-2. La primera llamada guarda la promesa en `refreshInFlight`. Todas las demás
-   reciben **esa misma promesa** y esperan, sin disparar un segundo `POST
-   /auth/refresh`.
-3. `.finally()` limpia el slot, así el siguiente refresh puede arrancar normal.
-4. El `refresh` usa `fetch` crudo, no `apiFetch`: si usara `apiFetch` y el backend
-   devolviera 401, se entraría en un loop infinito de refresh.
-5. Cualquier fallo (network, 401, respuesta sin tokens) termina en `clearTokens()` y
-   `null`, que dispara el `redirectToLogin()` de `apiFetch`.
-
-`redirectToLogin()` usa `window.location.assign('/login')` (no el router) a
-propósito: es una navegación **dura**, que además vacía el estado de React. Y
- primero chequea `if (window.location.pathname === '/login') return;` para no
-entrar en loop si ya estás ahí.
+`redirectToLogin()` mantiene la navegación dura para vaciar el estado de React,
+con un guard para no redirigir si ya estamos en `/login`.
 
 ### `skipAuth`
 
@@ -160,7 +124,7 @@ Tres endpoints lo usan, y por los tres motivos distintos:
 |---|---|
 | `POST /auth/login` | No hay token todavía; y un 401 acá significa "credenciales malas", no "sesión vencida". Sin `skipAuth`, un login fallido dispararía un refresh y redirigiría a `/login` (donde ya estás). |
 | `POST /auth/register` | Igual que login. |
-| `POST /auth/logout` | Puede no haber access token válido, y logout tiene que funcionar **siempre**. Además el logout manda el `refreshToken` en el body, no en el header. |
+| `POST /auth/logout` | Puede no haber access token válido, y logout tiene que funcionar **siempre**. Además el logout manda un body vacío y el browser adjunta la cookie. |
 | `GET /currency/usd-ars` | Es público; mandarle un token vencido solo genera un refresh inútil. |
 | `GET /s/:slug` (`getPublicCollection`) | Ruta pública. Mandar el token de otra persona a un endpoint público no suma nada. |
 
@@ -168,62 +132,36 @@ Tres endpoints lo usan, y por los tres motivos distintos:
 
 ## `token-storage.ts` — dónde vive cada token
 
-| Token | Dónde | Por qué |
+| Dato | Dónde | Por qué |
 |---|---|---|
-| `accessToken` | **memoria** (variable de módulo) + `sessionStorage` (`pcs.accessToken`) | Vive poco (15 min). Memoria primero para no tocar el disco en cada request; `sessionStorage` para sobrevivir a un refresh de la página. |
-| `refreshToken` | `localStorage` (`pcs.refreshToken`) | Es el de larga duración. Si fuera a `sessionStorage`, cerrar la pestaña cierra la sesión. |
-| flag de sesión | `localStorage` (`pcs.hasSession`) | Permite decidir "hay sesión" sin parsear un JWT ni bloquear por un refresh. |
+| `accessToken` | Memoria de la pestaña | Vive poco (15 min); no se persiste en storage. |
+| `refreshToken` | Cookie HttpOnly del backend | JavaScript no lo recibe ni lo lee. |
+| pista de sesión | `localStorage` (`pcs.hasSession`) | Permite decidir si intentar recuperar la sesión al arrancar. |
 
-```ts
-let accessToken: string | null = null;
-let hydrated = false;
-
-function hydrateAccessToken(): void {
-  if (hydrated || !isBrowser()) return;
-  hydrated = true;
-  try { accessToken = window.sessionStorage.getItem(ACCESS_TOKEN_KEY); }
-  catch { accessToken = null; }
-}
-```
-
-Todas las operaciones de storage están envueltas en `try/catch`: en modo privado
-Safari el `localStorage.setItem` tira, y el token **igual sigue usable en memoria**
-durante la sesión. Un `getRefreshToken()` que devuelva `null` cuando el storage
-está bloqueado es el comportamiento esperado, no un bug.
-
-`hasSession()` es un atajo barato:
-
-```ts
-export function hasSession(): boolean {
-  if (readLocalStorage(HAS_SESSION_KEY) === 'true') return true;
-  return getRefreshToken() !== null;
-}
-```
-
-`AuthProvider` lo usa para decidir si vale la pena pegarle un `GET /users/me` al
-arrancar, o si ya sabe que no hay sesión y puede apagar el loading de una.
+`setTokens(access)` guarda el access token en memoria y la pista de sesión.
+`hasSession()` consulta la pista o el token en memoria. Al recargar,
+`getMe()` recibe 401 y renueva mediante la cookie. `clearTokens()` borra
+ambos. Todas las operaciones de storage están en try/catch para modo privado.
+La migración elimina `pcs.refreshToken` de localStorage y `pcs.accessToken`
+de sessionStorage. Las sesiones anteriores requieren volver a iniciar sesión.
 
 ---
 
 ## `auth.ts`
 
-```ts
-export interface RegisterPayload {
-  email: string; password: string; username: string; displayName: string;
-}
-```
+`register` y `login` usan `skipAuth` y guardan únicamente
+`data.accessToken`. `AuthResponseDto` tiene `accessToken` y `user`;
+el servidor envía el refresh como cookie HttpOnly fuera del JSON.
 
-`register` y `login` hacen el `apiFetch` con `skipAuth: true` y después llaman
-`setTokens(data.accessToken, data.refreshToken)` ellas mismas. El guardado de
-tokens vive acá y **no** en `apiFetch`, para que un endpoint futuro que devuelva
-tokens por otra razón no los pise por accidente.
+`logout` siempre manda `POST /auth/logout` con body vacío y cookies, incluso
+sin access token, para revocar la sesión y borrar la cookie. En finally
+limpia la memoria y la pista local aunque falle la red. `getMe()` conserva
+Bearer; `refreshSessionTokens()` es un alias de `refreshSession()`.
 
-`logout` manda `POST /auth/logout` con el refresh token en el body y, en un
-`finally`, `clearTokens()`: aunque el backend esté caído, los tokens locales se van.
-
-`getMe()` es el único que **sí** usa el token: es lo que define
-`isAuthenticated`. `refreshSessionTokens()` es un alias de `refreshSession()` para
-no importar `api-client` desde un hook.
+Todos los POST de auth usan `X-Session-Request: 1`, que fuerza preflight.
+La API admite únicamente los orígenes propios. Frontend y API deben
+compartir sitio HTTPS para la cookie SameSite=Lax. Consultá
+[seguridad](../../docs/security.md) para producción y CSRF.
 
 ---
 

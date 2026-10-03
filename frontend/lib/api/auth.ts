@@ -1,6 +1,6 @@
 import type { AuthResponseDto, UserDto } from '@/types/api';
 import { apiFetch, refreshSession } from './api-client';
-import { clearTokens, getRefreshToken, setTokens } from './token-storage';
+import { clearTokens, setTokens } from './token-storage';
 
 export interface RegisterPayload {
   email: string;
@@ -15,7 +15,7 @@ export async function register(payload: RegisterPayload): Promise<AuthResponseDt
     body: payload,
     skipAuth: true,
   });
-  setTokens(data.accessToken, data.refreshToken);
+  setTokens(data.accessToken);
   return data;
 }
 
@@ -25,20 +25,15 @@ export async function login(email: string, password: string): Promise<AuthRespon
     body: { email, password },
     skipAuth: true,
   });
-  setTokens(data.accessToken, data.refreshToken);
+  setTokens(data.accessToken);
   return data;
 }
 
 export async function logout(): Promise<void> {
-  const refreshToken = getRefreshToken();
   try {
-    if (refreshToken) {
-      await apiFetch<{ success: boolean }>('/auth/logout', {
-        method: 'POST',
-        body: { refreshToken },
-        skipAuth: true,
-      });
-    }
+    await apiFetch<{ success: boolean }>('/auth/logout', {
+      method: 'POST', body: {}, skipAuth: true,
+    });
   } finally {
     clearTokens();
   }

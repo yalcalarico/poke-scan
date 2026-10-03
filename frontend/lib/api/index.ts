@@ -10,7 +10,6 @@ export type { ApiFetchOptions } from './api-client';
 export {
   clearTokens,
   getAccessToken,
-  getRefreshToken,
   hasSession,
   setTokens,
 } from './token-storage';

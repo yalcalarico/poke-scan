@@ -164,6 +164,34 @@ describe('AuthService', () => {
     expect(active).toHaveLength(0);
   });
 
+  it('dos refresh simultáneos emiten un solo hijo y el reuso lo revoca', async () => {
+    const { refreshToken, user } = await service.register(registerDto);
+    const results = await Promise.allSettled([
+      service.refresh({ refreshToken }), service.refresh({ refreshToken }),
+    ]);
+    expect(results.filter((result) => result.status === 'fulfilled')).toHaveLength(1);
+    const failure = results.find((result) => result.status === 'rejected');
+    expect(failure?.status === 'rejected' && failure.reason instanceof UnauthorizedException).toBe(true);
+    const tokens = await prismaClient.refreshToken.findMany({ where: { userId: user.id } });
+    expect(tokens).toHaveLength(2);
+    expect(tokens.every((token) => token.revokedAt !== null)).toBe(true);
+  });
+
+  it('un fallo al persistir el hijo permite reintentar el token anterior', async () => {
+    const { refreshToken } = await service.register(registerDto);
+    const config = moduleRef.get(ConfigService);
+    const original = config.get<string>('JWT_REFRESH_TTL_DAYS', '30');
+    config.set('JWT_REFRESH_TTL_DAYS', '0');
+    try {
+      await expect(service.refresh({ refreshToken })).rejects.toThrow('JWT_REFRESH_TTL_DAYS');
+    } finally {
+      config.set('JWT_REFRESH_TTL_DAYS', original);
+    }
+    const old = await prismaClient.refreshToken.findUnique({ where: { tokenHash: sha256(refreshToken) } });
+    expect(old?.revokedAt).toBeNull();
+    await expect(service.refresh({ refreshToken })).resolves.toHaveProperty('accessToken');
+  });
+
   it('rechaza refresh tokens expirados', async () => {
     const { refreshToken } = await service.register(registerDto);
 
