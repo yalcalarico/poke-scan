@@ -20,7 +20,7 @@ describe('sesión del cliente', () => {
   });
   it('envía credenciales y el header CSRF, sin refresh token en el body', async () => {
     setTokens('old-token');
-    const fetch = vi.fn<typeof fetch>().mockImplementation(async () => new Response(JSON.stringify({ accessToken: 'new-token', user: {} })));
+    const fetch = vi.fn<typeof globalThis.fetch>().mockImplementation(async () => new Response(JSON.stringify({ accessToken: 'new-token', user: {} })));
     vi.stubGlobal('fetch', fetch);
     const [first, second] = await Promise.all([refreshSession(), refreshSession()]);
     expect(first).toEqual(second);
@@ -45,7 +45,7 @@ describe('sesión del cliente', () => {
     expect(new Headers(init.headers).get('Authorization')).toBe('Bearer renewed');
   });
   it('logout manda el header de seguridad y cookies', async () => {
-    const fetch = vi.fn<typeof fetch>().mockImplementation(async () => new Response('{"success":true}'));
+    const fetch = vi.fn<typeof globalThis.fetch>().mockImplementation(async () => new Response('{"success":true}'));
     vi.stubGlobal('fetch', fetch);
     await apiFetch('/auth/logout', { method: 'POST', body: {}, skipAuth: true });
     const init = fetch.mock.calls[0]?.[1] as RequestInit;

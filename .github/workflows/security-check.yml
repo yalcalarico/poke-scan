@@ -1,8 +1,6 @@
 name: Verificación de seguridad
 
 on:
-  push:
-    branches: [codex/security-hardening]
   pull_request:
   workflow_dispatch:
 
@@ -83,6 +81,8 @@ jobs:
         run: |
           pnpm run stop
           pnpm run check
+      - name: Flujo real contra el stack compilado
+        run: node backend/scripts/security-smoke.mjs
       - name: Auditoría de dependencias
         if: always()
         run: |

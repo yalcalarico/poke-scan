@@ -74,3 +74,7 @@ personales. El seed se niega a correr fuera de CI, sobre una base distinta de
 `pokemon_security_test`, sobre un host remoto o sobre datos existentes.
 Ejecuta `pnpm run stop` y `pnpm run check` allí, incluyendo los tests de
 concurrencia, rollback, cookies, CSRF y migración de storage.
+
+Después del check, el smoke levanta el backend y el frontend compilados en
+el runner. Verifica el rechazo de un secreto inseguro en producción y el
+flujo HTTP de registro, acceso, rotación, logout y CSRF con cookie Secure.
