@@ -35,16 +35,12 @@ jobs:
     env:
       DATABASE_URL: postgresql://pokemon:ci-only-disposable-password@localhost:55432/pokemon_security_test
       DATABASE_URL_TEST: postgresql://pokemon:ci-only-disposable-password@localhost:55432/pokemon_security_test
-      REDIS_URL: redis://localhost:6379
       JWT_SECRET: ci-only-access-secret-never-used-in-production
       JWT_REFRESH_SECRET: ci-only-refresh-secret-never-used-in-production
       JWT_REFRESH_TTL_DAYS: '30'
       FRONTEND_URL: http://localhost:3000
       ADMIN_KEY: ci-only-admin-key
       NEXT_TELEMETRY_DISABLED: '1'
-      ENABLE_CATALOG_SYNC_CRON: 'false'
-      ENABLE_PRICE_BACKFILL_CRON: 'false'
-      ENABLE_RETENTION_CRON: 'false'
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:

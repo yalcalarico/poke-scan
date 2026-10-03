@@ -13,6 +13,7 @@ const request = (origin?: string, header = '1', cookie?: string) => ({
 }) as unknown as Request;
 
 describe('seguridad de sesión', () => {
+  afterEach(() => vi.unstubAllEnvs());
   it('rechaza los placeholders y secretos cortos en producción', () => {
     for (const JWT_SECRET of ['change-me-in-production', 'change-me'.repeat(6), 'short']) {
       expect(() => readJwtSecret(config({ NODE_ENV: 'production', JWT_SECRET }), 'JWT_SECRET')).toThrow();
@@ -23,6 +24,7 @@ describe('seguridad de sesión', () => {
 
   it('mantiene la configuración local y no acepta una variable ausente', () => {
     expect(readJwtSecret(config({ NODE_ENV: 'development', JWT_SECRET: 'dev' }), 'JWT_SECRET')).toBe('dev');
+    vi.stubEnv('JWT_SECRET', undefined);
     expect(() => readJwtSecret(config(), 'JWT_SECRET')).toThrow();
   });
 
