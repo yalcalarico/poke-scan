@@ -44,9 +44,8 @@
   (`common/types/auth-user.ts`):
 
 ```ts
-interface AuthTokens {
+interface AuthResponseDto {
   accessToken: string;
-  refreshToken: string;
   user: PublicUser;
 }
 
@@ -66,17 +65,23 @@ type PublicUser = {
 
 Cada `POST /auth/refresh` **revoca** el token usado y emite uno nuevo:
 
-1. Se busca por `sha256(refreshToken)`.
+1. Se lee la cookie HttpOnly y se busca por `sha256(refreshToken)` dentro de una transacción con lock por usuario.
 2. Si no existe → `401 Refresh token inválido`.
 3. Si ya estaba revocado → se revocan **todas** las sesiones del usuario y
    `401 Refresh token reutilizado: se revocaron todas las sesiones`. Esto es
    detección de robo: un atacante que reutiliza un token viejo invalida la
    sesión legítima.
 4. Si `expiresAt` ya pasó → `401 Refresh token expirado`.
-5. Se marca `revokedAt` y se emite un par nuevo.
+5. Se marca `revokedAt` y se crea el token siguiente en la misma transacción; el HTTP renueva la cookie sin exponer el refresh en JSON.
 
 `POST /auth/logout` es **idempotente**: revoca el token si estaba vivo y siempre
 devuelve `{ success: true }`, incluso con un token inexistente.
+
+Todos los POST de auth exigen `X-Session-Request: 1` y rechazan un `Origin`
+fuera de la lista permitida (403). Login, register y refresh devuelven
+`Cache-Control: no-store` y una cookie HttpOnly con path `/api/auth`,
+SameSite=Lax y Secure en producción. No aceptan refresh tokens por body.
+Frontend y API deben compartir sitio HTTPS; ver [seguridad](../../docs/security.md).
 
 ### Cómo se aplica el guard
 
@@ -202,7 +207,7 @@ Body `RegisterDto` (`auth/dto/register.dto.ts`):
 | `username` | `@Matches(/^[a-zA-Z0-9_]{3,20}$/)` | — |
 | `displayName` | `@MinLength(2)`, `@MaxLength(50)` | — |
 
-**200/201** → `AuthTokens`.
+**200/201** → `AuthResponseDto`.
 
 | Error | Cuándo |
 |---|---|
@@ -213,14 +218,13 @@ Body `RegisterDto` (`auth/dto/register.dto.ts`):
 
 ```bash
 curl -X POST http://localhost:3001/api/auth/register \
-  -H 'content-type: application/json' \
+  -H 'content-type: application/json' -H 'X-Session-Request: 1' -b cookies.txt -c cookies.txt \
   -d '{"email":"ada@example.com","password":"secret123","username":"ada","displayName":"Ada"}'
 ```
 
 ```json
 {
   "accessToken": "eyJhbGciOi...",
-  "refreshToken": "kQ3v...-base64url",
   "user": {
     "id": "b1c2...",
     "email": "ada@example.com",
@@ -250,20 +254,19 @@ Body `LoginDto`: `email` (`@IsEmail()`), `password` (`@IsString()`,
 
 ```bash
 curl -X POST http://localhost:3001/api/auth/login \
-  -H 'content-type: application/json' \
+  -H 'content-type: application/json' -H 'X-Session-Request: 1' -b cookies.txt -c cookies.txt \
   -d '{"email":"ada@example.com","password":"secret123"}'
 ```
 
 ### `POST /api/auth/refresh`
 
-Público. **200 OK**. Body `RefreshSessionDto`:
+Público. **200 OK**. Requiere cookie `pcs.refreshToken`. Body `BrowserSessionDto`:
 
 | Campo | Reglas |
 |---|---|
-| `refreshToken` | `@IsString()`, `@IsNotEmpty()` |
 | `deviceInfo` | Opcional, `@MaxLength(255)` |
 
-**200** → `AuthTokens` (token nuevo; el anterior queda revocado).
+**200** → `AuthResponseDto` (token nuevo; el anterior queda revocado).
 
 | Error | Cuándo |
 |---|---|
@@ -273,8 +276,8 @@ Público. **200 OK**. Body `RefreshSessionDto`:
 
 ```bash
 curl -X POST http://localhost:3001/api/auth/refresh \
-  -H 'content-type: application/json' \
-  -d '{"refreshToken":"kQ3v...","deviceInfo":"iPhone 15"}'
+  -H 'content-type: application/json' -H 'X-Session-Request: 1' -b cookies.txt -c cookies.txt \
+  -d '{"deviceInfo":"iPhone 15"}'
 ```
 
 ### `POST /api/auth/logout`
@@ -284,8 +287,8 @@ Público. **200 OK**. Mismo body que `refresh`. Siempre responde
 
 ```bash
 curl -X POST http://localhost:3001/api/auth/logout \
-  -H 'content-type: application/json' \
-  -d '{"refreshToken":"kQ3v..."}'
+  -H 'content-type: application/json' -H 'X-Session-Request: 1' -b cookies.txt -c cookies.txt \
+  -d '{}'
 ```
 
 ---
@@ -842,7 +845,7 @@ de 3 caracteres (energías "N", "F", "W" matcheaban perfecto con cualquier ruido
 
 ```bash
 curl -X POST http://localhost:3001/api/cards/identify \
-  -H 'content-type: application/json' \
+  -H 'content-type: application/json' -H 'X-Session-Request: 1' -b cookies.txt -c cookies.txt \
   -d '{"lines":["115% 4 Charizard &","STAGE 2 Evolves from Charmeleon"],"limit":3}'
 ```
 
@@ -1834,7 +1837,7 @@ y escribe con nombres sanitizados (`^[a-zA-Z0-9_.-]+$`) en
 
 ```bash
 curl -X POST http://localhost:3001/api/jobs/scan-capture \
-  -H 'content-type: application/json' \
+  -H 'content-type: application/json' -H 'X-Session-Request: 1' -b cookies.txt -c cookies.txt \
   -d "{\"run\":\"prueba\",\"step\":\"01-foto\",\"png\":\"data:image/png;base64,$(base64 -i foto.png | tr -d '\n')\"}"
 ```
 

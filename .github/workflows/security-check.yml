@@ -1,0 +1,97 @@
+name: Verificación de seguridad
+
+on:
+  push:
+    branches: [codex/security-hardening]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: security-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: pokemon
+          POSTGRES_PASSWORD: ci-only-disposable-password
+          POSTGRES_DB: pokemon_security_test
+        ports: ['55432:5432']
+        options: >-
+          --health-cmd "pg_isready -U pokemon -d pokemon_security_test"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports: ['6379:6379']
+        options: >-
+          --health-cmd "redis-cli ping" --health-interval 5s
+          --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgresql://pokemon:ci-only-disposable-password@localhost:55432/pokemon_security_test
+      DATABASE_URL_TEST: postgresql://pokemon:ci-only-disposable-password@localhost:55432/pokemon_security_test
+      REDIS_URL: redis://localhost:6379
+      JWT_SECRET: ci-only-access-secret-never-used-in-production
+      JWT_REFRESH_SECRET: ci-only-refresh-secret-never-used-in-production
+      JWT_REFRESH_TTL_DAYS: '30'
+      FRONTEND_URL: http://localhost:3000
+      ADMIN_KEY: ci-only-admin-key
+      NEXT_TELEMETRY_DISABLED: '1'
+      ENABLE_CATALOG_SYNC_CRON: 'false'
+      ENABLE_PRICE_BACKFILL_CRON: 'false'
+      ENABLE_RETENTION_CRON: 'false'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@f40ffcd9367d9f12939873eb1018b921a783ffaa # v4
+        with:
+          version: 10.17.1
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22.20.0
+      - name: Dependencias independientes
+        run: |
+          pnpm --dir backend install --no-frozen-lockfile
+          pnpm --dir frontend install --no-frozen-lockfile
+      - name: Guardar lockfiles resueltos
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: security-lockfiles
+          path: |
+            backend/pnpm-lock.yaml
+            frontend/pnpm-lock.yaml
+          retention-days: 3
+      - name: Schema con migraciones (preserva pg_trgm)
+        run: |
+          pnpm --dir backend exec prisma generate
+          pnpm --dir backend exec prisma migrate deploy
+      - name: Catálogo público estático, sin llamadas a pokemontcg.io
+        run: |
+          curl --fail --silent --show-error --location https://github.com/PokemonTCG/pokemon-tcg-data/archive/39a26a144c8b6ef6c2fb17b2c29d0bb7121e3a11.tar.gz -o "$RUNNER_TEMP/catalog.tar.gz"
+          mkdir "$RUNNER_TEMP/catalog"
+          tar -xzf "$RUNNER_TEMP/catalog.tar.gz" -C "$RUNNER_TEMP/catalog" --strip-components=1
+          node backend/scripts/seed-ci-catalog.mjs "$RUNNER_TEMP/catalog"
+      - name: Suite completa en infraestructura descartable
+        run: |
+          pnpm run stop
+          pnpm run check
+      - name: Auditoría de dependencias
+        if: always()
+        run: |
+          pnpm --dir backend audit --json > backend-security-audit.json || true
+          pnpm --dir frontend audit --json > frontend-security-audit.json || true
+      - name: Guardar auditorías sin suprimir alertas
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: security-audits
+          path: '*-security-audit.json'
+          retention-days: 7

@@ -1,5 +1,5 @@
 import type { AuthResponseDto } from '@/types/api';
-import { clearTokens, getAccessToken, getRefreshToken, setTokens } from './token-storage';
+import { clearTokens, getAccessToken, hasSession, setTokens } from './token-storage';
 
 const BASE_URL =
   process.env.NEXT_PUBLIC_API_URL?.replace(/\/+$/, '') ?? 'http://localhost:3001/api';
@@ -65,31 +65,34 @@ export function refreshSession(): Promise<AuthResponseDto | null> {
   if (refreshInFlight) return refreshInFlight;
 
   const run = async (): Promise<AuthResponseDto | null> => {
-    const refreshToken = getRefreshToken();
-    if (!refreshToken) return null;
+    if (!hasSession()) return null;
     try {
       const response = await fetch(`${BASE_URL}/auth/refresh`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ refreshToken }),
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json', 'X-Session-Request': '1' },
+        body: JSON.stringify({}),
       });
       if (!response.ok) {
         clearTokens();
         return null;
       }
       const data = await parseBody<AuthResponseDto>(response);
-      if (!data?.accessToken || !data?.refreshToken) {
+      if (!data?.accessToken) {
         clearTokens();
         return null;
       }
-      setTokens(data.accessToken, data.refreshToken);
+      setTokens(data.accessToken);
       return data;
     } catch {
       return null;
     }
   };
 
-  refreshInFlight = run().finally(() => {
+  const coordinated = () => typeof navigator !== 'undefined' && navigator.locks
+    ? navigator.locks.request('pcs.session-refresh', run)
+    : run();
+  refreshInFlight = coordinated().finally(() => {
     refreshInFlight = null;
   });
 
@@ -125,6 +128,7 @@ async function execute(path: string, options: Omit<ApiFetchOptions, 'isRetry'>):
   const { body, skipAuth, headers: customHeaders, ...rest } = options;
 
   const headers = new Headers(customHeaders);
+  if (path.startsWith('/auth/')) headers.set('X-Session-Request', '1');
   let payload: string | undefined;
   if (body !== undefined && body !== null) {
     payload = typeof body === 'string' ? body : JSON.stringify(body);
@@ -134,7 +138,7 @@ async function execute(path: string, options: Omit<ApiFetchOptions, 'isRetry'>):
   const token = skipAuth ? null : getAccessToken();
   if (token) headers.set('Authorization', `Bearer ${token}`);
 
-  return fetch(`${BASE_URL}${path}`, { ...rest, headers, body: payload });
+  return fetch(`${BASE_URL}${path}`, { ...rest, credentials: 'include', headers, body: payload });
 }
 
 export async function apiFetch<T = unknown>(
@@ -145,7 +149,7 @@ export async function apiFetch<T = unknown>(
   const response = await execute(path, rest);
 
   if (response.status === 401 && !isRetry && !rest.skipAuth) {
-    if (getRefreshToken()) {
+    if (hasSession()) {
       const refreshed = await refreshSession();
       if (refreshed) {
         return apiFetch<T>(path, { ...rest, isRetry: true });

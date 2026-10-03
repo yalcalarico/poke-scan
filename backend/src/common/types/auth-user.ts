@@ -8,7 +8,12 @@ export interface AccessTokenPayload extends AuthUser {
   exp?: number;
 }
 
-export interface AuthTokens {
+export interface AuthResponseDto {
+  accessToken: string;
+  user: PublicUser;
+}
+
+export interface AuthTokens extends AuthResponseDto {
   accessToken: string;
   refreshToken: string;
   user: PublicUser;
