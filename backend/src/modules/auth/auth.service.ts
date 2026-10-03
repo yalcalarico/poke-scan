@@ -1,3 +1,5 @@
+import { Prisma } from '@prisma/client';
+import { refreshTtlMs } from './session-security.js';
 import { randomBytes, createHash } from 'node:crypto';
 import {
   ConflictException,
@@ -108,55 +110,49 @@ export class AuthService {
 
   async refresh(dto: RefreshSessionDto): Promise<AuthTokens> {
     const tokenHash = this.hashToken(dto.refreshToken);
-
-    const stored = await this.prisma.refreshToken.findUnique({
-      where: { tokenHash },
-      select: {
-        id: true,
-        userId: true,
-        revokedAt: true,
-        expiresAt: true,
-        user: { select: USER_SELECT },
-      },
+    const owner = await this.prisma.refreshToken.findUnique({
+      where: { tokenHash }, select: { userId: true },
     });
+    if (!owner) throw new UnauthorizedException('Refresh token inválido');
 
-    if (!stored) {
-      throw new UnauthorizedException('Refresh token inválido');
-    }
-
-    if (stored.revokedAt !== null) {
-      await this.revokeAllForUser(stored.userId);
-      throw new UnauthorizedException(
-        'Refresh token reutilizado: se revocaron todas las sesiones',
-      );
-    }
-
-    if (stored.expiresAt.getTime() <= Date.now()) {
-      throw new UnauthorizedException('Refresh token expirado');
-    }
-
-    await this.prisma.refreshToken.update({
-      where: { id: stored.id },
-      data: { revokedAt: new Date() },
+    const result = await this.prisma.$transaction(async (tx) => {
+      // El lock por usuario también ordena dos tokens distintos de la misma
+      // cuenta: un reuso no puede revocar antes de que otra rotación guarde su hijo.
+      await tx.$queryRaw(Prisma.sql`SELECT id FROM users WHERE id = ${owner.userId} FOR UPDATE`);
+      const stored = await tx.refreshToken.findUnique({
+        where: { tokenHash },
+        select: { id: true, userId: true, revokedAt: true, expiresAt: true,
+          user: { select: USER_SELECT } },
+      });
+      if (!stored) throw new UnauthorizedException('Refresh token inválido');
+      if (stored.revokedAt !== null) {
+        await tx.refreshToken.updateMany({
+          where: { userId: stored.userId, revokedAt: null },
+          data: { revokedAt: new Date() },
+        });
+        // Se lanza fuera de la transacción para que la revocación haga commit.
+        return null;
+      }
+      if (stored.expiresAt.getTime() <= Date.now()) {
+        throw new UnauthorizedException('Refresh token expirado');
+      }
+      await tx.refreshToken.update({
+        where: { id: stored.id }, data: { revokedAt: new Date() },
+      });
+      return this.issueSession(stored.user, dto.deviceInfo, tx);
     });
-
-    return this.issueSession(stored.user, dto.deviceInfo);
+    if (!result) {
+      throw new UnauthorizedException('Refresh token reutilizado: se revocaron todas las sesiones');
+    }
+    return result;
   }
 
   async logout(dto: RefreshSessionDto): Promise<{ success: true }> {
     const tokenHash = this.hashToken(dto.refreshToken);
 
-    const stored = await this.prisma.refreshToken.findUnique({
-      where: { tokenHash },
-      select: { id: true, revokedAt: true },
+    await this.prisma.refreshToken.updateMany({
+      where: { tokenHash, revokedAt: null }, data: { revokedAt: new Date() },
     });
-
-    if (stored && stored.revokedAt === null) {
-      await this.prisma.refreshToken.update({
-        where: { id: stored.id },
-        data: { revokedAt: new Date() },
-      });
-    }
 
     return { success: true };
   }
@@ -164,6 +160,7 @@ export class AuthService {
   private async issueSession(
     user: PublicUser,
     deviceInfo?: string,
+    tx?: Prisma.TransactionClient,
   ): Promise<AuthTokens> {
     const accessToken = await this.jwtService.signAsync({
       sub: user.id,
@@ -172,7 +169,7 @@ export class AuthService {
 
     const refreshToken = randomBytes(48).toString('base64url');
 
-    await this.prisma.refreshToken.create({
+    const persist = async (client: Prisma.TransactionClient) => client.refreshToken.create({
       data: {
         userId: user.id,
         tokenHash: this.hashToken(refreshToken),
@@ -181,14 +178,13 @@ export class AuthService {
       },
     });
 
-    return { accessToken, refreshToken, user };
-  }
-
-  private async revokeAllForUser(userId: string): Promise<void> {
-    await this.prisma.refreshToken.updateMany({
-      where: { userId, revokedAt: null },
-      data: { revokedAt: new Date() },
+    if (tx) await persist(tx);
+    else await this.prisma.$transaction(async (client) => {
+      await client.$queryRaw(Prisma.sql`SELECT id FROM users WHERE id = ${user.id} FOR UPDATE`);
+      await persist(client);
     });
+
+    return { accessToken, refreshToken, user };
   }
 
   private hashToken(token: string): string {
@@ -196,11 +192,7 @@ export class AuthService {
   }
 
   private refreshTokenExpiry(): Date {
-    const days = Number(
-      this.configService.get<string>('JWT_REFRESH_TTL_DAYS', '30'),
-    );
-
-    return new Date(Date.now() + days * 24 * 60 * 60 * 1000);
+    return new Date(Date.now() + refreshTtlMs(this.configService));
   }
 
   private toPublicUser(user: UserRecord): PublicUser {

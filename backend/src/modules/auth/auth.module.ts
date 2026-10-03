@@ -1,3 +1,4 @@
+import { readJwtSecret } from './session-security.js';
 import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtModule, type JwtSignOptions } from '@nestjs/jwt';
@@ -12,7 +13,7 @@ import { RefreshJwtModule } from './refresh-jwt.module.js';
       global: true,
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
-        secret: configService.getOrThrow<string>('JWT_SECRET'),
+        secret: readJwtSecret(configService, 'JWT_SECRET'),
         signOptions: {
           expiresIn: configService.get<string>('JWT_ACCESS_TTL', '15m') as JwtSignOptions['expiresIn'],
         },

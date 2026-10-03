@@ -113,7 +113,7 @@ await check('registro, colección, ítem y totales', async () => {
   const username = `verificacion${String(suffix).slice(-8)}`;
   const register = await json('/auth/register', {
     method: 'POST',
-    headers: { 'content-type': 'application/json' },
+    headers: { 'content-type': 'application/json', 'X-Session-Request': '1' },
     body: JSON.stringify({ email, username, password: 'Verificacion123', displayName: 'Verificacion' }),
   });
   assert(register.status === 201, `registro ${register.status}: ${JSON.stringify(register.body).slice(0, 160)}`);
@@ -176,7 +176,7 @@ await check('link público de colección', async () => {
   const email = `compartir-${suffix}@test.local`;
   const register = await json('/auth/register', {
     method: 'POST',
-    headers: { 'content-type': 'application/json' },
+    headers: { 'content-type': 'application/json', 'X-Session-Request': '1' },
     body: JSON.stringify({
       email,
       username: `compartir${String(suffix).slice(-8)}`,

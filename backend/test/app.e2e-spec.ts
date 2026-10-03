@@ -111,6 +111,7 @@ describe('API (e2e)', () => {
     const nonce = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     const response = await request(app.getHttpServer())
       .post('/api/auth/register')
+      .set('X-Session-Request', '1')
       .send({
         email: `${label}-${nonce}@test.local`,
         username: `${label}${nonce.replace(/\D/g, '').slice(-8)}`,

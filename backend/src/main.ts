@@ -13,7 +13,9 @@ function allowedOrigins(): string[] {
       .filter(Boolean);
   }
   const frontend = process.env.FRONTEND_URL ?? 'http://localhost:3000';
-  return [frontend, 'http://127.0.0.1:3000', 'http://localhost:3002'];
+  return process.env.NODE_ENV === 'production'
+    ? [frontend]
+    : [frontend, 'http://127.0.0.1:3000', 'http://localhost:3002'];
 }
 
 async function bootstrap() {
