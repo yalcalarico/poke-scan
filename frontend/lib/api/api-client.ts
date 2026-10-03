@@ -89,9 +89,12 @@ export function refreshSession(): Promise<AuthResponseDto | null> {
     }
   };
 
-  const coordinated = () => typeof navigator !== 'undefined' && navigator.locks
-    ? navigator.locks.request('pcs.session-refresh', run)
-    : run();
+  const coordinated = async (): Promise<AuthResponseDto | null> => {
+    if (typeof navigator !== 'undefined' && navigator.locks) {
+      return await navigator.locks.request('pcs.session-refresh', run);
+    }
+    return run();
+  };
   refreshInFlight = coordinated().finally(() => {
     refreshInFlight = null;
   });

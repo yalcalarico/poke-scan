@@ -18,7 +18,7 @@ describe('seguridad de sesión', () => {
       expect(() => readJwtSecret(config({ NODE_ENV: 'production', JWT_SECRET }), 'JWT_SECRET')).toThrow();
     }
     const secret = 'a8f1'.repeat(16);
-    expect(readJwtSecret(config({ NODE_ENV: 'production', JWT_SECRET: secret }), 'JWT_SECRET')).toBe(secret);
+    expect(readJwtSecret(config({ NODE_ENV: 'production', JWT_SECRET: secret, FRONTEND_URL: 'https://app.example.test' }), 'JWT_SECRET')).toBe(secret);
   });
 
   it('mantiene la configuración local y no acepta una variable ausente', () => {

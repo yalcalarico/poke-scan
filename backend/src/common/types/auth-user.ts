@@ -14,9 +14,7 @@ export interface AuthResponseDto {
 }
 
 export interface AuthTokens extends AuthResponseDto {
-  accessToken: string;
   refreshToken: string;
-  user: PublicUser;
 }
 
 export type PublicUser = {

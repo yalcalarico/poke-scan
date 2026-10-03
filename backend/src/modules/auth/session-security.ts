@@ -10,6 +10,16 @@ export function readJwtSecret(config: ConfigService, name: string): string {
       (secret.trim().length < 32 || secret.startsWith('change-me'))) {
     throw new Error(`${name} debe ser un secreto aleatorio de al menos 32 caracteres en producción`);
   }
+  if (config.get<string>('NODE_ENV') === 'production') {
+    const origins = (config.get<string>('CORS_ORIGINS') ||
+      config.get<string>('FRONTEND_URL', '')).split(',').map((value) => value.trim());
+    if (!origins.length || origins.some((origin) => {
+      try {
+        const url = new URL(origin);
+        return url.protocol !== 'https:' || url.origin !== origin;
+      } catch { return true; }
+    })) throw new Error('Configurá orígenes HTTPS válidos para las sesiones en producción');
+  }
   return secret;
 }
 

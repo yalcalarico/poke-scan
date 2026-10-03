@@ -33,10 +33,12 @@ disponible, para serializar refresh entre pestañas.
 
 ## Secretos e infraestructura
 
-El perfil `deploy` no tiene secretos JWT por defecto. Exige `JWT_SECRET`,
+El perfil `deploy` no tiene secretos JWT por defecto. El arranque del backend exige `JWT_SECRET`,
 `JWT_REFRESH_SECRET` y `FRONTEND_URL`. El backend rechaza placeholders
 `change-me…` y secretos de menos de 32 caracteres en producción. Generá dos
 valores independientes con `openssl rand -hex 32` y guardalos fuera de Git.
+Compose permite levantar únicamente db/redis sin esas variables; la validación
+de producción ocurre al arrancar el backend, que también exige orígenes HTTPS.
 El TTL de refresh admite un número finito, positivo y de hasta 365 días.
 
 Los puertos de Postgres (55432) y Redis (6379) se publican únicamente sobre

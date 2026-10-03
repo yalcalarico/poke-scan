@@ -59,8 +59,8 @@ jobs:
           node-version: 22.20.0
       - name: Dependencias independientes
         run: |
-          pnpm --dir backend install --no-frozen-lockfile
-          pnpm --dir frontend install --no-frozen-lockfile
+          pnpm --dir backend install --frozen-lockfile
+          pnpm --dir frontend install --frozen-lockfile
       - name: Guardar lockfiles resueltos
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
