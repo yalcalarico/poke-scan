@@ -10,7 +10,7 @@ import { formatCount } from './copy';
 import { ScanPreview } from './scan-preview';
 
 export interface ActionBarProps {
-  /** 0..1 del OCR en curso, o `null` si no hay nada corriendo. */
+  /** 0..1 del reconocimiento visual en curso, o `null` si no hay nada corriendo. */
   progress: number | null;
   /** Frase de la fase, corta. Ya vive en `copy.ts`. */
   headline: string;
@@ -20,7 +20,7 @@ export interface ActionBarProps {
    * Miniatura del recorte exacto que se está leyendo. No es lo mismo que lo que
    * muestra el visor: la captura viene recortada al rectángulo del marco, así
    * que sirve en los dos caminos —obturador y galería— para que el usuario vea
-   * qué foto va a leer el OCR.
+   * qué foto va a leer el reconocimiento visual.
    */
   previewUrl: string | null;
   sessionCount: number;
@@ -113,7 +113,7 @@ export function ActionBar({
   return (
     <div className="shrink-0 bg-on-media px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3 text-on-media-text">
       {/*
-        La barra del OCR va ACÁ y no en un modal porque la cámara sigue viva
+        La barra del reconocimiento visual va ACÁ y no en un modal porque la cámara sigue viva
         mientras corre: tapar la pantalla para decir "leyendo" le quita al
         usuario el control de la foto, que es justo lo que puede corregir
         mientras espera.

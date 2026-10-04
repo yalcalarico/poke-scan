@@ -21,7 +21,7 @@ const FEATURES: readonly Feature[] = [
     href: `/escanear`,
     icon: ScanLine,
     title: 'Escaneá',
-    description: 'Apuntá la cámara y el OCR lee el nombre solo.',
+    description: 'Encuadrá la carta y DINOv2 reconoce el dibujo automáticamente.',
   },
   {
     href: `/buscar`,

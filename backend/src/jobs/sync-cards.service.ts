@@ -11,6 +11,7 @@ import { withPageRetry } from './retry.js';
 import { SyncSetsService } from './sync-sets.service.js';
 import { SyncStateService } from './sync-state.service.js';
 import { DEFAULT_PAGE_SIZE, REQUEST_PAUSE_MS } from './sync.constants.js';
+import { correctedCardImages } from '../catalog/card-image-overrides.js';
 
 const wait = (ms: number): Promise<void> =>
   new Promise((resolve) => setTimeout(resolve, ms));
@@ -185,8 +186,10 @@ export class SyncCardsService {
           number: card.number,
           rarity: card.rarity,
           artist: card.artist,
-          imageSmall: card.imageSmall,
-          imageLarge: card.imageLarge,
+          ...correctedCardImages(canonicalCardId, {
+            imageSmall: card.imageSmall,
+            imageLarge: card.imageLarge,
+          }),
           regulationMark: card.regulationMark,
           language: card.language ?? 'en',
           rawJson: card.raw as Prisma.InputJsonValue,

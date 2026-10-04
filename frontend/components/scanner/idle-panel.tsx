@@ -5,6 +5,8 @@ import { Camera, ImageUp, Search } from 'lucide-react';
 import { Button, Surface } from '@/components/ui';
 
 export interface IdlePanelProps {
+  visualCamera?: boolean;
+  showCamera?: boolean;
   cameraAvailable: boolean;
   sessionCount: number;
   onScan: () => void;
@@ -27,6 +29,8 @@ export interface IdlePanelProps {
  * estar: subir una foto o buscar a mano hacen lo mismo.
  */
 export function IdlePanel({
+  visualCamera = true,
+  showCamera = true,
   cameraAvailable,
   sessionCount,
   onScan,
@@ -37,30 +41,31 @@ export function IdlePanel({
   return (
     <Surface className="flex flex-col items-center gap-4 rounded-panel px-6 py-8 text-center">
       <div className="flex h-20 w-20 items-center justify-center rounded-full bg-brand-soft text-brand">
-        <Camera aria-hidden="true" focusable="false" strokeWidth={1.75} className="h-10 w-10" />
+        {showCamera ? <Camera aria-hidden="true" focusable="false" strokeWidth={1.75} className="h-10 w-10" /> : <ImageUp aria-hidden="true" focusable="false" strokeWidth={1.75} className="h-10 w-10" />}
       </div>
 
       <div className="flex max-w-sm flex-col gap-1">
-        <h2 className="text-h3 text-primary">Escanear carta</h2>
+        <h2 className="text-h3 text-primary">{showCamera ? 'Escanear carta' : 'Reconocer una carta'}</h2>
         <p className="text-body text-secondary">
-          Leemos el nombre y el número con OCR y te mostramos las coincidencias del catálogo con su
-          precio.
+          {showCamera && visualCamera
+            ? 'Encuadrá la carta: DINOv2 la reconoce automáticamente y suma la primera coincidencia a la sesión con su valor.'
+            : 'DINOv2 compara tu foto con el catálogo y suma la primera coincidencia a la sesión con su valor.'}
         </p>
       </div>
 
       <div className="flex w-full max-w-xs flex-col gap-3">
-        <Button variant="primary" size="lg" onClick={onScan} disabled={!cameraAvailable} fullWidth>
+        {showCamera ? <Button variant="primary" size="lg" onClick={onScan} disabled={!cameraAvailable} fullWidth>
           Escanear carta
-        </Button>
+        </Button> : null}
 
-        {!cameraAvailable ? (
+        {showCamera && !cameraAvailable ? (
           <p className="text-caption text-tertiary">
             La cámara no está disponible en este dispositivo o conexión. Subí una foto o buscá a
             mano.
           </p>
         ) : null}
 
-        <Button variant="secondary" size="lg" onClick={onPickFromGallery} fullWidth>
+        <Button variant={showCamera ? 'secondary' : 'primary'} size="lg" onClick={onPickFromGallery} fullWidth>
           <ImageUp aria-hidden="true" focusable="false" strokeWidth={1.75} className="h-5 w-5" />
           Subir una foto
         </Button>

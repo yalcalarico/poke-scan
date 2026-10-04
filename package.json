@@ -11,6 +11,8 @@
     "help": "node scripts/help.mjs",
     "setup": "pnpm run install:all && pnpm run infra:up && pnpm run db:migrate && node scripts/setup-done.mjs",
     "dev": "./scripts/dev.sh",
+    "dev:lan": "node scripts/dev-lan.mjs",
+    "lan:cert": "node scripts/dev-lan.mjs --cert-only",
     "dev:api": "pnpm --dir backend run start:dev",
     "dev:web": "pnpm --dir frontend run dev",
     "stop": "for p in ${API_PORT:-3001} ${WEB_PORT:-3000}; do ids=$(lsof -ti:$p 2>/dev/null); [ -n \"$ids\" ] && kill $ids 2>/dev/null; done; echo 'puertos liberados'",
@@ -45,7 +47,13 @@
     "doctor": "node scripts/doctor.mjs",
     "clean": "rm -rf backend/dist backend/dist-seed frontend/.next && echo 'builds borrados'",
     "test:db:setup": "pnpm --dir backend run db:test-setup",
-    "verify:app": "node scripts/verify-app.mjs"
+    "verify:app": "node scripts/verify-app.mjs",
+    "scanner:index": "pnpm --dir backend run scanner:index",
+    "scanner:evaluate": "pnpm --dir backend run scanner:evaluate",
+    "scanner:sets": "pnpm --dir backend run scanner:sets",
+    "scanner:index:sets": "pnpm --dir backend run scanner:index:sets",
+    "scanner:validate": "pnpm --dir backend run scanner:validate",
+    "db:fix-images": "pnpm --dir backend run db:fix-images"
   },
   "dependencies": {
     "ui-ux-pro-max-cli": "^2.15.0"

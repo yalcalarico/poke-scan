@@ -39,8 +39,6 @@ function entry(runId: number): SessionEntry {
         artist: null, imageSmall: '', imageLarge: '',
       },
       score: 1, rawScore: 1, price: null,
-      signals: { numberHint: null, setName: null, setCode: null, printedNumber: null,
-        hp: null, artist: null, rarity: null },
     },
   };
 }

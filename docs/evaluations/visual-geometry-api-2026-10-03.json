@@ -1,0 +1,744 @@
+[
+  {
+    "photo": 4985,
+    "httpMs": 5433.773083,
+    "candidates": [
+      {
+        "id": "me55c-106",
+        "similarity": 0.763130129876379,
+        "retrievalRank": 1,
+        "geometry": {
+          "matches": 69,
+          "inliers": 53,
+          "coverage": 0.1401582517680867,
+          "verified": true
+        }
+      },
+      {
+        "id": "dp6-49",
+        "similarity": 0.7497828840076819,
+        "retrievalRank": 2,
+        "geometry": {
+          "matches": 2,
+          "inliers": 0,
+          "coverage": 0,
+          "verified": false
+        }
+      },
+      {
+        "id": "ex11-44",
+        "similarity": 0.7432066955793819,
+        "retrievalRank": 3,
+        "geometry": {
+          "matches": 5,
+          "inliers": 0,
+          "coverage": 0,
+          "verified": false
+        }
+      },
+      {
+        "id": "ecard3-146",
+        "similarity": 0.7408849265300747,
+        "retrievalRank": 4,
+        "geometry": {
+          "matches": 4,
+          "inliers": 0,
+          "coverage": 0,
+          "verified": false
+        }
+      },
+      {
+        "id": "ex15-93",
+        "similarity": 0.7388409518262485,
+        "retrievalRank": 5,
+        "geometry": {
+          "matches": 9,
+          "inliers": 4,
+          "coverage": 0.05324937810945274,
+          "verified": false
+        }
+      },
+      {
+        "id": "dp6-34",
+        "similarity": 0.7378418821299871,
+        "retrievalRank": 6,
+        "geometry": {
+          "matches": 7,
+          "inliers": 0,
+          "coverage": 0,
+          "verified": false
+        }
+      },
+      {
+        "id": "ex15-17",
+        "similarity": 0.7279863988275075,
+        "retrievalRank": 7,
+        "geometry": {
+          "matches": 7,
+          "inliers": 0,
+          "coverage": 0,
+          "verified": false
+        }
+      },
+      {
+        "id": "pl2-85",
+        "similarity": 0.7266422157471851,
+        "retrievalRank": 8,
+        "geometry": {
+          "matches": 2,
+          "inliers": 0,
+          "coverage": 0,
+          "verified": false
+        }
+      }
+    ],
+    "references": 20670,
+    "indexVersion": "9d89a62b919f5a489428a92b965ec6bf98f982a7a0f36abd5d36c2611808ebca",
+    "indexStale": false,
+    "collections": 175,
+    "indexMs": 1592.5701669999999,
+    "cold": true,
+    "modelMs": 184.65374999999995,
+    "inferenceMs": 78.73191700000007,
+    "verificationMs": 3076.291375,
+    "verificationAvailable": true,
+    "retrievalLimit": 64,
+    "totalMs": 5381.321958
+  },
+  {
+    "photo": 4986,
+    "httpMs": 3193.122125000001,
+    "candidates": [
+      {
+        "id": "me55-23",
+        "similarity": 0.7429043157256382,
+        "retrievalRank": 2,
+        "geometry": {
+          "matches": 23,
+          "inliers": 19,
+          "coverage": 0.2949358214591866,
+          "verified": true
+        }
+      },
+      {
+        "id": "mcd19-11",
+        "similarity": 0.7486781362695623,
+        "retrievalRank": 1,
+        "geometry": {
+          "matches": 9,
+          "inliers": 5,
+          "coverage": 0.18308256360762867,
+          "verified": false
+        }
+      },
+      {
+        "id": "base3-29",
+        "similarity": 0.7414368181815635,
+        "retrievalRank": 3,
+        "geometry": {
+          "matches": 9,
+          "inliers": 5,
+          "coverage": 0.081865348033051,
+          "verified": false
+        }
+      },
+      {
+        "id": "neo4-51",
+        "similarity": 0.7329270694801874,
+        "retrievalRank": 4,
+        "geometry": {
+          "matches": 5,
+          "inliers": 0,
+          "coverage": 0,
+          "verified": false
+        }
+      },
+      {
+        "id": "base2-51",
+        "similarity": 0.7291047176394979,
+        "retrievalRank": 5,
+        "geometry": {
+          "matches": 6,
+          "inliers": 0,
+          "coverage": 0,
+          "verified": false
+        }
+      },
+      {
+        "id": "ex11-44",
+        "similarity": 0.7272451353404447,
+        "retrievalRank": 6,
+        "geometry": {
+          "matches": 3,
+          "inliers": 0,
+          "coverage": 0,
+          "verified": false
+        }
+      },
+      {
+        "id": "swsh1-78",
+        "similarity": 0.7264548662342656,
+        "retrievalRank": 7,
+        "geometry": {
+          "matches": 8,
+          "inliers": 4,
+          "coverage": 0.16038476764621615,
+          "verified": false
+        }
+      },
+      {
+        "id": "neo4-40",
+        "similarity": 0.7249586280986814,
+        "retrievalRank": 8,
+        "geometry": {
+          "matches": 4,
+          "inliers": 0,
+          "coverage": 0,
+          "verified": false
+        }
+      }
+    ],
+    "references": 20670,
+    "indexVersion": "9d89a62b919f5a489428a92b965ec6bf98f982a7a0f36abd5d36c2611808ebca",
+    "indexStale": false,
+    "collections": 175,
+    "indexMs": 17.010583000000224,
+    "cold": false,
+    "modelMs": 0.0004169999992882367,
+    "inferenceMs": 67.55137500000001,
+    "verificationMs": 3011.9360830000005,
+    "verificationAvailable": true,
+    "retrievalLimit": 64,
+    "totalMs": 3141.207374999998
+  },
+  {
+    "photo": 4987,
+    "httpMs": 3894.9670000000006,
+    "candidates": [
+      {
+        "id": "me55-92",
+        "similarity": 0.6288873298911292,
+        "retrievalRank": 29,
+        "geometry": {
+          "matches": 44,
+          "inliers": 40,
+          "coverage": 0.3138921320141844,
+          "verified": true
+        }
+      },
+      {
+        "id": "swshp-SWSH023",
+        "similarity": 0.6996330272035269,
+        "retrievalRank": 1,
+        "geometry": {
+          "matches": 6,
+          "inliers": 0,
+          "coverage": 0,
+          "verified": false
+        }
+      },
+      {
+        "id": "xy5-55",
+        "similarity": 0.6834189716170381,
+        "retrievalRank": 2,
+        "geometry": {
+          "matches": 5,
+          "inliers": 0,
+          "coverage": 0,
+          "verified": false
+        }
+      },
+      {
+        "id": "ex2-11",
+        "similarity": 0.6647875242079452,
+        "retrievalRank": 3,
+        "geometry": {
+          "matches": 2,
+          "inliers": 0,
+          "coverage": 0,
+          "verified": false
+        }
+      },
+      {
+        "id": "swsh5-96",
+        "similarity": 0.658600770528066,
+        "retrievalRank": 4,
+        "geometry": {
+          "matches": 6,
+          "inliers": 0,
+          "coverage": 0,
+          "verified": false
+        }
+      },
+      {
+        "id": "swshp-SWSH193",
+        "similarity": 0.6565086481827686,
+        "retrievalRank": 5,
+        "geometry": {
+          "matches": 3,
+          "inliers": 0,
+          "coverage": 0,
+          "verified": false
+        }
+      },
+      {
+        "id": "sv6pt5-38",
+        "similarity": 0.6524713753925843,
+        "retrievalRank": 6,
+        "geometry": {
+          "matches": 6,
+          "inliers": 0,
+          "coverage": 0,
+          "verified": false
+        }
+      },
+      {
+        "id": "pop5-10",
+        "similarity": 0.6448583961823346,
+        "retrievalRank": 7,
+        "geometry": {
+          "matches": 7,
+          "inliers": 0,
+          "coverage": 0,
+          "verified": false
+        }
+      }
+    ],
+    "references": 20670,
+    "indexVersion": "9d89a62b919f5a489428a92b965ec6bf98f982a7a0f36abd5d36c2611808ebca",
+    "indexStale": false,
+    "collections": 175,
+    "indexMs": 14.280167000000802,
+    "cold": false,
+    "modelMs": 0.00029100000028847717,
+    "inferenceMs": 61.71283299999959,
+    "verificationMs": 3756.765292,
+    "verificationAvailable": true,
+    "retrievalLimit": 64,
+    "totalMs": 3866.3510830000014
+  },
+  {
+    "photo": 4988,
+    "httpMs": 3742.554583000001,
+    "candidates": [
+      {
+        "id": "me55-137",
+        "similarity": 0.7936536799858935,
+        "retrievalRank": 1,
+        "geometry": {
+          "matches": 74,
+          "inliers": 68,
+          "coverage": 0.25724646168865134,
+          "verified": true
+        }
+      },
+      {
+        "id": "sv8pt5-149",
+        "similarity": 0.6168379159352887,
+        "retrievalRank": 2,
+        "geometry": {
+          "matches": 2,
+          "inliers": 0,
+          "coverage": 0,
+          "verified": false
+        }
+      },
+      {
+        "id": "rsv10pt5-103",
+        "similarity": 0.6136500341541278,
+        "retrievalRank": 3,
+        "geometry": {
+          "matches": 5,
+          "inliers": 0,
+          "coverage": 0,
+          "verified": false
+        }
+      },
+      {
+        "id": "ex10-86",
+        "similarity": 0.6058710214350513,
+        "retrievalRank": 4,
+        "geometry": {
+          "matches": 2,
+          "inliers": 0,
+          "coverage": 0,
+          "verified": false
+        }
+      },
+      {
+        "id": "pl3-3",
+        "similarity": 0.6012353650151632,
+        "retrievalRank": 5,
+        "geometry": {
+          "matches": 0,
+          "inliers": 0,
+          "coverage": 0,
+          "verified": false
+        }
+      },
+      {
+        "id": "swsh2-33",
+        "similarity": 0.6001677257904425,
+        "retrievalRank": 6,
+        "geometry": {
+          "matches": 3,
+          "inliers": 0,
+          "coverage": 0,
+          "verified": false
+        }
+      },
+      {
+        "id": "sm5-119a",
+        "similarity": 0.5923616852751523,
+        "retrievalRank": 7,
+        "geometry": {
+          "matches": 3,
+          "inliers": 0,
+          "coverage": 0,
+          "verified": false
+        }
+      },
+      {
+        "id": "me2pt5-234",
+        "similarity": 0.5907530254635676,
+        "retrievalRank": 8,
+        "geometry": {
+          "matches": 4,
+          "inliers": 0,
+          "coverage": 0,
+          "verified": false
+        }
+      }
+    ],
+    "references": 20670,
+    "indexVersion": "9d89a62b919f5a489428a92b965ec6bf98f982a7a0f36abd5d36c2611808ebca",
+    "indexStale": false,
+    "collections": 175,
+    "indexMs": 13.071749999999156,
+    "cold": false,
+    "modelMs": 0.00016599999980826396,
+    "inferenceMs": 66.79949999999917,
+    "verificationMs": 3578.332042,
+    "verificationAvailable": true,
+    "retrievalLimit": 64,
+    "totalMs": 3697.141125000002
+  },
+  {
+    "photo": 4989,
+    "httpMs": 3710.3137499999975,
+    "candidates": [
+      {
+        "id": "me55-145",
+        "similarity": 0.7323702258088511,
+        "retrievalRank": 1,
+        "geometry": {
+          "matches": 38,
+          "inliers": 36,
+          "coverage": 0.3812041807530531,
+          "verified": true
+        }
+      },
+      {
+        "id": "swsh4-11",
+        "similarity": 0.6908987479804921,
+        "retrievalRank": 2,
+        "geometry": {
+          "matches": 4,
+          "inliers": 0,
+          "coverage": 0,
+          "verified": false
+        }
+      },
+      {
+        "id": "swsh8-216",
+        "similarity": 0.6810470870262836,
+        "retrievalRank": 3,
+        "geometry": {
+          "matches": 2,
+          "inliers": 0,
+          "coverage": 0,
+          "verified": false
+        }
+      },
+      {
+        "id": "swsh12-114",
+        "similarity": 0.6729684643118252,
+        "retrievalRank": 4,
+        "geometry": {
+          "matches": 3,
+          "inliers": 0,
+          "coverage": 0,
+          "verified": false
+        }
+      },
+      {
+        "id": "swsh12-103",
+        "similarity": 0.6623874139586291,
+        "retrievalRank": 5,
+        "geometry": {
+          "matches": 4,
+          "inliers": 0,
+          "coverage": 0,
+          "verified": false
+        }
+      },
+      {
+        "id": "dp2-124",
+        "similarity": 0.6580713231653528,
+        "retrievalRank": 6,
+        "geometry": {
+          "matches": 3,
+          "inliers": 0,
+          "coverage": 0,
+          "verified": false
+        }
+      },
+      {
+        "id": "dc1-20",
+        "similarity": 0.6573920572654375,
+        "retrievalRank": 7,
+        "geometry": {
+          "matches": 5,
+          "inliers": 0,
+          "coverage": 0,
+          "verified": false
+        }
+      },
+      {
+        "id": "sm5-111",
+        "similarity": 0.6572511275246959,
+        "retrievalRank": 8,
+        "geometry": {
+          "matches": 0,
+          "inliers": 0,
+          "coverage": 0,
+          "verified": false
+        }
+      }
+    ],
+    "references": 20670,
+    "indexVersion": "9d89a62b919f5a489428a92b965ec6bf98f982a7a0f36abd5d36c2611808ebca",
+    "indexStale": false,
+    "collections": 175,
+    "indexMs": 12.467416999999841,
+    "cold": false,
+    "modelMs": 0.0003329999999550637,
+    "inferenceMs": 67.25966599999992,
+    "verificationMs": 3551.485375,
+    "verificationAvailable": true,
+    "retrievalLimit": 64,
+    "totalMs": 3668.877499999995
+  },
+  {
+    "photo": 4987,
+    "httpMs": 3781.4276250000003,
+    "candidates": [
+      {
+        "id": "me55-92",
+        "similarity": 0.6288873298911292,
+        "retrievalRank": 29,
+        "geometry": {
+          "matches": 44,
+          "inliers": 40,
+          "coverage": 0.3138921320141844,
+          "verified": true
+        }
+      },
+      {
+        "id": "swshp-SWSH023",
+        "similarity": 0.6996330272035269,
+        "retrievalRank": 1,
+        "geometry": {
+          "matches": 6,
+          "inliers": 0,
+          "coverage": 0,
+          "verified": false
+        }
+      },
+      {
+        "id": "xy5-55",
+        "similarity": 0.6834189716170381,
+        "retrievalRank": 2,
+        "geometry": {
+          "matches": 5,
+          "inliers": 0,
+          "coverage": 0,
+          "verified": false
+        }
+      },
+      {
+        "id": "ex2-11",
+        "similarity": 0.6647875242079452,
+        "retrievalRank": 3,
+        "geometry": {
+          "matches": 2,
+          "inliers": 0,
+          "coverage": 0,
+          "verified": false
+        }
+      },
+      {
+        "id": "swsh5-96",
+        "similarity": 0.658600770528066,
+        "retrievalRank": 4,
+        "geometry": {
+          "matches": 6,
+          "inliers": 0,
+          "coverage": 0,
+          "verified": false
+        }
+      },
+      {
+        "id": "swshp-SWSH193",
+        "similarity": 0.6565086481827686,
+        "retrievalRank": 5,
+        "geometry": {
+          "matches": 3,
+          "inliers": 0,
+          "coverage": 0,
+          "verified": false
+        }
+      },
+      {
+        "id": "sv6pt5-38",
+        "similarity": 0.6524713753925843,
+        "retrievalRank": 6,
+        "geometry": {
+          "matches": 6,
+          "inliers": 0,
+          "coverage": 0,
+          "verified": false
+        }
+      },
+      {
+        "id": "pop5-10",
+        "similarity": 0.6448583961823346,
+        "retrievalRank": 7,
+        "geometry": {
+          "matches": 7,
+          "inliers": 0,
+          "coverage": 0,
+          "verified": false
+        }
+      }
+    ],
+    "references": 20670,
+    "indexVersion": "9d89a62b919f5a489428a92b965ec6bf98f982a7a0f36abd5d36c2611808ebca",
+    "indexStale": false,
+    "collections": 175,
+    "indexMs": 12.308750000000146,
+    "cold": false,
+    "modelMs": 0.000875000001542503,
+    "inferenceMs": 61.73395899999741,
+    "verificationMs": 3646.007583999999,
+    "verificationAvailable": true,
+    "retrievalLimit": 64,
+    "totalMs": 3755.1554170000018
+  },
+  {
+    "photo": 4987,
+    "httpMs": 586.4259579999998,
+    "candidates": [
+      {
+        "id": "me55-92",
+        "similarity": 0.6288873298911292,
+        "retrievalRank": 29,
+        "geometry": {
+          "matches": 44,
+          "inliers": 40,
+          "coverage": 0.3138921320141844,
+          "verified": true
+        }
+      },
+      {
+        "id": "swshp-SWSH023",
+        "similarity": 0.6996330272035269,
+        "retrievalRank": 1,
+        "geometry": {
+          "matches": 6,
+          "inliers": 0,
+          "coverage": 0,
+          "verified": false
+        }
+      },
+      {
+        "id": "xy5-55",
+        "similarity": 0.6834189716170381,
+        "retrievalRank": 2,
+        "geometry": {
+          "matches": 5,
+          "inliers": 0,
+          "coverage": 0,
+          "verified": false
+        }
+      },
+      {
+        "id": "ex2-11",
+        "similarity": 0.6647875242079452,
+        "retrievalRank": 3,
+        "geometry": {
+          "matches": 2,
+          "inliers": 0,
+          "coverage": 0,
+          "verified": false
+        }
+      },
+      {
+        "id": "swsh5-96",
+        "similarity": 0.658600770528066,
+        "retrievalRank": 4,
+        "geometry": {
+          "matches": 6,
+          "inliers": 0,
+          "coverage": 0,
+          "verified": false
+        }
+      },
+      {
+        "id": "swshp-SWSH193",
+        "similarity": 0.6565086481827686,
+        "retrievalRank": 5,
+        "geometry": {
+          "matches": 3,
+          "inliers": 0,
+          "coverage": 0,
+          "verified": false
+        }
+      },
+      {
+        "id": "sv6pt5-38",
+        "similarity": 0.6524713753925843,
+        "retrievalRank": 6,
+        "geometry": {
+          "matches": 6,
+          "inliers": 0,
+          "coverage": 0,
+          "verified": false
+        }
+      },
+      {
+        "id": "pop5-10",
+        "similarity": 0.6448583961823346,
+        "retrievalRank": 7,
+        "geometry": {
+          "matches": 7,
+          "inliers": 0,
+          "coverage": 0,
+          "verified": false
+        }
+      }
+    ],
+    "references": 20670,
+    "indexVersion": "9d89a62b919f5a489428a92b965ec6bf98f982a7a0f36abd5d36c2611808ebca",
+    "indexStale": false,
+    "collections": 175,
+    "indexMs": 11.187292000002344,
+    "cold": false,
+    "modelMs": 0.0004160000025876798,
+    "inferenceMs": 60.92329099999915,
+    "verificationMs": 460.3162919999995,
+    "verificationAvailable": true,
+    "retrievalLimit": 64,
+    "totalMs": 562.5119170000035
+  }
+]

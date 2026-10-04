@@ -1,31 +1,7 @@
-/**
- * Canvas-level pre-processing, exercised through a canvas shim (see
- * ./helpers/canvas-shim) so it runs in plain Node.
- */
 import { describe, expect, it } from 'vitest';
-
 import { installCanvasShim, ShimCanvas } from './helpers/canvas-shim';
-import {
-  analyzeVariants,
-  cropImageData,
-  detectCardRect,
-  expandRect,
-  normalizeCardImageData,
-  rotateImageData,
-  DEFAULT_VARIANT,
-  edgeSharpness,
-  NAME_BAND_BOX,
-  normalizedEdgeSharpness,
-  renderNameBand,
-  renderVariant,
-  sharpestOfVariants,
-  toImageData,
-  toGrayscale,
-  VARIANT_ORDER,
-} from '../preprocess';
-
+import { cropImageData, detectCardRect, expandRect, normalizeCardImageData, rotateImageData, toImageData } from '../preprocess';
 installCanvasShim();
-
 const asCanvas = (canvas: ShimCanvas) => canvas as unknown as HTMLCanvasElement;
 
 function gradientCanvas(width = 60, height = 40): ShimCanvas {
@@ -44,100 +20,31 @@ function gradientCanvas(width = 60, height = 40): ShimCanvas {
   return new ShimCanvas(width, height, { width, height, data: pixels });
 }
 
-describe('normalizedEdgeSharpness', () => {
-  it('divides the edge energy by the available contrast', () => {
-    const makeImage = (jump: number) => {
-      const data = new Uint8ClampedArray(8 * 8 * 4);
-      for (let i = 0; i < 64; i += 1) {
-        const v = (i % 8) < 4 ? 128 : 128 + jump;
-        data[i * 4] = v;
-        data[i * 4 + 1] = v;
-        data[i * 4 + 2] = v;
-        data[i * 4 + 3] = 255;
-      }
-      return { data, width: 8, height: 8, colorSpace: 'srgb' } as unknown as ImageData;
-    };
-
-    const strong = makeImage(120);
-    const weak = makeImage(6);
-
-    expect(edgeSharpness(strong)).toBeGreaterThan(edgeSharpness(weak));
-    // Raw energy is dominated by the contrast, the normalized one is not: both
-    // images have the same edge *structure* over their own dynamic range.
-    expect(normalizedEdgeSharpness(strong)).toBeGreaterThan(0);
-    expect(normalizedEdgeSharpness(strong)).toBeLessThan(normalizedEdgeSharpness(weak) * 3);
-  });
-
-  it('is 0 for a flat image', () => {
-    const flat = {
-      data: new Uint8ClampedArray(16 * 4).fill(120),
-      width: 4,
-      height: 4,
-      colorSpace: 'srgb',
-    } as unknown as ImageData;
-    flat.data.forEach((_, i) => {
-      if (i % 4 !== 3) flat.data[i] = 120;
-    });
-    expect(normalizedEdgeSharpness(flat)).toBe(0);
-  });
-});
-
-describe('variant selection', () => {
-  it('scores every variant', async () => {
-    const { scores, variant } = await analyzeVariants(asCanvas(gradientCanvas()));
-
-    expect(Object.keys(scores).sort()).toEqual([...VARIANT_ORDER].sort());
-    expect(variant).toBe(DEFAULT_VARIANT);
-    for (const score of Object.values(scores)) expect(Number.isFinite(score)).toBe(true);
-  });
-
-  it('falls back to the default variant instead of the binarized one', async () => {
-    // Raw edge energy always picks `threshold` on real cards (it maximises the
-    // metric by construction), which is the variant that breaks the most name
-    // reads. The margin rule keeps the safe default.
-    const canvas = gradientCanvas();
-    const base = toImageData(asCanvas(canvas));
-    const original = { data: new Uint8ClampedArray(base.data), width: base.width, height: base.height, colorSpace: 'srgb' } as unknown as ImageData;
-    const binary = { data: new Uint8ClampedArray(base.data), width: base.width, height: base.height, colorSpace: 'srgb' } as unknown as ImageData;
-    toGrayscale(binary);
-    // Manual binarization, like the `threshold` variant.
-    for (let i = 0; i < binary.data.length; i += 4) {
-      const v = binary.data[i] > 128 ? 255 : 0;
-      binary.data[i] = v;
-      binary.data[i + 1] = v;
-      binary.data[i + 2] = v;
+function photoWithCard(
+  width: number,
+  height: number,
+  card: { x: number; y: number; width: number; height: number },
+  rotated = false,
+): ShimCanvas {
+  const pixels = new Uint8ClampedArray(width * height * 4);
+  for (let y = 0; y < height; y += 1) {
+    for (let x = 0; x < width; x += 1) {
+      const i = (y * width + x) * 4;
+      const inside =
+        x >= card.x && x < card.x + card.width && y >= card.y && y < card.y + card.height;
+      const v = inside ? 210 : 30;
+      pixels[i] = v;
+      pixels[i + 1] = v;
+      pixels[i + 2] = v;
+      pixels[i + 3] = 255;
     }
+  }
+  const canvas = new ShimCanvas(width, height);
+  canvas.getContext().putImageData({ data: pixels, width, height }, 0, 0);
+  return rotated ? canvas : canvas;
+}
 
-    expect(edgeSharpness(binary)).toBeGreaterThan(edgeSharpness(original));
-    const { variant } = await analyzeVariants(asCanvas(canvas));
-    expect(variant).not.toBe('threshold');
-  });
 
-  it('sharpestOfVariants returns a canvas of the same size', async () => {
-    const canvas = gradientCanvas(80, 50);
-    const best = await sharpestOfVariants(asCanvas(canvas));
-
-    expect(best.width).toBe(80);
-    expect(best.height).toBe(50);
-    const data = toImageData(best);
-    expect(data.width).toBe(80);
-    expect(data.height).toBe(50);
-  });
-
-  it('renderVariant applies the same pipeline as analyzeVariants', async () => {
-    const canvas = gradientCanvas();
-    const { scores, variant } = await analyzeVariants(asCanvas(canvas));
-    const best = toImageData(renderVariant(asCanvas(canvas), variant));
-    expect(normalizedEdgeSharpness(best)).toBeCloseTo(scores[variant], 5);
-  });
-
-  it('renderVariant of "original" is a faithful copy', () => {
-    const canvas = gradientCanvas(20, 20);
-    const source = toImageData(asCanvas(canvas));
-    const copy = toImageData(renderVariant(asCanvas(canvas), 'original'));
-    expect([...copy.data.slice(0, 40)]).toEqual([...source.data.slice(0, 40)]);
-  });
-});
 
 describe('cropImageData', () => {
   const makeSource = (width: number, height: number) => {
@@ -182,82 +89,23 @@ describe('cropImageData', () => {
   });
 });
 
-describe('renderNameBand', () => {
-  it('returns a canvas with the size of the band box', async () => {
-    const canvas = gradientCanvas(600, 825);
-    const band = renderNameBand(asCanvas(canvas));
-
-    const expectedWidth = Math.round(600 * NAME_BAND_BOX.width);
-    const expectedHeight = Math.round(825 * NAME_BAND_BOX.height);
-    expect(band.width).toBe(expectedWidth);
-    expect(band.height).toBe(expectedHeight);
-  });
-
-  it('starts at the top-left corner of the card', () => {
-    const canvas = gradientCanvas(600, 825);
-    const source = toImageData(asCanvas(canvas));
-    const band = toImageData(renderNameBand(asCanvas(canvas)));
-    // El primer píxel de la banda es el de la caja, no el origen del recorte.
-    const boxX = Math.round(source.width * NAME_BAND_BOX.x);
-    const boxY = Math.round(source.height * NAME_BAND_BOX.y);
-    const i = (boxY * source.width + boxX) * 4;
-    expect([...band.data.slice(0, 4)]).toEqual([...source.data.slice(i, i + 4)]);
-  });
-
-  it('aplica el pre-procesado pedido a la franja', () => {
-    // La imagen tiene que tener color: con un gradiente gris no se puede
-    // distinguir "cruda" de "convertida a escala de grises".
-    const colored = new ShimCanvas(200, 300);
-    const pixels = new Uint8ClampedArray(200 * 300 * 4);
-    for (let i = 0; i < 200 * 300; i += 1) {
-      pixels[i * 4] = 200;
-      pixels[i * 4 + 1] = 60;
-      pixels[i * 4 + 2] = 30;
-      pixels[i * 4 + 3] = 255;
-    }
-    colored.getContext().putImageData({ data: pixels, width: 200, height: 300 }, 0, 0);
-
-    const channelsEqual = (img: ImageData) => {
-      for (let i = 0; i < img.data.length; i += 40) {
-        if (img.data[i] !== img.data[i + 1]) return false;
-      }
-      return true;
-    };
-
-    const raw = toImageData(renderNameBand(asCanvas(colored)));
-    const gray = toImageData(renderNameBand(asCanvas(colored), 'grayscale'));
-
-    expect(channelsEqual(raw)).toBe(false);
-    expect(channelsEqual(gray)).toBe(true);
-  });
-});
-
-/** Lienzo con un rectángulo claro sobre fondo oscuro, para la detección. */
-function photoWithCard(
-  width: number,
-  height: number,
-  card: { x: number; y: number; width: number; height: number },
-  rotated = false,
-): ShimCanvas {
-  const pixels = new Uint8ClampedArray(width * height * 4);
-  for (let y = 0; y < height; y += 1) {
-    for (let x = 0; x < width; x += 1) {
-      const i = (y * width + x) * 4;
-      const inside =
-        x >= card.x && x < card.x + card.width && y >= card.y && y < card.y + card.height;
-      const v = inside ? 210 : 30;
-      pixels[i] = v;
-      pixels[i + 1] = v;
-      pixels[i + 2] = v;
-      pixels[i + 3] = 255;
-    }
-  }
-  const canvas = new ShimCanvas(width, height);
-  canvas.getContext().putImageData({ data: pixels, width, height }, 0, 0);
-  return rotated ? canvas : canvas;
-}
-
 describe('detectCardRect', () => {
+  it('conserva la carta vertical con un dibujo apaisado y mucho fondo', () => {
+    const canvas = photoWithCard(400, 600, { x: 100, y: 180, width: 200, height: 280 });
+    const image = toImageData(asCanvas(canvas));
+    for (let y = 210; y < 335; y += 1) {
+      for (let x = 112; x < 288; x += 1) {
+        const i = (y * image.width + x) * 4;
+        image.data[i] = 60;
+        image.data[i + 1] = 60;
+        image.data[i + 2] = 60;
+      }
+    }
+    const normalized = normalizeCardImageData(image);
+    expect(normalized.detected).toBe(true);
+    expect(normalized.rotation).toBe(0);
+    expect(normalized.rect!.height).toBeGreaterThan(250);
+  });
   it('encuentra una carta vertical sobre fondo oscuro', () => {
     // 200x300 carta (proporción 0.667, cerca de 0.716) en una foto de 400x400.
     const canvas = photoWithCard(400, 400, { x: 100, y: 50, width: 200, height: 300 });

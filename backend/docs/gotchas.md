@@ -511,34 +511,9 @@ cliente escapa. El problema aparece **solo** en SQL crudo.
 
 Ver [database.md](database.md).
 
-## 14. `pg_trgm` no soporta `\p{L}` en regex
+## 14. Sección retirada (2026-10-03)
 
-**Qué pasó**: al matching de `identify` hacía falta contar cuántas palabras de
-una ventana del OCR "parecen un nombre", y se escribió con clases Unicode:
-
-```sql
--- ❌ ERROR: invalid regular expression
-WHERE w.word ~ '^\p{L}[\p{L}\p{N}'-]{2,}$'
-```
-
-**Por qué**: los operadores regex de PostgreSQL compilan con la biblioteca
-interna, que no soporta `\p{...}`. Las clases Unicode de POSIX (`\pL`,
-`\p{L}`) **no** funcionan con el flavor de regex del server. Funcionan recién
-en PostgreSQL 15+ con un flag, y en general en clientes (JS, Python) que sí
-saben Unicode.
-
-**Cómo quedó**: clases POSIX, que `pg_trgm` maneja sin problemas:
-
-```ts
-const NAME_LIKE_WORD = "^[[:alpha:]][[:alnum:]'-]{2,}$";
-const NAME_LIKE_PHRASE = "^([[:alpha:]][[:alnum:]'-]{2,})( +([[:alpha:]][[:alnum:]'-]{2,}))+$";
-```
-
-**Regla**: en cualquier regex que se mande a Postgres desde este proyecto,
-usá `[[:alpha:]]`, `[[:alnum:]]`, `[[:digit:]]` — no `\p{L}`, `\w` con
-`\p`, ni `\d` esperando soporte Unicode. En el lado JS, en cambio, `\p{L}` sí
-funciona: `const HAS_LETTER = /[\p{L}]/u;` en `identify.service.ts:60` es
-correcto y está bien.
+El helper de ranking por texto fue eliminado. El escáner usa DINOv2; la búsqueda del catálogo conserva `pg_trgm`.
 
 ## 15. `set_config` del umbral de trigram es local a la transacción
 
@@ -626,7 +601,7 @@ function toNumber(value: unknown): number | null {
 }
 ```
 
-`toNumber` está en `cards.service.ts`, `identify.service.ts`,
+`toNumber` está en `cards.service.ts`,
 `collections.service.ts`, `share.service.ts`, `friends.service.ts` y
 `sync-prices.service.ts` — **seis copias**. No lo unifiques de paso si estabas
 tocando otra cosa: es un refactor propio.
@@ -1149,38 +1124,9 @@ justo donde el usuario mira si hay más.
 lugares. Si algún día duele, el arreglo es una query de items completa en SQL (con
 `toItemDto` hecho a mano), no dejar que los dos filtros se separen.
 
-## 31. [Un lock se suelta con compare-and-delete, nunca con `DEL`](#31-un-lock-se-suelta-con-compare-and-delete-nunca-con-del)
+## 30. Sección retirada (2026-10-03)
 
-`card_sets` tiene dos totales y pokemontcg.io los llena distinto: `printedTotal`
-es el número regular y `total` suma las variants raras y secretas. Difieren en
-**106 de 176 sets**:
-
-| Set | `printedTotal` | `total` |
-|---|---|---|
-| `me5` (Pitch Black) | 84 | 120 |
-| `me3` (Perfect Order) | 88 | 124 |
-| `me1` (Mega Evolution) | 132 | 188 |
-| `me55` (30th Celebration) | 128 | 161 |
-
-El `identify` usaba igualdad exacta contra `printedTotal` para el "N/M" del OCR,
-que es el bonus más fuerte del ranking (0,25, el único que identifica set *y*
-carta). Con la fuente dividiendo el set en dos números, esa señal se perdía
-para más de la mitad del catálogo sin que nadie lo notara: no tira error, la
-carta simplemente deja de tener esa evidencia y el ranking se apoya en el
-nombre.
-
-Ahora matchea contra los dos (`printedTotal` OR `total`).
-
-**Y ojo al caso que los dos no cubren**: hay sets donde la carta imprime un
-número que la fuente no tiene en ningún campo. `me55` (30th Celebration) imprime
-`092/120`, y sus 128 y 161 no son 120; TCGdex dice que el set tiene 158 cartas.
-Ahí el denominador no matchea nada y no hay forma de arreglarlo con datos: la
-señal del set tiene que venir de otro lado, y por ahora viene del código
-impreso (`ptcgoCode`, ver `api.md` → "El código de set").
-
-**Regla**: un dato de la fuente que se usa para matchear contra algo que el
-usuario tiene en la mano físico hay que contrastarlo contra la realidad antes de
-confiar en él. Acá se detectó con una foto, no con un test.
+El matching de número leído se retiró junto con el motor anterior. DINOv2 devuelve el ranking visual.
 
 ## 31. Un lock se suelta con compare-and-delete, nunca con `DEL`
 

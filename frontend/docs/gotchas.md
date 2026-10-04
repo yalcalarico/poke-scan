@@ -255,46 +255,9 @@ que elegir una y dejar que la otra sea una optimización, no una autoridad.
 
 ---
 
-## 5. `tesseract.js` nunca en el grafo del server
+## 5. Sección retirada (2026-10-03)
 
-> **Aviso de numeración:** dos comentarios del código dicen `gotchas #5` queriendo
-> decir *"una suposición sobre el entorno sin fallback"* — que era el número 5 de
-> una versión anterior de esta lista. Hoy esa idea vive en §19
-> (`useSyncExternalStore`) y en §H.2. Los archivos son
-> `components/share/use-share-url.ts` y `components/share/install-cta.tsx`.
-
-`tesseract.js` arrastra un worker bundle, wasm y datos de idioma. Si un Server
-Component lo importa, **`pnpm run build` falla**. Es una restricción dura, no una
-recomendación.
-
-Las tres cosas que hay que respetar:
-
-```ts
-// 1. El import tiene que ser DINÁMICO y DENTRO de una función.
-workerPromise = (async () => {
-  const { createWorker } = await import('tesseract.js');
-  return await createWorker('eng', 1, { ... });
-})();
-```
-
-```ts
-// 2. La función que lo llama tiene que assertar que está en el browser.
-function assertBrowser(): void {
-  if (typeof window === 'undefined' || typeof Worker === 'undefined') {
-    throw new OcrUnavailableError('El OCR solo puede ejecutarse en el navegador.');
-  }
-}
-```
-
-3. `app/(app)/escanear/page.tsx` tiene `'use client'`, y todo `lib/scanner/*` que
-   toca canvas (`preprocess.ts`, `pipeline.ts`, `camera.ts`) solo se importa desde
-   ahí, desde `components/scanner/` o desde los tests.
-
-**Cómo se rompe en la práctica:** alguien mete un helper de OCR en
-`lib/format.ts` o en un componente "server-safe" para reutilizarlo, y el build
-explota con un error de wasm que no dice nada de `tesseract`.
-
----
+El motor anterior se eliminó. El flujo vigente está en [scanner.md](scanner.md).
 
 ## 6. `next/image` necesita `images.remotePatterns`
 
@@ -328,65 +291,13 @@ render).
 
 ---
 
-## 7. `tesseract.js` 7 con Next: los ~14 MB tienen que estar fuera del build
+## 7. Sección retirada (2026-10-03)
 
-`public/tesseract/` contiene `worker.min.js`, los tres
-`tesseract-core-{simd,relaxedsimd,}-lstm.wasm.js` y `eng.traineddata.gz` (~2,9 MB).
-Son binarios de terceros servidos tal cual.
+El motor anterior se eliminó. El flujo vigente está en [scanner.md](scanner.md).
 
-Tres cosas:
+## 8. Sección retirada (2026-10-03)
 
-1. **El build NO debe incluir esos binarios.** eslint los ignora
-   explícitamente:
-   ```js
-   // eslint.config.mjs
-   globalIgnores([
-     // Assets de Tesseract auto-hospedados: bundles de terceros minificados que
-     // se sirven tal cual desde /public/tesseract.
-     "public/tesseract/**",
-   ]),
-   ```
-   Sin eso, el lint se pone lentísimo sobre 14 MB minificados.
-2. **El `Dockerfile` tiene que copiar `public/` a mano.** `output: "standalone"`
-   deja `public/` fuera del trace:
-   ```dockerfile
-   # public/ NO se copia solo en el trace: sin esto faltan manifest.json, sw.js,
-   # los iconos y los assets de Tesseract.
-   COPY --from=builder --chown=nextjs:nodejs /app/public ./public
-   ```
-   Sin esa línea, la imagen de producción arranca sin manifest, sin service worker y
-   **sin el OCR**, y el síntoma es un escáner que dice "el OCR no está disponible".
-3. **`corePath` es un directorio, no un archivo.** tesseract.js elige la variante
-   `-simd` / `-relaxedsimd` / la lisa según el soporte del dispositivo. Si se pasa
-   un `.wasm.js` fijo, en un dispositivo sin SIMD no arranca.
-
-Para volver al CDN (debug, o quitar 14 MB del repo): `NEXT_PUBLIC_TESSERACT_CDN=1`
-en `.env.local`.
-
----
-
-## 8. Los scripts de Node de diagnóstico no resuelven `tesseract.js`
-
-Un script suelto que hace `import { createWorker } from 'tesseract.js'` **fuera de
-`frontend/`** no resuelve el módulo: Node busca en `node_modules` hacia arriba desde
-la ruta del archivo, y el `node_modules` de `tesseract.js` vive en
-`frontend/node_modules`. El error es un `ERR_MODULE_NOT_FOUND` que no tiene nada que
-ver con tesseract.
-
-Dos formas de resolverlo:
-
-- Correr el script **desde adentro de `frontend/`** (o con `--experimental-strip-types`
-  y el cwd ahí).
-- O resolverlo a mano, que además es lo que hacen los tests: **`createWorker` +
-  `worker.recognize()` + `toOcrResult()` de `lib/scanner/ocr.ts`**, que ya tiene la
-  normalización de las dos formas de salida de Tesseract y los asserts de browser.
-
-Cuando el script de diagnóstico se escribe para *investigar* algo del OCR, suele
-quedarse en el repo y después nadie lo corre. Los que quedaron están en
-`lib/scanner/__tests__/` como tests opt-in, que es donde se los puede volver a
-correr. Ver [`testing.md`](testing.md#tests-opt-in).
-
----
+El motor anterior se eliminó. El flujo vigente está en [scanner.md](scanner.md).
 
 ## 9. `setState` sincrónico dentro de un `useEffect`
 
@@ -589,7 +500,7 @@ por descuido:
 > iterar"*
 
 El `sw.js` tiene estrategia `NetworkFirst` para navegaciones y `CacheFirst` solo para
-imágenes, OCR y chunks hasheados de `/_next/static/`. Las respuestas Flight/RSC de
+imágenes y chunks hasheados de `/_next/static/`. Las respuestas Flight/RSC de
 App Router (`?_rsc`, `RSC: 1` o `text/x-component`) y las rutas dinámicas same-origin
 **nunca se cachean**: un stream RSC viejo puede quedarse en el fallback de Suspense
 sin que la navegación llegue a hidratarse. Un bump de `VERSION` purga esas entradas
@@ -602,31 +513,9 @@ no se puede deshacer, el clearing manual es DevTools → Application → Service
 
 ---
 
-## 15. El preprocesado del OCR: no elijas la variante por nitidez
+## 15. Sección retirada (2026-10-03)
 
-Este está en [`scanner.md`](scanner.md) con los números, pero el resumen como
-trampa: es tentador elegir la variante de imagen "más nítida" con una métrica de
-borde, y **es la decisión equivocada**.
-
-La energía de borde cruda elige `threshold` en **8/8** cartas, porque una imagen
-binarizada la maximiza por construcción (cada transición salta los 255 niveles
-completos). Y `threshold` es la variante que **más nombres rompe**: 4/8, contra 7/8
-de `grayscale` (el default).
-
-Por eso:
-
-- `normalizedEdgeSharpness` existe (dividir por la desviación estándar de la
-  luminancia) para comparar variantes con rango dinámico distinto.
-- `VARIANT_MARGIN = 0.25` evita que una diferencia de ruido abandone el default.
-- Y, igual, **`scanCardImage` no usa ninguna de las dos para elegir**: corre el OCR
-  de las 3 y gana por `ocr.confidence`. La medida del pico a pico de 3/8 a 7/8 no
-  viene de una estadística de imagen, viene de preguntarle al motor.
-
-Si alguna vez se toca `VARIANT_MARGIN` o `analyzeVariants`, hay que volver a correr
-`SCANNER_OCR_INTEGRATION=1` y mirar el desglose por variante, no razonar sobre la
-métrica.
-
----
+El motor anterior se eliminó. El flujo vigente está en [scanner.md](scanner.md).
 
 # Trampas del rediseño
 
@@ -1297,16 +1186,13 @@ chrome, no de organización.
 | 2 | `play()` con `AbortError` no es fatal | "No pudimos abrir la cámara" con la cámara funcionando. Mirar `videoWidth`, no el rechazo. |
 | 3 | Estado controlado por el usuario derivado por `useEffect` | el input se borra, el estado "se reinicia". Un ref de "esto lo escribí yo". |
 | 4 | Caché en dos capas con caducidades distintas | precios viejos o mensajes eternos. `no-store` + timeout. |
-| 5 | Import de una lib pesada en el grafo del server | falla el build con un error de wasm que no dice nada. Import dinámico. |
 | 6 | Host de imágenes sin declarar | error de optimizer en runtime, o la pantalla entera en el server. `remotePatterns` + allowlist propia. |
-| 7 | Asset de terceros en el trace del build | producción sin OCR. `globalIgnores` + `COPY public/`. |
 | 9 | `setState` sincrónico en un efecto | render en cascada, y doble fetch en dev. `queueMicrotask` + ref de guarda. |
 | 10 | `notFound()` con `loading.tsx` responde 200 | la 404 se ve bien y el status miente. No confíes en el status. |
 | 11 | Fondo del `<body>` en clases | overscroll de iOS del tema anterior. `globals.css` con tokens. |
 | 12 | 404 de client component | no podés llamar `notFound()`; y un 404 de negocio no es un 404 de HTTP. |
 | 13 | Safe area desincronizado con la nav | la última fila queda bajo la nav, o queda un hueco de 5 rem. |
 | 14 | Service worker en dev | bundles viejos y caché que no se puede invalidar. |
-| 15 | Elegir la variante de OCR por nitidez | 8/8 de `threshold`, que es la que más nombres rompe. Preguntarle al motor. |
 
 ### Las del rediseño (§16–§25)
 

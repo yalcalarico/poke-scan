@@ -48,7 +48,6 @@ export type {
   UsdArsRate,
 } from './currency';
 
-export { getScannerConfig, identifyCard, IDENTIFY_LIMIT, IDENTIFY_PATH } from './identify';
 export type {
   CardSearchField,
   CardSearchParams,

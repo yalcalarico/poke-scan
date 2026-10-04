@@ -1,0 +1,202 @@
+{
+  "evaluatedAt": "2026-10-02T12:49:29.269Z",
+  "evaluationWallMs": 1098.6659169999998,
+  "metadata": {
+    "revision": "8b1f705a3a7f6f062f6bdd21986c1583d3ef105d",
+    "precision": "int8",
+    "dimensions": 384,
+    "preprocessingHash": "8170121eafd1c4dd3122475255b0c6bb811cc598d38abcaf34ac9dd5ca483708",
+    "modelHash": "c179f8f7f592449c4c1bca4cd124a7538021428c5ffb89afde9503935b197efb"
+  },
+  "queries": 5,
+  "top1": 5,
+  "top10": 5,
+  "missingReferences": 0,
+  "latencyMs": {
+    "p50": 220.76366699999994,
+    "p99": 227.04858299999998,
+    "scope": "lectura + preprocesado + inferencia + ranking; sin inicio del modelo"
+  },
+  "revision": "8b1f705a3a7f6f062f6bdd21986c1583d3ef105d",
+  "precision": "int8",
+  "references": 5,
+  "results": [
+    {
+      "path": "/tmp/cards-full/IMG_4985.png",
+      "cardId": "me55c-106",
+      "correctReferencePresent": true,
+      "rank": 1,
+      "marginOverMedian": 0.27489054444900374,
+      "elapsedMs": 227.04858299999998,
+      "top10": [
+        {
+          "id": "me55c-106",
+          "name": "Shining Celebi",
+          "cosine": 0.7874177915345428
+        },
+        {
+          "id": "me55-23",
+          "name": "Pikachu",
+          "cosine": 0.6198689185067899
+        },
+        {
+          "id": "me55-145",
+          "name": "Hisuian Zorua",
+          "cosine": 0.583635466269942
+        },
+        {
+          "id": "me55-92",
+          "name": "Umbreon ex",
+          "cosine": 0.4414190279011362
+        },
+        {
+          "id": "me55-137",
+          "name": "Chandelure",
+          "cosine": 0.4138717208412471
+        }
+      ]
+    },
+    {
+      "path": "/tmp/cards-full/IMG_4986.png",
+      "cardId": "me55-23",
+      "correctReferencePresent": true,
+      "rank": 1,
+      "marginOverMedian": 0.2825061486223057,
+      "elapsedMs": 214.67966700000005,
+      "top10": [
+        {
+          "id": "me55-23",
+          "name": "Pikachu",
+          "cosine": 0.7647471310119569
+        },
+        {
+          "id": "me55c-106",
+          "name": "Shining Celebi",
+          "cosine": 0.5947259204920567
+        },
+        {
+          "id": "me55-145",
+          "name": "Hisuian Zorua",
+          "cosine": 0.5269904017937209
+        },
+        {
+          "id": "me55-137",
+          "name": "Chandelure",
+          "cosine": 0.4374915629855814
+        },
+        {
+          "id": "me55-92",
+          "name": "Umbreon ex",
+          "cosine": 0.36571271749812784
+        }
+      ]
+    },
+    {
+      "path": "/tmp/cards-full/IMG_4987.png",
+      "cardId": "me55-92",
+      "correctReferencePresent": true,
+      "rank": 1,
+      "marginOverMedian": 0.08541274548799371,
+      "elapsedMs": 209.22349999999994,
+      "top10": [
+        {
+          "id": "me55-92",
+          "name": "Umbreon ex",
+          "cosine": 0.5905228627733954
+        },
+        {
+          "id": "me55c-106",
+          "name": "Shining Celebi",
+          "cosine": 0.5657862689355566
+        },
+        {
+          "id": "me55-145",
+          "name": "Hisuian Zorua",
+          "cosine": 0.5239414878310247
+        },
+        {
+          "id": "me55-23",
+          "name": "Pikachu",
+          "cosine": 0.4862787467397787
+        },
+        {
+          "id": "me55-137",
+          "name": "Chandelure",
+          "cosine": 0.40375258530495634
+        }
+      ]
+    },
+    {
+      "path": "/tmp/cards-full/IMG_4988.png",
+      "cardId": "me55-137",
+      "correctReferencePresent": true,
+      "rank": 1,
+      "marginOverMedian": 0.3808209313900768,
+      "elapsedMs": 226.04366700000003,
+      "top10": [
+        {
+          "id": "me55-137",
+          "name": "Chandelure",
+          "cosine": 0.8698440005949594
+        },
+        {
+          "id": "me55-145",
+          "name": "Hisuian Zorua",
+          "cosine": 0.5794615487761287
+        },
+        {
+          "id": "me55-23",
+          "name": "Pikachu",
+          "cosine": 0.49483148047328135
+        },
+        {
+          "id": "me55c-106",
+          "name": "Shining Celebi",
+          "cosine": 0.4832146579364838
+        },
+        {
+          "id": "me55-92",
+          "name": "Umbreon ex",
+          "cosine": 0.3618146398920869
+        }
+      ]
+    },
+    {
+      "path": "/tmp/cards-full/IMG_4989.png",
+      "cardId": "me55-145",
+      "correctReferencePresent": true,
+      "rank": 1,
+      "marginOverMedian": 0.21107024315150624,
+      "elapsedMs": 220.76366699999994,
+      "top10": [
+        {
+          "id": "me55-145",
+          "name": "Hisuian Zorua",
+          "cosine": 0.7786599609726274
+        },
+        {
+          "id": "me55-23",
+          "name": "Pikachu",
+          "cosine": 0.5732227288689398
+        },
+        {
+          "id": "me55c-106",
+          "name": "Shining Celebi",
+          "cosine": 0.5713806311359672
+        },
+        {
+          "id": "me55-137",
+          "name": "Chandelure",
+          "cosine": 0.563798804506275
+        },
+        {
+          "id": "me55-92",
+          "name": "Umbreon ex",
+          "cosine": 0.4450072937167431
+        }
+      ]
+    }
+  ],
+  "productionReady": false,
+  "note": "Evaluar contra el catálogo completo y ground truth exacto antes de integrar."
+}

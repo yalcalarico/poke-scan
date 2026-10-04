@@ -63,11 +63,7 @@ if (portBusy(API_PORT)) {
   rows.push(['api http', D('no corriendo')]);
 }
 
-const tess = 'frontend/public/tesseract/lang/eng.traineddata.gz';
-rows.push([
-  'assets tesseract',
-  existsSync(tess) ? G('self-hosted (OCR offline OK)') : R('falta (el escáner necesita internet)'),
-]);
+rows.push(['índice DINOv2', existsSync('backend/.scanner-index') ? G('disponible') : Y('falta → pnpm run scanner:index')]);
 
 console.log(`\n${B('Diagnóstico')}\n`);
 const w = Math.max(...rows.map((r) => r[0].length));

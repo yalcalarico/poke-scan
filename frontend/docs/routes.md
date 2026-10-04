@@ -272,7 +272,7 @@ coherentes entre sí.
 
 ## 4. `escanear/layout.tsx` — un layout que solo aporta metadata
 
-`app/(app)/escanear/page.tsx` es `'use client'` —la cámara, el OCR y la máquina de
+`app/(app)/escanear/page.tsx` es `'use client'` —la cámara, el reconocimiento visual y la máquina de
 estados no se pueden renderizar en el servidor— y un Client Component **no puede
 exportar `metadata`**. La salida idiomática es un layout hermano que aporta el
 título y devuelve los hijos sin tocarlos: `page.tsx` sigue siendo enteramente
@@ -428,7 +428,7 @@ Ver §4. No figura en la tabla de §6 porque no produce una URL distinta.
 | `/carta/[id]` — **precios** | `getCardPrices()` en `CardPriceSection` al hidratar | caché Redis/Postgres del backend | estado de carga propio; no bloquea SSR |
 | `/carta/[id]` — otras del set | Server Component bajo `Suspense` | `next: { revalidate: 3600 }` | fallback vacío; no bloquea la ficha |
 | `/colecciones*` | `lib/api/*` desde el cliente | ninguna | `AbortSignal` de `apiFetch` |
-| `/escanear` | `identifyCard` desde el cliente | ninguna | `withTimeout(30_000)` + `SCAN_TIMEOUT_MS = 90_000` |
+| `/escanear` | `identifyVisual` desde el cliente | ninguna | AbortSignal con 35 s para reconocer y 5 s para precio |
 | `/ajustes` | `lib/api/*` desde el cliente | ninguna | `AbortSignal` de `apiFetch` |
 | `/share/[slug]` | `fetch` en el server con **`cache()` de React** | `next: { revalidate: 60 }` | — |
 
@@ -480,12 +480,11 @@ podría ir en el server es un precio, que sí sale a la fuente"*.
 
 ### El rate limit, de paso
 
-`/escanear` es la única ruta que escribe en la fuente (a través de
-`identifyCard`), y tiene dos frenos locales: `AUTO_IDENTIFY_INTERVAL_MS = 2500`
+`/escanear` consulta el índice local de la API con `identifyVisual`; no escribe en la fuente externa. Tiene dos frenos locales: `AUTO_IDENTIFY_INTERVAL_MS = 2500`
 entre capturas **automáticas** (el obturador manual no espera) y el `busy` de la
 pantalla, que apaga el obturador mientras hay un escaneo en vuelo, así que nunca
 hay dos `identify` en paralelo. El chip de precio flotante **no pide nada**: lee
-la fila `price` de la respuesta que ya llegó.
+el precio ya consultado para el ID visual elegido.
 
 ---
 

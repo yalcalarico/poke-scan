@@ -748,127 +748,6 @@ node -e "fetch('http://localhost:3001/api/cards/sv3pt5-150/prices/history?days=9
 }
 ```
 
-### `POST /api/cards/identify`
-
-Público. **200 OK** (`@HttpCode(200)`). Recibe las líneas **crudas** que devolvió
-el OCR del cliente y las fuzzy-matchea contra las 20.670 cartas locales. Es
-`POST` justamente para no colisionar con `GET /cards/:id`.
-
-Body `IdentifyDto` (`cards/dto/identify.dto.ts`):
-
-| Campo | Reglas | Default |
-|---|---|---|
-| `lines` | Opcional, `@IsArray()`, `@ArrayMaxSize(60)`, strings | `[]` |
-| `name` | Opcional, `@MaxLength(80)` — mejor guess del cliente, máxima prioridad | — |
-| `number` | Opcional, `@MaxLength(20)` — número impreso; **bonus chico** (0.06) | — |
-| `setHint` | Opcional, `@MaxLength(80)` — ej `"Base"`; bonus 0.2 | — |
-| `setCode` | Opcional, `@MaxLength(8)`, `@Matches(/^[A-Za-z0-9-]+$/)` — código impreso de 3 caracteres, ej `"30C"`; bonus 0.2. **Hoy no lo manda nadie**: depende de medir la banda (§"el código de set" más abajo) | — |
-| `limit` | Opcional, `@IsInt()`, 1..20 | `8` (`DEFAULT_IDENTIFY_LIMIT`) |
-
-**200** → `IdentifyResultDto`:
-
-```ts
-interface IdentifyResultDto {
-  candidates: IdentifiedCandidateDto[];  // ya ordenadas por score
-  extracted: { name: string | null; number: string | null; setHint: string | null };
-  totalCandidates: number;               // los que pasaron MIN_SCORE (0.25)
-}
-
-interface IdentifiedCandidateDto {
-  card: CardDto;
-  score: number;         // 0..1, redondeado a 2 decimales, saturado en 1
-  rawScore: number;      // el mismo score SIN saturar (ver abajo)
-  signals: CandidateSignalsDto;
-  matchedText: string;   // la línea/ventana del OCR que matched
-  prices: CardPriceDto[];// siempre en USD, sin priceArs
-  price: CardPriceDto | null;  // la variante de mayor market
-}
-
-interface CandidateSignalsDto {
-  numberHint: boolean | null;     // el `number` del request coincide con la carta
-  setName: boolean | null;        // el `setHint` del request coincide con el set
-  setCode: boolean | null;        // el `setCode` del request coincide con el set
-  printedNumber: boolean | null;  // el "N/M" del OCR es de esta impresión
-  hp: boolean | null;
-  artist: boolean | null;
-  rarity: boolean | null;
-}
-```
-
-`signals` distingue tres estados, y la diferencia es la que sirve: `true` votó a
-favor, `false` se leyó y no coincidió, `null` **no votó** porque la señal no se
-pudo leer. Con eso se separa "el ranking se equivocó" de "el OCR no leyó nada de
-esto", que antes había que adivinarlo desde el síntoma en pantalla.
-
-`score` viene **saturado en 1** por compatibilidad, así que varios candidatos
-legítimos empatan en `1.00` y el margen real no se ve. `rawScore` lo expone: con
-el bonus de `setCode` un match bueno da 1.17-1.29, y esa diferencia entre el
-primero y el segundo es la que estaba invisible.
-
-#### El código de set (`setCode`)
-
-Es la señal de set más barata que hay: la carta imprime 3 caracteres en la
-esquina inferior izquierda (`30C`) y `card_sets.ptcgoCode` los tiene. Match
-exacto contra vocabulario cerrado, sin comparar imágenes ni banco de
-plantillas. Está en 151 de 176 sets (142 valores distintos); las únicas
-colisiones son set ↔ sub-producto (`me55` y `me55c` comparten `"30C"`), que el
-número impreso igual separa.
-
-**No se extrae de `lines` a propósito.** Medido sobre las 8 fixtures reales de
-OCR (`frontend/lib/scanner/__fixtures__/ocr-samples.json`), buscar cualquier
-token de 3 caracteres que sea un código de set dio **22 falsos positivos y 0
-verdaderos**: `EVO` sale de "Evolves from", `PAR`/`CRE`/`FLI` de basura del OCR,
-`MEW` de una carta que se llama Mew. El backend no tiene con qué filtrar por
-posición, así que la señal llega como hint del cliente; hasta que haya banda
-medida (fase 8.1 de `docs/files/08-VERSION-DISAMBIGUATION.md`) el campo se manda
-ausente y no vota.
-
-#### El denominador del número impreso
-
-El "N/M" del OCR matchea el numerador contra `cards.number` y el denominador
-contra **`printedTotal` o `total`**, no solo contra `printedTotal`. Difieren en
-106 de 176 sets (me55: 128 vs 161) y con igualdad exacta el bonus de 0.25 —el
-más fuerte del ranking— se perdía para más de la mitad del catálogo.
-
-Ojo: hay sets donde **ninguno** de los dos es lo impreso. `me55` imprime
-"092/120" y la fuente no tiene 120 en ningún campo. Para esos, la señal del set
-es el código, no el denominador.
-
-Reglas de ranking (todo en `identify.service.ts`): máximo 3 cartas por nombre,
-`MIN_SCORE = 0.25`, penaliza boilerplate (`STOPWORDS`), penaliza nombres de
-pre-evolución leídos de "Evolves from X", y hunde por 0.2 los nombres de menos
-de 3 caracteres (energías "N", "F", "W" matcheaban perfecto con cualquier ruido).
-
-| Error | Cuándo |
-|---|---|
-| `400` | `lines` con más de 60 elementos, `limit` fuera de 1..20, etc. |
-
-```bash
-curl -X POST http://localhost:3001/api/cards/identify \
-  -H 'content-type: application/json' -H 'X-Session-Request: 1' -b cookies.txt -c cookies.txt \
-  -d '{"lines":["115% 4 Charizard &","STAGE 2 Evolves from Charmeleon"],"limit":3}'
-```
-
-```json
-{
-  "candidates": [
-    { "card": { "id": "base1-4", "name": "Charizard", "...": "..." },
-      "score": 0.95, "rawScore": 0.95,
-      "signals": { "numberHint": null, "setName": null, "setCode": null,
-                   "printedNumber": false, "hp": null,
-                   "artist": true, "rarity": true },
-      "matchedText": "4 Charizard",
-      "prices": [ { "cardId": "base1-4", "variant": "holofoil", "low": 1200,
-                    "mid": 1500, "high": 4000, "market": 1800,
-                    "currency": "USD", "source": "tcgplayer",
-                    "fetchedAt": "2026-09-25T12:00:00.000Z" } ],
-      "price": { "variant": "holofoil", "market": 1800, "...": "..." } }
-  ],
-  "extracted": { "name": "Charizard", "number": null, "setHint": "Base" },
-  "totalCandidates": 12
-}
-```
-
 ### `GET /api/sets`
 
 Público. Sin query params. Lista **todos** los sets (176) ordenados por
@@ -1814,33 +1693,6 @@ curl -X POST http://localhost:3001/api/jobs/refresh-prices \
   -d '{"cardIds":["base1-4","base1-5"]}'
 ```
 
-### `POST /api/jobs/scan-capture` — **solo desarrollo**
-
-Guarda un PNG del escáner en disco para poder mirar los recortes intermedios.
-Es el endpoint que usa `NEXT_PUBLIC_SCAN_CAPTURE=1` del frontend.
-
-**Sin `x-admin-key` a propósito**: lo llama el navegador, que no lo tiene. A
-cambio **en producción devuelve 404** (`NODE_ENV=production`), solo acepta PNGs
-y escribe con nombres sanitizados (`^[a-zA-Z0-9_.-]+$`) en
-`SCAN_CAPTURE_DIR`, que por defecto es `/tmp/pokemon-scanner-captures`.
-
-**201 Created** →
-
-```json
-{ "path": "/tmp/pokemon-scanner-captures/run-3/04-banda-1-grayscale.png" }
-```
-
-| Error | Cuándo |
-|---|---|
-| `404` | en producción, o el `png` no es un data URL de PNG |
-| `413` | el PNG pesa más de 8 MB (por eso el frontend lo achica a 1000px) |
-
-```bash
-curl -X POST http://localhost:3001/api/jobs/scan-capture \
-  -H 'content-type: application/json' -H 'X-Session-Request: 1' -b cookies.txt -c cookies.txt \
-  -d "{\"run\":\"prueba\",\"step\":\"01-foto\",\"png\":\"data:image/png;base64,$(base64 -i foto.png | tr -d '\n')\"}"
-```
-
 ### `GET /api/jobs/:id`
 **200** → la fila `ScanJob` cruda, o `null` si no existe. Permite ver el
 progreso de un sync en vivo.
@@ -1892,3 +1744,40 @@ Cuando haga falta, el cálculo ya está hecho: es un
 - **Qué variante.** Un `price-history` por carta tiene que resolver `market ??
   mid` con la misma precedencia de `change`, o el sparkline y la píldora van a
   contar historias distintas sobre el mismo número.
+
+## Reconocimiento visual del escáner
+
+`POST /api/cards/identify-visual` requiere JWT y `SCANNER_VISUAL_ENABLED=1`.
+Apagado por defecto (404). JSON `{ image: "data:image/jpeg;base64,..." }`,
+validado por `VisualIdentifyDto`: JPEG/PNG/WebP, hasta 6 MiB y 24 MP.
+Respuesta `VisualIdentifyResponseDto`: `candidates[{card, similarity}]`,
+`references`, `collections`, `indexVersion`, `indexStale`, `indexMs`, `cold`,
+`modelMs`, `inferenceMs`, `totalMs`. Similitud coseno,
+no probabilidad de certeza. Consulta todos los índices locales compatibles;
+ninguna coincidencia confirma edición/acabado ni dispara guardado.
+
+Procesamiento en memoria y respuesta `Cache-Control: no-store`. Una inferencia
+por proceso API; 503 si el motor está ocupado o excede 30 s. La desconexión mata
+el proceso hijo y la siguiente prueba lo reinicia. No consulta proveedores ni
+persiste imágenes. Guía de habilitación y resultados:
+[`visual-screen-2026-10-02.md`](../../docs/evaluations/visual-screen-2026-10-02.md).
+
+Directorio: `SCANNER_VISUAL_INDEX_DIR`, o `SCANNER_INDEX_DIR`, o `.scanner-index`.
+Lee una carpeta individual o las subcarpetas con metadata compatible; si hay
+subcarpetas, ignora el vector legado de la raíz. Verifica metadata, vectores
+normalizados de 384 dimensiones y IDs (incluye `ex10-!` y `ex10-?`); deduplica
+referencias idénticas y rechaza duplicados incompatibles. Detecta cambios de
+tamaño/fechas/colecciones en cada request y comprueba que los archivos no cambien
+durante la lectura. `index.lock` o `sets-index.lock` bloquean la recarga. Conserva
+el snapshot anterior y responde `indexStale=true` si no puede actualizarlo;
+sin un snapshot válido devuelve error. No reinicia ONNX para recargar vectores.
+
+El ranking visual recupera 64 candidatos por coseno y compara sus dibujos
+mediante ORB + homografía RANSAC. Cada candidato agrega `retrievalRank`
+y `geometry` (`matches`, `inliers`, `coverage`, `verified`), o `null` si no hay
+imagen local utilizable. La respuesta agrega `verificationMs`,
+`verificationAvailable` y `retrievalLimit`. Primero van candidatos con geometría
+consistente, ordenados por inliers y coseno como desempate; sin corroboración
+conserva el ranking original. Si falla el verificador, conserva ese ranking con
+`verificationAvailable=false`. No descarga imágenes ni recalcula embeddings.
+Detalle y limitaciones: [evaluación geométrica](../../docs/evaluations/visual-geometry-2026-10-03.md).

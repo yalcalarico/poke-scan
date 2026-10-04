@@ -87,65 +87,17 @@ alta confirmada. Fire-and-forget mantiene el alta en 54 ms.
 
 ---
 
-## 5. OCR en el cliente, no en el servidor
+## 5. Reconocimiento visual en la API
 
-**Contexto:** identificar una carta requiere visión por computador. Se evaluó
-mandar la imagen al servidor.
+DINOv2 es el único método de reconocimiento desde el 2026-10-03. El cliente encuadra y envía el recorte a la API autenticada, que ejecuta un modelo ONNX local y consulta el índice. La foto se procesa sin almacenarse. Se requiere conexión.
 
-**Elegido:** Tesseract.js corre entero en el navegador. Al servidor solo viajan
-las **líneas de texto** resultantes.
+## 6. Verificación geométrica del dibujo
 
-**Por qué:**
+El índice recupera candidatos visuales; ORB y homografía RANSAC corroboran detalles y pueden reordenarlos. La similitud coseno no equivale a certeza. Reflejos, reimpresiones y acabados siguen requiriendo revisión.
 
-- Sin upload, sin storage, sin concerns de privacidad de fotos de las cartas.
-- El escáner funciona sin internet: Tesseract está auto-hospedado en
-  `/public/tesseract` (~12 MB, cacheado por el service worker).
-- El servidor nunca procesa imágenes: no necesita CPU ni queues.
+## 7. Primera predicción por defecto
 
-**Costo:** +12 MB en el bundle de assets, y el primer escaneo de la sesión
-tarda 8-12 s descargando wasm y `eng.traineddata`.
-
----
-
-## 6. Tres variantes de preprocesado, gana la de mayor confianza de OCR
-
-**Contexto:** el foil de las cartas rompe el OCR. Una carta holográfica leída
-cruda puede no dar nada.
-
-**Elegido:** se generan 3 variantes (original, grayscale+autoContrast,
-adaptiveThreshold de Sauvola), se pasa cada una por Tesseract y **gana la de
-mayor confianza**, no la más "nítida".
-
-**Por qué la confianza y no la nitidez:** se implementó primero un selector por
-nitidez (varianza de bordes) y **funcionaba peor que no hacer nada**. Una imagen
-binarizada maximiza el gradiente total —cada transición salta de 0 a 255— así
-que siempre ganaba, y la binarizada era justo la peor variante. Medido: nitidez
-elegía threshold 8/8 veces, con 4/8 de acierto; la confianza elige bien 7/8.
-
-**Por qué 3 pasadas de OCR (~2,6 s cada una) y no una:** la mejor variante varía
-por carta. Medido: original gana 6/8, grayscale 7/8, threshold 4/8. Ninguna
-sirve sola.
-
----
-
-## 7. El backend matchea el OCR contra el catálogo, no el cliente
-
-**Contexto:** al leer "115% 4 Charizard &" hay que decidir que el nombre es
-"Charizard". ¿Heurísticas de regex en el cliente o fuzzy match?
-
-**Elegido:** el cliente manda **todas las líneas sucias** y el backend las
-fuzzy-matchea contra los 20.670 nombres reales.
-
-**Por qué:** el cliente no tiene el catálogo. El catálogo es el mejor validador
-que existe: si "Charizard" matchea exactamente un nombre del catálogo, es
-"Charizard". Cualquier heurística de parsing (regex, stopwords, ventanas) es
-inferior.
-
-**Consecuencia:** el parser del cliente hace un trabajo modesto (limpiar y
-mandar candidatos), y el backend carga con el ranking. Documentado en
-`frontend/docs/scanner.md` y `backend/docs/api.md`.
-
----
+La cámara reconoce cuando el encuadre está estable y conserva el video. Cámara y galería suman el #1 a la sesión sin selector. El usuario revisa la edición y elige destino, variante y cantidad al organizar. Los precios se consultan para el ID elegido, sin cambiar su identidad.
 
 ## 8. Refresh tokens opacos, no JWT
 

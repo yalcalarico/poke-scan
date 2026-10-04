@@ -237,7 +237,7 @@ está espejado en Postgres y los precios se cachean 2 capas (Redis 1 h + Postgre
 
 **Nunca llames a pokemontcg.io desde un handler.** Toda lectura de precio pasa
 por `getCardPrices(id)`. En el escáner, el chip de precio flotante **lee la fila
-de precio que ya viene en la respuesta de `identifyCard`** — jamás dispara un
+de precio que la página ya consultó para el candidato visual elegido** — jamás dispara un
 fetch, y jamás desde el loop de cámara. `PriceChip` no importa `lib/api`, no tiene
 `useEffect` y no tiene estado: si le pasás un número, lo pinta; si no, no renderiza
 nada.

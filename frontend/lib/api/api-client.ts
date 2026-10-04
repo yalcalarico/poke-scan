@@ -67,7 +67,7 @@ export function refreshSession(): Promise<AuthResponseDto | null> {
   const run = async (): Promise<AuthResponseDto | null> => {
     if (!hasSession()) return null;
     try {
-      const response = await fetch(`${BASE_URL}/auth/refresh`, {
+      const response = await fetch(`${getApiBaseUrl()}/auth/refresh`, {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json', 'X-Session-Request': '1' },
@@ -103,6 +103,10 @@ export function refreshSession(): Promise<AuthResponseDto | null> {
 }
 
 export function getApiBaseUrl(): string {
+  // Los Server Components necesitan una URL absoluta; /api es solo para el browser.
+  if (typeof window === 'undefined' && process.env.NODE_ENV === 'development') {
+    return process.env.DEV_API_PROXY_TARGET ?? BASE_URL;
+  }
   return BASE_URL;
 }
 
@@ -141,7 +145,7 @@ async function execute(path: string, options: Omit<ApiFetchOptions, 'isRetry'>):
   const token = skipAuth ? null : getAccessToken();
   if (token) headers.set('Authorization', `Bearer ${token}`);
 
-  return fetch(`${BASE_URL}${path}`, { ...rest, credentials: 'include', headers, body: payload });
+  return fetch(`${getApiBaseUrl()}${path}`, { ...rest, credentials: 'include', headers, body: payload });
 }
 
 export async function apiFetch<T = unknown>(

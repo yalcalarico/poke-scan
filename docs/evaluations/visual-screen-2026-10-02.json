@@ -1,0 +1,384 @@
+{
+  "at": "2026-10-02T15:29:20.672Z",
+  "references": 191,
+  "productionReady": false,
+  "results": [
+    {
+      "cardId": "me55c-106",
+      "bytes": 1947615,
+      "rank": 2,
+      "httpMs": 520.376125,
+      "candidates": [
+        {
+          "id": "me55c-106m",
+          "name": "M Gardevoir-EX",
+          "number": "106",
+          "set": "30th Celebration: Classic Collection",
+          "similarity": 0.6043683356533057
+        },
+        {
+          "id": "me55c-106",
+          "name": "Shining Celebi",
+          "number": "106",
+          "set": "30th Celebration: Classic Collection",
+          "similarity": 0.5921626029130563
+        },
+        {
+          "id": "me55c-69",
+          "name": "Erika's Jigglypuff",
+          "number": "69",
+          "set": "30th Celebration: Classic Collection",
+          "similarity": 0.5632304929259894
+        },
+        {
+          "id": "me55-60",
+          "name": "Toxtricity",
+          "number": "60",
+          "set": "30th Celebration",
+          "similarity": 0.5478778935043268
+        },
+        {
+          "id": "me55c-19",
+          "name": "Dark Tyranitar",
+          "number": "19",
+          "set": "30th Celebration: Classic Collection",
+          "similarity": 0.5420617635964791
+        },
+        {
+          "id": "me55-37",
+          "name": "Pikachu",
+          "number": "37",
+          "set": "30th Celebration",
+          "similarity": 0.5373817697664783
+        },
+        {
+          "id": "me55c-18",
+          "name": "Misty",
+          "number": "18",
+          "set": "30th Celebration: Classic Collection",
+          "similarity": 0.5335127867203663
+        },
+        {
+          "id": "me55-30",
+          "name": "Pikachu",
+          "number": "30",
+          "set": "30th Celebration",
+          "similarity": 0.5125520837338285
+        }
+      ],
+      "references": 191,
+      "cold": true,
+      "modelMs": 187.39204199999998,
+      "inferenceMs": 83.65991700000001,
+      "totalMs": 468.68300000000454
+    },
+    {
+      "cardId": "me55-23",
+      "bytes": 1892961,
+      "rank": 4,
+      "httpMs": 132.74204200000008,
+      "candidates": [
+        {
+          "id": "me55c-69",
+          "name": "Erika's Jigglypuff",
+          "number": "69",
+          "set": "30th Celebration: Classic Collection",
+          "similarity": 0.6119412777138667
+        },
+        {
+          "id": "me55-67",
+          "name": "Marill",
+          "number": "67",
+          "set": "30th Celebration",
+          "similarity": 0.6061836531594254
+        },
+        {
+          "id": "me55-30",
+          "name": "Pikachu",
+          "number": "30",
+          "set": "30th Celebration",
+          "similarity": 0.5716963433991951
+        },
+        {
+          "id": "me55-23",
+          "name": "Pikachu",
+          "number": "23",
+          "set": "30th Celebration",
+          "similarity": 0.5695834298742622
+        },
+        {
+          "id": "me55c-18",
+          "name": "Misty",
+          "number": "18",
+          "set": "30th Celebration: Classic Collection",
+          "similarity": 0.553951475438344
+        },
+        {
+          "id": "me55-47",
+          "name": "Pikachu",
+          "number": "47",
+          "set": "30th Celebration",
+          "similarity": 0.5467005904842965
+        },
+        {
+          "id": "me55-37",
+          "name": "Pikachu",
+          "number": "37",
+          "set": "30th Celebration",
+          "similarity": 0.5414026564871346
+        },
+        {
+          "id": "me55-120",
+          "name": "Igglybuff",
+          "number": "120",
+          "set": "30th Celebration",
+          "similarity": 0.5400383146656853
+        }
+      ],
+      "references": 191,
+      "cold": false,
+      "modelMs": 0.002459000000044398,
+      "inferenceMs": 67.14458300000001,
+      "totalMs": 90.84754100000282
+    },
+    {
+      "cardId": "me55-92",
+      "bytes": 1672396,
+      "rank": 7,
+      "httpMs": 124.45079200000009,
+      "candidates": [
+        {
+          "id": "me55c-19",
+          "name": "Dark Tyranitar",
+          "number": "19",
+          "set": "30th Celebration: Classic Collection",
+          "similarity": 0.5408868124203613
+        },
+        {
+          "id": "me55-80",
+          "name": "Lunala",
+          "number": "80",
+          "set": "30th Celebration",
+          "similarity": 0.5408268580129877
+        },
+        {
+          "id": "me55-30",
+          "name": "Pikachu",
+          "number": "30",
+          "set": "30th Celebration",
+          "similarity": 0.5368370497871306
+        },
+        {
+          "id": "me55c-106m",
+          "name": "M Gardevoir-EX",
+          "number": "106",
+          "set": "30th Celebration: Classic Collection",
+          "similarity": 0.5339052784747735
+        },
+        {
+          "id": "me55c-41",
+          "name": "Greninja BREAK",
+          "number": "41",
+          "set": "30th Celebration: Classic Collection",
+          "similarity": 0.5313810040736179
+        },
+        {
+          "id": "me55c-94",
+          "name": "Gengar",
+          "number": "94",
+          "set": "30th Celebration: Classic Collection",
+          "similarity": 0.5270443278638302
+        },
+        {
+          "id": "me55-92",
+          "name": "Umbreon ex",
+          "number": "92",
+          "set": "30th Celebration",
+          "similarity": 0.5261697439592821
+        },
+        {
+          "id": "me55-21",
+          "name": "Greninja ex",
+          "number": "21",
+          "set": "30th Celebration",
+          "similarity": 0.5233146260445406
+        }
+      ],
+      "references": 191,
+      "cold": false,
+      "modelMs": 0.0002910000000611035,
+      "inferenceMs": 69.884458,
+      "totalMs": 92.19991599999776
+    },
+    {
+      "cardId": "me55-137",
+      "bytes": 2260417,
+      "rank": 1,
+      "httpMs": 139.76095900000018,
+      "candidates": [
+        {
+          "id": "me55-137",
+          "name": "Chandelure",
+          "number": "137",
+          "set": "30th Celebration",
+          "similarity": 0.6296625366117254
+        },
+        {
+          "id": "me55-101",
+          "name": "Galarian Meowth",
+          "number": "101",
+          "set": "30th Celebration",
+          "similarity": 0.5575999303387105
+        },
+        {
+          "id": "me55-60",
+          "name": "Toxtricity",
+          "number": "60",
+          "set": "30th Celebration",
+          "similarity": 0.5502547788268387
+        },
+        {
+          "id": "me55-30",
+          "name": "Pikachu",
+          "number": "30",
+          "set": "30th Celebration",
+          "similarity": 0.5498239895704181
+        },
+        {
+          "id": "me55-110",
+          "name": "Jangmo-o",
+          "number": "110",
+          "set": "30th Celebration",
+          "similarity": 0.546602685999899
+        },
+        {
+          "id": "me55c-69",
+          "name": "Erika's Jigglypuff",
+          "number": "69",
+          "set": "30th Celebration: Classic Collection",
+          "similarity": 0.5424919982692334
+        },
+        {
+          "id": "me55c-19",
+          "name": "Dark Tyranitar",
+          "number": "19",
+          "set": "30th Celebration: Classic Collection",
+          "similarity": 0.5308740884577604
+        },
+        {
+          "id": "me55c-106m",
+          "name": "M Gardevoir-EX",
+          "number": "106",
+          "set": "30th Celebration: Classic Collection",
+          "similarity": 0.5277438516323549
+        }
+      ],
+      "references": 191,
+      "cold": false,
+      "modelMs": 0.00037500000007639755,
+      "inferenceMs": 69.8951669999999,
+      "totalMs": 93.36687499999971
+    },
+    {
+      "cardId": "me55-145",
+      "bytes": 1948887,
+      "rank": 1,
+      "httpMs": 128.9444999999996,
+      "candidates": [
+        {
+          "id": "me55-145",
+          "name": "Hisuian Zorua",
+          "number": "145",
+          "set": "30th Celebration",
+          "similarity": 0.6999774307144586
+        },
+        {
+          "id": "me55-133",
+          "name": "Zapdos",
+          "number": "133",
+          "set": "30th Celebration",
+          "similarity": 0.6271496636543185
+        },
+        {
+          "id": "me55-30",
+          "name": "Pikachu",
+          "number": "30",
+          "set": "30th Celebration",
+          "similarity": 0.6119256439348635
+        },
+        {
+          "id": "me55-130",
+          "name": "Moltres",
+          "number": "130",
+          "set": "30th Celebration",
+          "similarity": 0.603773528533644
+        },
+        {
+          "id": "me55c-106m",
+          "name": "M Gardevoir-EX",
+          "number": "106",
+          "set": "30th Celebration: Classic Collection",
+          "similarity": 0.6024007823486188
+        },
+        {
+          "id": "me55-132",
+          "name": "Articuno",
+          "number": "132",
+          "set": "30th Celebration",
+          "similarity": 0.5905204950446179
+        },
+        {
+          "id": "me55-59",
+          "name": "Toxtricity",
+          "number": "59",
+          "set": "30th Celebration",
+          "similarity": 0.587993685545339
+        },
+        {
+          "id": "me55-37",
+          "name": "Pikachu",
+          "number": "37",
+          "set": "30th Celebration",
+          "similarity": 0.5836357717425873
+        }
+      ],
+      "references": 191,
+      "cold": false,
+      "modelMs": 0.0002500000000509317,
+      "inferenceMs": 67.93829200000005,
+      "totalMs": 88.15374999999767
+    }
+  ],
+  "errors": [
+    {
+      "image": "data:image/svg+xml;base64,YQ==",
+      "status": 400,
+      "body": {
+        "message": [
+          "Usá una foto JPEG, PNG o WebP válida."
+        ],
+        "error": "Bad Request",
+        "statusCode": 400
+      }
+    },
+    {
+      "image": "data:image/png;base64,YQ==",
+      "status": 400,
+      "body": {
+        "message": "No pudimos procesar la foto. Usá una imagen válida de hasta 24 megapíxeles.",
+        "error": "Bad Request",
+        "statusCode": 400
+      }
+    },
+    {
+      "image": "data:image/png;base64,",
+      "status": 400,
+      "body": {
+        "message": "Usá una foto de hasta 6 MiB.",
+        "error": "Bad Request",
+        "statusCode": 400
+      }
+    }
+  ],
+  "unauthorized": 401
+}

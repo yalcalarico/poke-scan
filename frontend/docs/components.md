@@ -1017,62 +1017,11 @@ Lo no obvio:
 
 ## 2.4 `scanner/` — la pantalla más grande
 
-17 módulos más `index.ts`. El estado vive en `app/(app)/escanear/page.tsx`; esta
-carpeta es la vista.
+La página `/escanear` mantiene la sesión y ejecuta DINOv2. `CameraView` conserva el video durante la consulta y captura automáticamente un encuadre estable. `CardFrame` dibuja rojo/verde; `ActionBar` ofrece captura manual de respaldo, galería, descarte y organización. Los controles de flash/infinito están ocultos.
 
-| Archivo | Qué hace |
-|---|---|
-| `camera-view.tsx` | La cámara a pantalla completa con su chrome. |
-| `card-frame.tsx` | El frame de detección sobre la foto. |
-| `action-bar.tsx` | Galería, descartar, obturador, "Organizar (N)". |
-| `camera-controls.tsx` | Flash / continuo / silencio. |
-| `detected-bar.tsx` | La barra de la carta detectada + su tabla de precio. |
-| `price-chip.tsx` | El chip de precio flotante. |
-| `scan-preview.tsx` | La miniatura del recorte. |
-| `card-thumb.tsx` | La miniatura dentro de la barra de la carta detectada. |
-| `scan-results.tsx` | El `Sheet` de candidatos. |
-| `candidate-card.tsx` | Un candidato. |
-| `matched-text.tsx` | Resalta qué fragmento del OCR matcheó. |
-| `organize-sheet.tsx` | La sesión por lotes. |
-| `idle-panel.tsx` | El estado de reposo. |
-| `camera-messages.ts` | `CAMERA_ERROR_COPY`, server-safe: los cinco mensajes de error de cámara. |
-| `copy.ts` | `PHASE_HEADLINE`, `PHASE_DETAIL`, `formatCount`, `cameraErrorCopy`. Importa de `camera-messages.ts` y lo re-exporta. |
-| `types.ts` | `ScanPhase`, `ScanStage`, `CONFIDENT_SCORE`, `frameToneFor`, `isCameraStage`, `isSheetStage`. |
-| `image-input.ts` | Conversión de archivo a `ImageData`. |
+`DetectedCardBar` y `PriceChip` muestran la carta elegida y sus precios sin consultar APIs. `VisualDiagnostics` muestra ranking y tiempos de una foto subida. `IdlePanel` ofrece cámara solo en teléfonos. `OrganizeSheet` guarda las entradas en la colección elegida; la primera predicción se suma por defecto y no hay un selector de candidatos.
 
-Lo que hay que saber:
-
-- **La máquina de estados está en la página, no en la carpeta**, y su diagrama
-  está en el JSDoc de `escanear/page.tsx`. `camera` y `processing` son el mismo
-  lugar físico: **la cámara sigue viva mientras corre el OCR** y lo único que
-  cambia es que el obturador se apaga. `results` y `organizing` son los dos
-  `Sheet`, y en ninguno hay cámara montada.
-- **El scanner se escapa del shell.** `CameraView` es `fixed inset-0 z-media`, y
-  la `BottomNav` (z 50) queda **debajo** sin que nadie la esconda. El comentario
-  lo dice: *"la `BottomNav` vive en el layout y la tapa `z-media` (90) sin que
-  nadie tenga que esconderla ni ella tenga que saber que el scanner existe"*. Eso
-  arregla el bug de z-index de la v1 (cámara en `z-40`, nav en `z-50`).
-- **El chip de precio no dispara ningún fetch, y su JSDoc es un cartel de
-  prohibición.** `PriceChip` **no importa `lib/api`, no tiene `useEffect` y no
-  tiene estado**: recibe un `usd: number | null` que ya está en memoria. Si no
-  hay precio, `return null` — no hay estado de carga, ni spinner, ni un `—`
-  flotando sobre la foto. Las tres consecuencias que el archivo declara
-  intencionales: sin precio no aparece el chip; no hay recarga (el precio envejece
-  con la regla de 24 h del backend); y **no hay prop `onRefresh`**, porque
-  *"va a fallar en producción con el catálogo de un usuario real"*. El número sale
-  de `referencePrice(candidate)` en `detected-bar.tsx`: la primera fila usable de
-  `candidate.prices`, o `candidate.price`, y de ahí `market ?? mid ?? low ?? high`.
-- **El freno de 2,5 s es solo para el modo continuo.** `AUTO_IDENTIFY_INTERVAL_MS
-  = 2500` se aplica cuando `source === 'auto'`; el obturador manual no espera,
-  porque *"si apretó, hacerlo esperar se siente como que la app se lag"*.
-- **El `progress` se compone, no se inventa**: `min(0.95, variantes completadas +
-  progreso de la variante en curso)`, con tope `0.97` en la fase de búsqueda.
-- **`runIdRef` (contador de corrida) en la página.** Es el patrón de
-  `gotchas.md` #9 para cuando el usuario puede disparar varias operaciones seguidas.
-- `CONFIDENT_SCORE = 0.75` (la v1 tenía 0.6) y `frameToneFor(score)` mapea a
-  `idle | positive | warning`.
-- `CameraView` conserva `handlersRef` y el `[]` de deps a propósito, con el mismo
-  razonamiento de `gotchas.md` #1.
+`image-input.ts` decodifica archivos; `lib/scanner/visual-photo.ts` prepara el recorte de galería. La cámara ya captura la guía y no vuelve a rotarla. `copy.ts` contiene mensajes y fases. `types.ts` y `session-storage.ts` definen/persisten la sesión, hasta 30 entradas. Ver [scanner.md](scanner.md) para cancelación, tiempos, geometría y actualización del índice.
 
 ## 2.5 `collections/`
 
@@ -1350,7 +1299,7 @@ y `marketing/` es la página pública de adquisición y su FAQ.
   Pro aparece como "En preparación", sin precio ni botón de compra, porque no
   existe billing todavía. La FAQ aclara qué ideas de Pro no están activas.
 - **No hay testimonios ni rating inventados.** El bloque de prueba usa datos
-  verificables del catálogo y explica límites del OCR, la conexión y los precios.
+  verificables del catálogo y explica límites del reconocimiento visual, la conexión y los precios.
 
 ---
 

@@ -24,7 +24,7 @@ OFF   := \033[0m
         infra-reset db-migrate db-push db-generate db-reset db-studio db-stats \
         seed sync prices test test-backend test-frontend test-watch lint \
         typecheck build build-backend build-frontend check doctor clean \
-        cache-clear tesseract-check
+        cache-clear
 
 ## ── Ayuda ──────────────────────────────────────────────────────────────────
 help: ## Mostrar esta ayuda
@@ -207,15 +207,11 @@ doctor: ## Verificar que todo esté en orden
 	    r=$$(curl -s -o /dev/null -w '%{http_code}' http://localhost:$(API_PORT)/api/health 2>/dev/null || echo 000); \
 	    [ "$$r" = 200 ] && printf "$(GRN)200 OK$(OFF)\n" || printf "$(RED)$$r$(OFF)\n"; \
 	  else printf "$(DIM)no corriendo$(OFF)\n"; fi
-	@printf "  %-22s " "assets tesseract"; \
-	  if [ -s frontend/public/tesseract/lang/eng.traineddata.gz ]; then \
-	    printf "$(GRN)self-hosted (OCR offline OK)$(OFF)\n"; \
-	  else printf "$(RED)falta (make tesseract-check)$(OFF)\n"; fi
+	@printf "  %-22s " "índice DINOv2"; \
+	  if [ -d backend/.scanner-index ]; then \
+	    printf "$(GRN)disponible$(OFF)\n"; \
+	  else printf "$(YEL)falta (pnpm run scanner:index)$(OFF)\n"; fi
 	@printf "\n"
-
-tesseract-check: ## Verificar que el OCR funcione offline (sin internet)
-	@cd frontend && pnpm exec vitest run lib/scanner/__tests__/ocr.test.ts --reporter=dot
-	@printf "\n$(GRN)✓ OCR local OK$(OFF)  (el escáner no necesita internet)\n"
 
 ## ── Limpieza ───────────────────────────────────────────────────────────────
 clean: ## Borrar builds y caches

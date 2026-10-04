@@ -9,9 +9,9 @@ import {
   readSession,
   writeSession,
 } from '../session-storage';
-import type { IdentifiedCandidateDto } from '@/types/api';
+import type { RecognizedCard } from '@/types/api';
 
-function candidate(n: number): IdentifiedCandidateDto {
+function candidate(n: number): RecognizedCard {
   return {
     card: {
       id: `base1-${n}`,
@@ -29,20 +29,11 @@ function candidate(n: number): IdentifiedCandidateDto {
     },
     score: Math.max(0, 0.9 - n / 100),
     rawScore: 100 - n,
-    signals: {
-      numberHint: null,
-      setName: null,
-      setCode: null,
-      printedNumber: null,
-      hp: null,
-      artist: null,
-      rarity: null,
-    },
     price: null,
   };
 }
 
-function seed(count: number): { runId: number; candidate: IdentifiedCandidateDto }[] {
+function seed(count: number): { runId: number; candidate: RecognizedCard }[] {
   return Array.from({ length: count }, (_, i) => ({ runId: i + 1, candidate: candidate(i + 1) }));
 }
 
@@ -82,7 +73,7 @@ describe('appendSessionEntry', () => {
    * grilla mostraba 47, y al recargar desaparecían las 17 primeras sin aviso.
    */
   it('el estado en memoria respeta el mismo tope que lo que se persiste', () => {
-    let session: { runId: number; candidate: IdentifiedCandidateDto }[] = [];
+    let session: { runId: number; candidate: RecognizedCard }[] = [];
     for (let i = 0; i < MAX_SESSION_ENTRIES + 12; i += 1) {
       session = appendSessionEntry(session, { runId: i + 1, candidate: candidate(i + 1) });
     }
@@ -92,7 +83,7 @@ describe('appendSessionEntry', () => {
 
   it('el estado en memoria y lo persistido no pueden divergir', () => {
     const overflow = MAX_SESSION_ENTRIES + 12;
-    let memory: { runId: number; candidate: IdentifiedCandidateDto }[] = [];
+    let memory: { runId: number; candidate: RecognizedCard }[] = [];
     for (let i = 0; i < overflow; i += 1) {
       memory = appendSessionEntry(memory, { runId: i + 1, candidate: candidate(i + 1) });
     }

@@ -20,7 +20,7 @@ const PRODUCT_POINTS = [
     icon: ScanLine,
     number: '01',
     title: 'Identificá sin tipear todo',
-    body: 'El OCR lee la carta y compara el texto con el catálogo. Revisás la candidata antes de guardarla.',
+    body: 'DINOv2 compara el dibujo con el catálogo y suma la primera coincidencia a la sesión. Revisás la edición al organizarla.',
   },
   {
     icon: Layers,
@@ -131,7 +131,7 @@ export async function LandingPage() {
         <div className="mx-auto grid w-full max-w-7xl grid-cols-2 gap-px px-4 sm:px-6 md:grid-cols-4 lg:px-8">
           <ProofPoint value="20.670" label="cartas en el catálogo" />
           <ProofPoint value="176" label="sets para explorar" />
-          <ProofPoint value="OCR local" label="la foto no se sube" />
+          <ProofPoint value="DINOv2" label="reconocimiento visual" />
           <ProofPoint value="USD + ARS" label="blue u oficial" />
         </div>
       </section>
@@ -170,11 +170,11 @@ export async function LandingPage() {
             <ShieldCheck aria-hidden="true" focusable="false" className="h-6 w-6" />
           </span>
           <div className="flex flex-col gap-2">
-            <h2 className="text-h3 text-primary">La foto no se sube.</h2>
+            <h2 className="text-h3 text-primary">Tu foto no se guarda.</h2>
             <p className="max-w-3xl text-body text-secondary">
-              El OCR procesa la imagen en tu dispositivo. Para identificarla, PokéScan envía las líneas
-              de texto reconocidas al catálogo; buscar, obtener precios y sincronizar tu cuenta requiere
-              conexión.
+              PokéScan envía el recorte de la carta a la API para reconocer el dibujo con DINOv2.
+              La imagen se procesa sin guardarla. Reconocer cartas, consultar precios y sincronizar tu cuenta
+              requiere conexión.
             </p>
           </div>
         </Surface>

@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 /**
  * Existe solo por el `metadata`.
  *
- * `app/(app)/escanear/page.tsx` es `'use client'` —la cámara, el OCR y la
+ * `app/(app)/escanear/page.tsx` es `'use client'` —la cámara, el reconocimiento visual y la
  * máquina de estados no se pueden renderizar en el servidor— y un Client
  * Component no puede exportar `metadata`. La salida idiomática es un layout
  * hermano que aporta el título y devuelve los hijos sin tocarlos: `page.tsx`

@@ -1,20 +1,19 @@
 'use client';
 
-import type { IdentifiedCandidateDto } from '@/types/api';
+import type { RecognizedCard } from '@/types/api';
 
 /**
  * Estados de la pantalla de escaneo.
  *
  * `camera` y `processing` son el mismo lugar físico —la cámara vive— pero se
- * distinguen porque el shutter se deshabilita mientras hay un OCR corriendo: la
+ * distinguen porque el shutter se deshabilita mientras hay un reconocimiento visual corriendo: la
  * cámara sigue mostrando la foto, lo que cambia es si se puede volver a
- * capturar. `results` y `organizing` son los dos `Sheet`, y en ninguno de los
- * dos hay cámara montada (ver `camera-view.tsx`).
+ * capturar. `organizing` abre el Sheet y desmonta la cámara.
  */
-export type ScanStage = 'idle' | 'camera' | 'processing' | 'results' | 'organizing' | 'error';
+export type ScanStage = 'idle' | 'camera' | 'processing' | 'organizing' | 'error';
 
-/** Fases que reporta `lib/scanner/pipeline` a través del `logger` del OCR. */
-export type ScanPhase = 'preparing' | 'ocr-boot' | 'recognizing' | 'searching';
+/** Fases de preparación y reconocimiento visual. */
+export type ScanPhase = 'preparing' | 'recognizing' | 'searching';
 
 /** `true` si en este estado la cámara está montada. */
 export function isCameraStage(stage: ScanStage): boolean {
@@ -23,7 +22,7 @@ export function isCameraStage(stage: ScanStage): boolean {
 
 /** `true` si en este estado hay un `Sheet` por encima de todo lo demás. */
 export function isSheetStage(stage: ScanStage): boolean {
-  return stage === 'results' || stage === 'organizing';
+  return stage === 'organizing';
 }
 
 /**
@@ -36,14 +35,14 @@ export function isSheetStage(stage: ScanStage): boolean {
 export interface SessionEntry {
   /** Corrida que la produjo. Permite reemplazar la entrada si el usuario elige otro candidato. */
   runId: number;
-  candidate: IdentifiedCandidateDto;
+  candidate: RecognizedCard;
 }
 
 /** Debajo de este score no estamos seguros: es `warning`, nunca `negative` (§2.3). */
 export const CONFIDENT_SCORE = 0.75;
 
 /** Tono del frame de la cámara según la confianza de la lectura. */
-export type FrameTone = 'idle' | 'positive' | 'warning';
+export type FrameTone = 'idle' | 'positive' | 'warning' | 'searching';
 
 /**
  * El color del frame es información, no decoración: verde es "esto es lo que

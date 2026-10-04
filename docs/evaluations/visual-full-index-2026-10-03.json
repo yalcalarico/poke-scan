@@ -1,0 +1,232 @@
+[
+  {
+    "photo": "4985",
+    "candidates": [
+      {
+        "id": "me55c-106",
+        "similarity": 0.763130129876379
+      },
+      {
+        "id": "dp6-49",
+        "similarity": 0.7497828840076819
+      },
+      {
+        "id": "ex11-44",
+        "similarity": 0.7432066955793819
+      },
+      {
+        "id": "ecard3-146",
+        "similarity": 0.7408849265300747
+      },
+      {
+        "id": "ex15-93",
+        "similarity": 0.7388409518262485
+      },
+      {
+        "id": "dp6-34",
+        "similarity": 0.7378418821299871
+      },
+      {
+        "id": "ex15-17",
+        "similarity": 0.7279863988275075
+      },
+      {
+        "id": "pl2-85",
+        "similarity": 0.7266422157471851
+      }
+    ],
+    "references": 20670,
+    "indexVersion": "9d89a62b919f5a489428a92b965ec6bf98f982a7a0f36abd5d36c2611808ebca",
+    "indexStale": false,
+    "collections": 175,
+    "indexMs": 2385.555292,
+    "cold": true,
+    "modelMs": 174.004584,
+    "inferenceMs": 83.71445900000026,
+    "totalMs": 2675.676583
+  },
+  {
+    "photo": "4986",
+    "candidates": [
+      {
+        "id": "mcd19-11",
+        "similarity": 0.7486781362695623
+      },
+      {
+        "id": "me55-23",
+        "similarity": 0.7429043157256382
+      },
+      {
+        "id": "base3-29",
+        "similarity": 0.7414368181815635
+      },
+      {
+        "id": "neo4-51",
+        "similarity": 0.7329270694801874
+      },
+      {
+        "id": "base2-51",
+        "similarity": 0.7291047176394979
+      },
+      {
+        "id": "ex11-44",
+        "similarity": 0.7272451353404447
+      },
+      {
+        "id": "swsh1-78",
+        "similarity": 0.7264548662342656
+      },
+      {
+        "id": "neo4-40",
+        "similarity": 0.7249586280986814
+      }
+    ],
+    "references": 20670,
+    "indexVersion": "9d89a62b919f5a489428a92b965ec6bf98f982a7a0f36abd5d36c2611808ebca",
+    "indexStale": false,
+    "collections": 175,
+    "indexMs": 16.116459000000305,
+    "cold": false,
+    "modelMs": 0.00045899999986431794,
+    "inferenceMs": 69.52245799999992,
+    "totalMs": 105.99170800000002
+  },
+  {
+    "photo": "4987",
+    "candidates": [
+      {
+        "id": "swshp-SWSH023",
+        "similarity": 0.6996330272035269
+      },
+      {
+        "id": "xy5-55",
+        "similarity": 0.6834189716170381
+      },
+      {
+        "id": "ex2-11",
+        "similarity": 0.6647875242079452
+      },
+      {
+        "id": "swsh5-96",
+        "similarity": 0.658600770528066
+      },
+      {
+        "id": "swshp-SWSH193",
+        "similarity": 0.6565086481827686
+      },
+      {
+        "id": "sv6pt5-38",
+        "similarity": 0.6524713753925843
+      },
+      {
+        "id": "pop5-10",
+        "similarity": 0.6448583961823346
+      },
+      {
+        "id": "cel25-15",
+        "similarity": 0.6445579106926922
+      }
+    ],
+    "references": 20670,
+    "indexVersion": "9d89a62b919f5a489428a92b965ec6bf98f982a7a0f36abd5d36c2611808ebca",
+    "indexStale": false,
+    "collections": 175,
+    "indexMs": 13.872667000000092,
+    "cold": false,
+    "modelMs": 0.0002500000000509317,
+    "inferenceMs": 61.4835420000004,
+    "totalMs": 92.35262499999999
+  },
+  {
+    "photo": "4988",
+    "candidates": [
+      {
+        "id": "me55-137",
+        "similarity": 0.7936536799858935
+      },
+      {
+        "id": "sv8pt5-149",
+        "similarity": 0.6168379159352887
+      },
+      {
+        "id": "rsv10pt5-103",
+        "similarity": 0.6136500341541278
+      },
+      {
+        "id": "ex10-86",
+        "similarity": 0.6058710214350513
+      },
+      {
+        "id": "pl3-3",
+        "similarity": 0.6012353650151632
+      },
+      {
+        "id": "swsh2-33",
+        "similarity": 0.6001677257904425
+      },
+      {
+        "id": "sm5-119a",
+        "similarity": 0.5923616852751523
+      },
+      {
+        "id": "me2pt5-234",
+        "similarity": 0.5907530254635676
+      }
+    ],
+    "references": 20670,
+    "indexVersion": "9d89a62b919f5a489428a92b965ec6bf98f982a7a0f36abd5d36c2611808ebca",
+    "indexStale": false,
+    "collections": 175,
+    "indexMs": 13.148124999999709,
+    "cold": false,
+    "modelMs": 0.00037500000007639755,
+    "inferenceMs": 69.00387499999988,
+    "totalMs": 99.04374999999982
+  },
+  {
+    "photo": "4989",
+    "candidates": [
+      {
+        "id": "me55-145",
+        "similarity": 0.7323702258088511
+      },
+      {
+        "id": "swsh4-11",
+        "similarity": 0.6908987479804921
+      },
+      {
+        "id": "swsh8-216",
+        "similarity": 0.6810470870262836
+      },
+      {
+        "id": "swsh12-114",
+        "similarity": 0.6729684643118252
+      },
+      {
+        "id": "swsh12-103",
+        "similarity": 0.6623874139586291
+      },
+      {
+        "id": "dp2-124",
+        "similarity": 0.6580713231653528
+      },
+      {
+        "id": "dc1-20",
+        "similarity": 0.6573920572654375
+      },
+      {
+        "id": "sm5-111",
+        "similarity": 0.6572511275246959
+      }
+    ],
+    "references": 20670,
+    "indexVersion": "9d89a62b919f5a489428a92b965ec6bf98f982a7a0f36abd5d36c2611808ebca",
+    "indexStale": false,
+    "collections": 175,
+    "indexMs": 12.847999999999956,
+    "cold": false,
+    "modelMs": 0.0002500000000509317,
+    "inferenceMs": 66.03591599999982,
+    "totalMs": 95.03933299999971
+  }
+]

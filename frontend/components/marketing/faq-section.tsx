@@ -13,13 +13,13 @@ const FAQ_ITEMS = [
     id: 'como-identifica',
     question: '¿Cómo funciona el escáner y qué pasa con mi foto?',
     answer:
-      'El OCR lee texto de la carta en tu dispositivo. Para encontrar coincidencias, se envían al catálogo las líneas reconocidas, no la foto. El escáner propone candidatas para que confirmes antes de guardar: la identificación puede equivocarse, sobre todo con reflejos o cartas difíciles.',
+      'DINOv2 compara el dibujo de la carta con el catálogo. Se envía el recorte de tu foto a la API para reconocerlo, sin guardar la imagen. La primera predicción se suma a la sesión; revisá la edición al organizarla porque puede equivocarse con reflejos o reimpresiones.',
   },
   {
     id: 'offline',
     question: '¿PokéScan funciona sin conexión?',
     answer:
-      'El OCR corre en tu dispositivo y sus archivos se pueden guardar para uso posterior. Consultar el catálogo, identificar una carta, actualizar precios o sincronizar una colección requiere conexión. Algunos datos públicos que ya visitaste pueden estar disponibles desde la caché.',
+      'Consultar el catálogo, identificar una carta con DINOv2, actualizar precios o sincronizar una colección requiere conexión. Algunos datos públicos que ya visitaste pueden estar disponibles desde la caché.',
   },
   {
     id: 'precios',
@@ -37,7 +37,7 @@ const FAQ_ITEMS = [
     id: 'cuenta',
     question: '¿Necesito una cuenta para empezar?',
     answer:
-      'Podés explorar el catálogo y probar el flujo de escaneo. Necesitás una cuenta para guardar cartas en colecciones, sincronizarlas y administrar tus enlaces compartidos.',
+      'Podés explorar el catálogo sin cuenta. Necesitás una cuenta para reconocer cartas con DINOv2, guardarlas en colecciones, sincronizarlas y administrar tus enlaces compartidos.',
   },
   {
     id: 'planes',

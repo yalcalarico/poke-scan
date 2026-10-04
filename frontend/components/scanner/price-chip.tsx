@@ -18,8 +18,8 @@ import { cn } from '@/lib/cn';
  * agota, o se levanta el rate limit por minute y el escáner deja de funcionar.
  *
  * Por eso `usd` es un **número que ya está en memoria**: viene de
- * `IdentifiedCandidateDto.price` de la respuesta de `identifyCard`, que se
- * pide **una vez por captura** y nunca desde el loop de cámara. Este
+ * `RecognizedCard.price`, consultado para el ID visual elegido
+ * **una vez por captura** y nunca desde el loop de cámara. Este
  * componente no importa `lib/api`, no tiene `useEffect` y no tiene estado.
  *
  * Las tres consecuencias son intencionales y no son un TODOs:

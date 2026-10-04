@@ -13,7 +13,7 @@
 | `collections.ts` | `listCollections`, `getCollection`, `createCollection`, `updateCollection`, `deleteCollection`, `listItems`, `addItem`, `getDuplicates`, `getStats`, `updateItem`, `deleteItem` |
 | `share.ts` | `listShareLinks`, `createShareLink`, `updateShareLink`, `revokeShareLink`, `getPublicCollection` |
 | `currency.ts` | `getUsdArsRate`, `updateCurrencyPreference`, `buildUsdArsPath`, `isRateType`, `RATE_TYPES`, `PREFERRED_CURRENCIES`, `DEFAULT_RATE_TYPE` |
-| `identify.ts` | `identifyCard`, `IDENTIFY_PATH`, `IDENTIFY_LIMIT` |
+| `visual-identify.ts` | `identifyVisual` |
 | `index.ts` | Barrel: reexporta todo lo de arriba |
 
 > Todo se importa por el barrel (`@/lib/api`) salvo `share.ts`, `currency.ts` y
@@ -37,6 +37,11 @@ Se evalúa **una vez al cargar el módulo** y el `??` es el fallback de desarrol
 > tiene efecto: hay que rebuildar. En el `Dockerfile` es un `ARG`.
 
 `getApiBaseUrl()` la expone para los tres casos de server component / fetch crudo.
+
+En `pnpm run dev:lan`, el browser usa `/api` mediante un proxy HTTPS de Next.
+`getApiBaseUrl()` devuelve `DEV_API_PROXY_TARGET` en el server y solo en desarrollo,
+para que los Server Components sigan usando una URL absoluta. Ver
+[red local](../../docs/local-network.md).
 
 ### `ApiError`
 
@@ -279,24 +284,11 @@ ARS.
 
 ---
 
-## `identify.ts`
+## `visual-identify.ts`
 
-```ts
-export const IDENTIFY_PATH = '/cards/identify';
-export const IDENTIFY_LIMIT = 8;
+`identifyVisual({ image }, signal)` hace `POST /cards/identify-visual` con sesión autenticada. Envía el recorte JPEG/PNG/WebP a la API y recibe candidatos, similitudes, verificación geométrica y tiempos. El contrato está en `types/api.ts` y el DTO duplicado del backend. No guarda la foto.
 
-export async function identifyCard(
-  payload: IdentifyRequestDto,
-  signal?: AbortSignal,
-): Promise<IdentifyResponseDto> {
-  return apiFetch<IdentifyResponseDto>(IDENTIFY_PATH, { method: 'POST', body: payload, signal });
-}
-```
-
-Ver [`scanner.md`](scanner.md#6-post-apicardsidentify--el-backend-matchea) para qué
-el `signal` es opcional y por qué `/escanear` no lo usa (usa `withTimeout`).
-
----
+`lib/scanner/camera-visual.ts` selecciona el primer candidato y pide sus precios con `getCardPrices(id, signal)`. La falta de precio no invalida la identidad. Ver [scanner.md](scanner.md).
 
 ## Errores: el patrón en cada pantalla
 

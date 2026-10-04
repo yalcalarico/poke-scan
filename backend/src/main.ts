@@ -28,7 +28,7 @@ async function bootstrap() {
     credentials: true,
   });
   // 100kb (el default de Nest) no entra ni una captura de recorte del escáner en
-  // base64. Solo la usan POST /api/jobs/scan-capture, que es de desarrollo.
+  // base64. Lo usa POST /api/cards/identify-visual.
   app.useBodyParser('json', { limit: '10mb' });
   app.useGlobalPipes(
     new ValidationPipe({ whitelist: true, transform: true }),

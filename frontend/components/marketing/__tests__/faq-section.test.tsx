@@ -12,12 +12,12 @@ describe('FaqSection', () => {
 
     await user.click(screen.getByText('¿Cómo funciona el escáner y qué pasa con mi foto?'));
     expect(
-      screen.getByText(/El OCR lee texto de la carta en tu dispositivo/),
+      screen.getByText(/Se envía el recorte de tu foto a la API/),
     ).toBeVisible();
 
     await user.click(screen.getByText('¿PokéScan funciona sin conexión?'));
     expect(
-      screen.getByText(/Consultar el catálogo, identificar una carta, actualizar precios/),
+      screen.getByText(/Consultar el catálogo, identificar una carta con DINOv2, actualizar precios/),
     ).toBeVisible();
   });
 

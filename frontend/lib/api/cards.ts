@@ -70,8 +70,8 @@ export function getCard(id: string): Promise<CardDto> {
   return apiFetch<CardDto>(`/cards/${encodeURIComponent(id)}`);
 }
 
-export function getCardPrices(id: string): Promise<CardWithPricesDto> {
-  return apiFetch<CardWithPricesDto>(`/cards/${encodeURIComponent(id)}/prices`);
+export function getCardPrices(id: string, signal?: AbortSignal): Promise<CardWithPricesDto> {
+  return apiFetch<CardWithPricesDto>(`/cards/${encodeURIComponent(id)}/prices`, { signal });
 }
 
 /**

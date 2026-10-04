@@ -1,3 +1,5 @@
+> Actualización del escáner (2026-10-03): los pasajes sobre el motor anterior, sus candidatos y caché corresponden al diseño histórico. El flujo vigente es DINOv2 con selección automática del #1; ver [scanner.md](scanner.md).
+
 # Plan de mejora de frontend — PokéScan
 
 > Auditoría de UI/UX hecha **leyendo el código**, no la documentación de diseño.

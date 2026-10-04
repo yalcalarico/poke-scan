@@ -114,22 +114,10 @@ El mapper TCGdex mantiene los aliases junto con el campo transitorio
 `tcgdexSetId`. También falla al iniciar si se intenta enlazarlo con otro
 `PRICE_PROVIDER`; hace falta un mapper genérico antes de cambiar la fuente.
 
-### `CARD_IDENTIFICATION_PROVIDER`
+### Reconocimiento visual
 
-```ts
-export const CARD_IDENTIFICATION_PROVIDER = Symbol('CARD_IDENTIFICATION_PROVIDER');
+El reconocimiento usa `VisualIdentifyService` con DINOv2 y su índice local. No registra un proveedor alternativo de identificación. El catálogo y los precios mantienen `CARD_DATA_PROVIDER` y `PRICE_PROVIDER`.
 
-export interface IdentificationCandidate { cardId: string; score: number }
-
-export interface CardIdentificationProvider {
-  identify(imageBase64: string): Promise<IdentificationCandidate[]>;
-}
-```
-
-La única implementación es `OcrLocalProvider`, que devuelve `[]` y loguea un
-`debug`. El OCR real corre **en el cliente** (Tesseract.js), no en el server: el
-contrato existe para poder pluggear un proveedor de visión server-side sin tocar
-nada, pero hoy está sin usar.
 
 ### `PRICE_PROVIDER`
 
@@ -164,10 +152,9 @@ números de carta antes de persistir el mapeo.
 @Module({
   providers: [
     { provide: CARD_DATA_PROVIDER, useClass: PokemonTcgIoProvider },
-    { provide: CARD_IDENTIFICATION_PROVIDER, useClass: OcrLocalProvider },
     { provide: PRICE_PROVIDER, useClass: TcgdexProvider },
   ],
-  exports: [CARD_DATA_PROVIDER, CARD_IDENTIFICATION_PROVIDER, PRICE_PROVIDER],
+  exports: [CARD_DATA_PROVIDER, PRICE_PROVIDER],
 })
 @Global()
 export class ProvidersModule {}

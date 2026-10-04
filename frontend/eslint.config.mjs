@@ -12,9 +12,6 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
-    // Assets de Tesseract auto-hospedados (fase 6): bundles de terceros
-    // minificados que se sirven tal cual desde /public/tesseract.
-    "public/tesseract/**",
   ]),
 ]);
 

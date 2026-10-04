@@ -15,6 +15,7 @@ import {
   type BoxRect,
 } from '@/lib/scanner/camera';
 import type { CameraError, ScannedCapture } from '@/lib/scanner/types';
+import { AutoVisualGate, frameSignature, hasAlignedCard } from '@/lib/scanner/auto-visual';
 
 import { ActionBar, type ActionBarProps } from './action-bar';
 import { CardFrame } from './card-frame';
@@ -28,10 +29,10 @@ import { frameToneFor, type SessionEntry } from './types';
  * 2,5 s entre capturas automáticas.
  *
  * Es el freno de `docs/redesign-2026.md` §7 punto 4 y la defensa de fondo del
- * rate limit: cada captura termina en un `identifyCard`, y ese POST puede
+ * rate limit: cada captura termina en un `identifyVisual`, y ese POST puede
  * terminar pegándole a pokemontcg.io (1.000/día, 30/min). Con el modo continuo
  * sin este tope, una carta quieta en el cuadro generaría un request cada
- * ~1 s mientras el OCR de la vuelta.
+ * ~1 s mientras el reconocimiento visual de la vuelta.
  *
  * A esto se le suma el `busy` de la pantalla: mientras hay un escaneo en vuelo
  * el obturador está apagado, así que nunca hay dos `identify` en paralelo. El
@@ -44,6 +45,9 @@ const CONTINUOUS_INTERVAL_MS = 2500;
 export type CaptureSource = 'manual' | 'auto';
 
 export interface CameraViewProps {
+  hideControls?: boolean;
+  autoVisual?: boolean;
+  liveResult?: string | null;
   /** Hay un escaneo en vuelo: el obturador se apaga pero la cámara sigue viva. */
   busy: boolean;
   /** Última lectura de la sesión. `null` si todavía no leímos nada. */
@@ -52,7 +56,7 @@ export interface CameraViewProps {
   headline: string;
   /** Detalle de la fase, una línea más abajo. */
   detail: string;
-  /** 0..1 del OCR en curso, o `null` si no hay nada corriendo. */
+  /** 0..1 del reconocimiento visual en curso, o `null` si no hay nada corriendo. */
   progress: number | null;
   /** Miniatura de la foto cuando el escaneo vino de la galería y no hay cámara. */
   previewUrl: string | null;
@@ -128,12 +132,15 @@ function blobToDataUrl(blob: Blob): Promise<string> {
  * ─── El bucle de cámara no habla con la red ───
  *
  * `onCapture` se dispara **una vez por captura** y lo consume la pantalla, que
- * recién ahí corre el OCR y recién ahí llama a `identifyCard`. El
+ * recién ahí corre el reconocimiento visual y recién ahí llama a `identifyVisual`. El
  * `setInterval` del modo continuo no pide nada: saca un JPEG del `<video>`.
  * En este archivo no hay un fetch, y no puede aparecer uno sin tocarlo — el
  * precio se resuelve en `price-chip.tsx`, que tampoco lo tiene.
  */
 export function CameraView({
+  hideControls = true,
+  autoVisual = false,
+  liveResult = null,
   busy,
   detected,
   headline,
@@ -161,6 +168,8 @@ export function CameraView({
   const [isLive, setIsLive] = useState(false);
   const [isCapturing, setIsCapturing] = useState(false);
   const [continuous, setContinuous] = useState(false);
+  const [visualReady, setVisualReady] = useState(false);
+  const visualGateRef = useRef(new AutoVisualGate());
   const [torchOn, setTorchOn] = useState(false);
   const [capabilities, setCapabilities] = useState<CameraCapabilities>(NO_CAMERA_CAPABILITIES);
   /**
@@ -256,6 +265,7 @@ export function CameraView({
 
     return () => {
       disposed = true;
+      if (generationRef.current === generation) generationRef.current += 1;
       window.removeEventListener('pagehide', handlePageHide);
       stopCamera(stream);
       // Solo se suelta el `srcObject` si sigue siendo el de ESTA pasada: un
@@ -282,6 +292,7 @@ export function CameraView({
       if (!video || grabbingRef.current) return;
 
       grabbingRef.current = true;
+      const generation = generationRef.current;
       setIsCapturing(true);
 
       /*
@@ -300,7 +311,7 @@ export function CameraView({
 
       try {
         // Solo el rectángulo del marco guía: el resto de la imagen es fondo, y
-        // para el OCR es ruido que degrada la lectura del nombre. Se usa el
+        // para el reconocimiento visual es ruido que degrada la lectura del nombre. Se usa el
         // MISMO rectángulo que se dibuja en pantalla, así guía y recorte no
         // pueden desincronizarse.
         const videoBox = video.getBoundingClientRect();
@@ -314,6 +325,7 @@ export function CameraView({
 
         const capture = await captureFrame(video, { crop });
         capture.dataUrl = await blobToDataUrl(capture.blob);
+        if (generation !== generationRef.current) return;
         handlersRef.current.onCapture(capture, source);
       } catch (err) {
         handlersRef.current.onError(getCameraErrorKind(err), (err as Error)?.message);
@@ -334,10 +346,45 @@ export function CameraView({
   });
 
   useEffect(() => {
-    if (!continuous || !isLive || busy) return;
+    if (autoVisual || !continuous || !isLive || busy) return;
     const timer = setInterval(() => void grabRef.current('auto'), CONTINUOUS_INTERVAL_MS);
     return () => clearInterval(timer);
-  }, [busy, continuous, isLive]);
+  }, [autoVisual, busy, continuous, isLive]);
+
+  useEffect(() => {
+    if (!autoVisual || !isLive || !frameRect) return;
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d', { willReadFrequently: true });
+    if (!context) return;
+    const timer = setInterval(() => {
+      const video = videoRef.current;
+      if (!video || video.readyState < 2 || grabbingRef.current) return;
+      const box = video.getBoundingClientRect();
+      const sample = {
+        x: frameRect.x - frameRect.width * 0.1,
+        y: frameRect.y - frameRect.height * 0.1,
+        width: frameRect.width * 1.2,
+        height: frameRect.height * 1.2,
+      };
+      const crop = mapFrameToSourcePixels(sample,
+        { width: box.width, height: box.height },
+        { width: video.videoWidth, height: video.videoHeight });
+      if (!crop) return;
+      canvas.width = 240;
+      canvas.height = Math.round(240 * crop.height / crop.width);
+      try {
+        context.drawImage(video, crop.x, crop.y, crop.width, crop.height, 0, 0, canvas.width, canvas.height);
+        const image = context.getImageData(0, 0, canvas.width, canvas.height);
+        const state = visualGateRef.current.observe(frameSignature(image), hasAlignedCard(image), busy, performance.now());
+        setVisualReady(state.ready);
+        if (state.capture) void grabRef.current('auto');
+      } catch {
+        // Un frame todavía no disponible no cierra la cámara ni dispara red.
+        setVisualReady(false);
+      }
+    }, 350);
+    return () => clearInterval(timer);
+  }, [autoVisual, busy, frameRect, isLive]);
 
   const handleToggleContinuous = useCallback(() => {
     setContinuous((current) => !current);
@@ -368,23 +415,25 @@ export function CameraView({
   const status: ActionBarProps['status'] = isStarting
     ? 'Abriendo la cámara…'
     : busy
-      ? 'La cámara sigue encendida: enderezá la carta si querés.'
+      ? autoVisual ? 'Reconociendo la carta con DINOv2…' : 'La cámara sigue encendida: enderezá la carta si querés.'
       : isCapturing
         ? 'Capturando…'
+        : autoVisual
+          ? visualReady ? 'Carta estable. Retirala para leer otra.' : 'Encuadrá la carta y mantenela quieta: la leemos automáticamente.'
         : continuous
           ? 'Escaneo continuo: no muevas la carta.'
           : 'Encuadrá la carta dentro del marco.';
 
   return (
     <div className="fixed inset-0 z-media flex flex-col bg-canvas">
-      <div ref={stageRef} className="relative flex-1 overflow-hidden bg-on-media">
+      <div ref={stageRef} className="relative min-h-0 flex-1 overflow-hidden bg-on-media">
         <video
           ref={videoRef}
           playsInline
           muted
           autoPlay
           aria-label="Vista de la cámara"
-          className="h-full w-full object-cover"
+          className="absolute inset-0 h-full w-full object-cover"
         />
 
         {/*
@@ -396,7 +445,7 @@ export function CameraView({
         <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-on-media/40" />
 
         <div aria-hidden="true" className="pointer-events-none absolute inset-0">
-          <CardFrame rect={frameRect} tone={frameToneFor(detected?.candidate.score)} pulseKey={pulseKey} />
+          <CardFrame rect={frameRect} tone={autoVisual ? visualReady ? 'positive' : 'searching' : frameToneFor(detected?.candidate.score)} pulseKey={pulseKey} />
         </div>
 
         <div className="pointer-events-none absolute left-4 top-[calc(env(safe-area-inset-top)+1rem)]">
@@ -430,14 +479,15 @@ export function CameraView({
 
           {/*
             ⛔ Sin red, nunca. `usd` sale de la fila `price` de la respuesta de
-            `identifyCard`; si no hay precio no se renderiza nada. Antes de
+            `identifyVisual`; si no hay precio no se renderiza nada. Antes de
             tocar esto, leé el JSDoc de `price-chip.tsx`: la restricción es el
             rate limit de pokemontcg.io, no una preferencia.
           */}
           {detected ? <PriceChip usd={referencePrice(detected.candidate)} className="mt-2" /> : null}
         </div>
 
-        <CameraControls
+        {!hideControls ? <CameraControls
+          showContinuous={!autoVisual}
           capabilities={capabilities}
           torchOn={torchOn}
           onToggleTorch={handleToggleTorch}
@@ -446,13 +496,18 @@ export function CameraView({
           audioOn
           onToggleAudio={handleToggleAudio}
           className="absolute right-4 top-[calc(env(safe-area-inset-top)+1rem)]"
-        />
+        /> : null}
 
         {detected ? (
           <DetectedCardBar
             candidate={detected.candidate}
             className="absolute inset-x-4 bottom-4"
           />
+        ) : null}
+        {autoVisual && liveResult ? (
+          <div role="status" className="absolute inset-x-4 bottom-4 rounded-panel bg-on-media p-3 text-on-media-text">
+            {liveResult}
+          </div>
         ) : null}
       </div>
 

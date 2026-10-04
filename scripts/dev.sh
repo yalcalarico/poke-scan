@@ -90,13 +90,21 @@ trap cleanup INT TERM EXIT 2>/dev/null
 pids+=($!)
 disown 2>/dev/null
 
-( cd frontend && PORT="$WEB_PORT" pnpm run dev      2>&1 | sed -u "s/^/${PINK}[web]${OFF} /" ) &
+web_args=(--hostname 0.0.0.0)
+if [ -n "${DEV_LAN_IP:-}" ]; then
+  web_args=(--hostname "$DEV_LAN_IP" --experimental-https --experimental-https-key "$DEV_TLS_KEY" --experimental-https-cert "$DEV_TLS_CERT")
+fi
+( cd frontend && PORT="$WEB_PORT" pnpm run dev "${web_args[@]}" 2>&1 | sed -u "s/^/${PINK}[web]${OFF} /" ) &
 pids+=($!)
 disown 2>/dev/null
 
 echo ""
 ok "API  → http://localhost:${API_PORT}/api/health"
-ok "Web  → http://localhost:${WEB_PORT}"
+if [ -n "${DEV_LAN_IP:-}" ]; then
+  ok "Celu → https://${DEV_LAN_IP}:${WEB_PORT}/inicio"
+else
+  ok "Web  → http://localhost:${WEB_PORT}"
+fi
 info  "Ctrl+C para bajar ambos."
 echo ""
 
