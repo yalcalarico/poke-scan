@@ -1,7 +1,7 @@
 /**
  * Canvas shim good enough for `lib/scanner/preprocess`: a pixel buffer with the
  * handful of 2D-context calls the pre-processing code makes. It lets the real
- * OCR pipeline run in plain Node (no native canvas binding needed).
+ * reconocimiento visual pipeline run in plain Node (no native canvas binding needed).
  */
 import { encodePng } from './png';
 

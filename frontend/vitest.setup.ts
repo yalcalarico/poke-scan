@@ -12,7 +12,7 @@ export {};
  * ## Por qué está condicionado a que exista `document`
  *
  * El `environment` default es `node` (`vitest.config.ts`), así que la mayoría de
- * los tests de este proyecto no tienen DOM: son lógica pura del parser, del OCR
+ * los tests de este proyecto no tienen DOM: son lógica pura de la cámara, del reconocimiento visual
  * y de los helpers de imagen. Importar `@testing-library/react` o
  * `@testing-library/jest-dom` sin `document` revienta, y arrancar jsdom para
  * todos ellos solo para poder importar dos módulos sería pagar el costo de la

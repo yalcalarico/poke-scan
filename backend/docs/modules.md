@@ -88,60 +88,22 @@ forma de entrada es la misma.
 ### cards
 
 **Responsabilidad**: el catálogo. Búsqueda de cartas, detalle, sets, precios de
-una carta e identificación por OCR.
+una carta e reconocimiento visual DINOv2.
 
 | | |
 |---|---|
-| Controllers | `CardsController` (`/cards`), `SetsController` (`/sets`) |
-| Services | `CardsService`, `IdentifyService` |
+| Controllers | `CardsController` (`/cards`), `SetsController` (`/sets`), `VisualIdentifyController` (`/cards/identify-visual`) |
+| Services | `CardsService`, `VisualIdentifyService` |
 | Exports | (nada) |
 | Depende de | `PrismaService`, `SyncPricesService` (de `JobsModule`), `CurrencyService` (de `CurrencyModule`) |
 
-`CardsService` y `IdentifyService` **no** importan nada de la API externa: todo
-sale de Postgres. `CardsService` es el único que llama a
+El catálogo de `CardsService` sale de Postgres; `VisualIdentifyService` usa el modelo y el índice locales. `CardsService` es el único que llama a
 `SyncPricesService.getPricesForCard()`, que es quien decide si hay que pegarle
-al proveedor. `IdentifyService` solo lee `card_prices` con un `DISTINCT ON`.
+al proveedor. Los precios siguen su cola y caché existentes.
 
-#### `IdentifyService`: por qué el nombre solo no alcanza
+#### `VisualIdentifyService`
 
-El cliente manda hasta 60 líneas crudas del OCR y el backend.matchea contra las
-20.670 cartas con trigram + ILIKE. El **nombre no desempata**: "Charizard" está en
-~40 sets y todas las impresiones se llaman igual. Por eso el ranking suma señales
-de **lo que la carta tiene impreso**, que el OCR lee bastante bien (la última
-línea de una carta real trae `Mitsuhiro Arita © 1995… © 1999 4/102`):
-
-| Señal | Cómo se saca | Bonus |
-|---|---|---|
-| Número impreso `N/M` | regex `/(\d{1,3})\s*\/\s*(\d{2,3})/` con denominador plausible (30-400) | 0.25 |
-| HP | regex `/(\d{2,4})\s*HP\b/` acotado a 10-400 para no confundirlo con daño o con la Pokédex | 0.12 |
-| Artista | `position(lower(c.artist) in <texto del OCR>)` | 0.12 |
-| Rareza | `position(lower(c.rarity) in <texto del OCR>)`, exige ≥4 caracteres | 0.08 |
-
-El número impreso es la más fuerte porque el denominador **es** el `printedTotal`
-del set: el par identifica set y carta de una.
-
-Dos decisiones de diseño que importan:
-
-- **Ninguna señal resta.** Si el OCR no leyó el HP, no hay nada que comparar y el
-  bonus es 0: una señal ausente no penaliza. Y una mal leída tampoco, porque el
-  bonus solo se da en el match exacto.
-- **No hay vocabulario hardcodeado.** Para rareza y artista se busca *el valor que
-  ya tiene la carta* dentro del texto del OCR, así que funciona con cualquier
-  rareza o firmante que la fuente tenga.
-
-El spec usa "Absol" a propósito: tiene 20 impresiones con distinto HP, artista,
-rareza y numeración, así que cada señal es comprobable de forma unívoca. La
-debilidad conocida es que el match de rareza es un `substring`: si el OCR leyó
-"Rare Secret", la carta cuya rareza es "Rare" también matchea y empata.
-
-**El tope del piso exacto para nombres de 3 letras** (`SHORT_NAME_FLOOR`) viene de
-una foto real: el OCR leyó "mes" donde la carta dice "Mew", y como "mes" es
-exactamente el nombre "Mew" en minúsculas, el piso de match exacto de 1.0 le
-ganaba al nombre real de la carta ("Chandelure", leído una sola vez y por eso con
-el 0.97 de `SINGLE_OCCURRENCE_FACTOR`). Con un nombre tan corto, "igual" y "casi
-igual" son indistinguibles, así que el piso se topa en 0.8: hunde la carta sin
-sacarla de los candidatos (`MIN_SCORE` es 0.25, y un "Mew" legítimo sigue siendo
-top-1 cuando no hay nada mejor).
+La API autenticada recibe un recorte y consulta DINOv2 contra el índice local. ORB y RANSAC verifican detalles del dibujo y reordenan los candidatos. No almacena fotos de consulta, no lee texto y no llama al proveedor externo del catálogo. El cliente selecciona el #1 y pide el precio para ese ID. Ver [scanner.md](../../frontend/docs/scanner.md).
 
 Los DTOs de shapes de respuesta (`CardDto`, `SetDto`, `CardPriceDto`,
 `Paginated<T>`) están **duplicados a mano** en `cards.service.ts`,
@@ -241,8 +203,8 @@ inyección, para poder cambiarla sin tocar los jobs.
 | | |
 |---|---|
 | Controllers | ninguno |
-| Providers | `PokemonTcgIoProvider` (bound a `CARD_DATA_PROVIDER`), `OcrLocalProvider` (bound a `CARD_IDENTIFICATION_PROVIDER`) |
-| Exports | `CARD_DATA_PROVIDER`, `CARD_IDENTIFICATION_PROVIDER` |
+| Providers | `PokemonTcgIoProvider` (bound a `CARD_DATA_PROVIDER`), `TcgdexProvider` (bound a `PRICE_PROVIDER`) |
+| Exports | `CARD_DATA_PROVIDER`, `PRICE_PROVIDER` |
 | Depende de | nada (solo `fetch` nativo) |
 | `@Global` | sí |
 

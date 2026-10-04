@@ -15,7 +15,6 @@ tocás un DTO, actualizá el otro lado en el mismo commit.
 | React | 19.2.8 | StrictMode monta efectos **dos veces** en dev |
 | TypeScript | 5.x | `strict: true`, alias `@/*` → raíz del frontend |
 | Tailwind | 4.x | Config por CSS (`app/globals.css`), sin `tailwind.config.js` |
-| tesseract.js | 7.0.0 | **Solo cliente**, nunca en el grafo del server |
 | Vitest | 5.x | `node` por default; los tests de componentes usan `jsdom` por archivo |
 | pnpm | 10.17.1 | Único gestor de paquetes. Nunca npm ni yarn |
 
@@ -73,11 +72,10 @@ frontend/
 │   └── use-currency.tsx    # CurrencyContext (USD/ARS, blue/oficial, formatMoney)
 ├── lib/
 │   ├── api/                # cliente HTTP + un módulo por dominio
-│   ├── scanner/            # pipeline de OCR (camera/preprocess/ocr/parser/pipeline)
+│   ├── scanner/            # cámara, recorte, detección automática y cliente DINOv2
 │   └── format.ts           # formato de moneda, fechas y tiempo relativo
 ├── types/api.ts            # espejo manual de los DTOs del backend
 ├── public/
-│   ├── tesseract/          # ~14 MB de wasm/traineddata auto-hospedados
 │   ├── icons/  manifest.json  sw.js
 └── docs/                   # la documentación de este frontend
 ```
@@ -88,7 +86,7 @@ frontend/
 |---|---|
 | Rutas, route groups, qué pide sesión | [`docs/routes.md`](docs/routes.md) |
 | Inventario de componentes | [`docs/components.md`](docs/components.md) |
-| **Pipeline de OCR** (el doc más técnico) | [`docs/scanner.md`](docs/scanner.md) |
+| **Reconocimiento visual DINOv2** | [`docs/scanner.md`](docs/scanner.md) |
 | Cliente HTTP, tokens, refresh single-flight | [`docs/api-client.md`](docs/api-client.md) |
 | Colores, tipografía, grillas, safe-area | [`docs/design-system.md`](docs/design-system.md) |
 | Tests, helpers, tests opt-in | [`docs/testing.md`](docs/testing.md) |

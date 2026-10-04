@@ -20,7 +20,6 @@
 | `app.controller.spec.ts` | `GET /health`: sano, degradado, sin Redis configurado |
 | `auth.service.spec.ts` | registro, login, hash del refresh, rotación, reuso, expiración, logout |
 | `cards.service.spec.ts` | búsqueda con trigram, `getById` 404, `getCardWithPrices` con rate cacheado, `sort=price` global |
-| `identify.service.spec.ts` | ranking contra **líneas reales** de Tesseract |
 | `collections.service.spec.ts` | increment de `quantity`, ownership, stats, 409, cascadas, filtros, marca de intercambio del alta |
 | `share.service.spec.ts` | slug, caché, 404 de enlace vencido, `truncated` |
 | `friends.service.spec.ts` | búsqueda, solicitudes, responder, 403/404, baja, bloqueo |
@@ -51,7 +50,7 @@ pnpm run test:backend
 
 La copia es una `pg_dump` de la base de desarrollo, y no una base vacía, porque
 varios specs dependen del catálogo espejado: `cards.service.spec` mide el tramo
-cotizado de `sort=price` sobre las 20.670 cartas reales e `identify.service.spec`
+cotizado de `sort=price` sobre las 20.670 cartas reales y el reconocimiento visual DINOv2
 rankea candidatos sobre las mismas. Con una base vacía no tendrían nada que
 medir.
 
@@ -215,11 +214,8 @@ const addItem = (cardId: string, dto: Partial<AddItemDto> = {}): AddItemDto =>
   Object.assign(new AddItemDto(), { cardId }, dto);
 ```
 
-`IdentifyService` hace lo mismo con un helper de una línea:
+El reconocimiento visual se cubre en `visual-identify.service.spec.ts` y en los tests del índice y la verificación geométrica.
 
-```ts
-const identify = (dto: IdentifyDto): Promise<IdentifyResultDto> => service.identify(dto);
-```
 
 ### Cómo testear código que usa `$queryRaw`
 

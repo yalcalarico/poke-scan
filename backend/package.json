@@ -14,7 +14,7 @@
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
     "lint": "oxlint --type-aware src/ test/",
-    "test": "vitest run",
+    "test": "vitest run && node --test scripts/scanner-visual-index.test.mjs scripts/scanner-visual-detail.test.mjs",
     "test:watch": "vitest",
     "test:cov": "vitest run --coverage",
     "test:debug": "vitest --inspect-brk --no-file-parallelism",
@@ -33,7 +33,10 @@
     "db:test-setup": "tsc -p tsconfig.seed.json && node --env-file-if-exists=.env dist-seed/scripts/setup-test-db.js",
     "scanner:index": "node --env-file-if-exists=.env scripts/scanner-visual-spike.mjs index",
     "scanner:evaluate": "node --env-file-if-exists=.env scripts/scanner-visual-spike.mjs evaluate",
-    "scanner:sets": "node --env-file-if-exists=.env scripts/scanner-visual-spike.mjs sets"
+    "scanner:sets": "node --env-file-if-exists=.env scripts/scanner-visual-spike.mjs sets",
+    "scanner:index:sets": "node --env-file-if-exists=.env scripts/scanner-index-sets.mjs",
+    "scanner:validate": "node --env-file-if-exists=.env scripts/scanner-validate-sets.mjs",
+    "db:fix-images": "node --env-file-if-exists=.env scripts/fix-card-images.mjs"
   },
   "dependencies": {
     "@nestjs/common": "^12.0.1",
@@ -44,6 +47,7 @@
     "@nestjs/schedule": "^12.0.2",
     "@nestjs/throttler": "^6.7.1",
     "@prisma/client": "^6.19.3",
+    "@techstark/opencv-js": "5.0.0-release.1",
     "argon2": "^0.45.1",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.15.1",
@@ -51,7 +55,8 @@
     "ioredis": "^6.0.0",
     "onnxruntime-node": "^1.30.0",
     "reflect-metadata": "^0.2.2",
-    "rxjs": "^7.8.1"
+    "rxjs": "^7.8.1",
+    "sharp": "^0.35.5"
   },
   "devDependencies": {
     "@nestjs/cli": "^12.0.0",
@@ -65,7 +70,6 @@
     "oxlint-tsgolint": "^7.0.2001",
     "prettier": "^3.4.2",
     "prisma": "6.19.3",
-    "sharp": "^0.35.5",
     "source-map-support": "^0.5.21",
     "supertest": "^7.0.0",
     "typescript": "^6.0.2",

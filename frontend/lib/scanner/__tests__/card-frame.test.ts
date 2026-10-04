@@ -5,6 +5,12 @@ import { CARD_ASPECT, fitCardFrame, frameMargin } from '../camera';
 const ASPECT = CARD_ASPECT; // 0.7159...
 
 describe('fitCardFrame', () => {
+  it('deja espacio alrededor de la carta en el celular', () => {
+    const frame = fitCardFrame(390, 570, frameMargin(390, 570))!;
+    expect(frame.width).toBeLessThan(390 * 0.7);
+    expect(frame.height).toBeLessThan(570 * 0.7);
+    expect(frame.x).toBeGreaterThan(50);
+  });
   it('respeta siempre la proporción de la carta', () => {
     const casos: Array<[number, number]> = [
       [390, 695],   // iPhone

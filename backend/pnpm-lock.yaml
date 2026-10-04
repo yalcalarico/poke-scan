@@ -35,6 +35,9 @@ importers:
       '@prisma/client':
         specifier: ^6.19.3
         version: 6.19.3(prisma@6.19.3(typescript@6.0.3))(typescript@6.0.3)
+      '@techstark/opencv-js':
+        specifier: 5.0.0-release.1
+        version: 5.0.0-release.1
       argon2:
         specifier: ^0.45.1
         version: 0.45.1
@@ -59,6 +62,9 @@ importers:
       rxjs:
         specifier: ^7.8.1
         version: 7.8.2
+      sharp:
+        specifier: ^0.35.5
+        version: 0.35.5(@types/node@24.13.6)
     devDependencies:
       '@nestjs/cli':
         specifier: ^12.0.0
@@ -93,9 +99,6 @@ importers:
       prisma:
         specifier: 6.19.3
         version: 6.19.3(typescript@6.0.3)
-      sharp:
-        specifier: ^0.35.5
-        version: 0.35.5(@types/node@24.13.6)
       source-map-support:
         specifier: ^0.5.21
         version: 0.5.21
@@ -1036,6 +1039,9 @@ packages:
 
   '@standard-schema/spec@1.1.0':
     resolution: {integrity: sha512-l2aFy5jALhniG5HgqrD6jXLi/rUWrKvqN/qJx6yoJsgKhblVd+iqqU4RCXavm/jPityDo5TCvKMnpjKnOriy0w==}
+
+  '@techstark/opencv-js@5.0.0-release.1':
+    resolution: {integrity: sha512-PIm+eB0MFtieXoNC2GRao0dv/02sehG+Nv2nSW5D6pQm6J/4WqvDHm0RyoqOmGYQm67jdGiaOdIeTShCY3PIUg==}
 
   '@tokenizer/inflate@0.4.1':
     resolution: {integrity: sha512-2mAv+8pkG6GIZiF1kNg1jAjh27IDxEPKwdGul3snfztFerfPGI1LjDezZp3i7BElXompqEtPmoPx6c2wgtWsOA==}
@@ -3123,6 +3129,8 @@ snapshots:
   '@sindresorhus/is@4.6.0': {}
 
   '@standard-schema/spec@1.1.0': {}
+
+  '@techstark/opencv-js@5.0.0-release.1': {}
 
   '@tokenizer/inflate@0.4.1':
     dependencies:

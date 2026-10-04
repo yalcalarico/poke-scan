@@ -1,5 +1,5 @@
 /**
- * Minimal PNG reader/writer (8-bit RGB/RGBA/grey, non-interlaced) so the OCR
+ * Minimal PNG reader/writer (8-bit RGB/RGBA/grey, non-interlaced) so the reconocimiento visual
  * integration test can feed real card images through the pre-processing code in
  * plain Node, without a native canvas binding.
  */

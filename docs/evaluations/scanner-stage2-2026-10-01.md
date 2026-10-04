@@ -1,3 +1,5 @@
+> Nota de vigencia (2026-10-03): este documento conserva evidencia histórica. La lectura de texto y el comparador fueron retirados; el flujo actual usa únicamente DINOv2. Consultá [scanner.md](../../frontend/docs/scanner.md).
+
 # Etapa 2 — recorte y selección del nombre
 
 ## Cambios activos

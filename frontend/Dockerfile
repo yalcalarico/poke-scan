@@ -47,7 +47,7 @@ RUN apk add --no-cache libc6-compat && addgroup -g 1001 -S nodejs && adduser -S 
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 # public/ NO se copia solo en el trace: sin esto faltan manifest.json, sw.js,
-# los iconos y los assets de Tesseract.
+# los iconos.
 COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 
 USER nextjs

@@ -12,8 +12,9 @@ import { resolve } from 'node:path';
 import { createHash } from 'node:crypto';
 import { performance } from 'node:perf_hooks';
 import { PrismaClient } from '@prisma/client';
-import sharp from 'sharp';
-import { InferenceSession, Tensor } from 'onnxruntime-node';
+import { embedding as computeEmbedding } from './scanner-visual-engine.mjs';
+import { InferenceSession } from 'onnxruntime-node';
+import { referenceUrl, isAllowedReference } from './scanner-reference-url.mjs';
 
 const args = process.argv.slice(2);
 const command = args.shift();
@@ -32,9 +33,14 @@ for (let i = 0; i < args.length; i++) {
   }
   if (argument.startsWith('--')) {
     if (
-      !['--limit', '--set', '--card-ids', '--directory', '--model'].includes(
-        argument,
-      ) ||
+      ![
+        '--limit',
+        '--set',
+        '--card-ids',
+        '--directory',
+        '--model',
+        '--delay-ms',
+      ].includes(argument) ||
       !args[i + 1] ||
       args[i + 1].startsWith('--')
     )
@@ -44,7 +50,7 @@ for (let i = 0; i < args.length; i++) {
 }
 if (options.help || command === '--help' || !command) {
   console.log(
-    'Índice visual experimental (sin integración pública).\n index [límite] --limit N --set ID --card-ids ID,ID --directory RUTA --model RUTA\n evaluate MANIFIESTO --directory RUTA --model RUTA\n sets o --list-sets: lista expansiones del catálogo local\nEl límite cuenta intentos nuevos; omite referencias ya indexadas. Throttling: 2,3s.',
+    'Índice visual experimental (sin integración pública).\n index [límite] --limit N --set ID --card-ids ID,ID --directory RUTA --model RUTA --delay-ms N\n evaluate MANIFIESTO --directory RUTA --model RUTA\n sets o --list-sets: lista expansiones del catálogo local\nEl límite cuenta intentos nuevos; omite referencias ya indexadas. Pausa CDN: 0ms por defecto (--delay-ms 0–60000). Sin presupuesto diario automático.',
   );
   process.exit(0);
 }
@@ -85,6 +91,9 @@ if (!['index', 'evaluate'].includes(command))
   throw new Error('Usá index, evaluate o sets.');
 if (!evaluate && (!Number.isInteger(limit) || limit < 1 || limit > 30000))
   throw new Error('Límite inválido (1–30000).');
+const delayMs = Number(options['delay-ms'] ?? 0);
+if (!Number.isInteger(delayMs) || delayMs < 0 || delayMs > 60000)
+  throw new Error('Pausa inválida (0–60000 ms).');
 const cardIds = options['card-ids'] ?? process.env.SCANNER_CARD_IDS;
 if (positional.length > 1)
   throw new Error('Demasiados argumentos posicionales.');
@@ -147,47 +156,7 @@ try {
   }
   session = await InferenceSession.create(model, { intraOpNumThreads: 2 });
 
-  async function embedding(image) {
-    // El preprocesado oficial redimensiona el lado corto a 256 y centra un recorte de 224.
-    const { width, height } = await sharp(image).rotate().metadata();
-    if (!width || !height) throw new Error('Imagen sin dimensiones.');
-    const scale = 256 / Math.min(width, height);
-    const w = Math.round(width * scale),
-      h = Math.round(height * scale);
-    const pixels = await sharp(image)
-      .rotate()
-      .resize(w, h, { kernel: 'cubic' })
-      .extract({
-        left: Math.floor((w - 224) / 2),
-        top: Math.floor((h - 224) / 2),
-        width: 224,
-        height: 224,
-      })
-      .removeAlpha()
-      .toColourspace('srgb')
-      .raw()
-      .toBuffer();
-    const data = new Float32Array(3 * 224 * 224);
-    const mean = [0.485, 0.456, 0.406],
-      std = [0.229, 0.224, 0.225];
-    for (let channel = 0; channel < 3; channel++) {
-      for (let i = 0; i < 224 * 224; i++)
-        data[channel * 224 * 224 + i] =
-          (pixels[i * 3 + channel] / 255 - mean[channel]) / std[channel];
-    }
-    const output = await session.run({
-      pixel_values: new Tensor('float32', data, [1, 3, 224, 224]),
-    });
-    // Primer token (CLS) del last_hidden_state; no promediar los tokens de fondo.
-    const vector = Array.from(
-      output.last_hidden_state.data.slice(0, 384),
-      Number,
-    );
-    const norm = Math.hypot(...vector);
-    if (!Number.isFinite(norm) || norm === 0)
-      throw new Error('Embedding inválido.');
-    return vector.map((value) => value / norm);
-  }
+  const embedding = (image) => computeEmbedding(session, image);
 
   const entries = new Map();
   try {
@@ -314,7 +283,7 @@ try {
           'Algún ID no existe o no pertenece a la expansión seleccionada.',
         );
       const pending = cards.filter(
-        (card) => !entries.has(card.id) && (card.imageLarge || card.imageSmall),
+        (card) => !entries.has(card.id) && referenceUrl(card),
       );
       console.log(
         JSON.stringify({
@@ -322,7 +291,9 @@ try {
           indexed: entries.size,
           pending: pending.length,
           attemptLimit: limit,
-          minimumThrottleSeconds: Math.min(limit, pending.length) * 2.3,
+          delayMs,
+          minimumThrottleSeconds:
+            (Math.min(limit, pending.length) * delayMs) / 1000,
         }),
       );
       await mkdir(resolve(directory, 'images'), { recursive: true });
@@ -334,17 +305,11 @@ try {
       const startedAt = performance.now();
       for (const card of cards) {
         if (entries.has(card.id)) continue;
-        const url = card.imageLarge ?? card.imageSmall;
+        const url = referenceUrl(card);
         if (!url) continue;
         attempted++;
         try {
-          const parsed = new URL(url);
-          if (
-            parsed.protocol !== 'https:' ||
-            !['images.pokemontcg.io', 'images.scrydex.com'].includes(
-              parsed.hostname,
-            )
-          )
+          if (!isAllowedReference(card.id, url))
             throw new Error('Host de referencia no permitido.');
           const imagePath = resolve(
             directory,
@@ -389,12 +354,13 @@ try {
           failed++;
           console.error(`${card.id}: ${error.message}`);
         }
-        // Respetar el presupuesto aun si una descarga falla; nunca correr en un handler.
-        await new Promise((done) => setTimeout(done, 2300));
+        // La pausa del CDN es independiente del throttling de la API de precios.
+        if (delayMs > 0) await new Promise((done) => setTimeout(done, delayMs));
         if (attempted >= limit || interrupted) break;
       }
       const summary = {
         selectedCatalog: cards.length,
+        delayMs,
         attempted,
         completed,
         failed,

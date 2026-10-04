@@ -7,33 +7,6 @@ export interface ScannedCapture {
   cropped?: boolean;
 }
 
-export interface OcrLine {
-  text: string;
-  confidence: number;
-  words?: Array<{ text: string; confidence: number }>;
-}
-
-export interface OcrResult {
-  text: string;
-  lines: OcrLine[];
-  confidence: number;
-}
-
-export interface ParsedScan {
-  /** Raw OCR lines; the backend matches them against the catalog. */
-  lines: string[];
-  /** Best-effort card name guess (heuristic, no catalog available client-side). */
-  nameGuess: string | null;
-  numberGuess: string | null;
-  /** Número/total impresos si el lector validó la línea completa del pie. */
-  printedNumberGuess?: string | null;
-  setHint: string | null;
-  /** Código validado contra el catálogo y leído exclusivamente en el pie. */
-  setCode: string | null;
-  /** 0..1 */
-  confidence: number;
-}
-
 export type CameraError =
   | 'permission-denied'
   | 'no-camera'

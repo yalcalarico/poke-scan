@@ -247,7 +247,7 @@ ORDER BY p."cardId", p.variant, p."fetchedAt" DESC
 
 Aparece en cuatro lugares, con el mismo `ORDER BY`: `CollectionsService.fetchLatestPrices`,
 `ShareService.fetchLatestPrices`, `FriendsService.fetchLatestPrices` e
-`IdentifyService.pricesFor`.
+la consulta de precio del candidato visual elegido.
 
 En las agregaciones **no** se usa el `DISTINCT ON`: se usa el `LATERAL` de
 `common/sql/latest-price.ts` (`latestMarketPriceJoin`), que es el mismo

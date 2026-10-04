@@ -1,4 +1,127 @@
+> Nota de vigencia (2026-10-03): este documento conserva evidencia histórica. La lectura de texto y el comparador fueron retirados; el flujo actual usa únicamente DINOv2. Consultá [scanner.md](../../frontend/docs/scanner.md).
+
 # Mejoras del escáner — 1 de octubre de 2026
+
+## Roadmap vigente — revisión de código del 3 de octubre de 2026
+
+Esta sección reemplaza los estados del roadmap histórico que aparece más abajo.
+La arquitectura actual usa únicamente DINOv2 con verificación visual ORB/RANSAC;
+no se debe reintroducir lectura de texto. La cámara y el recorte son cliente,
+la identificación es autenticada y no guarda fotos de consulta.
+
+La revisión fue de lectura de código, índices locales e informes: no ejecutó
+tests, builds, descargas ni consultas que modifiquen datos. Hay cambios de otros
+chats sin commit; «implementado» describe el árbol de trabajo inspeccionado,
+no una entrega ya publicada ni una nueva certificación del chequeo completo.
+
+### 1. Estabilización — implementada en gran parte; validación pendiente
+
+- [x] Cámara y galería usan el flujo visual, con cancelación, errores y protección
+  contra respuestas obsoletas. El primer candidato se suma a la sesión;
+  `OrganizeSheet` hace la persistencia explícita en colección.
+- [x] Sesión restaurable y acotada a 30 entradas, precios consultados sólo para
+  el ID seleccionado y tolerancia a precio ausente.
+- [ ] Completar verificación real del orden por precio, render compartido,
+  cámara física de teléfono y PWA/offline. Orden y página compartida existen;
+  lo pendiente es su validación, no implementarlos desde cero.
+- [ ] Ejecutar el chequeo final sobre la versión consolidada cuando los chats
+  terminen. Los informes registran checks anteriores, no esta revisión.
+
+### 2. Recorte y orientación — implementados; ampliar validación
+
+- [x] Galería detecta contorno, recorta y orienta; cámara conserva el recorte de
+  la guía sin volver a detectar ni girar. Se corrigió el caso Vulpix cuyo dibujo
+  apaisado se confundía con el borde de la carta.
+- [x] Guía y captura comparten geometría, mapeo `object-cover` y proporción 63/88.
+- [ ] Probar perspectiva, fundas y condiciones diversas en dispositivos reales.
+  Recorte rectangular y rotación no equivalen a rectificación de perspectiva.
+
+### 3. Lectura de número/código — retirada por cambio de arquitectura
+
+Los módulos de lectura, parser, memoria textual, DTO y endpoint de identificación
+por texto fueron retirados. Los antiguos problemas OCR de código y evolución
+no son tareas pendientes del sistema actual ni se consideran resueltos por OCR.
+Número, nombre y set ahora proceden del candidato visual del catálogo.
+La desambiguación de edición/reimpresión se conserva como pendiente de etapa 6.
+
+### 4. Evaluación exacta — parcial
+
+- [x] Manifiesto de cinco IDs exactos, CLI de evaluación, smoke visual y métricas
+  separadas de recuperación, geometría, índice, modelo e inferencia.
+- [x] Existen mediciones contra el índice completo e informes de casos adicionales.
+- [ ] Ampliar a 50–100 fotos reales, negativos y reimpresiones similares.
+- [ ] Medir precisión, falsas predicciones/aceptaciones y tiempos fríos/calientes
+  en navegador y dispositivos. Cinco fotos no certifican precisión general.
+  El diagnóstico OCR histórico fue retirado, no es la herramienta vigente.
+
+### 5. Motor e índice visual — implementados; evaluación amplia pendiente
+
+- [x] CLI por cantidad, set e IDs; lotes por set, validación, caché, metadata,
+  bloqueo, reanudación y carga/recarga consistente del índice en el worker.
+- [x] Índice completo local: revisión directa contó **20.670 IDs únicos en 175
+  carpetas, sin duplicados**. Ya no está limitado a las 191 referencias de 30th.
+- [x] Evaluación completa disponible: DINOv2 solo dio 3/5 top-1; DINOv2 + ORB
+  dio 5/5 top-1 en los cinco recortes disponibles, sin reindexar ni favorecer IDs.
+- [ ] Verificar SIGINT real y estabilidad prolongada/reinicio del runtime nativo.
+  Aislar ONNX en un proceso hijo limita el impacto; no demuestra eliminar el
+  abort aislado anterior.
+- [ ] Completar criterios de evaluación amplia y documentar rendimiento y
+  decisión de runtime/cuantización. No convertir 5/5 en garantía de producción.
+
+### 6. Integración visual — implementada; calibración pendiente
+
+- [x] Cámara y galería integradas con `POST /api/cards/identify-visual`, autenticado,
+  validación de imagen y flags backend; motor local aislado, sin descargas por request.
+- [x] Recuperación DINOv2 top-64 y reranking ORB/homografía RANSAC con caché local;
+  fallback al orden DINOv2 si falla la verificación. Diagnósticos muestran
+  candidatos, similitud, evidencia geométrica y tiempos.
+- [x] El experimento optativo de 30th evolucionó al flujo principal DINOv2;
+  el comparador y el camino OCR se retiraron. La combinación imagen+texto del
+  roadmap original ya no aplica.
+- [ ] Calibrar rechazo/confirmación para negativos y cartas fuera del catálogo,
+  reimpresiones con mismo dibujo y candidatos fuera del top-64.
+- [ ] Ampliar casos full-art. El caso disponible está medido, no toda la categoría.
+
+El primer candidato se suma automáticamente a la sesión, no se guarda por sí
+solo en una colección. Esa política de UI no es un umbral de certeza calibrado.
+
+### 7. Latencia — optimizaciones implementadas; comparación pendiente
+
+- [x] Modelo persistente en worker, recarga de índice, caché acotada de descriptores,
+  sondeo de encuadre local y consultas con cancelación/timeout.
+- [x] Informes distinguen índice, arranque, inferencia, verificación y HTTP.
+  La verificación caliente de Umbreon se midió en ~466 ms; no es latencia total.
+- [ ] Medir p50/p95/p99 y presión de concurrencia en equipos/dispositivos reales.
+- [ ] Evaluar WebGPU/otras alternativas y elegir runtime según evidencia.
+  No hay runtime WebGPU implementado; el flujo actual es ONNX CPU en backend.
+  Comparaciones de pasadas OCR y corte temprano de texto quedaron retiradas.
+
+### 8. Captura y casos difíciles — parcial
+
+- [x] Cámara sólo en teléfonos, marco rojo/verde según estabilidad y alineación,
+  captura automática, intervalo mínimo y prevención de repetición en escena quieta.
+- [x] Geometría visual para verificar detalles del dibujo en candidatos.
+- [ ] Rectificar perspectiva de la foto y detectar reflejos/desenfoque con métricas.
+  Homografía de matching y estabilidad del encuadre no completan esas funciones.
+- [ ] Evaluar acabados normal/holo/reverse y reimpresiones.
+- [ ] Diseñar/evaluar memoria visual con consentimiento y borrado. La memoria
+  textual anterior fue retirada; no hay sustituto visual implementado.
+
+### 9. Mobile nativo — pendiente
+
+- [x] Flujo web/PWA con cámara automática y guía adaptada al teléfono.
+- [ ] Validar captura/enfoque real en iPhone y otros teléfonos.
+- [ ] Evaluar app y runtime nativos si se retoma ese alcance; no están implementados.
+
+**Siguiente bloque:** validar la cámara física y el flujo visual consolidado,
+ampliar corpus/negativos y calibrar edición y rechazo; luego optimizar según
+tiempos de extremo a extremo. No hace falta reindexar todo ni retomar OCR.
+
+Fuentes: `frontend/docs/scanner.md`, `visual-full-index-2026-10-03.md`,
+`visual-geometry-2026-10-03.md`, `scanner-unified-camera-2026-10-03.md` y
+`scanner-rotation-mobile-2026-10-03.md` en `docs/evaluations/`.
+
+## Registro histórico — estados anteriores, no vigentes
 
 ## Revisión de cierre — 2 de octubre de 2026
 
@@ -52,7 +175,121 @@ salvo la preparación del motor visual; mobile permanece como trabajo posterior.
   La API y la web se volvieron a levantar. La señal SIGINT real y un abort
   nativo ONNX aislado siguen sin validación definitiva.
 
-## Implementado
+## Prueba visual en pantalla — siguiente bloque experimental
+
+El índice local del 30.º aniversario ya tiene **191 referencias**: `me55`
+(161) y `me55c` (30), en `backend/.scanner-index/30th-anniversary`.
+La descarga/indexación terminó sin fallos; esto verifica preparación, no precisión.
+El detalle de almacenamiento está en `storage-estimate.json` dentro del índice.
+
+Se autorizó implementar una prueba manual en `/escanear`, mediante un botón
+«Probar reconocimiento visual (experimental)». Es una excepción acotada al orden
+original del roadmap: permite evaluar en pantalla el índice parcial antes de
+decidir la integración definitiva. No cierra las etapas 5 ni 6.
+
+- [x] Crear un flujo optativo para comparar fotos contra las 191 referencias
+  locales, usando el mismo modelo y preprocesado de la indexación.
+- [x] Mostrar candidatos y tiempos, con alcance explícito: sólo 30.º aniversario,
+  edición sin confirmar y sin aceptación ni guardado automáticos.
+- [x] Mantener selección explícita de candidatos y el flujo OCR existente.
+  Una carta fuera del índice puede devolver una referencia parecida; no afirmar
+  que pertenece al set sólo por ser la primera coincidencia.
+- [x] Validar upload acotado, configuración/metadata del índice y errores cuando
+  faltan modelo o referencias. Ningún handler descarga ni indexa referencias.
+- [x] Evaluar las cinco fotos etiquetadas contra las 191 referencias y registrar
+  diferencias con OCR, tiempos fríos/calientes y límites del corpus.
+- [x] Pasar `pnpm run check` (con stack detenido antes de tests) y verificar el
+  flujo real; actualizar este plan y documentar cómo habilitar el experimento.
+
+El trabajo se asigna a un chat nuevo. Los pendientes de catálogo completo,
+dataset amplio, calibración, rechazo de negativos y optimización siguen abiertos.
+
+Implementación y evidencia: `docs/evaluations/visual-screen-2026-10-02.md`.
+Contra 191 referencias: PNG originales 4/5 top-1; JPEG con orientación aplicada
+2/5 top-1 y 5/5 top-8. Umbreon séptimo y Chandelure primero en ambas.
+La orientación EXIF y el encuadre necesitan evaluación/versionado coherente.
+
+### Cámara DINOv2 y ampliación del índice (2026-10-03)
+
+### Mejora del ranking visual (2026-10-03)
+
+- [x] Evaluar proporciones, exposición y verificación de detalles contra el índice completo.
+- [x] Integrar recuperación DINOv2 de 64 candidatos + ORB/homografía con imágenes
+  locales; sin OCR, reindexado, descargas ni IDs favorecidos.
+- [x] Recuperar Umbreon (29.º → 1.º) y Vaporeon (2.º → 1.º), manteniendo las otras
+  tres fotos primeras: 5/5 top-1 en la muestra disponible.
+- [x] Mostrar evidencia geométrica y tiempos sin confundirlos con coseno o certeza.
+- [x] Probar rotación/alpha, negativos sintéticos, caché, fallback y la UI.
+- [x] `pnpm run stop` y `pnpm run check`: aprobados (lint, tipos, tests y builds).
+- [ ] Ampliar corpus real y negativos; una carta fuera del top-64 o una reimpresión
+  con el mismo dibujo siguen requiriendo corroboración/selección manual.
+
+Detalle: `docs/evaluations/visual-geometry-2026-10-03.md`. Caché caliente de
+Umbreon: 466 ms de verificación, sin incluir inferencia/HTTP/preparación.
+
+### Estado previo de cámara y ampliación
+
+Actualización posterior al pull: API adaptada a **20.670 referencias / 175
+carpetas**, sin modificar índices. Recarga validada por inventario y bloqueos;
+conserva el snapshot anterior con aviso explícito. Muestra: 3/5 top-1, Vaporeon
+segundo y Umbreon fuera del top-8. No confirma edición automáticamente.
+Detalle: `docs/evaluations/visual-full-index-2026-10-03.md`.
+
+- [x] Eliminar límites fijos de 191 referencias y IDs `me55/me55c`.
+- [x] Compartir default `.scanner-index` y fallback `SCANNER_INDEX_DIR`.
+- [x] Detectar nuevas colecciones/cambios y conservar el snapshot previo ante
+  bloqueo, línea incompleta, vectores inválidos o metadata incompatible.
+- [x] Mostrar versión, cantidad, tiempo de lectura y estado del snapshot.
+- [x] Pruebas aisladas del lector, modelo real contra todos los vectores,
+  tests frontend, lint y tipos de producción.
+- [ ] Chequeo completo y prueba API activada: pendiente de autorización para
+  detener temporalmente la app por la restricción anterior. No se hizo push.
+
+El listado siguiente conserva los pendientes identificados antes de esta
+implementación; los del lector y guard quedaron resueltos arriba. Publicación
+transaccional entre múltiples escritores y calibración siguen pendientes.
+
+- [x] Agregar entrada de cámara y galería sólo DINOv2, manteniendo OCR y comparador.
+- [x] Mostrar cantidad de referencias devuelta por la API, sin fijar 191 en el frontend.
+- [ ] Adaptar el worker y el guard del service: hoy ambos exigen 191 referencias
+  y el worker limita IDs a `me55/me55c`. No tocar backend durante la carga con
+  Nest watch, porque editarlo puede reiniciar el servidor.
+- [ ] Unificar directorio de lectura/publicación: indexador `SCANNER_INDEX_DIR`
+  y API `SCANNER_VISUAL_INDEX_DIR` hoy son independientes.
+- [ ] Publicar un snapshot consistente al terminar cada actualización y recargar
+  sólo vectores al cambiar su versión; conservar el último snapshot válido si
+  hay `index.lock`, una línea incompleta o metadata incompatible. Hoy el worker
+  sólo lee al inicio y rechaza un índice bloqueado. No leer un JSONL en escritura.
+- [ ] Mantener validación de modelo, preprocesado, dimensiones, vectores finitos,
+  normalización e IDs únicos para índices de tamaño variable.
+- [ ] Ejecutar `pnpm run check` cuando se pueda detener el stack. Por pedido del
+  usuario, esta entrega valida sólo frontend y no ejecuta tests backend ni build
+  sobre `.next` mientras está activo el servidor.
+
+No se modificaron backend, índices, configuración ni procesos en esta entrega.
+Lint frontend, typecheck sin incremental y 413 tests frontend: aprobados
+(2 omitidos y 1 pendiente). El navegador no pudo verificar la pantalla porque
+`localhost:3000` rechazó la conexión; no se inició ni reinició el stack.
+
+### Comparación OCR y visual en el mismo botón (2026-10-02)
+
+- [x] Ejecutar ambos métodos sobre la misma carta detectada y orientada, mostrar
+  el recorte y separar preparación compartida de los tiempos de cada método.
+- [x] Mostrar predicciones, márgenes, evidencia OCR y diagnóstico por pasada;
+  conservar el resultado de un método cuando falla o se cancela el otro.
+- [x] Investigar Umbreon: el fondo de la foto entera perjudicaba el ranking.
+  Con el recorte compartido `me55-92` queda primero en la prueba real de navegador
+  con ambos métodos, sin cambiar el modelo ni recalcular el índice.
+- [x] Probar la reutilización del recorte, la ausencia de persistencia diagnóstica,
+  errores independientes y cancelación. Verificar la comparación en navegador.
+
+Evidencia y límites: `docs/evaluations/comparison-2026-10-02.md`. Esto no confirma
+ediciones automáticamente ni calibra precisión para otras fotos o sets.
+Check final verde: 329 backend, 4 API y 401 frontend, lint/tipos/builds;
+smoke real de la app: 12 comprobaciones. Stack único activo con flags de prueba. Prioridad siguiente: encuadre/ranking y corpus amplio para
+calibración; no ampliar el catálogo a ciegas ni habilitar aceptación automática.
+
+## Capacidades implementadas
 
 - Inicio anticipado del worker al abrir la cámara; Tesseract sigue siendo cliente.
 - OCR progresivo experimental (`NEXT_PUBLIC_SCANNER_PROGRESSIVE=1`): original, nombre y pie; consulta temprana al catálogo local.
@@ -97,7 +334,7 @@ El manifiesto contiene `[{"path":"/ruta/foto.png","cardId":"ID-exacto"}]`.
 Consultar `docs/files/02-EMBEDDINGS-spike.md`: validar top-10, margen contra
 distractores y latencia con el catálogo completo antes de integrar. El reporte
 marca `productionReady: false` para impedir interpretar un subconjunto como
-validación completa. Este modelo todavía no participa del escaneo público.
+validación completa. El modelo participa sólo de la prueba optativa y autenticada; ambos flags están apagados por defecto.
 
 ## Medición y límites
 

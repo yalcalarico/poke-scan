@@ -68,17 +68,6 @@ export interface CardDataProvider {
   ): Promise<RemoteCardPrice[]>;
 }
 
-export const CARD_IDENTIFICATION_PROVIDER = Symbol('CARD_IDENTIFICATION_PROVIDER');
-
-export interface IdentificationCandidate {
-  cardId: string;
-  score: number;
-}
-
-export interface CardIdentificationProvider {
-  identify(imageBase64: string): Promise<IdentificationCandidate[]>;
-}
-
 /**
  * Fuente de precios en vivo, separada del catálogo. El catálogo sigue
  * espejándose desde pokemontcg.io, pero su feed de precios quedó congelado

@@ -48,6 +48,7 @@ interface CameraControl {
 }
 
 function buildControls(props: {
+  showContinuous: boolean;
   capabilities: CameraCapabilities;
   torchOn: boolean;
   onToggleTorch: () => void;
@@ -81,7 +82,7 @@ function buildControls(props: {
 
   // El modo continuo es software nuestro, no una capacidad del dispositivo:
   // siempre está disponible, y por eso es el único control sin condición.
-  controls.push({
+  if (props.showContinuous) controls.push({
     key: 'continuous',
     Icon: InfinityIcon,
     label: 'Activar el escaneo continuo',
@@ -116,6 +117,7 @@ function buildControls(props: {
 }
 
 export interface CameraControlsProps {
+  showContinuous?: boolean;
   capabilities: CameraCapabilities;
   torchOn: boolean;
   onToggleTorch: () => void;
@@ -136,6 +138,7 @@ export interface CameraControlsProps {
  * la cámara abierta, que es el peor contexto posible para un target chico.
  */
 export function CameraControls({
+  showContinuous = true,
   capabilities,
   torchOn,
   onToggleTorch,
@@ -146,6 +149,7 @@ export function CameraControls({
   className,
 }: CameraControlsProps) {
   const controls = buildControls({
+    showContinuous,
     capabilities,
     torchOn,
     onToggleTorch,

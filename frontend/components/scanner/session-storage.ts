@@ -1,4 +1,4 @@
-import type { IdentifiedCandidateDto } from '@/types/api';
+import type { RecognizedCard } from '@/types/api';
 
 /**
  * La sesión de escaneo, en `sessionStorage`.
@@ -31,7 +31,7 @@ import type { IdentifiedCandidateDto } from '@/types/api';
  *
  * ## El límite de tamaño, y por qué no hay `localStorage` de respaldo
  *
- * Un candidato es un `IdentifiedCandidateDto` con la carta entera, o sea ~1,5 kB
+ * Un candidato es un `RecognizedCard` con la carta entera, o sea ~1,5 kB
  * en JSON. 20 escaneos son ~30 kB, y `sessionStorage` aguanta 5 MB por origen en
  * todos los navegadores relevantes. Si alguna vez una sesión llegara al límite,
  * `setItem` **tira** `QuotaExceededError`, y por eso cada escritura está
@@ -82,7 +82,7 @@ export function appendSessionEntry<T>(current: readonly T[], entry: T): T[] {
 /** La forma que se guarda. Sin envoltura: el array pelado es el contrato. */
 type StoredEntry = {
   runId: number;
-  candidate: IdentifiedCandidateDto;
+  candidate: RecognizedCard;
 };
 
 const isBrowser = () => typeof window !== 'undefined';
@@ -142,7 +142,7 @@ function write(entries: StoredEntry[]): void {
  * - `candidate.card.setId`: sin él, el link "ver el set" apuntaría a un `id` de
  *   carta en vez de un id de set (el mismo bug que `toCardDto` documenta).
  *
- * Lo que **no** se valida es `score`, `price`, `matchedText` o los subcampos de
+ * Lo que **no** se valida es `score`, `price` o los subcampos de
  * la carta: son opcionales por contrato y un default que no existe
  * (`score: 0`) se vería como "no leímos nada" cuando en realidad sí.
  */

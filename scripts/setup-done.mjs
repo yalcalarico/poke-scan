@@ -33,8 +33,8 @@ if (cards >= 20000) {
   console.log(`  ${D('o para probar rápido:')} pnpm run seed ${D('(500 cartas)')}\n`);
 }
 
-if (!existsSync('frontend/public/tesseract/lang/eng.traineddata.gz')) {
-  console.log(`  ${Y('⚠')} Faltan los assets de Tesseract: el escáner necesitará internet en el primer uso.\n`);
+if (!existsSync('backend/.scanner-index')) {
+  console.log(`  ${Y('⚠')} Falta el índice DINOv2. Preparalo con pnpm run scanner:index antes de reconocer cartas.\n`);
 }
 
 console.log(`  ${B('Levantá la app:')}  pnpm run dev\n`);

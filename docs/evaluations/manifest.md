@@ -1,3 +1,5 @@
+> Nota de vigencia (2026-10-03): este documento conserva evidencia histórica. La lectura de texto y el comparador fueron retirados; el flujo actual usa únicamente DINOv2. Consultá [scanner.md](../../frontend/docs/scanner.md).
+
 # Dataset de evaluación del escáner
 
 `manifest.json` contiene las cinco fotos disponibles en `/tmp/cards-full` y su

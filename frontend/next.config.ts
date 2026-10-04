@@ -1,12 +1,20 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  allowedDevOrigins: process.env.DEV_LAN_IP ? [process.env.DEV_LAN_IP] : [],
+  async rewrites() {
+    // El celu usa HTTPS y el mismo origen; Next habla con la API local por HTTP.
+    const target = process.env.NODE_ENV === "development" ? process.env.DEV_API_PROXY_TARGET : undefined;
+    return target ? [{ source: "/api/:path*", destination: `${target}/:path*` }] : [];
+  },
   // Implica el server de produccion auto-contenido que usa el Dockerfile.
   output: "standalone",
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "images.pokemontcg.io", pathname: "/**" },
       { protocol: "https", hostname: "images.scrydex.com", pathname: "/**" },
+      { protocol: "https", hostname: "static.tcgcollector.com", pathname: "/content/images/**", search: "" },
+      { protocol: "https", hostname: "www.serebii.net", pathname: "/card/xypromos/68.jpg", search: "" },
     ],
     /**
      * AVIF primero, WebP de respaldo.

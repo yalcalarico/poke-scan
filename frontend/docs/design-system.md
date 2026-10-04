@@ -372,7 +372,7 @@ igual que en light.
 ### 2.3 Dos reglas semánticas que no se rompen
 
 **`warning` nunca es un error.** Es "esto está viejo, o no estamos seguros del
-resultado": precio desactualizado, cotización vieja, confianza baja del OCR, cartas
+resultado": precio desactualizado, cotización vieja, coincidencia visual débil, cartas
 sin precio. El error es `negative`. Si dudás entre los dos, pensá *"¿el usuario puede
 igual hacer la acción que quiere?"* → sí → warning.
 
@@ -1400,7 +1400,7 @@ Antes de pedir revisión:
 
 Estas reglas ya estaban bien y no cambian: Accesibilidad (salvo lo nuevo de arriba),
 Moneda, Fechas y números, el Service Worker y sus 4 cachés (navegaciones
-`NetworkFirst`, imágenes `CacheFirst` 150, `/tesseract/*` `CacheFirst`, API pública
+`NetworkFirst`, imágenes `CacheFirst` 150, API pública
 `NetworkFirst` 50, nunca cachea requests autenticadas, registro solo en producción),
 la proporción `aspect-[63/88]` (63 × 88 mm reales, no una aproximación), el idioma
 `lang="es-AR"`, y la política Server Component / Client Component.

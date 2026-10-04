@@ -1,0 +1,237 @@
+[
+  {
+    "photo": 4985,
+    "ms": 3101.9371250000004,
+    "rank": 1,
+    "top": [
+      {
+        "id": "me55c-106",
+        "similarity": 0.763130129876379,
+        "geometry": {
+          "matches": 69,
+          "inliers": 53,
+          "coverage": 0.1401582517680867,
+          "verified": true
+        }
+      },
+      {
+        "id": "dp6-49",
+        "similarity": 0.7497828840076819,
+        "geometry": {
+          "matches": 2,
+          "inliers": 0,
+          "coverage": 0,
+          "verified": false
+        }
+      },
+      {
+        "id": "ex11-44",
+        "similarity": 0.7432066955793819,
+        "geometry": {
+          "matches": 5,
+          "inliers": 0,
+          "coverage": 0,
+          "verified": false
+        }
+      },
+      {
+        "id": "ecard3-146",
+        "similarity": 0.7408849265300747,
+        "geometry": {
+          "matches": 4,
+          "inliers": 0,
+          "coverage": 0,
+          "verified": false
+        }
+      }
+    ]
+  },
+  {
+    "photo": 4986,
+    "ms": 3008.079125000001,
+    "rank": 1,
+    "top": [
+      {
+        "id": "me55-23",
+        "similarity": 0.7429043157256382,
+        "geometry": {
+          "matches": 23,
+          "inliers": 19,
+          "coverage": 0.2949358214591866,
+          "verified": true
+        }
+      },
+      {
+        "id": "mcd19-11",
+        "similarity": 0.7486781362695623,
+        "geometry": {
+          "matches": 9,
+          "inliers": 5,
+          "coverage": 0.18308256360762867,
+          "verified": false
+        }
+      },
+      {
+        "id": "base3-29",
+        "similarity": 0.7414368181815635,
+        "geometry": {
+          "matches": 9,
+          "inliers": 5,
+          "coverage": 0.081865348033051,
+          "verified": false
+        }
+      },
+      {
+        "id": "neo4-51",
+        "similarity": 0.7329270694801874,
+        "geometry": {
+          "matches": 5,
+          "inliers": 0,
+          "coverage": 0,
+          "verified": false
+        }
+      }
+    ]
+  },
+  {
+    "photo": 4987,
+    "ms": 3710.1633330000004,
+    "rank": 1,
+    "top": [
+      {
+        "id": "me55-92",
+        "similarity": 0.6288873298911292,
+        "geometry": {
+          "matches": 44,
+          "inliers": 40,
+          "coverage": 0.3138921320141844,
+          "verified": true
+        }
+      },
+      {
+        "id": "swshp-SWSH023",
+        "similarity": 0.6996330272035269,
+        "geometry": {
+          "matches": 6,
+          "inliers": 0,
+          "coverage": 0,
+          "verified": false
+        }
+      },
+      {
+        "id": "xy5-55",
+        "similarity": 0.6834189716170381,
+        "geometry": {
+          "matches": 5,
+          "inliers": 0,
+          "coverage": 0,
+          "verified": false
+        }
+      },
+      {
+        "id": "ex2-11",
+        "similarity": 0.6647875242079452,
+        "geometry": {
+          "matches": 2,
+          "inliers": 0,
+          "coverage": 0,
+          "verified": false
+        }
+      }
+    ]
+  },
+  {
+    "photo": 4988,
+    "ms": 3615.888500000001,
+    "rank": 1,
+    "top": [
+      {
+        "id": "me55-137",
+        "similarity": 0.7936536799858935,
+        "geometry": {
+          "matches": 74,
+          "inliers": 68,
+          "coverage": 0.25724646168865134,
+          "verified": true
+        }
+      },
+      {
+        "id": "sv8pt5-149",
+        "similarity": 0.6168379159352887,
+        "geometry": {
+          "matches": 2,
+          "inliers": 0,
+          "coverage": 0,
+          "verified": false
+        }
+      },
+      {
+        "id": "rsv10pt5-103",
+        "similarity": 0.6136500341541278,
+        "geometry": {
+          "matches": 5,
+          "inliers": 0,
+          "coverage": 0,
+          "verified": false
+        }
+      },
+      {
+        "id": "ex10-86",
+        "similarity": 0.6058710214350513,
+        "geometry": {
+          "matches": 2,
+          "inliers": 0,
+          "coverage": 0,
+          "verified": false
+        }
+      }
+    ]
+  },
+  {
+    "photo": 4989,
+    "ms": 4106.948959000001,
+    "rank": 1,
+    "top": [
+      {
+        "id": "me55-145",
+        "similarity": 0.7323702258088511,
+        "geometry": {
+          "matches": 38,
+          "inliers": 36,
+          "coverage": 0.3812041807530531,
+          "verified": true
+        }
+      },
+      {
+        "id": "swsh4-11",
+        "similarity": 0.6908987479804921,
+        "geometry": {
+          "matches": 4,
+          "inliers": 0,
+          "coverage": 0,
+          "verified": false
+        }
+      },
+      {
+        "id": "swsh8-216",
+        "similarity": 0.6810470870262836,
+        "geometry": {
+          "matches": 2,
+          "inliers": 0,
+          "coverage": 0,
+          "verified": false
+        }
+      },
+      {
+        "id": "swsh12-114",
+        "similarity": 0.6729684643118252,
+        "geometry": {
+          "matches": 3,
+          "inliers": 0,
+          "coverage": 0,
+          "verified": false
+        }
+      }
+    ]
+  }
+]

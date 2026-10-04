@@ -11,7 +11,6 @@ import { ScheduledJobsService } from './scheduled-jobs.service.js';
 import { PriceQueueWorker } from './price-queue.worker.js';
 import { PriceQueueService } from './price-queue.service.js';
 import { ProviderRateGate } from './provider-rate.gate.js';
-import { ScanCaptureController } from './scan-capture.controller.js';
 import { SyncCardsService } from './sync-cards.service.js';
 import { SyncPricesService } from './sync-prices.service.js';
 import { SyncSetsService } from './sync-sets.service.js';
@@ -29,7 +28,7 @@ import { TCGDEX_SET_MAPPING, TcgdexSetMappingService } from './tcgdex-set-mappin
  */
 @Module({
   imports: [ConfigModule, ProvidersModule, RedisModule],
-  controllers: [JobsController, ScanCaptureController],
+  controllers: [JobsController],
   providers: [
     // SyncSetsService va porque SyncCardsService lo inyecta: el sync de cartas
     // espeja los sets primero.

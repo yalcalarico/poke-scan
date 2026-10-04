@@ -315,68 +315,13 @@ export interface CollectionStatsDto {
   totalValueArs: number | null;
 }
 
-// ─── Identificación por escaneo ───
-export interface IdentifyRequestDto {
-  lines?: string[];
-  name?: string;
-  number?: string;
-  setHint?: string;
-  /**
-   * Código de set impreso abajo a la izquierda, ej `"30C"`.
-   *
-   * El escáner lo valida contra el catálogo local después de leer el pie.
-   * Si el OCR no lo puede confirmar, la señal no vota.
-   */
-  setCode?: string;
-  limit?: number;
-}
-
-/**
- * Qué señales votaron en el ranking de `identify`, y si coincidieron.
- *
- * `null` = la señal no se pudo leer y por lo tanto no votó (ni a favor ni en
- * contra). `false` = se leyó y no coincidió. La diferencia es la que permite
- * distinguir "el ranking se equivocó" de "el OCR no leyó nada de esto".
- */
-export interface CandidateSignalsDto {
-  numberHint: boolean | null;
-  setName: boolean | null;
-  setCode: boolean | null;
-  printedNumber: boolean | null;
-  hp: boolean | null;
-  artist: boolean | null;
-  rarity: boolean | null;
-}
-
-export interface IdentifiedCandidateDto {
+/** Carta visual seleccionada y sus precios; modelo de sesión del navegador. */
+export interface RecognizedCard {
   card: CardDto;
-  score: number; // 0..1, saturado
-  /**
-   * El score sin saturar. `score` llega topado en 1 y varios candidatos
-   * legítimos empatan ahí, así que el margen real solo se ve acá.
-   */
+  score: number;
   rawScore: number;
-  signals: CandidateSignalsDto;
   price: PriceDto | null;
   prices?: PriceDto[];
-  matchedText?: string | null;
-}
-
-export interface ScannerConfigDto {
-  setCodes: string[];
-  setNames: string[];
-}
-
-export interface IdentifyResponseDto {
-  candidates: IdentifiedCandidateDto[];
-  extracted: {
-    name: string | null;
-    number: string | null;
-    setHint?: string | null;
-  };
-  totalCandidates: number;
-  status?: 'confident' | 'ambiguous' | 'low';
-  timings?: { matchMs: number; totalMs: number };
 }
 
 // ─── Compartir ───
@@ -449,4 +394,34 @@ export interface SetCardsResponseDto {
   set: SetDto;
   cards: CardDto[];
   total: number;
+}
+
+export interface VisualIdentifyRequestDto {
+  image: string;
+}
+export interface VisualIdentifyResponseDto {
+  candidates: {
+    card: CardDto;
+    similarity: number;
+    retrievalRank: number;
+    geometry: VisualGeometryDto | null;
+  }[];
+  verificationMs: number;
+  verificationAvailable: boolean;
+  retrievalLimit: number;
+  references: number;
+  indexVersion: string;
+  indexStale: boolean;
+  collections: number;
+  indexMs: number;
+  cold: boolean;
+  modelMs: number;
+  inferenceMs: number;
+  totalMs: number;
+}
+export interface VisualGeometryDto {
+  matches: number;
+  inliers: number;
+  coverage: number;
+  verified: boolean;
 }

@@ -475,11 +475,7 @@ pueda confirmar que el otro usuario existe.
 - **Filtros sobre arrays y texto** para `rarity` y `supertype`: son
   igualdad case-insensitive, no substring. `?rarity=Rare` matchea `Rare` pero
   no `Rare Holo`.
-- **Trigram y `\p{L}`**: `pg_trgm` no entiende clases Unicode de regex salvo con
-  flag `u`. Por eso `identify.service.ts` usa las clases POSIX
-  `[[:alpha:]]` / `[[:alnum:]'-]` en vez de `\p{L}` (ver
-  [gotchas.md](gotchas.md#14-pg_trgm-no-soporta-pl-en-regex)).
-- **Umbral de trigram por transacción**: `search` e `identify` corren
+- **Umbral de trigram por transacción**: `search` ejecuta
   `SELECT set_config('pg_trgm.similarity_threshold', '0.2', true)` **dentro de
   una transacción** porque el `true` lo hace local a la transacción. Si lo
   sacás de ahí, el threshold no aplica.
@@ -489,3 +485,17 @@ pueda confirmar que el otro usuario existe.
 - [api.md](api.md) — los DTOs y las formas de respuesta
 - [pricing.md](pricing.md) — las dos capas de caché y la regla de 24 h
 - [gotchas.md](gotchas.md) — las trampas de Prisma que ya costaron tiempo
+
+## URLs corregidas en el catálogo (3 de octubre de 2026)
+
+Las 13 referencias alternativas de HGSS18 y McDonald’s 2014 ya están en cards.imageSmall/imageLarge. El indexador lee esas columnas sin sustituciones locales; la allowlist conserva las excepciones de URL exacta por ID. La fuente de correcciones es backend/src/catalog/card-image-overrides.json, aplicada por SyncCardsService usando el ID canónico para protegerlas en futuras sincronizaciones. rawJson sigue preservando la respuesta original del proveedor.
+
+Para otra instalación: pnpm run db:fix-images muestra el plan; --apply actualiza ambas columnas en una transacción y guarda respaldo previo en backend/.scanner-index/db-image-urls-before-TIMESTAMP.json. No toca precios ni otras cartas. Next permite static.tcgcollector.com/content/images/** para servir esas referencias. Es necesario reiniciar Next si ya estaba corriendo con la configuración anterior. La calidad es de 320 píxeles de ancho, no alta resolución.
+
+### McDonald’s Collection 2015
+
+Se agregaron las 12 URLs de mcd15 (25 correcciones totales con las anteriores) desde https://www.tcgcollector.com/sets/1194/mcdonalds-collection-2015. Se comprobaron respuestas HTTP 200 y los frentes con nombres/números del set. db:fix-images --apply actualiza sólo las columnas imageSmall/imageLarge; no ejecuta indexación. El script indexador lee PostgreSQL y la allowlist acepta sólo la URL exacta asociada a cada carta corregida.
+
+### McDonald’s Collection 2017
+
+Se corrigieron ambas URLs de mcd17-1 a mcd17-12 desde https://www.tcgcollector.com/sets/11121/mcdonalds-collection-2017. Se verificaron respuestas HTTP 200, nombres, frentes y numeración 1/12–12/12. Hay 37 correcciones totales. Sólo se actualizan las URLs en PostgreSQL y su protección en sync; no se ejecuta indexación.

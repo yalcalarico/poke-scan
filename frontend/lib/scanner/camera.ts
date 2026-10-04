@@ -207,7 +207,7 @@ export function frameMargin(containerWidth: number, containerHeight: number): nu
  *
  * Se calcula en JS y no con CSS (`h-[68%] max-h-[520px]`) porque el tope fijo
  * en px recortaba el marco en monitores: el usuario tenía que alejar la carta
- * tanto que perdía nitidez y el OCR no la leía.
+ * tanto que perdía nitidez y el reconocimiento visual no la leía.
  */
 export function fitCardFrame(
   containerWidth: number,
@@ -217,8 +217,11 @@ export function fitCardFrame(
 ): BoxRect | null {
   if (containerWidth <= 0 || containerHeight <= 0) return null;
 
-  const availableWidth = containerWidth - margin * 2;
-  const availableHeight = containerHeight - margin * 2;
+  // En el celular dejamos espacio para encuadrar sin acercar la lente hasta
+  // perder foco. La misma geometría se usa al capturar, no sólo en la guía.
+  const mobileScale = Math.min(containerWidth, containerHeight) <= 600 ? 0.72 : 1;
+  const availableWidth = (containerWidth - margin * 2) * mobileScale;
+  const availableHeight = (containerHeight - margin * 2) * mobileScale;
   if (availableWidth <= 0 || availableHeight <= 0) return null;
 
   let height = availableHeight;
@@ -286,12 +289,12 @@ export function mapFrameToSourcePixels(
 
 /**
  * Grabs the current video frame into a JPEG, downscaled to `maxWidth` so we do
- * not feed multi-megapixel frames to the OCR worker.
+ * not feed multi-megapixel frames to the reconocimiento visual worker.
  *
  * `opts.crop` recorta a una región (en píxeles de la imagen original) antes de
  * escalar. El escáner lo usa para quedarse solo con el rectángulo de la carta:
  * el fondo de la mesa, la mesa y el resto de la habitación son ruido puro para
- * el OCR y lo único que hacen es degradar la lectura del nombre.
+ * el reconocimiento visual y lo único que hacen es degradar la lectura del nombre.
  */
 export async function captureFrame(
   video: HTMLVideoElement,

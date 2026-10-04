@@ -4,18 +4,16 @@
  * Sin librerías, a mano. Estrategias:
  *  - navegaciones      -> NetworkFirst con fallback al shell cacheado
  *  - imagenes de carta -> CacheFirst con limite de ~150 entradas
- *  - assets de OCR     -> CacheFirst (para que el escaner funcione offline)
  *  - /api/             -> NetworkFirst, nunca se cachean requests autenticadas
  *
  * Bump de VERSION para forzar el renuevo del cache en el siguiente activate.
  */
 
-const VERSION = 'v3';
+const VERSION = 'v4';
 const SHELL_CACHE = `pokescan-shell-${VERSION}`;
 const IMAGE_CACHE = `pokescan-images-${VERSION}`;
-const OCR_CACHE = `pokescan-ocr-${VERSION}`;
 const API_CACHE = `pokescan-api-${VERSION}`;
-const CURRENT_CACHES = [SHELL_CACHE, IMAGE_CACHE, OCR_CACHE, API_CACHE];
+const CURRENT_CACHES = [SHELL_CACHE, IMAGE_CACHE, API_CACHE];
 
 /** El shell minimo que hace falta para arrancar la app sin red. */
 const SHELL_ASSETS = [
@@ -35,8 +33,6 @@ const SHELL_ASSETS = [
 /** Imagenes remotas de cartas. */
 const IMAGE_HOSTS = ['images.pokemontcg.io', 'images.scrydex.com'];
 
-/** Assets de Tesseract auto-hospedados (~12MB, nunca se precachean). */
-const OCR_PREFIX = '/tesseract/';
 
 const IMAGE_CACHE_LIMIT = 150;
 
@@ -223,10 +219,6 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  if (sameOrigin && url.pathname.startsWith(OCR_PREFIX)) {
-    event.respondWith(cacheFirst(request, OCR_CACHE).catch(() => Response.error()));
-    return;
-  }
 
   if (sameOrigin && isApiRequest(url)) {
     event.respondWith(networkFirstApi(request));

@@ -8,10 +8,10 @@
 ┌──────────────────────────────────────────────────────────────┐
 │  PWA — Next.js 16 (App Router) · mobile-first                │
 │                                                              │
-│  El ESCÁNER corre entero en el CLIENTE:                      │
-│    cámara → recorte → OCR (Tesseract) → parseo → /identify  │
-│  La app funciona sin internet para escanear (Tesseract       │
-│  auto-hospedado en /public/tesseract, ~12 MB)                │
+│  El CLIENTE encuadra; la API reconoce:                      │
+│    cámara → recorte → API DINOv2 → candidato #1  │
+│  Reconocer requiere conexión y sesión autenticada.       │
+│  La API usa el modelo y el índice locales.                │
 └───────────────────────────┬──────────────────────────────────┘
                             │ HTTPS · JSON · JWT Bearer
 ┌───────────────────────────▼──────────────────────────────────┐
@@ -45,52 +45,13 @@
 
 ## El flujo de datos, paso a paso
 
-### 1. Escanear una carta (todo local hasta el último paso)
+### 1. Reconocer una carta
 
-```
-Cámara (getUserMedia)
-   │  el video se muestra con object-cover; el marco guía se calcula en JS
-   ▼
-captureFrame()  ── recorta al rectángulo del marco
-   │            ── mapea con la matemática de object-cover
-   ▼
-preprocess: 3 variantes en paralelo lógico
-   │  original · grayscale+autoContrast · adaptiveThreshold (Sauvola)
-   ▼
-Tesseract (3 pasadas, una por variante)
-   │  el worker es singleton; ~2,6 s por pasada
-   ▼
-pickBestAttempt: gana la de mayor confianza de OCR
-   │
-   ▼
-parseOcrText → líneas crudas + nameGuess/numberGuess/setHint
-   │
-   ▼  POST /api/cards/identify  { lines, name, number, setHint }
-   ▼
-IdentifyService: fuzzy-match de las líneas sucias contra 20 670 nombres
-   │  pg_trgm + penalizaciones (ver identify.service.ts)
-   ▼
-top 8 candidatos con score → el usuario confirma
-   │
-   ▼  POST /collections/:id/items
-   ▼
-addItem → encola el refresco de precio (no bloquea)
-   │
-   ▼
-cola con 2,3 s entre requests → cortesía para TCGdex (sin límite publicado)
-```
+Teléfono: cámara → sondeo local del encuadre → recorte estable. Escritorio: foto subida → detección y orientación del contorno.
 
-El límite de 30 requests/minuto corresponde a pokemontcg.io y al sync del
-catálogo; TCGdex es otro proveedor.
+Ambos envían el recorte a `POST /api/cards/identify-visual` autenticado. DINOv2 compara con el índice local, verifica detalles geométricos y devuelve el ranking. El cliente elige el #1, pide su precio y lo suma a la sesión. “Organizar” guarda en la colección elegida mediante los endpoints existentes.
 
-**Por qué el OCR va en el cliente:** mandar la imagen a un servidor propio
-exigiría upload + storage y multiplicaría la complejidad, mientras que
-Tesseract pesa ~12 MB y se puede auto-hospedar. El único dato que cruza al
-servidor son **las líneas de texto**, que pesan bytes.
-
-**Por qué el cliente no matchea contra el catálogo:** no tiene las 20 670 cartas.
-Mandar las líneas sucias y que las matchee quien sí tiene el catálogo es más
-robusto que cualquier heurística de parsing: el catálogo valida por nosotros.
+La API procesa la foto sin almacenarla. Reconocer necesita conexión, modelo e índice locales. Las actualizaciones del índice se detectan sin reiniciar el servidor. Ver [escáner](../frontend/docs/scanner.md).
 
 ### 2. Consultar el precio de una carta
 
@@ -198,5 +159,4 @@ proyecto. El resumen para el que arrive nuevo:
    frescos, tiene que pasar por el servicio de precios.
 3. **Los precios llegan por detrás.** Una carta recién agregada tarda ~2 s en
    tener precio. La UI lo maneja con skeleton.
-4. **El OCR es probabilístico.** Acierta ~7/8 cartas. Por eso la UI siempre
-   pide confirmación y ofrece búsqueda manual.
+4. **El ranking visual puede fallar con reimpresiones y reflejos.** La primera predicción se suma automáticamente; revisá la edición al organizar y usá búsqueda manual si hace falta.

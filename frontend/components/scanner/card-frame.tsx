@@ -6,6 +6,11 @@ import type { BoxRect } from '@/lib/scanner/camera';
 import type { FrameTone } from './types';
 
 const TONE_CLASSES: Record<FrameTone, { ring: string; glow: string; bracket: string }> = {
+  searching: {
+    ring: 'ring-negative',
+    glow: '',
+    bracket: 'text-negative',
+  },
   // Sin lectura todavía no hay color: solo la guía. Un verde antes de saber
   // qué se leyó sería mentir sobre la confianza.
   idle: {

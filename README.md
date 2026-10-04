@@ -31,6 +31,13 @@ pnpm run dev      # levanta API + web juntos, Ctrl+C baja ambos
 
 Node 22 · pnpm 10 · Docker Desktop. Nada más.
 
+### Probar en el celu por Wi-Fi
+
+Corré `pnpm run lan:cert` e instalá la CA local en el celu siguiendo
+[la guía de red local](docs/local-network.md). Después, `pnpm run dev:lan` levanta
+HTTPS y muestra la dirección que tenés que abrir. Incluye el acceso a la API y
+permite probar la cámara sin Cloudflare ni publicar la app.
+
 ---
 
 ## Estructura
@@ -58,13 +65,13 @@ otro lado.**
 
 | Pantalla | Qué resuelve |
 |---|---|
-| **Escanear** | Apunta la cámara → OCR en el dispositivo → identifica la carta en el catálogo y te muestra el precio. Sin internet. |
+| **Escanear** | Cámara automática en teléfonos o foto subida → DINOv2 en la API → primera predicción y precio en la sesión. Requiere conexión y cuenta. |
 | **Buscar** | Catálogo completo de 20.670 cartas con búsqueda difusa (tolerante a typos), búsqueda por nombre, número o artista, filtros por set y rareza, y orden por nombre, precio, rareza o número. |
 | **Colecciones** | Nombres y duplicados, valor total, portada con tus cartas, progreso por set y binder, qué marcar para intercambio. |
 | **Comparte** | Link público de solo lectura, o el sistema de amigos. |
 | **Perfil** | Moneda (USD/ARS), enlaces compartidos, cuenta. |
 
-App instalable (PWA): se agrega a la pantalla de inicio y funciona offline.
+App instalable (PWA): se agrega a la pantalla de inicio. Algunos datos visitados quedan en caché; reconocer cartas y sincronizar requiere conexión.
 
 ---
 
@@ -87,9 +94,9 @@ convenciones de código.
 ## Estado
 
 - ✅ 20.670 cartas · 176 sets sincronizados
-- ✅ 320 tests backend · 359 frontend (2 skipped, 1 todo)
+- ✅ Verificación integral con `pnpm run check` (backend y frontend)
 - ✅ Autenticación con rotación de tokens y detección de reuso
-- ✅ Escáner por cámara con OCR (acierta ~7/8 cartas, la UI siempre confirma)
+- ✅ Reconocimiento DINOv2 con verificación geométrica, cámara automática móvil y selección del candidato #1
 - ✅ Precios USD y ARS con caché de 2 capas
 - ✅ Identidad/procedencia de proveedores, cola de precios persistente y ritmo global
 - ✅ Backfill horario de precios del proveedor activo
@@ -103,10 +110,7 @@ convenciones de código.
 - **La API de cartas está deprecada.** pokemontcg.io no da keys nuevas y las
   existentes mueren el 1/3/2027. Hay una capa de abstracción lista para migrar a
   Scrydex. Ver [`docs/data-sources.md`](docs/data-sources.md).
-- **El OCR no es perfecto.** ~7/8 cartas. Por eso siempre hay confirmación
-  manual y búsqueda a mano.
-- **El OCR necesita ~12 MB** en el primer uso (ya auto-hospedados, cacheados
-  por el service worker).
+- **DINOv2 puede confundir reimpresiones o acabados.** Revisá la edición al organizar la sesión; también hay búsqueda manual. Requiere modelo e índice locales en la API y una sesión autenticada.
 - **Las claves de pokemontcg.io mueren el 1/3/2027.** El sync semanal es
   configurable; Scrydex sigue pendiente de decisión de producto y costo.
 - **Redis no se reconecta solo** si falla después de agotar los reintentos. El

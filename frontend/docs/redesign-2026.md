@@ -1,3 +1,5 @@
+> Actualización del escáner (2026-10-03): los pasajes sobre el motor anterior, sus candidatos y caché corresponden al diseño histórico. El flujo vigente es DINOv2 con selección automática del #1; ver [scanner.md](scanner.md).
+
 # Plan de rediseño UI/UX 2026
 
 > Rediseño visual y de navegación del frontend para llevar la app al look de las

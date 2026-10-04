@@ -1,3 +1,5 @@
+> Nota de vigencia (2026-10-03): este documento conserva evidencia histórica. La lectura de texto y el comparador fueron retirados; el flujo actual usa únicamente DINOv2. Consultá [scanner.md](../../frontend/docs/scanner.md).
+
 # Plan Frontend: Producto, UX e Integración
 
 > Plan de trabajo del frontend. Todo lo que está en **Fase 0–5** está hecho o en

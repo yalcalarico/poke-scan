@@ -38,7 +38,6 @@ otro lado en el mismo commit.
 | NestJS | 12.1.0 | ESM + TypeScript 6 |
 | Prisma | 6.19.3 | **No subir a 7**: Prisma 7 eliminó `url` del datasource |
 | Tailwind | 4.x | Config por CSS, sin `tailwind.config.js` |
-| tesseract.js | 7.0.0 | **Solo cliente**, nunca en el server |
 
 ---
 
@@ -102,12 +101,12 @@ Si corrés `prisma migrate dev` y Prisma detecta los índices GIN como objetos
 desconocidos, **te los va a dropear** y la búsqueda difusa pasa a un seq scan
 sobre 20k cartas. Si pasa, restaurarlos antes de seguir.
 
-### 3.6 Tesseract solo en el cliente
+### 3.6 Reconocimiento visual DINOv2
 
-`tesseract.js` **nunca** debe entrar en el grafo del server. `pnpm run build`
-falla si un Server Component lo importa. Todo lo que lo use va en un módulo
-importado dinámicamente (`await import('tesseract.js')`) dentro de una función,
-o en un archivo `'use client'`.
+DINOv2 es el único método de reconocimiento. La cámara y el recorte viven en
+el cliente; la API autenticada recibe el recorte y ejecuta el modelo local con
+el índice vectorial. No volver a introducir lectura de texto ni un endpoint
+público alternativo. No guardar las fotos de consulta. Ver `frontend/docs/scanner.md`.
 
 ---
 

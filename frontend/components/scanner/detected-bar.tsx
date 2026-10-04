@@ -3,7 +3,7 @@
 import { useCurrency } from '@/hooks/use-currency';
 import { cn } from '@/lib/cn';
 import { formatCardNumber } from '@/lib/format';
-import type { IdentifiedCandidateDto, PriceDto } from '@/types/api';
+import type { RecognizedCard, PriceDto } from '@/types/api';
 
 import { CardThumb } from './card-thumb';
 
@@ -17,7 +17,7 @@ function isUsable(price: PriceDto | null | undefined): price is UsablePrice {
 }
 
 /** `price` es UNA fila elegida por el backend; el resumen de la barra usa la misma. */
-export function referencePrice(candidate: IdentifiedCandidateDto): number | null {
+export function referencePrice(candidate: RecognizedCard): number | null {
   const best = (candidate.prices ?? []).find(isUsable) ?? candidate.price;
   if (!isUsable(best)) return null;
   return best.market ?? best.mid ?? best.low ?? best.high;
@@ -36,7 +36,7 @@ const PRICE_FIELDS = [
 ] as const satisfies readonly { key: keyof PriceDto; label: string }[];
 
 export interface CandidatePriceTableProps {
-  candidate: IdentifiedCandidateDto;
+  candidate: RecognizedCard;
   className?: string;
 }
 
@@ -92,7 +92,7 @@ export function CandidatePriceTable({ candidate, className }: CandidatePriceTabl
 }
 
 export interface DetectedCardBarProps {
-  candidate: IdentifiedCandidateDto;
+  candidate: RecognizedCard;
   className?: string;
 }
 
@@ -102,7 +102,7 @@ export interface DetectedCardBarProps {
  *
  * Antes esto era una card modal que cubría la pantalla. Ahora es **inline y no
  * bloqueante**, y esa es la diferencia que importa. La cámara sigue viva
- * mientras el OCR corre y mientras el usuario mira el resultado, así que la
+ * mientras el reconocimiento visual corre y mientras el usuario mira el resultado, así que la
  * foto que está encuadrando nunca desaparece de la pantalla.
  */
 export function DetectedCardBar({ candidate, className }: DetectedCardBarProps) {

@@ -1,179 +1,44 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
-
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { ScreenContainer } from '@/components/layout/screen-container';
 import { ScreenHeader } from '@/components/layout/screen-header';
-import {
-  CameraView,
-  IdlePanel,
-  MAX_SESSION_ENTRIES,
-  OrganizeSheet,
-  PHASE_DETAIL,
-  PHASE_HEADLINE,
-  ScanResults,
-  ScanPreview,
-  appendSessionEntry,
-  cameraNoticeCopy,
-  captureToImageData,
-  clearSession,
-  fileToImageData,
-  formatCount,
-  isGalleryImageInput,
-  isCameraStage,
-  readSession,
-  writeSession,
-  type CameraNoticeKind,
-  type CaptureSource,
-  type GalleryImageInput,
-  type ScanPhase,
-  type ScanStage,
-  type SessionEntry,
-} from '@/components/scanner';
-import { Alert, Button, Progress, Surface, useToast } from '@/components/ui';
-import { ApiError } from '@/lib/api/api-client';
-import { getCard } from '@/lib/api/cards';
-import { IDENTIFY_LIMIT, identifyCard } from '@/lib/api/identify';
-import {
-  DEFAULT_CAPTURE_WIDTH,
-  isCameraSupported,
-  isSecureContextForCamera,
-} from '@/lib/scanner/camera';
-import { useAuth } from '@/hooks/use-auth';
-import { clearRememberedCards, findRememberedCard, rememberCard } from '@/lib/scanner/memory';
-import { assessCandidates } from '@/lib/scanner/assessment';
-import { createScannerConfigLoader } from '@/lib/scanner/config';
-import { createOcrWorker, OcrUnavailableError } from '@/lib/scanner/ocr';
-import type { ImageInput } from '@/lib/scanner/preprocess';
-import { PROGRESSIVE_PASS_COUNT, scanCardImage } from '@/lib/scanner/pipeline';
-import type { CameraError, ParsedScan, ScannedCapture } from '@/lib/scanner/types';
-import type { IdentifiedCandidateDto, IdentifyResponseDto } from '@/types/api';
+import { CameraView, IdlePanel, MAX_SESSION_ENTRIES, OrganizeSheet, PHASE_DETAIL, PHASE_HEADLINE,
+  ScanPreview, DetectedCardBar, appendSessionEntry, cameraNoticeCopy, clearSession, formatCount,
+  isCameraStage, readSession, writeSession, type CameraNoticeKind, type CaptureSource,
+  type ScanPhase, type ScanStage, type SessionEntry } from '@/components/scanner';
+import { Alert, Button, Surface, useToast } from '@/components/ui';
+import { isCameraSupported, isSecureContextForCamera } from '@/lib/scanner/camera';
+import { useMobileCamera } from '@/hooks/use-mobile-camera';
+import { recognizeCameraCard } from '@/lib/scanner/camera-visual';
+import { prepareVisualPhoto } from '@/lib/scanner/visual-photo';
+import { VisualDiagnostics } from '@/components/scanner/visual-diagnostics';
+import type { CameraError, ScannedCapture } from '@/lib/scanner/types';
+import type { VisualIdentifyResponseDto } from '@/types/api';
 
-/**
- * ─── La máquina de estados ───
- *
- * ```
- * idle ──"Escanear carta"──> camera ──obturador──> processing ──identify──> results
- *   ▲                          ▲                        │                    │
- *   │ "cerrar" / error cámara  │                        │ error              │ "Seguir escaneando"
- *   │                          ▼                        ▼                    ▼
- *   └──────────────────────  idle  <────────────────  error                camera
- *                                                                            │
- *                                            "Organizar (N)" ──> organizing ┘
- * ```
- *
- * `camera` y `processing` son el mismo lugar físico: **la cámara sigue viva
- * mientras corre el OCR** y lo único que cambia es que el obturador se apaga.
- * `results` y `organizing` son los dos `Sheet`, y en ninguno hay cámara montada
- * (por qué, en el JSDoc de `CameraView`).
- *
- * ─── El rate limit no aparece en este archivo ───
- *
- * `identifyCard` consulta el catálogo local: una búsqueda temprana y, si
- * falta evidencia, otra al terminar el OCR. Nunca se consulta por frame. El chip de precio flotante no pide
- * nada: lee la fila `price` de la respuesta que ya llegó. El tope de 2,5 s
- * entre requests automáticos es la única defensa extra, y vive acá porque acá
- * es donde se distingue una captura del usuario de una de la máquina.
- */
-
-/** Freno de seguridad: si el OCR se cuelga, la app no se queda trabada. */
-const SCAN_TIMEOUT_MS = 90_000;
-const IDENTIFY_TIMEOUT_MS = 30_000;
-const PROGRESSIVE_SCANNER = process.env.NEXT_PUBLIC_SCANNER_PROGRESSIVE === '1';
-
-/**
- * Tope local entre requests a `/cards/identify` disparados **solos**
- * (`docs/redesign-2026.md` §7 punto 4). El obturador manual no lo espera: si el
- * usuario apretó, esperar es decisión de él.
- */
 const AUTO_IDENTIFY_INTERVAL_MS = 2500;
-
-function withTimeout<T>(promise: Promise<T>, ms: number, message: string): Promise<T> {
-  return new Promise<T>((resolve, reject) => {
-    const timer = setTimeout(() => reject(new Error(message)), ms);
-    promise.then(
-      (value) => {
-        clearTimeout(timer);
-        resolve(value);
-      },
-      (err: unknown) => {
-        clearTimeout(timer);
-        reject(err instanceof Error ? err : new Error(String(err)));
-      },
-    );
-  });
-}
-
-function ocrPhaseFor(status: string): ScanPhase {
-  return status === 'recognizing text' ? 'recognizing' : 'ocr-boot';
-}
-
-interface BrowserEnv {
-  supported: boolean;
-  secure: boolean;
-}
-
-/**
- * La capacidad de la cámara solo existe en el navegador. `useSyncExternalStore`
- * con server snapshot `null` da el valor real después de hidratar sin provocar
- * un hydration mismatch.
- */
+interface BrowserEnv { supported: boolean; secure: boolean }
 let cachedEnv: BrowserEnv | null = null;
-
 function getBrowserEnv(): BrowserEnv {
-  cachedEnv ??= {
-    supported: isCameraSupported(),
-    secure: isSecureContextForCamera(),
-  };
+  cachedEnv ??= { supported: isCameraSupported(), secure: isSecureContextForCamera() };
   return cachedEnv;
 }
-
-function subscribeToEnv(): () => void {
-  return () => {};
-}
-
-interface Notice {
-  kind: CameraNoticeKind;
-  detail: string | null;
-}
+function subscribeToEnv(): () => void { return () => {}; }
+interface Notice { kind: CameraNoticeKind; detail: string | null }
 
 export default function ScanPage() {
   const router = useRouter();
   const toast = useToast();
-  const { user } = useAuth();
-  const memoryScope = user?.id ?? 'guest';
-  const lastParsedRef = useRef<ParsedScan | null>(null);
-
-  const [stage, setStage] = useState<ScanStage>('idle');
+  const mobileCamera = useMobileCamera();
   const env = useSyncExternalStore(subscribeToEnv, getBrowserEnv, () => null);
+  const [stage, setStage] = useState<ScanStage>('idle');
   const [cameraNotice, setCameraNotice] = useState<Notice | null>(null);
-  const [errorTitle, setErrorTitle] = useState('No pudimos leer la carta');
+  const errorTitle = 'No pudimos reconocer la carta';
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
   const [phase, setPhase] = useState<ScanPhase>('preparing');
-  const [stepProgress, setStepProgress] = useState(0);
-  const [attemptsDone, setAttemptsDone] = useState(0);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [result, setResult] = useState<IdentifyResponseDto | null>(null);
-  const [nameGuess, setNameGuess] = useState<string | null>(null);
-  const [printedNumberGuess, setPrintedNumberGuess] = useState<string | null>(null);
-  /**
-   * La sesión de escaneo.
-   *
-   * Empieza con lo que haya en `sessionStorage` **leído en un efecto**, no en el
-   * `useState` inicial: `sessionStorage` no existe en el server, así que leerlo en
-   * el inicializador daría una hydration mismatch (el HTML del server no tendría
-   * las 7 cartas y el primer render del cliente sí) —y con `React 19` eso es un
-   * error, no un warning.
-   *
-   * El efecto que la restaura corre en una microtask por el patrón de
-   * `docs/gotchas.md` §9: un `setState` sincrónico en el cuerpo del efecto es un
-   * render en cascada, y con el doble montaje de `StrictMode` el `writeSession`
-   * del efecto de guardado se dispararía **antes** de que la restauración
-   * termine y pisaría lo guardado con el array vacío. Esa es la razón concreta de
-   * que los dos efectos estén ordenados así.
-   */
+  const [visualResult, setVisualResult] = useState<VisualIdentifyResponseDto | null>(null);
   const [session, setSession] = useState<SessionEntry[]>([]);
   /**
    * `true` cuando el primer render ya leyó el storage. Antes de eso el guardado
@@ -218,287 +83,83 @@ export default function ScanPage() {
     writeSession(session);
   }, [isSessionRestored, session]);
 
-  /**
-   * De dónde salió la lectura en curso. `processing` es un estado compartido
-   * por la cámara y por la galería, y sin esto un "subir una foto" desde la
-   * pantalla de reposo abriría la cámara para procesar una foto que ya está en
-   * memoria.
-   */
-  const [captureMode, setCaptureMode] = useState<'camera' | 'gallery'>('camera');
-  /** A dónde volver al cerrar `Organizar (N)`: la cámara o la pantalla. */
-  const [organizeReturn, setOrganizeReturn] = useState<'camera' | 'idle'>('idle');
 
+  const [captureMode, setCaptureMode] = useState<'camera' | 'gallery'>('camera');
+  const [organizeReturn, setOrganizeReturn] = useState<'camera' | 'idle'>('idle');
   const fileInputRef = useRef<HTMLInputElement>(null);
-  /**
-   * Contador de corrida: distingue "esta es la lectura vigente" de "esta la
-   * canceló otra". Es lo que impide que la respuesta de una foto lenta pise el
-   * estado de la siguiente (docs/gotchas.md #9).
-   */
   const abortRef = useRef<AbortController | null>(null);
-  const loadConfig = useMemo(() => createScannerConfigLoader(true), []);
-  const [passLabel, setPassLabel] = useState('');
   const objectUrlRef = useRef<string | null>(null);
   const lastAutoIdentifyRef = useRef(0);
+  useEffect(() => () => {
+    abortRef.current?.abort();
+    runIdRef.current += 1;
+    if (objectUrlRef.current) URL.revokeObjectURL(objectUrlRef.current);
+  }, []);
+  const cameraAvailable = mobileCamera && !!env?.supported && !!env?.secure;
+  const detected = session.at(-1) ?? null;
+  const showCamera = mobileCamera && isCameraStage(stage) && captureMode === 'camera';
+  const goManualSearch = useCallback(() => router.push('/buscar'), [router]);
 
-  useEffect(() => {
-    return () => {
-      abortRef.current?.abort();
-      runIdRef.current += 1;
-      if (objectUrlRef.current) URL.revokeObjectURL(objectUrlRef.current);
-    };
+  // La cámara ya entrega el recorte del marco. Solo la galería detecta y orienta.
+  const runRecognition = useCallback(async (load: () => Promise<string>, from: 'camera' | 'gallery') => {
+    const runId = ++runIdRef.current;
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+    setCaptureMode(from);
+    setStage('processing');
+    setPhase('preparing');
+    setErrorMessage(null);
+    setVisualResult(null);
+    try {
+      const image = await load();
+      controller.signal.throwIfAborted();
+      setPhase('searching');
+      const candidate = await recognizeCameraCard(image,
+        AbortSignal.any([controller.signal, AbortSignal.timeout(35_000)]),
+        (result) => { if (runIdRef.current === runId) setVisualResult(result); });
+      if (runIdRef.current !== runId || controller.signal.aborted) return;
+      if (!candidate) throw new Error('No encontramos una carta. Probá sin reflejos y con la carta llenando el marco.');
+      setSession((current) => appendSessionEntry(current, { runId, candidate }));
+      setStage(from === 'camera' ? 'camera' : 'idle');
+    } catch (error) {
+      if (runIdRef.current !== runId || controller.signal.aborted) return;
+      setErrorMessage(error instanceof Error ? error.message : 'No pudimos reconocer la carta. Volvé a intentar.');
+      setStage(from === 'camera' ? 'camera' : 'error');
+    }
   }, []);
 
-  const cameraAvailable = env ? env.supported && env.secure : true;
-  const detected = session.length > 0 ? session[session.length - 1] : null;
-  /** La cámara solo se monta si la lectura viene de ella. */
-  const showCamera = isCameraStage(stage) && captureMode === 'camera';
-  /** Destino de "volver" desde los sheets. */
-  const backTo = cameraAvailable && captureMode === 'camera' ? 'camera' : 'idle';
+  const handleCapture = useCallback((capture: ScannedCapture, source: CaptureSource) => {
+    const now = Date.now();
+    if (source === 'auto' && now - lastAutoIdentifyRef.current < AUTO_IDENTIFY_INTERVAL_MS) return;
+    lastAutoIdentifyRef.current = now;
+    setPreviewUrl(capture.dataUrl ?? null);
+    void runRecognition(async () => {
+      if (!capture.dataUrl) throw new Error('No pudimos preparar la captura.');
+      return capture.dataUrl;
+    }, 'camera');
+  }, [runRecognition]);
 
-  const sessionCardIds = useMemo(
-    () => new Set(session.map((entry) => entry.candidate.card.id)),
-    [session],
-  );
-
-  const goManualSearch = useCallback(
-    (name?: string | null) => {
-      const query = (name ?? '').trim();
-      router.push(`/buscar${query ? `?q=${encodeURIComponent(query)}` : ''}`);
-    },
-    [router],
-  );
-
-  const runIdentify = useCallback(async (parsed: ParsedScan, runId: number, cached?: IdentifyResponseDto) => {
-    setPhase('searching');
-    try {
-      const data = cached ?? await withTimeout(
-        identifyCard({
-          lines: parsed.lines.slice(0, 60),
-          name: parsed.nameGuess ?? undefined,
-          number: parsed.numberGuess ?? undefined,
-          setHint: parsed.setHint ?? undefined,
-          setCode: parsed.setCode ?? undefined,
-          limit: IDENTIFY_LIMIT,
-        }, abortRef.current?.signal),
-        IDENTIFY_TIMEOUT_MS,
-        'La búsqueda tardó demasiado. Probá de nuevo o buscá a mano.',
-      );
-      if (runIdRef.current !== runId) return;
-
-      lastParsedRef.current = parsed;
-      const rememberedId = findRememberedCard(memoryScope, parsed);
-      if (rememberedId) {
-        try {
-          const card = await getCard(rememberedId);
-          if (runIdRef.current !== runId) return;
-          const remembered: IdentifiedCandidateDto = { card, score: 0, rawScore: 0, price: null,
-            signals: { numberHint: null, setName: null, setCode: null, printedNumber: null, hp: null, artist: null, rarity: null },
-            matchedText: 'Corrección recordada en este dispositivo. Confirmá la edición.' };
-          data.candidates = [remembered, ...data.candidates.filter((candidate) => candidate.card.id !== card.id)];
-          data.status = 'ambiguous';
-          data.totalCandidates = Math.max(data.totalCandidates, data.candidates.length);
-        } catch { /* Una referencia eliminada no impide consultar el catálogo. */ }
-      }
-      setResult(data);
-      setPhase('preparing');
-
-      const best = data.candidates?.[0] ?? null;
-      if (!best) {
-        // Sin candidatas no hay nada que organizar: el `Sheet` lo cuenta con el
-        // criterio repetido, que es el estado vacío de §10.2.
-        setStage('results');
-        return;
-      }
-
-      // Una entrada por captura. Si el usuario elige otro candidato después,
-      // esta misma entrada se reemplaza en vez de sumar una nueva.
-      //
-      // El recorte al tope va adentro del setter (`appendSessionEntry`) y no
-      // después: el estado en memoria tiene que respetar el mismo máximo que lo
-      // que se persiste, o la UI anunciaría 30 cartas y mostraría 47 hasta que
-      // el usuario recargara la página.
-      if ((data.status ?? assessCandidates(data.candidates)) === 'confident') {
-        setSession((current) => appendSessionEntry(current, { runId, candidate: best }));
-      }
-      setStage('results');
-    } catch (err) {
-      if (runIdRef.current !== runId) return;
-      abortRef.current?.abort();
-      setPhase('preparing');
-      setErrorTitle('Falló la búsqueda');
-      setErrorMessage(
-        err instanceof ApiError
-          ? `No pudimos consultar el catálogo: ${err.message}`
-          : err instanceof Error
-            ? err.message
-            : 'No pudimos consultar el catálogo.',
-      );
-      setStage('error');
-    }
-  }, [memoryScope]);
-
-  const runScan = useCallback(
-    async (load: () => Promise<ImageInput | GalleryImageInput>) => {
-      const runId = runIdRef.current + 1;
-      runIdRef.current = runId;
-      abortRef.current?.abort();
-      const controller = new AbortController();
-      abortRef.current = controller;
-
-      setStage('processing');
-      setPhase('preparing');
-      setStepProgress(0);
-      setAttemptsDone(0);
-      setErrorMessage(null);
-      setResult(null);
-      setNameGuess(null);
-      setPrintedNumberGuess(null);
-      setPassLabel('');
-      lastParsedRef.current = null;
-
-      let loaded: ImageInput | GalleryImageInput;
-      try {
-        loaded = await load();
-      } catch (err) {
-        setErrorTitle('No pudimos abrir la foto');
-        setErrorMessage(
-          err instanceof Error ? err.message : 'No pudimos abrir la imagen de la carta.',
-        );
-        setStage('error');
-        return;
-      }
-
-      let source: ImageInput;
-      let highResolutionSource: ImageBitmap | undefined;
-      if (isGalleryImageInput(loaded)) {
-        source = loaded.imageData;
-        highResolutionSource = loaded.highResolutionSource;
-      } else {
-        source = loaded;
-      }
-      if (runIdRef.current !== runId) {
-        highResolutionSource?.close();
-        return;
-      }
-
-      try {
-        const config = await withTimeout(loadConfig(), 5000, 'El catálogo tardó demasiado.').catch(() => ({ setCodes: [], setNames: [] }));
-        controller.signal.throwIfAborted();
-        let earlyResult: IdentifyResponseDto | undefined;
-        const scanned = await withTimeout(
-          scanCardImage(source, {
-            captureRun: `run-${runId}`,
-            progressive: PROGRESSIVE_SCANNER,
-            highResolutionSource,
-            signal: controller.signal,
-            setCodes: config.setCodes,
-            setNames: config.setNames,
-            onPass: (label) => { if (runIdRef.current === runId) setPassLabel(label); },
-            onCheckpoint: async (parsed) => {
-              if (!parsed.numberGuess || (!parsed.setCode && !parsed.lines.some((line) => /\d\s*\/\s*\d{2,3}/.test(line)))) return false;
-              const data = await withTimeout(identifyCard({
-                lines: parsed.lines.slice(0, 60),
-                name: parsed.nameGuess ?? undefined,
-                number: parsed.numberGuess ?? undefined,
-                setHint: parsed.setHint ?? undefined,
-                setCode: parsed.setCode ?? undefined,
-                limit: IDENTIFY_LIMIT,
-              }, controller.signal), IDENTIFY_TIMEOUT_MS, 'La búsqueda tardó demasiado.');
-              if ((data.status ?? assessCandidates(data.candidates)) !== 'confident') return false;
-              earlyResult = data;
-              return true;
-            },
-            logger: (status, progress) => {
-              if (runIdRef.current !== runId) return;
-              setPhase(ocrPhaseFor(status));
-              if (status === 'recognizing text') setStepProgress(progress);
-            },
-            onAttempt: () => {
-              if (runIdRef.current !== runId) return;
-              setAttemptsDone((done) => done + 1);
-            },
-          }),
-          SCAN_TIMEOUT_MS,
-          'El OCR tardó demasiado. Probá con una foto más nítida o con más luz.',
-        );
-        if (runIdRef.current !== runId) return;
-
-        if (!scanned || scanned.lines.length === 0) {
-          setErrorTitle('No pudimos leer la carta');
-          setErrorMessage(
-            'No pudimos leer texto en la foto. Probá con más luz, sin reflejos y con la carta llenando el marco.',
-          );
-          setStage('error');
-          return;
-        }
-
-        setNameGuess(scanned.parsed.nameGuess ?? null);
-        setPrintedNumberGuess(scanned.parsed.printedNumberGuess ?? scanned.parsed.numberGuess ?? null);
-        await runIdentify(scanned.parsed, runId, earlyResult);
-      } catch (err) {
-        controller.abort();
-        if (runIdRef.current !== runId) return;
-        setPhase('preparing');
-        if (err instanceof OcrUnavailableError) {
-          setErrorTitle('No pudimos iniciar el motor de lectura');
-          setErrorMessage(cameraNoticeCopy('ocr-unavailable').hint);
-        } else {
-          setErrorTitle('No pudimos leer la carta');
-          setErrorMessage(
-            err instanceof Error && err.message.startsWith('El OCR tardó demasiado.')
-              ? err.message
-              : 'No pudimos procesar la foto. Volvé a intentar o buscá la carta a mano.',
-          );
-        }
-        setStage('error');
-      } finally {
-        highResolutionSource?.close();
-      }
-    },
-    [runIdentify, loadConfig],
-  );
-
-  const handleCapture = useCallback(
-    (capture: ScannedCapture, source: CaptureSource) => {
-      // El freno de 2,5 s es **solo** para el modo continuo. Una captura del
-      // usuario no espera: si apretó el obturador, hacerlo esperar se siente
-      // como que la app se lag.
-      if (source === 'auto') {
-        const now = Date.now();
-        if (now - lastAutoIdentifyRef.current < AUTO_IDENTIFY_INTERVAL_MS) return;
-        lastAutoIdentifyRef.current = now;
-      } else {
-        lastAutoIdentifyRef.current = Date.now();
-      }
-
-      setPreviewUrl(capture.dataUrl ?? null);
-      void runScan(() => captureToImageData(capture));
-    },
-    [runScan],
-  );
-
-  const handleFile = useCallback(
-    (file: File | undefined) => {
-      if (!file) return;
-      if (objectUrlRef.current) URL.revokeObjectURL(objectUrlRef.current);
-      const url = URL.createObjectURL(file);
-      objectUrlRef.current = url;
-      setPreviewUrl(url);
-      setCaptureMode('gallery');
-      void runScan(() => fileToImageData(file, DEFAULT_CAPTURE_WIDTH));
-    },
-    [runScan],
-  );
+  const handleFile = useCallback((file: File | undefined) => {
+    if (!file) return;
+    if (objectUrlRef.current) URL.revokeObjectURL(objectUrlRef.current);
+    const url = URL.createObjectURL(file);
+    objectUrlRef.current = url;
+    setPreviewUrl(url);
+    void runRecognition(async () => {
+      const photo = await prepareVisualPhoto(file);
+      try { return photo.image; }
+      finally { photo.source.highResolutionSource.close(); }
+    }, 'gallery');
+  }, [runRecognition]);
 
   const openCamera = useCallback(() => {
+    if (!cameraAvailable) return;
     setCameraNotice(null);
     setErrorMessage(null);
     setCaptureMode('camera');
     setStage('camera');
-    void createOcrWorker().catch(() => {});
-    void loadConfig();
-  }, [loadConfig]);
-
+  }, [cameraAvailable]);
   const handleCameraError = useCallback((kind: CameraError, detail?: string) => {
     setCameraNotice({ kind, detail: detail ?? null });
     setStage('idle');
@@ -533,28 +194,6 @@ export default function ScanPage() {
     setSession((current) => current.filter((entry) => entry.runId !== runId));
   }, []);
 
-  const handleChoose = useCallback(
-    (candidate: IdentifiedCandidateDto, remember = false) => {
-      if (remember && lastParsedRef.current) {
-        const saved = rememberCard(memoryScope, lastParsedRef.current, candidate.card.id);
-        if (saved) toast.info('Recordamos esta lectura en este dispositivo.');
-        else toast.info('No pudimos guardar la lectura en este dispositivo.');
-      }
-      setSession((current) => {
-        const runId = runIdRef.current;
-        if (current.some((entry) => entry.runId === runId)) {
-          return current.map((entry) => entry.runId === runId ? { runId, candidate } : entry);
-        }
-        return appendSessionEntry(current, { runId, candidate });
-      });
-      toast.success(
-        `Sumamos ${candidate.card.name} a la sesión. Tocá “Organizar la sesión” para guardarla en tu colección.`,
-      );
-      setStage(backTo);
-    },
-    [backTo, memoryScope, toast],
-  );
-
   const openOrganize = useCallback(
     (from: 'camera' | 'idle') => {
       setOrganizeReturn(from);
@@ -563,232 +202,61 @@ export default function ScanPage() {
     [],
   );
 
-  const variantLabel = passLabel;
-
-  /**
-   * El progreso representa el máximo de pasadas; una lectura corroborada
-   * termina antes y las ambiguas usan las variantes de respaldo.
-   */
-  const progress = useMemo(() => {
-    if (stage !== 'processing') return null;
-    if (phase === 'searching') return 0.97;
-    const variantFraction = PROGRESSIVE_PASS_COUNT > 0 ? attemptsDone / PROGRESSIVE_PASS_COUNT : 0;
-    const within = phase === 'recognizing' ? Math.min(1, Math.max(0, stepProgress)) : 0;
-    return Math.min(0.95, variantFraction + within / Math.max(1, PROGRESSIVE_PASS_COUNT));
-  }, [attemptsDone, phase, stage, stepProgress]);
-
-  const headline =
-    phase === 'recognizing' && variantLabel
-      ? `${PHASE_HEADLINE[phase]} · ${variantLabel}`
-      : PHASE_HEADLINE[phase];
-
+  const progress = null;
+  const headline = PHASE_HEADLINE[phase];
   const showShell = !showCamera;
-
-  return (
-    <>
-      {/*
-        El chrome del shell solo existe fuera de la cámara. `ScreenHeader` es
-        por pantalla, así que en `camera`/`processing` no se renderiza; la
-        `BottomNav` vive en el layout y la tapa `z-media` (90) sin que nadie
-        tenga que esconderla ni ella tenga que saber que el scanner existe.
-      */}
-      {showShell ? (
-        <>
-          <ScreenHeader title="Escanear" back={{ href: `/buscar`, label: 'buscar' }} />
-
-          <ScreenContainer className="flex flex-col gap-4">
-            {stage === 'idle' ? (
-              <>
-                <IdlePanel
-                  cameraAvailable={cameraAvailable}
-                  sessionCount={session.length}
-                  onScan={openCamera}
-                  onPickFromGallery={() => fileInputRef.current?.click()}
-                  onManualSearch={() => goManualSearch(nameGuess)}
-                  onOrganize={() => openOrganize('idle')}
-                />
-
-                {cameraNotice ? (
-                  <Alert
-                    tone="error"
-                    title={cameraNoticeCopy(cameraNotice.kind).title}
-                  >
-                    <p>{cameraNoticeCopy(cameraNotice.kind).hint}</p>
-                    {cameraNotice.detail ? (
-                      <details className="mt-2">
-                        <summary className="cursor-pointer text-caption">Detalle técnico</summary>
-                        <p className="mt-1 font-mono text-caption break-words">
-                          {cameraNotice.detail}
-                        </p>
-                      </details>
-                    ) : null}
-                  </Alert>
-                ) : null}
-
-                {env && !env.supported ? (
-                  <Alert tone="warning" title={cameraNoticeCopy('unsupported').title}>
-                    <p>{cameraNoticeCopy('unsupported').hint}</p>
-                  </Alert>
-                ) : null}
-
-                {env && env.supported && !env.secure ? (
-                  <Alert tone="warning" title={cameraNoticeCopy('insecure-context').title}>
-                    <p>{cameraNoticeCopy('insecure-context').hint}</p>
-                  </Alert>
-                ) : null}
-              </>
-            ) : null}
-
-            {/*
-              La lectura desde la galería no tiene cámara detrás, así que el
-              progreso va acá. Es el mismo dato que muestra la barra inline del
-              scanner, con la diferencia de que esta se parece a la forma real
-              del resultado: la foto primero, la fase después.
-            */}
-            {stage === 'processing' ? (
-              <Surface className="flex flex-col items-center gap-4 rounded-panel px-4 py-8">
-                <ScanPreview url={previewUrl} className="h-40 w-32" />
-
-                <div
-                  role="status"
-                  aria-live="polite"
-                  className="flex w-full max-w-sm flex-col gap-2"
-                >
-                  <p className="text-body-strong text-primary">{headline}</p>
-                  <Progress
-                    value={Math.round((progress ?? 0) * 100)}
-                    label="Progreso de la lectura de la carta"
-                  />
-                  <p className="text-caption text-secondary">{PHASE_DETAIL[phase]}</p>
-                </div>
-              </Surface>
-            ) : null}
-
-            {stage === 'error' ? (
-              <>
-                <Alert tone="error" title={errorTitle}>
-                  <p>{errorMessage}</p>
-                </Alert>
-
-                <div className="flex flex-col gap-2 sm:flex-row">
-                  {/*
-                    El reintento ofrece **lo mismo que falló**: si la lectura
-                    salió de la cámara, se vuelve a la cámara; si salió de un
-                    archivo, se vuelve a pedir el archivo. Ofrecer siempre la
-                    cámara sería mandarlo a una app que en ese dispositivo no
-                    puede abrirla.
-                  */}
-                  {cameraAvailable && captureMode === 'camera' ? (
-                    <Button variant="primary" size="lg" onClick={openCamera} className="flex-1">
-                      Volver a escanear
-                    </Button>
-                  ) : (
-                    <Button
-                      variant="primary"
-                      size="lg"
-                      onClick={() => fileInputRef.current?.click()}
-                      className="flex-1"
-                    >
-                      Subir una foto
-                    </Button>
-                  )}
-                  <Button
-                    variant="secondary"
-                    size="lg"
-                    onClick={() => goManualSearch(nameGuess)}
-                    className="flex-1"
-                  >
-                    Buscar a mano
-                  </Button>
-                </div>
-              </>
-            ) : null}
-
-            {stage === 'idle' && session.length > 0 ? (
-              <div className="flex flex-col gap-1">
-                {/*
-                  El texto sigue diciendo "en esta sesión" y no "guardadas",
-                  porque `sessionStorage` **no** sobrevive a cerrar el browser:
-                  sobrevive a cerrar la PWA y a un refresh, que es el caso que
-                  importa. Decir "guardadas" sería una promesa de meses.
-                */}
-                <p className="text-caption text-tertiary">
-                  {formatCount(session.length)}{' '}
-                  {session.length === 1 ? 'carta leída' : 'cartas leídas'} en esta sesión.
-                </p>
-                {session.length >= MAX_SESSION_ENTRIES ? (
-                  <p className="text-caption text-tertiary">
-                    Guardamos hasta {formatCount(MAX_SESSION_ENTRIES)} cartas. Agregá estas y
-                    seguí escaneando.
-                  </p>
-                ) : null}
-                <div>
-                  <Button variant="ghost" size="md" onClick={handleDiscardAll} fullWidth>
-                    Descartar la sesión
-                  </Button>
-                </div>
-              </div>
-            ) : null}
-          </ScreenContainer>
-        </>
-      ) : null}
-
-      {showCamera ? (
-        <CameraView
-          busy={stage === 'processing'}
-          detected={detected}
-          headline={headline}
-          detail={PHASE_DETAIL[phase]}
-          progress={progress}
-          previewUrl={previewUrl}
-          sessionCount={session.length}
-          onCapture={handleCapture}
-          onError={handleCameraError}
-          onClose={() => setStage('idle')}
-          onPickFromGallery={() => fileInputRef.current?.click()}
-          onDiscard={discardLast}
-          onOrganize={() => openOrganize('camera')}
-        />
-      ) : null}
-
-      {/*
-        Los dos `Sheet` se montan siempre y se abren por `stage`: cada uno tiene
-        su propio estado de salida de 160 ms (§5.1) y ninguno necesita que la
-        pantalla le fabricque un estado transitorio.
-      */}
-      <ScanResults
-        open={stage === 'results'}
-        data={result}
-        localNameGuess={nameGuess}
-        localNumberGuess={printedNumberGuess}
-        sessionCardIds={sessionCardIds}
-        onClose={() => setStage(backTo)}
-        onChoose={handleChoose}
-        onForget={() => { clearRememberedCards(memoryScope); toast.info('Borramos las lecturas recordadas.'); }}
-        onManualSearch={goManualSearch}
-      />
-
-      <OrganizeSheet
-        open={stage === 'organizing'}
-        entries={session}
-        onClose={() => setStage(organizeReturn)}
-        onSaved={handleSaved}
-        onRemove={handleRemove}
-      />
-
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/*"
-        capture="environment"
-        className="sr-only"
-        aria-label="Elegir una foto de la carta"
-        onChange={(event) => {
-          const file = event.target.files?.[0];
-          event.target.value = '';
-          handleFile(file);
-        }}
-      />
-    </>
-  );
+  return <>
+    {showShell ? <>
+      <ScreenHeader title="Escanear" back={{ href: '/buscar', label: 'buscar' }} />
+      <ScreenContainer className="flex flex-col gap-4">
+        {stage === 'idle' ? <>
+          <IdlePanel visualCamera showCamera={mobileCamera} cameraAvailable={cameraAvailable}
+            sessionCount={session.length} onScan={openCamera}
+            onPickFromGallery={() => fileInputRef.current?.click()}
+            onManualSearch={goManualSearch} onOrganize={() => openOrganize('idle')} />
+          {cameraNotice ? <Alert tone="error" title={cameraNoticeCopy(cameraNotice.kind).title}>
+            <p>{cameraNoticeCopy(cameraNotice.kind).hint}</p>
+            {cameraNotice.detail ? <details className="mt-2"><summary className="cursor-pointer text-caption">Detalle técnico</summary>
+              <p className="mt-1 break-words font-mono text-caption">{cameraNotice.detail}</p></details> : null}
+          </Alert> : null}
+          {mobileCamera && env && !env.supported ? <Alert tone="warning" title={cameraNoticeCopy('unsupported').title}>
+            {cameraNoticeCopy('unsupported').hint}</Alert> : null}
+          {mobileCamera && env && env.supported && !env.secure ? <Alert tone="warning" title={cameraNoticeCopy('insecure-context').title}>
+            {cameraNoticeCopy('insecure-context').hint}</Alert> : null}
+          {detected ? <DetectedCardBar candidate={detected.candidate} /> : null}
+          {visualResult ? <VisualDiagnostics result={visualResult} /> : null}
+          {session.length > 0 ? <div className="flex flex-col gap-1">
+            <p className="text-caption text-tertiary">{formatCount(session.length)} {session.length === 1 ? 'carta leída' : 'cartas leídas'} en esta sesión.</p>
+            {session.length >= MAX_SESSION_ENTRIES ? <p className="text-caption text-tertiary">Guardamos hasta {formatCount(MAX_SESSION_ENTRIES)} cartas. Agregá estas y seguí escaneando.</p> : null}
+            <Button variant="ghost" onClick={handleDiscardAll} fullWidth>Descartar la sesión</Button>
+          </div> : null}
+        </> : null}
+        {stage === 'processing' ? <Surface className="flex flex-col items-center gap-4 rounded-panel px-4 py-8">
+          <ScanPreview url={previewUrl} className="h-40 w-32" />
+          <div role="status" aria-live="polite" className="flex w-full max-w-sm flex-col gap-2">
+            <p className="text-body-strong text-primary">{headline}</p>
+            <p className="text-caption text-secondary">{PHASE_DETAIL[phase]}</p>
+          </div>
+        </Surface> : null}
+        {stage === 'error' ? <>
+          <Alert tone="error" title={errorTitle}><p>{errorMessage}</p></Alert>
+          <div className="flex flex-col gap-2 sm:flex-row">
+            {cameraAvailable && captureMode === 'camera' ? <Button size="lg" onClick={openCamera} className="flex-1">Volver a escanear</Button>
+              : <Button size="lg" onClick={() => fileInputRef.current?.click()} className="flex-1">Subir una foto</Button>}
+            <Button variant="secondary" size="lg" onClick={goManualSearch} className="flex-1">Buscar a mano</Button>
+          </div>
+        </> : null}
+      </ScreenContainer>
+    </> : null}
+    {showCamera ? <CameraView autoVisual liveResult={errorMessage} busy={stage === 'processing'} detected={detected}
+      headline={headline} detail={PHASE_DETAIL[phase]} progress={progress} previewUrl={previewUrl}
+      sessionCount={session.length} onCapture={handleCapture} onError={handleCameraError}
+      onClose={() => { abortRef.current?.abort(); runIdRef.current += 1; setStage('idle'); }}
+      onPickFromGallery={() => fileInputRef.current?.click()} onDiscard={discardLast}
+      onOrganize={() => openOrganize('camera')} /> : null}
+    <OrganizeSheet open={stage === 'organizing'} entries={session} onClose={() => setStage(organizeReturn)}
+      onSaved={handleSaved} onRemove={handleRemove} />
+    <input ref={fileInputRef} type="file" accept="image/*" className="sr-only" aria-label="Elegir una foto de la carta"
+      onChange={(event) => { const file = event.target.files?.[0]; event.target.value = ''; handleFile(file); }} />
+  </>;
 }
