@@ -103,6 +103,13 @@ try {
         DEV_TLS_CERT: tlsCert,
         DEV_API_PROXY_TARGET: `http://127.0.0.1:${apiPort}/api`,
         NEXT_PUBLIC_API_URL: '/api',
+        // El proxy conserva Origin: la protección de sesión debe admitir la URL del celu.
+        FRONTEND_URL: `https://${ip}:${webPort}`,
+        CORS_ORIGINS: [
+          `https://${ip}:${webPort}`,
+          `http://localhost:${webPort}`,
+          `http://127.0.0.1:${webPort}`,
+        ].join(','),
       },
     });
     for (const signal of ['SIGINT', 'SIGTERM']) process.on(signal, () => child.kill(signal));

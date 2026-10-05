@@ -8,6 +8,7 @@ import { RarityFilter } from './rarity-filter';
 import {
   Badge,
   Button,
+  Chip,
   IconButton,
   Input,
   SegmentedControl,
@@ -191,7 +192,7 @@ export function SearchControls({
   const activeCount =
     (setId !== '' ? 1 : 0) + (rarity !== '' ? 1 : 0) + (searchBy !== 'name' ? 1 : 0);
 
-  const setName = setId !== '' ? (sets.find((set) => set.id === setId)?.name ?? null) : null;
+  const setName = setId !== '' ? (sets.find((set) => set.id === setId)?.name ?? setId) : null;
 
   const activeSummary = [
     searchBy !== 'name' ? MODE_LABELS[searchBy] : null,
@@ -200,6 +201,10 @@ export function SearchControls({
   ]
     .filter((value): value is string => Boolean(value))
     .join(' · ');
+
+  const orderSummary = hasQuery
+    ? 'Relevancia'
+    : `${SORT_LABELS[sort]} · ${direction === 'asc' ? 'ascendente' : 'descendente'}`;
 
   return (
     <div className={cn('flex flex-col gap-3', className)}>
@@ -289,6 +294,33 @@ export function SearchControls({
         disponibles no dice nada, y una línea que reitera lo que el control
         activo ya muestra es ruido en cada carga.
       */}
+
+      <div className="flex flex-wrap items-center gap-2" aria-label="Criterios del catálogo">
+        {searchBy !== 'name' ? (
+          <Chip mode="content" size="md" icon={X} iconPosition="end"
+            aria-label={`Quitar búsqueda por ${MODE_LABELS[searchBy].toLowerCase()}`}
+            onClick={() => onSearchByChange('name')}>
+            Por {MODE_LABELS[searchBy].toLowerCase()}
+          </Chip>
+        ) : null}
+        {setId ? (
+          <Chip mode="content" size="md" icon={X} iconPosition="end"
+            className="max-w-full" aria-label={`Quitar filtro de set: ${setName}`}
+            onClick={() => onSetIdChange('')}>
+            <span className="truncate">{setName}</span>
+          </Chip>
+        ) : null}
+        {rarity ? (
+          <Chip mode="content" size="md" icon={X} iconPosition="end"
+            aria-label={`Quitar filtro de rareza: ${rarity}`} onClick={() => onRarityChange('')}>
+            {rarity}
+          </Chip>
+        ) : null}
+        <Button variant="ghost" size="md" onClick={() => setIsFiltersOpen(true)}
+          aria-haspopup="dialog" aria-label={`Cambiar orden: ${orderSummary}`}>
+          {orderSummary}
+        </Button>
+      </div>
 
       <Sheet
         open={isFiltersOpen}

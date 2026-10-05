@@ -121,10 +121,11 @@ export function DetectedCardBar({ candidate, className }: DetectedCardBarProps) 
       <CardThumb card={card} width={40} onMedia />
 
       <div className="min-w-0 flex-1">
+        <p className="text-caption text-on-media-text">Coincidencia · en la sesión</p>
         <p className="truncate text-body-strong" title={card.name}>
           {card.name}
         </p>
-        <p className="truncate text-caption text-on-media-text/70" title={setName}>
+        <p className="truncate text-caption text-on-media-text" title={setName}>
           {setName}
           <span aria-hidden="true"> · </span>
           <span className="tabular-nums">
@@ -133,9 +134,9 @@ export function DetectedCardBar({ candidate, className }: DetectedCardBarProps) 
         </p>
       </div>
 
-      <p className="shrink-0 text-body-strong text-positive tabular-nums">
+      <p className="shrink-0 text-body-strong text-on-media-text tabular-nums">
         {price === null ? (
-          <span className="text-on-media-text/60" aria-label="Sin precio">
+          <span className="text-on-media-text" aria-label="Sin precio">
             —
           </span>
         ) : (

@@ -221,16 +221,18 @@ export function CollectionsScreen() {
               {formatCount(totalCards)} {pluralize(totalCards, 'carta', 'cartas')}
             </p>
 
+            <p className="flex flex-wrap items-center justify-start gap-x-2 text-caption text-secondary">
+              Valor combinado
+              <Money usd={totalValue} tone="positive" size="md" />
+            </p>
+
             <div className={GRID}>
               {collections.map((collection) => (
                 <CollectionCard key={collection.id} collection={collection} cover={collection.cover} />
               ))}
             </div>
 
-            <p className="flex flex-wrap items-center justify-center gap-x-2 text-caption text-tertiary">
-              Valor combinado
-              <Money usd={totalValue} tone="positive" size="md" />
-            </p>
+
           </div>
         ) : null}
       </ScreenContainer>

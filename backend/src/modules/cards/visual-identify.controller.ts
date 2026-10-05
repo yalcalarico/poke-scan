@@ -85,7 +85,6 @@ export class VisualIdentifyController {
                   },
                   similarity: candidate.similarity,
                   retrievalRank: candidate.retrievalRank,
-                  geometry: candidate.geometry,
                 },
               ]
             : [];

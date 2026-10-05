@@ -49,7 +49,9 @@ export default async function HomePage() {
   const previewCards = await fetchPreviewCards();
 
   return (
-    <ScreenContainer labelledBy="home-title" className="flex flex-col gap-10 sm:gap-12">
+    <ScreenContainer labelledBy="home-title" className="flex flex-col gap-6 sm:gap-8">
+      <ScanSessionResume />
+
       <section
         aria-labelledby="home-title"
         className={cn(
@@ -59,43 +61,23 @@ export default async function HomePage() {
           previewCards.length > 0 && 'lg:grid lg:grid-cols-2 lg:items-center lg:gap-10',
         )}
       >
-        <div className="flex flex-col items-center gap-5 text-center lg:items-start lg:text-left">
+        <div className="flex flex-col items-start gap-4 text-left">
           <AppMark size={48} className="shadow-sm" />
 
-          <h1 id="home-title" className="text-display text-primary">
+          <h1 id="home-title" className="text-h1 text-primary sm:text-display">
             {HERO_TITLE}
           </h1>
 
           <p className="max-w-md text-body text-secondary">
-            Apuntá la cámara, y PokéScan identifica la carta, te dice cuánto vale y la suma a tu
-            colección.
+            Apuntá la cámara para reconocer tus cartas y consultar su valor. Quedan en la sesión;
+            elegí Organizar para guardarlas en una colección.
           </p>
 
           <HomeCta />
         </div>
 
-        {previewCards.length > 0 ? <AppPreview cards={previewCards} /> : null}
+        {previewCards.length > 0 ? <div className="hidden lg:block"><AppPreview cards={previewCards} /></div> : null}
       </section>
-
-      {/*
-        La fila de "Continuás donde quedaste", arriba de las features.
-
-        ## Por qué entre el hero y las features y no arriba del todo
-
-        El hero es la promesa de la app para alguien que **no** conocela todavía,
-        y arriba del todo es donde tiene que estar para eso. La fila es para
-        alguien que ya la usó y dejó algo a medias: es un segundo mensaje, y va
-        después de la primera impresión y antes de las features, que son lo
-        último que se lee.
-
-        ## Por qué no tiene `mt` propio
-
-        El `flex flex-col gap-10` del `ScreenContainer` ya pone 40 px entre
-        bloques, y el JSDOC de §4.1 dice que el ritmo vertical se maneja con
-        `gap-*` en el contenedor y nunca con `space-y-*` ni con `mt` en un hijo.
-        Agregar un `mt` acá pelearía con ese `gap`.
-      */}
-      <ScanSessionResume />
 
       <FeatureGrid />
 

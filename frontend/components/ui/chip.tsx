@@ -24,14 +24,9 @@ const chipVariants = cva(
         content: 'border border-transparent',
       },
       size: {
-        // 40 para el filtro (§0.5), 28 para el contenido (§8.4).
-        //
-        // El filtro subió de 36 a 40 porque es el control de la barra de filtros
-        // de búsqueda, del filtro de rareza y del selector de modo: los tres en
-        // el camino principal del pulgar, y los tres con el default `md`. Que
-        // el default sea el que se mide es lo que decide si la regla se cumple.
+        // 44 para las acciones y filtros; 28 para chips de contenido compactos.
         sm: 'h-7 px-2.5 text-caption',
-        md: 'h-10 px-3.5 text-label',
+        md: 'h-11 px-3.5 text-label',
       },
       active: {
         true: 'border-primary bg-primary text-inverse',

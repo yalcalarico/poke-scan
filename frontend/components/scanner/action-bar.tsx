@@ -140,7 +140,7 @@ export function ActionBar({
 
             <div className="flex min-w-0 flex-1 items-center justify-between gap-3">
               <p className="min-w-0 truncate text-caption">{headline}</p>
-              <p className="shrink-0 text-caption text-on-media-text/60 tabular-nums">
+              <p className="shrink-0 text-caption text-on-media-text tabular-nums">
                 {Math.round(progress * 100)}%
               </p>
             </div>
@@ -160,7 +160,7 @@ export function ActionBar({
             />
           </div>
 
-          <p className="text-caption text-on-media-text/60">{detail}</p>
+          <p className="text-caption text-on-media-text">{detail}</p>
         </div>
       ) : null}
 
@@ -202,11 +202,11 @@ export function ActionBar({
       </div>
 
       <div className="mt-3 flex items-center gap-3">
-        <p className="min-w-0 flex-1 truncate text-caption text-on-media-text/70">{status}</p>
+        <p className="min-w-0 flex-1 truncate text-caption text-on-media-text">{status}</p>
 
         <Button
           variant="inverse"
-          size="sm"
+          size="md"
           onClick={onOrganize}
           disabled={sessionCount === 0}
           className="shrink-0"

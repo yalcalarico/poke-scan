@@ -334,6 +334,7 @@ export function CatalogSearch() {
 
       <CardResults
         key={listKey}
+        returnHref={`/buscar${searchParams.toString() ? `?${searchParams.toString()}` : ''}`}
         query={urlQuery.trim()}
         searchBy={urlSearchBy}
         setId={urlSetId}
@@ -350,6 +351,7 @@ export function CatalogSearch() {
 }
 
 interface CardResultsProps {
+  returnHref: string;
   query: string;
   searchBy: SearchField;
   setId: string;
@@ -381,6 +383,7 @@ interface CardResultsProps {
  * invalide.
  */
 function CardResults({
+  returnHref,
   query,
   searchBy,
   setId,
@@ -588,7 +591,7 @@ function CardResults({
           title={query ? `Sin resultados para «${query}»` : 'Sin resultados con esos filtros'}
           description={
             query
-              ? undefined
+              ? 'Probá con otro texto o quitá los filtros para ampliar la búsqueda.'
               : 'Probá con otro set o quitá el filtro de rareza y buscá de nuevo.'
           }
           query={query || undefined}
@@ -614,7 +617,13 @@ function CardResults({
       {/* 5 · ready */}
       {itemsToRender.length > 0 ? (
         <div ref={gridRef}>
-          <CardGrid cards={itemsToRender} label="Resultados de la búsqueda" />
+          <CardGrid
+            entries={itemsToRender.map((card) => ({
+              card,
+              href: `/carta/${encodeURIComponent(card.id)}?returnTo=${encodeURIComponent(returnHref)}`,
+            }))}
+            label="Resultados de la búsqueda"
+          />
         </div>
       ) : null}
 

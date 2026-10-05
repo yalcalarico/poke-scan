@@ -47,12 +47,12 @@ export function ScreenHeader({ title, back, action, subtitle, className }: Scree
       )}
     >
       <div className="mx-auto flex h-14 w-full max-w-6xl items-center gap-2 px-4 sm:px-6">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center">
           {back ? (
             <Link
               href={back.href}
               aria-label={back.label ? `Volver a ${back.label}` : 'Volver'}
-              className="-ml-2 flex h-10 w-10 items-center justify-center rounded-full text-secondary transition-colors duration-fast hover:bg-surface-3 hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--focus-ring)]"
+              className="-ml-2 flex h-11 w-11 items-center justify-center rounded-full text-secondary transition-colors duration-fast hover:bg-surface-3 hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--focus-ring)]"
             >
               <ChevronLeft className="h-6 w-6" aria-hidden="true" />
             </Link>
@@ -66,7 +66,7 @@ export function ScreenHeader({ title, back, action, subtitle, className }: Scree
           ) : null}
         </div>
 
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center">
           {action ?? null}
         </div>
       </div>

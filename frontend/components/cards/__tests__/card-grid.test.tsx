@@ -25,6 +25,11 @@ function card(id: string, name: string): CardDto {
 const CARDS = [card('base1-4', 'Charizard'), card('base1-6', 'Alakazam')];
 
 describe('CardGrid: la variante div', () => {
+  it('conserva el destino con contexto al abrir una carta', () => {
+    const href = '/carta/base1-4?returnTo=%2Fbuscar%3Fq%3Dcharizard';
+    render(<CardGrid entries={[{ card: CARDS[0], href }]} />);
+    expect(screen.getByRole('link')).toHaveAttribute('href', href);
+  });
   /*
    * Este es el bug que ya salió una vez.
    *

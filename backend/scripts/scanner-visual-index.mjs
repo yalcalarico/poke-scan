@@ -104,18 +104,7 @@ export async function loadIndex(root, expected, previous) {
         throw new Error(
           'Índice inválido: referencias duplicadas incompatibles.',
         );
-      // Derivar la ruta del caché local: nunca abrir rutas arbitrarias del JSONL ni descargar desde un handler.
-      const imagePath =
-        typeof entry.imageUrl === 'string'
-          ? resolve(
-              folder,
-              'images',
-              createHash('sha256')
-                .update(entry.id + entry.imageUrl)
-                .digest('hex') + '.image',
-            )
-          : undefined;
-      entries.set(entry.id, { id: entry.id, vector: entry.vector, imagePath });
+      entries.set(entry.id, { id: entry.id, vector: entry.vector });
     }
   }
   if (!entries.size) throw new Error('Índice inválido: no hay referencias.');

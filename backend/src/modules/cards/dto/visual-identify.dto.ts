@@ -15,10 +15,7 @@ export interface VisualIdentifyResponseDto {
     card: CardDto;
     similarity: number;
     retrievalRank: number;
-    geometry: VisualGeometry | null;
   }[];
-  verificationMs: number;
-  verificationAvailable: boolean;
   retrievalLimit: number;
   references: number;
   indexVersion: string;
@@ -29,10 +26,4 @@ export interface VisualIdentifyResponseDto {
   modelMs: number;
   inferenceMs: number;
   totalMs: number;
-}
-export interface VisualGeometry {
-  matches: number;
-  inliers: number;
-  coverage: number;
-  verified: boolean;
 }

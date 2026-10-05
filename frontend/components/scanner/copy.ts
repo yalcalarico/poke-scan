@@ -27,13 +27,13 @@ export function formatCount(value: number): string {
  */
 export const PHASE_HEADLINE: Record<ScanPhase, string> = {
   preparing: 'Preparando la foto…',
-  recognizing: 'Reconociendo la carta con DINOv2…',
+  recognizing: 'Reconociendo la carta…',
   searching: 'Buscando coincidencias visuales…',
 };
 export const PHASE_DETAIL: Record<ScanPhase, string> = {
   preparing: 'Ajustando el recorte de la carta.',
   recognizing: 'Mantené la carta nítida y sin reflejos.',
-  searching: 'Comparando el dibujo con el índice del catálogo.',
+  searching: 'Comparando la imagen con las cartas del catálogo.',
 };
 export type CameraNoticeKind = CameraError | 'unsupported';
 export const CAMERA_NOTICE_COPY: Record<CameraNoticeKind, { title: string; hint: string }> = {

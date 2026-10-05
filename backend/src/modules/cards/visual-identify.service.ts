@@ -8,17 +8,13 @@ import {
 import { fork, type ChildProcess } from 'node:child_process';
 import { resolve } from 'node:path';
 import type { VisualIdentifyDto } from './dto/visual-identify.dto.js';
-import type { VisualGeometry } from './dto/visual-identify.dto.js';
 
 interface VisualWorkerResult {
   candidates: {
     id: string;
     similarity: number;
     retrievalRank: number;
-    geometry: VisualGeometry | null;
   }[];
-  verificationMs: number;
-  verificationAvailable: boolean;
   retrievalLimit: number;
   references: number;
   indexVersion: string;
@@ -41,22 +37,11 @@ function isResult(value: unknown): value is VisualWorkerResult {
         typeof c.id === 'string' &&
         Number.isFinite(c.similarity) &&
         Number.isInteger(c.retrievalRank) &&
-        c.retrievalRank > 0 &&
-        (c.geometry === null ||
-          (c.geometry &&
-            typeof c.geometry.verified === 'boolean' &&
-            Number.isInteger(c.geometry.matches) &&
-            c.geometry.matches >= 0 &&
-            Number.isInteger(c.geometry.inliers) &&
-            c.geometry.inliers >= 0 &&
-            c.geometry.inliers <= c.geometry.matches &&
-            Number.isFinite(c.geometry.coverage) &&
-            c.geometry.coverage >= 0)),
+        c.retrievalRank > 0,
     ) &&
-    typeof result.verificationAvailable === 'boolean' &&
     Number.isInteger(result.retrievalLimit) &&
     result.retrievalLimit > 0 &&
-    result.retrievalLimit <= 64 &&
+    result.retrievalLimit <= 8 &&
     Number.isInteger(result.references) &&
     result.references > 0 &&
     result.references <= 100_000 &&
@@ -71,7 +56,6 @@ function isResult(value: unknown): value is VisualWorkerResult {
       result.inferenceMs,
       result.totalMs,
       result.indexMs,
-      result.verificationMs,
     ].every(Number.isFinite)
   );
 }

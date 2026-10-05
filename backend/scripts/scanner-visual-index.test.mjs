@@ -3,7 +3,6 @@ import assert from 'node:assert/strict';
 import { mkdtemp, mkdir, writeFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { createHash } from 'node:crypto';
 import {
   loadIndex,
   refreshIndex,
@@ -11,7 +10,7 @@ import {
 } from './scanner-visual-index.mjs';
 const meta = { dimensions: 384, revision: 'test' };
 const vector = Array.from({ length: 384 }, (_, i) => (i === 0 ? 1 : 0));
-test('abre el caché con la misma clave ID + URL del indexador, ignorando rutas del JSONL', async () => {
+test('carga sólo vectores, sin resolver ni necesitar imágenes', async () => {
   const root = await mkdtemp(join(tmpdir(), 'scanner-index-'));
   try {
     const dir = await folder(root, 'A', ['base1-1']);
@@ -26,16 +25,8 @@ test('abre el caché con la misma clave ID + URL del indexador, ignorando rutas 
       }) + '\n',
     );
     const result = await loadIndex(root, meta);
-    assert.equal(
-      result.entries[0].imagePath,
-      join(
-        dir,
-        'images',
-        createHash('sha256')
-          .update('base1-1' + imageUrl)
-          .digest('hex') + '.image',
-      ),
-    );
+    assert.equal('imagePath' in result.entries[0], false);
+    assert.deepEqual(result.entries[0].vector, vector);
   } finally {
     await rm(root, { recursive: true, force: true });
   }
