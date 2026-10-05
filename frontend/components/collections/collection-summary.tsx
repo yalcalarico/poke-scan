@@ -39,7 +39,7 @@ export function CollectionSummary({
   const { formatMoney } = useCurrency();
 
   return (
-    <Surface as="section" className="flex items-center justify-between gap-4">
+    <Surface as="section" className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex min-w-0 items-center gap-3">
         <span
           aria-hidden="true"
@@ -50,24 +50,24 @@ export function CollectionSummary({
 
         <div className="flex min-w-0 flex-col gap-0.5">
           <div className="flex min-w-0 items-center gap-2">
-            <p className="truncate text-h3 text-primary" title={name}>
+            <p className="break-words text-h3 text-primary" title={name}>
               {name}
             </p>
             {isDefault ? <Badge tone="brand">Principal</Badge> : null}
           </div>
-          <p className="truncate text-caption text-tertiary" title={subtitle}>
+          <p className="text-caption text-secondary" title={subtitle}>
             {subtitle}
           </p>
         </div>
       </div>
 
-      <div className="flex shrink-0 flex-col items-end">
+      <div className="flex min-w-0 flex-col items-start sm:items-end">
         {/*
           `text-overline` ya trae `uppercase`, así que el copy va en minúscula y
           se ve en caja alta sola.
         */}
         <p className="text-overline text-tertiary">Valor</p>
-        <p className="text-display text-positive tabular-nums">{formatMoney(totalValueUsd)}</p>
+        <p className="break-all text-display text-positive tabular-nums">{formatMoney(totalValueUsd)}</p>
       </div>
     </Surface>
   );
@@ -77,38 +77,14 @@ export interface CollectionStatsProps {
   stats: CollectionStatsResponse;
 }
 
-/**
- * Las cinco métricas de la colección, en el `StatGrid`.
- *
- * ## El huérfano
- *
- * Cinco stats en un `grid-cols-2` dejan una celda vacía (§8.7, y el anti-patrón
- * explícito de §12). `StatGrid columns={5}` lo resuelve solo: `grid-cols-2
- * md:grid-cols-3 lg:grid-cols-5` con `col-span-2 md:col-span-1` en la última, o
- * sea `2 + 2 + 1 a lo ancho` en mobile, `3 + 2` en `md` y las cinco en `lg`. El
- * `StatGrid` calcula el `col-span` mirando la cantidad de hijos, así que el
- * consumidor no se tiene que acordar de la regla — y por eso `columns={5}` y no
- * `columns={2}`: con `2` el `md:col-span-1` no existe y la última queda
- * estirada en el breakpoint de tablet.
- *
- * ## Por qué el valor está dos veces
- *
- * Una en el `CollectionSummary` (la cifra hero, `text-display`) y otra acá
- * (`text-h3`). Es redundante a propósito: la del resumen responde "¿cuánto vale
- * esta colección?" y esta responde "¿cómo se compone ese número?". Sacarla del
- * `StatGrid` es un cambio de una línea, pero deja el grupo de métricas en 4 y
- * el `2 + 2` pierde el salto de escala que lo hace legible.
- */
+/** El valor ya está en la cabecera; acá quedan los cuatro conteos. */
 export function CollectionStats({ stats }: CollectionStatsProps) {
-  const { formatMoney } = useCurrency();
-
   return (
-    <StatGrid columns={5}>
+    <StatGrid columns={4}>
       <Stat label="Cartas" value={formatCount(stats.totalCards)} />
       <Stat label="Únicas" value={formatCount(stats.uniqueCards)} />
       <Stat label="Duplicadas" value={formatCount(stats.duplicateCards)} />
       <Stat label="Sets" value={formatCount(stats.setsCount)} />
-      <Stat label="Valor" value={formatMoney(stats.totalValueUsd)} tone="positive" />
     </StatGrid>
   );
 }

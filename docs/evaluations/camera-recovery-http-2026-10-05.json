@@ -1,0 +1,31 @@
+{
+  "origin": "https://10.126.113.17:3000",
+  "output": [
+    {
+      "name": "pokescan-2026-10-04T22-05-44-077Z-11",
+      "status": 200,
+      "id": "sv9-27",
+      "geometry": {
+        "matches": 60,
+        "inliers": 53,
+        "coverage": 0.32904077157993233,
+        "verified": true
+      },
+      "retrievalLimit": 448,
+      "totalMs": 25102.148292000005
+    },
+    {
+      "name": "pokescan-2026-10-04T22-07-12-561Z-19",
+      "status": 200,
+      "id": "me2pt5-119",
+      "geometry": {
+        "matches": 44,
+        "inliers": 41,
+        "coverage": 0.5042258552576772,
+        "verified": true
+      },
+      "retrievalLimit": 192,
+      "totalMs": 10482.179000000004
+    }
+  ]
+}

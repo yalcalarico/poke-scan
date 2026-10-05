@@ -1,6 +1,7 @@
 'use client';
 
 import { Trash2 } from 'lucide-react';
+import Link from 'next/link';
 import { useCallback, useMemo, useRef, useState } from 'react';
 
 import {
@@ -13,6 +14,7 @@ import {
   Sheet,
   Skeleton,
   useToast,
+  buttonVariants,
 } from '@/components/ui';
 import { useAsync } from '@/hooks/use-async';
 import { ApiError } from '@/lib/api';
@@ -222,6 +224,7 @@ export function OrganizeSheet({ open, entries, onClose, onSaved, onRemove }: Org
   );
 
   const isEmpty = entries.length === 0;
+  const hasCollections = collections.length > 0;
 
   return (
     <Sheet
@@ -233,26 +236,26 @@ export function OrganizeSheet({ open, entries, onClose, onSaved, onRemove }: Org
         isEmpty
           ? undefined
           : `${formatCount(entries.length)} ${
-              entries.length === 1 ? 'carta leída' : 'cartas leídas'
-            } en esta sesión`
+              entries.length === 1 ? 'carta leída pendiente' : 'cartas leídas pendientes'
+            } de guardar`
       }
       footer={
-        <>
+        <div className="flex w-full flex-col gap-2 sm:flex-row">
           <Button
             variant="primary"
             size="lg"
             onClick={() => void saveAll()}
             loading={isSavingAll}
             pendingLabel="Guardando…"
-            disabled={isEmpty || status !== 'ready' || Object.values(drafts).some((draft) => draft.status === 'saving')}
-            className="flex-1"
+            disabled={isEmpty || !hasCollections || status !== 'ready' || Object.values(drafts).some((draft) => draft.status === 'saving')}
+            className="w-full sm:flex-1"
           >
             {isEmpty ? 'Nada que guardar' : `Agregar todas (${formatCount(entries.length)})`}
           </Button>
           <Button variant="ghost" size="lg" onClick={onClose}>
             Seguir escaneando
           </Button>
-        </>
+        </div>
       }
     >
       {bulkError ? (
@@ -287,8 +290,22 @@ export function OrganizeSheet({ open, entries, onClose, onSaved, onRemove }: Org
         </p>
       ) : null}
 
-      {status === 'ready' && !isEmpty ? (
-        <ul className="flex flex-col gap-4">
+      {status === 'ready' && !isEmpty && !hasCollections ? (
+        <Alert tone="info" title="Creá una colección para guardar">
+          <p>Las cartas siguen en esta sesión. Creá una colección y volvé a Organizar.</p>
+          <Link href="/colecciones" className={buttonVariants({ variant: 'secondary' })}>
+            Ir a colecciones
+          </Link>
+        </Alert>
+      ) : null}
+
+      {status === 'ready' && !isEmpty && hasCollections ? (
+        <div className="flex flex-col gap-4">
+          <p className="text-caption text-secondary">
+            Revisá nombre, set y número antes de guardar. Se agregan como variante Normal;
+            podés cambiarla después desde la colección.
+          </p>
+        <ul className="grid items-start gap-4 md:grid-cols-2">
           {entries.map((entry) => {
             const card = entry.candidate.card;
             const setName = card.set?.name ?? card.setId;
@@ -305,10 +322,10 @@ export function OrganizeSheet({ open, entries, onClose, onSaved, onRemove }: Org
                   <CardThumb card={card} width={44} />
 
                   <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-                    <p className="truncate text-body-strong text-primary" title={card.name}>
+                    <p className="break-words text-body-strong text-primary" title={card.name}>
                       {card.name}
                     </p>
-                    <p className="truncate text-caption text-secondary" title={setName}>
+                    <p className="break-words text-caption text-secondary" title={setName}>
                       {setName}
                       <span aria-hidden="true"> · </span>
                       <span className="tabular-nums">
@@ -393,6 +410,7 @@ export function OrganizeSheet({ open, entries, onClose, onSaved, onRemove }: Org
                 */}
                 {draft.message ? (
                   <p
+                    role={draft.status === 'error' ? 'alert' : 'status'}
                     className={
                       draft.status === 'done'
                         ? 'text-caption text-positive'
@@ -405,7 +423,7 @@ export function OrganizeSheet({ open, entries, onClose, onSaved, onRemove }: Org
 
                 <Button
                   variant="secondary"
-                  size="sm"
+                  size="md"
                   onClick={() => void saveSingle(entry)}
                   loading={draft.status === 'saving'}
                   pendingLabel="Guardando…"
@@ -418,6 +436,7 @@ export function OrganizeSheet({ open, entries, onClose, onSaved, onRemove }: Org
             );
           })}
         </ul>
+        </div>
       ) : null}
     </Sheet>
   );

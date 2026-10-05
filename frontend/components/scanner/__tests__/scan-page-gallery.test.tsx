@@ -2,7 +2,8 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, expect, it, vi } from 'vitest';
 import type { IdlePanelProps } from '../idle-panel';
-const mocks = vi.hoisted(() => ({ recognize: vi.fn(), prepare: vi.fn(), close: vi.fn() }));
+const mocks = vi.hoisted(() => ({ recognize: vi.fn(), prepare: vi.fn(), close: vi.fn(), download: vi.fn() }));
+vi.mock('@/lib/scanner/capture-review', () => ({ downloadCaptureReview: mocks.download }));
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn() }) }));
 vi.mock('@/hooks/use-mobile-camera', () => ({ useMobileCamera: () => false }));
 vi.mock('@/lib/scanner/camera-visual', () => ({ recognizeCameraCard: mocks.recognize }));
@@ -35,8 +36,12 @@ it('la foto subida usa DINOv2, suma el candidato elegido y libera la imagen orig
   expect(screen.getByText('Sesión: 1')).toBeInTheDocument();
   expect(mocks.recognize).toHaveBeenCalledWith('data:image/png;base64,YQ==', expect.any(AbortSignal), expect.any(Function));
   expect(mocks.close).toHaveBeenCalledOnce();
+  expect(mocks.download).not.toHaveBeenCalled();
+  fireEvent.click(screen.getByRole('button', { name: 'Descargar recorte' }));
+  expect(mocks.download).toHaveBeenCalledWith(expect.objectContaining({ image: 'data:image/png;base64,YQ==', source: 'gallery', result: null }), 'image');
 });
 it('una respuesta cancelada no agrega una carta después de subir otra foto', async () => {
+  mocks.prepare.mockResolvedValueOnce({ image: 'data:image/png;base64,Yg==', source: { highResolutionSource: { close: mocks.close } } });
   let finish: (value: ReturnType<typeof selected>) => void = () => {};
   mocks.recognize.mockImplementationOnce(() => new Promise((resolve) => { finish = resolve; })).mockResolvedValueOnce(selected('me55-59'));
   render(<ScanPage />);
@@ -49,4 +54,20 @@ it('una respuesta cancelada no agrega una carta después de subir otra foto', as
   await waitFor(() => expect(mocks.close).toHaveBeenCalledTimes(2));
   expect(screen.getByText('Sesión: 1')).toBeInTheDocument();
   expect(screen.queryByText('swsh8-108')).not.toBeInTheDocument();
+  fireEvent.click(screen.getByRole('button', { name: 'Descargar recorte' }));
+  expect(mocks.download).toHaveBeenCalledWith(expect.objectContaining({ image: 'data:image/png;base64,YQ==', runId: 2 }), 'image');
+});
+
+it('permite descargar el recorte enviado cuando falla el reconocimiento, pero no cuando falla la preparación', async () => {
+  mocks.recognize.mockRejectedValue(new Error('El motor se interrumpió.'));
+  render(<ScanPage />);
+  await screen.findByText('Sesión: 0');
+  upload();
+  await screen.findByText('El motor se interrumpió.');
+  fireEvent.click(screen.getByRole('button', { name: 'Descargar diagnóstico' }));
+  expect(mocks.download).toHaveBeenCalledWith(expect.objectContaining({ image: 'data:image/png;base64,YQ==', error: 'El motor se interrumpió.' }), 'diagnostic');
+  mocks.prepare.mockRejectedValueOnce(new Error('Foto inválida.'));
+  upload();
+  await screen.findByText('Foto inválida.');
+  expect(screen.queryByRole('button', { name: 'Descargar recorte' })).not.toBeInTheDocument();
 });

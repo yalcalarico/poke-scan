@@ -121,7 +121,7 @@ export function PriceHero({
         <Skeleton className="mt-1 h-9 w-40" />
       ) : hasPrice ? (
         <>
-          <p className="text-display text-primary tabular-nums">{formatMoney(usd)}</p>
+          <p className="text-display text-positive tabular-nums">{formatMoney(usd)}</p>
           {showUsdSecondary ? (
             <p className="-mt-1 text-caption text-tertiary tabular-nums">{formatPrice(usd, 'USD')}</p>
           ) : null}

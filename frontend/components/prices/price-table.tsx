@@ -48,13 +48,13 @@ function PriceCell({ usd, market = false }: { usd: number | null; market?: boole
         <>
           <Money usd={usd} tone={market ? 'positive' : 'default'} className="block whitespace-nowrap" />
           {showUsd ? (
-            <span className="mt-0.5 block whitespace-nowrap text-caption text-tertiary tabular-nums">
+            <span className="mt-0.5 block whitespace-nowrap text-caption text-secondary tabular-nums">
               {formatPrice(usd, 'USD')}
             </span>
           ) : null}
         </>
       ) : (
-        <span aria-label="Sin precio" className="text-body text-tertiary">
+        <span aria-label="Sin precio" className="text-body text-secondary">
           —
         </span>
       )}
@@ -184,7 +184,7 @@ export function PriceTable({ prices, className }: PriceTableProps) {
             className="rounded-control border border-line bg-surface-2 p-1"
           >
             <h3 className="px-2 pt-1.5 text-body-strong text-primary">{variantLabel(price.variant)}</h3>
-            <p className="px-2 text-caption text-tertiary">
+            <p className="px-2 text-caption text-secondary">
               {price.source} · {price.provider ?? 'origen no identificado'}
             </p>
             <dl className="mt-1">

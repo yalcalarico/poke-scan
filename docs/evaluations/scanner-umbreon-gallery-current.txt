@@ -1,0 +1,78 @@
+- link "Saltar al contenido":
+  - /url: "#contenido"
+- banner:
+  - link "Volver a buscar":
+    - /url: /buscar
+  - paragraph: Escanear
+- main:
+  - heading "Reconocer una carta" [level=2]
+  - paragraph: DINOv2 compara tu foto con el catálogo y suma la primera coincidencia a la sesión con su valor.
+  - button "Subir una foto":
+    - text: Subir una foto
+  - paragraph: Útil en desktop o si no querés usar la cámara.
+  - button "Buscar a mano":
+    - text: Buscar a mano
+  - button "Organizar la sesión"
+  - paragraph: Umbreon ex
+  - paragraph: 30th Celebration · 92 / 128
+  - paragraph: —
+  - generic "Predicciones y tiempos · DINOv2" [active]
+  - paragraph: 20670 referencias · 175 colecciones · índice 9d89a62b919f
+  - paragraph: Índice 16 ms · modelo 0 ms · inferencia 85 ms · verificación 1069 ms · API 1246 ms
+  - paragraph: La similitud coseno no es un porcentaje de certeza. La primera predicción se suma automáticamente; revisá la edición al organizar la sesión.
+  - list:
+    - 'link "1. Umbreon ex · 30th Celebration · #92"':
+      - /url: /carta/me55-92
+    - paragraph: Similitud 0.683 · posición DINOv2 original 2
+    - paragraph: "Dibujo: corroborado · 87/95 puntos · cobertura 31.3 %"
+    - 'link "2. Luxray · SWSH Black Star Promos · #SWSH023"':
+      - /url: /carta/swshp-SWSH023
+    - paragraph: Similitud 0.700 · posición DINOv2 original 1
+    - paragraph: "Dibujo: sin corroborar · 0/1 puntos · cobertura 0.0 %"
+    - 'link "3. Primal Kyogre-EX · Primal Clash · #55"':
+      - /url: /carta/xy5-55
+    - paragraph: Similitud 0.672 · posición DINOv2 original 3
+    - paragraph: "Dibujo: sin corroborar · 0/7 puntos · cobertura 0.0 %"
+    - 'link "4. Houndoom · Battle Styles · #96"':
+      - /url: /carta/swsh5-96
+    - paragraph: Similitud 0.668 · posición DINOv2 original 4
+    - paragraph: "Dibujo: sin corroborar · 0/7 puntos · cobertura 0.0 %"
+    - 'link "5. Zygarde · Evolving Skies · #118"':
+      - /url: /carta/swsh7-118
+    - paragraph: Similitud 0.662 · posición DINOv2 original 5
+    - paragraph: "Dibujo: sin corroborar · 0/6 puntos · cobertura 0.0 %"
+    - 'link "6. Claydol · Silver Tempest · #94"':
+      - /url: /carta/swsh12-94
+    - paragraph: Similitud 0.657 · posición DINOv2 original 6
+    - paragraph: "Dibujo: sin corroborar · 0/5 puntos · cobertura 0.0 %"
+    - 'link "7. Umbreon ex · Prismatic Evolutions · #60"':
+      - /url: /carta/sv8pt5-60
+    - paragraph: Similitud 0.655 · posición DINOv2 original 7
+    - paragraph: "Dibujo: sin corroborar · 0/1 puntos · cobertura 0.0 %"
+    - 'link "8. Houndoom-EX · BREAKthrough · #21"':
+      - /url: /carta/xy8-21
+    - paragraph: Similitud 0.654 · posición DINOv2 original 8
+    - paragraph: "Dibujo: sin corroborar · 0/0 puntos · cobertura 0.0 %"
+  - paragraph: 1 carta leída en esta sesión.
+  - button "Descartar la sesión"
+- button "Elegir una foto de la carta"
+- navigation "Navegación principal":
+  - list:
+    - link "Inicio":
+      - /url: /inicio
+      - generic: Inicio
+    - link "Buscar":
+      - /url: /buscar
+      - generic: Buscar
+    - link "Escanear":
+      - /url: /escanear
+      - generic: Escanear
+    - link "Colecciones":
+      - /url: /colecciones
+      - generic: Colecciones
+    - link "Ajustes":
+      - /url: /ajustes
+      - generic: Ajustes
+- button "Open Next.js Dev Tools":
+- alert
+- region "Notificaciones"

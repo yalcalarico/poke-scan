@@ -3,7 +3,6 @@ import sharp from 'sharp';
 import { InferenceSession } from 'onnxruntime-node';
 import { embedding } from './scanner-visual-engine.mjs';
 import { expectedMetadata, refreshIndex } from './scanner-visual-index.mjs';
-import { rerankDetails } from './scanner-visual-detail.mjs';
 
 const directory = resolve(
   process.env.SCANNER_VISUAL_INDEX_DIR ??
@@ -56,31 +55,15 @@ process.on('message', async (message) => {
     const retrieved = snapshot.entries
       .map((entry) => ({
         id: entry.id,
-        imagePath: entry.imagePath,
         similarity: entry.vector.reduce(
           (sum, value, i) => sum + value * vector[i],
           0,
         ),
       }))
       .sort((a, b) => b.similarity - a.similarity)
-      .slice(0, 64)
-      .map((candidate, i) => ({ ...candidate, retrievalRank: i + 1 }));
-    const verificationStart = performance.now();
-    let ranked = retrieved.map((candidate) => ({
-      ...candidate,
-      geometry: null,
-    }));
-    let verificationAvailable = false;
-    try {
-      ranked = await rerankDetails(bytes, retrieved, snapshot.version);
-      verificationAvailable = true;
-    } catch {
-      // Una falla del verificador conserva el ranking DINOv2 y se informa al cliente.
-    }
-    const verificationMs = performance.now() - verificationStart;
-    const candidates = ranked
       .slice(0, 8)
-      .map(({ imagePath, ...candidate }) => candidate);
+      .map((candidate, i) => ({ ...candidate, retrievalRank: i + 1 }));
+    const candidates = retrieved;
     process.send({
       candidates,
       references: snapshot.entries.length,
@@ -91,9 +74,7 @@ process.on('message', async (message) => {
       cold,
       modelMs,
       inferenceMs,
-      verificationMs,
-      verificationAvailable,
-      retrievalLimit: retrieved.length,
+      retrievalLimit: candidates.length,
       totalMs: performance.now() - start,
     });
   } catch (error) {

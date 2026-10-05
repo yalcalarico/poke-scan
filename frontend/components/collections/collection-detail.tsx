@@ -551,7 +551,7 @@ function CollectionSortControl({
         `organize-sheet.tsx`.
       */}
       <Select
-        size="sm"
+        size="md"
         aria-labelledby="orden-coleccion"
         options={options}
         value={value}
@@ -1002,7 +1002,7 @@ function CollectionItems({
         </p>
 
         {canSelect ? (
-          <Button variant="ghost" size="sm" onClick={() => setIsSelecting(true)}>
+          <Button variant="ghost" size="md" onClick={() => setIsSelecting(true)}>
             <ListChecks
               aria-hidden="true"
               focusable="false"

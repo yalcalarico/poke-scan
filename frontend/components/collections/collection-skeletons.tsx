@@ -18,10 +18,11 @@ import { COLLECTION_PAGE_SIZE } from './collection-options';
 function CardSkeleton() {
   return (
     <Surface padded={false} className="overflow-hidden">
-      <Skeleton variant="block" className="aspect-[4/3] rounded-none" />
+      <Skeleton variant="block" className="h-44 rounded-none" />
       <div className="flex flex-col gap-2 p-4">
         <Skeleton variant="text" className="h-3.5 w-3/5" />
         <Skeleton variant="text" className="w-1/3" />
+        <Skeleton variant="text" className="w-2/3" />
         <Skeleton variant="text" className="mt-2 w-2/5" />
       </div>
       {/*
@@ -49,39 +50,32 @@ export function CollectionsListSkeleton({ count = 3 }: { count?: number }) {
       <div role="status" aria-label="Cargando tus colecciones" className="flex flex-col gap-4">
         <Skeleton variant="text" className="w-40" />
 
+        <div className="flex justify-start">
+          <Skeleton variant="text" className="w-48" />
+        </div>
+
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
           {Array.from({ length: count }, (_, index) => (
             <CardSkeleton key={index} />
           ))}
         </div>
 
-        <div className="flex justify-center">
-          <Skeleton variant="text" className="w-48" />
-        </div>
+
       </div>
     </div>
   );
 }
 
 function ChipSkeleton({ width }: { width: string }) {
-  return <Skeleton variant="text" className={cn('h-9 shrink-0 rounded-full', width)} />;
+  return <Skeleton variant="text" className={cn('h-11 shrink-0 rounded-full', width)} />;
 }
 
-/**
- * El skeleton de `/colecciones/[id]`: la `CollectionSummary` de dos
- * columnas, las cinco métricas, la fila de cuatro chips y la grilla densa de 3
- * columnas.
- *
- * La quinta métrica lleva `col-span-2` a propósito: es la misma regla que
- * aplica `StatGrid` cuando el conteo de stats es impar, y el skeleton tiene que
- * medir lo que va a aparecer, no una versión "provisoria" que después se
- * acomode.
- */
+/** Cabecera adaptable, cuatro conteos, controles y grilla de cartas. */
 export function CollectionDetailSkeleton() {
   return (
     <div className="flex flex-col gap-6" aria-busy="true">
       <div role="status" aria-label="Cargando la colección" className="flex flex-col gap-5">
-        <Surface className="flex items-center justify-between gap-4">
+        <Surface className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex min-w-0 items-center gap-3">
             <Skeleton variant="block" className="size-11 shrink-0 rounded-control" />
             <div className="flex min-w-0 flex-col gap-1.5">
@@ -89,20 +83,19 @@ export function CollectionDetailSkeleton() {
               <Skeleton variant="text" className="w-28" />
             </div>
           </div>
-          <div className="flex shrink-0 flex-col items-end gap-1.5">
+          <div className="flex shrink-0 flex-col items-start gap-1.5 sm:items-end">
             <Skeleton variant="text" className="w-14" />
             <Skeleton variant="block" className="h-7 w-28 rounded-control" />
           </div>
         </Surface>
 
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-5">
-          {Array.from({ length: 5 }, (_, index) => (
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+          {Array.from({ length: 4 }, (_, index) => (
             <Skeleton
               key={index}
               variant="block"
               className={cn(
                 'h-[4.5rem] rounded-control',
-                index === 4 && 'col-span-2 md:col-span-1',
               )}
             />
           ))}

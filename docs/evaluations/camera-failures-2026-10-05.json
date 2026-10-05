@@ -1,0 +1,261 @@
+{
+  "metadata": {
+    "revision": "8b1f705a3a7f6f062f6bdd21986c1583d3ef105d",
+    "precision": "int8",
+    "dimensions": 384,
+    "preprocessingHash": "8170121eafd1c4dd3122475255b0c6bb811cc598d38abcaf34ac9dd5ca483708",
+    "modelHash": "c179f8f7f592449c4c1bca4cd124a7538021428c5ffb89afde9503935b197efb"
+  },
+  "indexVersion": "9d89a62b919f5a489428a92b965ec6bf98f982a7a0f36abd5d36c2611808ebca",
+  "referenceCount": 20670,
+  "results": [
+    {
+      "file": "pokescan-2026-10-04T22-05-44-077Z-11.jpg",
+      "confirmedId": null,
+      "references": [
+        {
+          "id": "me2pt5-33",
+          "rank": 777,
+          "geometry": {
+            "matches": 54,
+            "inliers": 51,
+            "coverage": 0.19885620558230513,
+            "verified": true
+          }
+        },
+        {
+          "id": "sv9-27",
+          "rank": 392,
+          "geometry": {
+            "matches": 60,
+            "inliers": 53,
+            "coverage": 0.32904077157993233,
+            "verified": true
+          }
+        },
+        {
+          "id": "svp-181",
+          "rank": 1367,
+          "geometry": {
+            "matches": 11,
+            "inliers": 6,
+            "coverage": 0.013782672621124419,
+            "verified": false
+          }
+        }
+      ],
+      "top8": [
+        {
+          "id": "swshp-SWSH122",
+          "similarity": 0.7189722186441544,
+          "retrievalRank": 1,
+          "geometry": {
+            "matches": 6,
+            "inliers": 0,
+            "coverage": 0,
+            "verified": false
+          }
+        },
+        {
+          "id": "ex11-44",
+          "similarity": 0.7182077808749142,
+          "retrievalRank": 2,
+          "geometry": {
+            "matches": 4,
+            "inliers": 0,
+            "coverage": 0,
+            "verified": false
+          }
+        },
+        {
+          "id": "ex13-84",
+          "similarity": 0.7165916001759618,
+          "retrievalRank": 3,
+          "geometry": {
+            "matches": 7,
+            "inliers": 0,
+            "coverage": 0,
+            "verified": false
+          }
+        },
+        {
+          "id": "ex13-50",
+          "similarity": 0.7150580036961034,
+          "retrievalRank": 4,
+          "geometry": {
+            "matches": 7,
+            "inliers": 0,
+            "coverage": 0,
+            "verified": false
+          }
+        },
+        {
+          "id": "ecard3-146",
+          "similarity": 0.7142178110637852,
+          "retrievalRank": 5,
+          "geometry": {
+            "matches": 5,
+            "inliers": 0,
+            "coverage": 0,
+            "verified": false
+          }
+        },
+        {
+          "id": "sv6pt5-25",
+          "similarity": 0.7061481114051679,
+          "retrievalRank": 6,
+          "geometry": {
+            "matches": 4,
+            "inliers": 0,
+            "coverage": 0,
+            "verified": false
+          }
+        },
+        {
+          "id": "dp7-SH2",
+          "similarity": 0.705943302298339,
+          "retrievalRank": 7,
+          "geometry": {
+            "matches": 4,
+            "inliers": 0,
+            "coverage": 0,
+            "verified": false
+          }
+        },
+        {
+          "id": "ex3-15",
+          "similarity": 0.7037240427895674,
+          "retrievalRank": 8,
+          "geometry": {
+            "matches": 7,
+            "inliers": 0,
+            "coverage": 0,
+            "verified": false
+          }
+        }
+      ],
+      "imageSha256": "0e44f5d130314ce017aee59995d50785447488f3abdf69618f6bf330414e3372",
+      "capturedAt": "2026-10-04T22:05:44.077Z",
+      "source": "camera",
+      "savedPrediction": "swshp-SWSH122",
+      "savedTotalMs": 2192.074459000025,
+      "reproducedSamePrediction": true,
+      "labelStatus": "edition-unconfirmed"
+    },
+    {
+      "file": "pokescan-2026-10-04T22-07-12-561Z-19.jpg",
+      "confirmedId": "me2pt5-119",
+      "references": [
+        {
+          "id": "me2pt5-119",
+          "rank": 143,
+          "geometry": {
+            "matches": 44,
+            "inliers": 41,
+            "coverage": 0.5042258552576772,
+            "verified": true
+          }
+        }
+      ],
+      "top8": [
+        {
+          "id": "mcd19-11",
+          "similarity": 0.6730979853096428,
+          "retrievalRank": 1,
+          "geometry": {
+            "matches": 4,
+            "inliers": 0,
+            "coverage": 0,
+            "verified": false
+          }
+        },
+        {
+          "id": "sm5-79",
+          "similarity": 0.6458694328739694,
+          "retrievalRank": 2,
+          "geometry": {
+            "matches": 4,
+            "inliers": 0,
+            "coverage": 0,
+            "verified": false
+          }
+        },
+        {
+          "id": "swsh11-106",
+          "similarity": 0.637770704841736,
+          "retrievalRank": 3,
+          "geometry": {
+            "matches": 3,
+            "inliers": 0,
+            "coverage": 0,
+            "verified": false
+          }
+        },
+        {
+          "id": "sm2-73",
+          "similarity": 0.6330950082666565,
+          "retrievalRank": 4,
+          "geometry": {
+            "matches": 4,
+            "inliers": 0,
+            "coverage": 0,
+            "verified": false
+          }
+        },
+        {
+          "id": "tk1a-7",
+          "similarity": 0.6330200389128169,
+          "retrievalRank": 5,
+          "geometry": {
+            "matches": 6,
+            "inliers": 0,
+            "coverage": 0,
+            "verified": false
+          }
+        },
+        {
+          "id": "swsh4-88",
+          "similarity": 0.6314576531334946,
+          "retrievalRank": 6,
+          "geometry": {
+            "matches": 5,
+            "inliers": 0,
+            "coverage": 0,
+            "verified": false
+          }
+        },
+        {
+          "id": "ex5-42",
+          "similarity": 0.6313717521633055,
+          "retrievalRank": 7,
+          "geometry": {
+            "matches": 6,
+            "inliers": 0,
+            "coverage": 0,
+            "verified": false
+          }
+        },
+        {
+          "id": "ex5-41",
+          "similarity": 0.6311292093345214,
+          "retrievalRank": 8,
+          "geometry": {
+            "matches": 5,
+            "inliers": 0,
+            "coverage": 0,
+            "verified": false
+          }
+        }
+      ],
+      "imageSha256": "47f1c00845274dc9149f4752aafa4435055022a3f2082a6222619a921e4b0323",
+      "capturedAt": "2026-10-04T22:07:12.561Z",
+      "source": "camera",
+      "savedPrediction": "mcd19-11",
+      "savedTotalMs": 3282.0707079999847,
+      "reproducedSamePrediction": true,
+      "labelStatus": "confirmed-from-visible-set-and-number"
+    }
+  ],
+  "scope": "Reproducción sobre bytes exactos exportados de cámara. Comparación directa con referencias sólo para diagnóstico; no cambia el ranking de producción ni prueba una solución.",
+  "evaluatedAt": "2026-10-05T10:54:09.900Z"
+}

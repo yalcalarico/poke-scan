@@ -46,8 +46,10 @@ export default function SettingsPage() {
         <RequireAuth>
           <div className="flex flex-col gap-6 sm:gap-8">
             <IdentityCard />
-            <AppearanceSettings />
-            <CurrencySettings />
+            <div className="grid items-start gap-4 md:grid-cols-2">
+              <AppearanceSettings />
+              <CurrencySettings />
+            </div>
             <ShareLinksSection />
             <SessionSettings />
           </div>

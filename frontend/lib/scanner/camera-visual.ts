@@ -9,6 +9,7 @@ export async function recognizeCameraCard(image: string, signal: AbortSignal, on
   onResult?.(result);
   const first = result.candidates[0];
   if (!first) return null;
+
   const prices = await getCardPrices(first.card.id, AbortSignal.any([signal, AbortSignal.timeout(5000)]))
     .then((response) => response.prices).catch(() => []);
   signal.throwIfAborted();

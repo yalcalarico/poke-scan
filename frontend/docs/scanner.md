@@ -8,7 +8,7 @@ En teléfonos, “Escanear carta” abre la cámara. El marco es rojo mientras b
 
 En escritorio y tablet no se ofrece cámara. “Subir una foto” usa el mismo reconocimiento visual. La búsqueda manual sigue disponible en todos los dispositivos.
 
-La primera predicción se suma automáticamente a la sesión. La barra muestra miniatura, nombre, set, número y valor; si falta precio muestra “Sin precio” o un guion, sin inventarlo. “Organizar” permite elegir la colección, variante y cantidad y guardar las cartas. Sumar a la sesión no equivale a persistir en una colección.
+La primera predicción DINOv2 se suma automáticamente a la sesión. Revisá nombre, set y número antes de organizar; no hay rechazo calibrado. La barra muestra miniatura, nombre, set, número y valor; si falta precio muestra “Sin precio” o un guion, sin inventarlo. “Organizar” permite elegir la colección y cantidad y guardar las cartas; la hoja actual no ofrece un selector de variante. Sumar a la sesión no equivale a persistir en una colección.
 
 ## Cámara, recorte y orientación
 
@@ -24,9 +24,9 @@ La cámara solo se ofrece a navegadores de teléfonos mediante `hooks/use-mobile
 
 `POST /api/cards/identify-visual` requiere sesión autenticada y `SCANNER_VISUAL_ENABLED=1` en el backend. Recibe `{ image: "data:image/...;base64,..." }`: JPEG, PNG o WebP, hasta 6 MiB y 24 MP. No almacena la foto de consulta.
 
-La API ejecuta DINOv2 con el modelo ONNX local y recupera hasta 64 referencias. Verifica detalles mediante ORB y homografía RANSAC, priorizando coincidencias geométricas corroboradas. Devuelve candidatos con carta completa, similitud coseno, posición original DINOv2 y puntos/cobertura de la verificación, junto con tiempos de índice, modelo, inferencia, verificación y total. La similitud no es una probabilidad; un mismo dibujo puede corresponder a otra impresión o acabado.
+La API ejecuta DINOv2 con el modelo ONNX local, compara el vector de consulta con todos los vectores del índice y devuelve los ocho candidatos de mayor similitud coseno, sin ORB ni acceso a imágenes de referencia. Devuelve carta completa, similitud y posición, junto con tiempos de índice, modelo, inferencia y total. La similitud no es una probabilidad ni confirma edición o acabado.
 
-`lib/scanner/camera-visual.ts` selecciona el candidato #1 y consulta `/cards/:id/prices` solo para ese ID. La falta o demora del precio no cambia la identidad. La consulta completa admite cancelación y tiene un límite de 35 s; los precios tienen un límite de 5 s. Los contadores de corrida impiden que una respuesta anterior reemplace una captura posterior.
+`lib/scanner/camera-visual.ts` selecciona el candidato #1 DINOv2 y consulta `/cards/:id/prices` solo para ese ID. La falta o demora del precio no cambia la identidad. La consulta completa admite cancelación y tiene un límite de 35 s; los precios tienen un límite de 5 s. Los contadores de corrida impiden que una respuesta anterior reemplace una captura posterior.
 
 `components/scanner/visual-diagnostics.tsx` permite revisar candidatos y tiempos después de subir una foto, sin abrir un selector. La sesión usa `sessionStorage`, conserva hasta 30 entradas y se restaura después de hidratar. Cada captura es una entrada; la persistencia definitiva la hace `OrganizeSheet`.
 
@@ -44,10 +44,18 @@ pnpm run scanner:validate
 pnpm run scanner:evaluate
 ```
 
-Consultá `pnpm run help` para las opciones y `docs/evaluations/visual-indexer.md` para el formato y actualización del índice. El último catálogo validado tiene 20.670 referencias en 175 carpetas. Las imágenes y descriptores de referencia se cachean; las fotos de consulta no se guardan. El catálogo y precios conservan sus límites y cola existentes.
+Consultá `pnpm run help` para las opciones y `docs/evaluations/visual-indexer.md` para el formato y actualización del índice. El último catálogo validado tiene 20.670 referencias en 175 carpetas. El escaneo necesita los vectores y metadata del índice, no las imágenes de referencia; las fotos de consulta no se guardan. El catálogo y precios conservan sus límites y cola existentes.
 
 ## Verificación
 
 `pnpm run check` valida los dos proyectos. Antes de los tests backend, `pnpm run stop`: el worker de precios no debe competir con los specs. Los tests cubren selección del #1 y set, falta de precio, cámara automática, estabilidad, no duplicación, geometría del marco, orientación y preparación de galería. Probá además contra el stack real con fotos y una sesión autenticada. La cámara física de iPhone requiere una prueba en el dispositivo.
 
 El service worker v4 elimina las cachés de las versiones anteriores. No hay motor de reconocimiento offline: reconocer cartas necesita conexión a la API.
+
+## Descarga voluntaria para revisar errores
+
+Después de una consulta de cámara o galería aparece «¿No coincidió? Guardá el recorte». Podés descargar el recorte exacto enviado (PNG/JPEG/WebP, sin recodificar) y un JSON con el mismo nombre base, origen, fecha, candidatos, versión del índice, tiempos backend y error si lo hubo. El ID correcto queda vacío (`expectedCardId: null`) para etiquetarlo después; la predicción no se convierte en ground truth.
+
+La última captura se conserva sólo en memoria del navegador, fuera de la sesión restaurable. No se descarga automáticamente ni se guarda en el servidor, sessionStorage o localStorage. La siguiente captura la reemplaza; recargar o salir de la pantalla la pierde. Descartar la lectura/sesión también libera esa revisión. Si falló antes de preparar una imagen no hay recorte para bajar.
+
+Abrir la revisión en cámara pausa la captura automática hasta cerrarla, para evitar reemplazar la imagen mientras se revisa. La cámara permanece abierta. Las descargas requieren acciones separadas para funcionar sin múltiples descargas automáticas en navegadores móviles. Guardá ambos archivos cuando quieras reportar una coincidencia incorrecta e indicá después el set y número reales. La descarga física en Safari/PWA queda sujeta a verificación en teléfono.

@@ -11,7 +11,8 @@ import { SetLogo, SetSymbol } from '@/components/cards/set-media';
 import { ScreenContainer } from '@/components/layout/screen-container';
 import { ScreenHeader } from '@/components/layout/screen-header';
 import { CardPriceSection } from '@/components/prices';
-import { Badge, Surface } from '@/components/ui';
+import { Surface } from '@/components/ui';
+import { catalogReturnHref } from '@/lib/catalog-navigation';
 import { getApiBaseUrl } from '@/lib/api/api-client';
 import { toCardDto, toCardList } from '@/lib/api/schema';
 import { formatCardNumber, formatDate, pluralize } from '@/lib/format';
@@ -82,10 +83,12 @@ async function RelatedCardsSection({
   setId,
   excludeId,
   setName,
+  backHref,
 }: {
   setId: string;
   excludeId: string;
   setName: string;
+  backHref: string;
 }) {
   // El fetch vive **adentro** de la frontera y no se le pasa la promesa ya
   // creada desde el padre: es el patrón de App Router para contenido
@@ -104,7 +107,7 @@ async function RelatedCardsSection({
         </h2>
         <Link
           href={`/buscar?setId=${encodeURIComponent(setId)}`}
-          className="inline-flex items-center gap-1 rounded-control text-label text-brand transition-colors duration-fast ease-standard hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--focus-ring)]"
+          className="inline-flex min-h-11 items-center gap-1 rounded-control text-label text-brand transition-colors duration-fast ease-standard hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--focus-ring)]"
         >
           Ver el set
           <ArrowRight aria-hidden="true" focusable="false" strokeWidth={1.75} className="h-4 w-4" />
@@ -123,7 +126,10 @@ async function RelatedCardsSection({
       <ul role="list" className="-mx-4 mt-3 flex gap-3 overflow-x-auto px-4 py-1 sm:mx-0 sm:px-0">
         {related.map((relatedCard) => (
           <li key={relatedCard.id} className="w-24 shrink-0">
-            <CardTile card={relatedCard} />
+            <CardTile
+              card={relatedCard}
+              href={`/carta/${encodeURIComponent(relatedCard.id)}?returnTo=${encodeURIComponent(backHref)}`}
+            />
           </li>
         ))}
       </ul>
@@ -175,8 +181,12 @@ function DataRow({ label, value }: { label: string; value: ReactNode }) {
   );
 }
 
-export default async function CardDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function CardDetailPage({ params, searchParams }: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
   const { id } = await params;
+  const backHref = catalogReturnHref((await searchParams).returnTo);
 
   const card = await fetchCard(id);
   if (!card) notFound();
@@ -194,23 +204,13 @@ export default async function CardDetailPage({ params }: { params: Promise<{ id:
       <ScreenHeader
         title={card.name}
         subtitle={setName}
-        back={{ href: `/buscar`, label: 'el catálogo' }}
+        back={{ href: backHref, label: 'el catálogo' }}
       />
 
       <ScreenContainer labelledBy="titulo-carta">
-        {/*
-          El nombre ya está en el `ScreenHeader` y ahí se trunca, así que el `h1`
-          de la página es invisible: duplicarlo en pantalla sería leerlo dos veces
-          seguidas. Lo que no puede faltar es el heading real, que es lo que
-          ancla el `aria-labelledby` del `<main>` y el modo de lector de pantalla.
-        */}
-        <h1 id="titulo-carta" className="sr-only">
-          {card.name}
-        </h1>
-
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 md:gap-8">
-          <div className="flex flex-col items-center gap-5">
-            <div className="relative w-full max-w-xs">
+        <div className="grid grid-cols-1 items-start gap-5 md:grid-cols-2 md:gap-8">
+          <div className="flex flex-col items-center gap-3 md:sticky md:top-20 md:gap-5 lg:top-36">
+            <div className="relative w-full max-w-56 md:max-w-xs">
               {image ? (
                 <div className="overflow-hidden rounded-surface shadow-xl">
                   <Image
@@ -218,7 +218,7 @@ export default async function CardDetailPage({ params }: { params: Promise<{ id:
                     alt={alt}
                     width={420}
                     height={588}
-                    sizes="(max-width: 767px) 78vw, 40vw"
+                    sizes="(max-width: 767px) 224px, 320px"
                     className="h-auto w-full"
                     priority
                   />
@@ -233,19 +233,19 @@ export default async function CardDetailPage({ params }: { params: Promise<{ id:
                 </div>
               )}
 
-              {/*
-                La píldora de la referencia. Va **encima** de la esquina, no
-                tapando el número impreso de la carta: es chrome, no dato.
-              */}
-              <Badge tone="brand" className="absolute -top-2 right-2 shadow-md">
-                En vivo
-              </Badge>
             </div>
 
-            {set ? <SetLogo logoUrl={set.logoUrl} name={set.name} className="max-w-40" /> : null}
+            {set ? <SetLogo logoUrl={set.logoUrl} name={set.name} className="hidden max-w-40 md:block" /> : null}
           </div>
 
-          <div className="flex flex-col gap-5">
+          <div className="flex min-w-0 flex-col gap-5">
+            <div className="flex flex-col gap-1">
+              <h1 id="titulo-carta" className="break-words text-h1 text-primary">{card.name}</h1>
+              <p className="text-body text-secondary">{setName}</p>
+              <p className="text-caption text-secondary tabular-nums">
+                {formatCardNumber(card.number, setTotal)}{card.rarity ? ` · ${card.rarity}` : ''}
+              </p>
+            </div>
             {/* La carga del precio vive en cliente: un refresh externo lento no
                 retrasa el render de la carta, y el hero muestra su skeleton. */}
             <CardPriceSection key={`${card.id}:price`} cardId={card.id} />
@@ -253,7 +253,7 @@ export default async function CardDetailPage({ params }: { params: Promise<{ id:
             <CardActions key={`${card.id}:actions`} cardId={card.id} cardName={card.name} />
 
             <Surface as="section" padded={false} className="px-4 py-1">
-              <h2 className="sr-only">Datos de la carta</h2>
+              <h2 className="pt-3 text-h3 text-primary">Datos de la carta</h2>
               <dl>
                 <DataRow
                   label="Set"
@@ -302,7 +302,7 @@ export default async function CardDetailPage({ params }: { params: Promise<{ id:
           y después el contenido de la carta que se está viendo.
         */}
         <Suspense key={card.id} fallback={null}>
-          <RelatedCardsSection setId={card.setId} excludeId={card.id} setName={setName} />
+          <RelatedCardsSection setId={card.setId} excludeId={card.id} setName={setName} backHref={backHref} />
         </Suspense>
       </ScreenContainer>
     </>

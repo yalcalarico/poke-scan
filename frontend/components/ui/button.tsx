@@ -37,7 +37,7 @@ const buttonVariants = cva(
         // acciones terciarias en una fila densa) y `lg` en 48.
         md: 'h-11 px-4 text-label',
         lg: 'h-12 px-5 text-body-strong',
-        icon: 'h-10 w-10 p-0',
+        icon: 'h-11 w-11 p-0',
       },
       isDisabled: {
         true: 'text-disabled',

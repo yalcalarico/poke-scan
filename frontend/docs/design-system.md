@@ -858,7 +858,7 @@ type ButtonSize = 'sm' | 'md' | 'lg' | 'icon';
 | `destructive` | `bg-negative text-on-brand` | idem | Borrar, revocar. **Nunca** para el CTA de un form |
 | `inverse` | `bg-surface text-primary` | idem | Sobre `bg-brand` o sobre foto |
 
-- Alturas: `sm` **32**, `md` **44**, `lg` **48**, `icon` **40×40**.
+- Alturas: `sm` **32**, `md` **44**, `lg` **48**, `icon` **44×44**.
   `md` **subió de 40 a 44** y es el cambio de una línea que hace que §0.5 sea
   cierta: `md` es el tamaño **default**, o sea el de todos los botones de la app, y
   el default es el que decide si la regla se cumple o no. `sm` sigue en 32 y esta
@@ -878,8 +878,8 @@ type ButtonSize = 'sm' | 'md' | 'lg' | 'icon';
 
 ### 8.2 `IconButton`
 
-Ícono + `aria-label` obligatorio. `sm` **40×40** (default), `md` **44×44**, y `md` es
-la medida en `ScreenHeader` y `Sheet`. `tooltip` opcional (solo desktop, se oculta en
+Ícono + `aria-label` obligatorio. `sm` y `md` **44×44**, con `md` por defecto:
+el tamaño compacto conserva el objetivo táctil. `tooltip` opcional (solo desktop, se oculta en
 touch). Indicador de foco: el bloque `outline` de §8.3.
 
 ### 8.3 El indicador de foco — obligatorio
@@ -994,11 +994,9 @@ invertido). Un componente, dos densidades.
   Esto es lo que hacen las referencias: el chip activo es negro.
 - **Contenido**: `bg-surface-2 text-secondary` o con `tone` para `positive` /
   `negative` / `warning` / `brand` (`-soft` + `-border` + color de texto).
-- Alturas: **`md` 40 (filtro)**, `sm` **28 (contenido)**. El `mode` decide el tamaño
-  por defecto: `filter` → `md` (40), `content` → `sm` (28).
-- El filtro `md` **subió de 36 a 40** por §0.5: es el control de la barra de filtros
-  de `/buscar`, del filtro de rareza y del selector de modo, los tres en el camino
-  principal del pulgar y los tres con el default `md`. El default es el que se mide.
+- Alturas: **`md` 44 (filtro o acción)**, `sm` **28 (contenido)**. El `mode` decide el tamaño
+  por defecto: `filter` → `md` (44), `content` → `sm` (28). Las acciones de ficha
+  usan `md` explícito para conservar un objetivo táctil de 44 px.
 - **El chip de contenido se queda en 28 a propósito**, y es la excepción que §0.5
   pide justificar. El chip de contenido vive **adentro** de una card, al lado de un
   precio o de un contador: subirlo a 40 no lo haría más accesible —el objetivo real

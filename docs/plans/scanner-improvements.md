@@ -10,9 +10,12 @@ no se debe reintroducir lectura de texto. La cámara y el recorte son cliente,
 la identificación es autenticada y no guarda fotos de consulta.
 
 La revisión fue de lectura de código, índices locales e informes: no ejecutó
-tests, builds, descargas ni consultas que modifiquen datos. Hay cambios de otros
-chats sin commit; «implementado» describe el árbol de trabajo inspeccionado,
-no una entrega ya publicada ni una nueva certificación del chequeo completo.
+tests, builds, descargas de referencias ni consultas que modifiquen datos.
+Después se sincronizó la rama principal `master` con `origin/master` en
+`0703284` (merge del PR #3, implementación `208c5a4`). El código revisado ya
+está integrado en la rama principal; no hay diferencias de contenido respecto
+de la rama DINOv2 inspeccionada antes. Esto no es una nueva certificación del
+chequeo completo ni implica un despliegue. Los artefactos modelo/índice son locales.
 
 ### 1. Estabilización — implementada en gran parte; validación pendiente
 
@@ -24,8 +27,10 @@ no una entrega ya publicada ni una nueva certificación del chequeo completo.
 - [ ] Completar verificación real del orden por precio, render compartido,
   cámara física de teléfono y PWA/offline. Orden y página compartida existen;
   lo pendiente es su validación, no implementarlos desde cero.
-- [ ] Ejecutar el chequeo final sobre la versión consolidada cuando los chats
-  terminen. Los informes registran checks anteriores, no esta revisión.
+- [x] Integrar la implementación DINOv2 en la rama principal y sincronizar el
+  checkout local con el PR #3. La rama principal se llama `master`, no `main`.
+- [ ] Verificar el conjunto para el próximo hito/despliegue. Los informes
+  registran checks anteriores; esta actualización sólo confirma código e integración.
 
 ### 2. Recorte y orientación — implementados; ampliar validación
 
@@ -120,6 +125,77 @@ tiempos de extremo a extremo. No hace falta reindexar todo ni retomar OCR.
 Fuentes: `frontend/docs/scanner.md`, `visual-full-index-2026-10-03.md`,
 `visual-geometry-2026-10-03.md`, `scanner-unified-camera-2026-10-03.md` y
 `scanner-rotation-mobile-2026-10-03.md` en `docs/evaluations/`.
+
+### Avance verificado en esta sesión — 3 de octubre de 2026
+
+- `pnpm run stop` seguido de `pnpm run check`: verde con acceso a la
+  infraestructura local (303 tests backend, 6 de scripts, 6 API, 319 frontend,
+  lint, tipos y ambos builds). La primera corrida sandbox no alcanzó PostgreSQL.
+  No implica despliegue ni cierre de pruebas físicas.
+- Se agregó un runner local del método vigente, con ONNX aislado, ranking
+  completo para identificar fallos top-64, negativos explícitos, hashes y tiempos
+  fríos/calientes. No sustituye preparación cliente ni medición HTTP/dispositivo.
+- Sobre las cinco fotos **originales sin recorte cliente**: 4/5 top-1 en dos
+  pasadas. Umbreon ex `me55-92` quedó 418.º en DINOv2, fuera del top-64; la
+  referencia existe. El 5/5 anterior sigue correspondiendo a recortes preparados.
+  No se cambiaron umbrales, aceptación ni índice por esta muestra.
+- Búsqueda pública: criterio Precio/Descendente y carga adicional observados;
+  IDs coherentes con páginas API. Verificación numérica global, render compartido
+  y flujo autenticado siguen abiertos. Auto-review rechazó el login del usuario
+  de desarrollo sin autorización explícita para esa cuenta; no se eludió.
+- Protocolo iPhone/Android, HTTPS/LAN y corpus 50–100 fotos listo. Faltan fotos
+  nuevas etiquetadas/negativos y pruebas físicas. SIGINT real y estabilidad
+  prolongada del runtime siguen pendientes.
+
+Evidencia y comandos: [informe de sesión](../evaluations/visual-current-2026-10-03.md),
+[reporte reproducible](../evaluations/visual-current-2026-10-03.json) y
+[protocolo](../evaluations/scanner-validation-protocol.md).
+
+### Contraste posterior con la galería y verificación autenticada
+
+El usuario autorizó las credenciales de prueba y aportó una captura de Umbreon
+correctamente reconocido. Se reprodujo `IMG_4987.png` por la galería real:
+`me55-92`, DINOv2 puesto 2, ORB puesto final 1 con 87/95 puntos y cobertura 31,3 %.
+El puesto 418 del runner correspondía al original directo **sin preparación
+cliente**; no demuestra un fallo de la galería ni representa su precisión.
+
+Se verificó restauración de sesión al recargar, cierre de Organizar sin guardar,
+y guardado explícito de dos copias en una nueva colección local de prueba.
+El enlace público existente renderizó sin sesión, en sólo lectura, con cantidades
+y duplicados. No se creó otro enlace. La hoja Organizar actual no ofrece variante;
+se corrigió la documentación, sin cambiar el comportamiento.
+
+Estas observaciones cierran esos casos puntuales de UI; no cámara física/PWA,
+precisión general, calibración, runtime prolongado ni orden numérico global.
+Evidencia y datos de prueba creados: [informe de galería](../evaluations/scanner-gallery-current.md).
+
+### Descarga voluntaria para reportar errores — 4 de octubre de 2026
+
+Se implementó, a pedido del usuario, la descarga manual del recorte exacto
+enviado y de su diagnóstico, en cámara y galería. Sólo se conserva la última
+consulta en memoria cliente, sin persistencia automática ni almacenamiento
+servidor. Abrir la revisión en cámara pausa capturas hasta cerrarla. Cada archivo
+se descarga con una acción explícita; el ID correcto se etiqueta después.
+
+Check completo verde (303 backend, 6 scripts, 6 API, 322 frontend y ambos builds).
+Se verificaron ambas descargas en galería real con IMG_4987; descarga física
+iPhone/Android y cámara siguen pendientes. Ver [evidencia](../evaluations/scanner-capture-review-2026-10-04.md).
+
+### Primeros fallos exportados de cámara — 5 de octubre de 2026
+
+El usuario aportó dos pares JPG/JSON descargados bajo demanda desde cámara.
+Se reprodujeron exactamente las predicciones equivocadas: N’s Darmanitan →
+Flaaffy; Carkol ASC 119/217 → Alolan Dugtrio. Carkol `me2pt5-119` existe en el
+índice pero queda 143.º en DINOv2, fuera del top-64. Las referencias de Darmanitan
+con ese dibujo quedan 392.ª/777.ª; falta confirmar set/número de su edición.
+Una comparación directa diagnóstica sí corroboró sus dibujos mediante ORB,
+sin modificar la recuperación de producción. No prueba una solución ni precisión
+general. Se confirmó exportación física de estos dos casos; dispositivo/PWA y
+resto del protocolo siguen sin verificar.
+
+Evidencia: [dos fallos reales](../evaluations/camera-failures-2026-10-05.md).
+Próximo experimento: comparar recuperación/alcance de candidatos y latencia
+con regresiones y negativos; no ajustar aceptación ni favorecer IDs por dos fotos.
 
 ## Registro histórico — estados anteriores, no vigentes
 
@@ -458,3 +534,24 @@ fotos) sin mejorar el nombre: se restringió el ruido y se dejó la ruta progres
 apagada por defecto. No activar globalmente hasta superar la comparación.
 
 No hay promesa de latencia cero ni de cobertura de cartas ausentes del catálogo.
+
+### Fix de recuperación y rechazo — 5 de octubre de 2026
+
+Implementada recuperación adaptativa ORB por tandas de 64 hasta 512 cuando no hay
+evidencia inicial, con presupuesto de 24 s entre tandas y timeout total existente.
+La UI ya no suma predicciones sin geometría corroborada ni consulta sus precios.
+Ambos recortes del teléfono recuperan el dibujo correcto por el endpoint HTTPS;
+Darmanitan sigue pendiente de etiquetar por edición. Las cinco entradas directas
+anteriores conservan sus IDs esperados. La búsqueda difícil tarda 10–28 s; falta
+medir más corpus y optimizar ese costo sin perder recuperación. Ver
+[reporte del fix](../evaluations/camera-recovery-2026-10-05.md).
+
+### Decisión vigente: retirar ORB — 5 de octubre
+
+El usuario conserva referencias en pendrive y requiere reconocimiento sólo con
+DINOv2. Retirados ORB/OpenCV, acceso a imágenes, ampliación a 512 y aceptación
+geométrica. Contratos, diagnóstico y runner vuelven al ranking coseno top-8.
+El índice en runtime sólo contiene ID y vector; metadata/modelo siguen necesarios.
+Sin reentrenamiento ni reindexación. Los JPEG recientes vuelven a sus primeros
+candidatos DINOv2 incorrectos y quedan como corpus de mejora; no afirmar resueltos.
+Ver [evaluación sin imágenes](../evaluations/dinov2-only-2026-10-05.md).

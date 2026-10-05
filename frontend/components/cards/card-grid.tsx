@@ -26,6 +26,8 @@ const DEFAULT_PRIORITY_COUNT = 5;
 
 export interface CardGridEntry {
   card: CardDto;
+  /** Destino con el contexto del catálogo, si corresponde. */
+  href?: string;
   /** Cantidad de esa carta. Solo se pinta si es > 1. */
   quantity?: number;
   /** Se pasa tal cual al `CardTile`. Omitido = la fila de precio no se dibuja. */
@@ -242,6 +244,7 @@ export function CardGrid({
         const cell = (
           <CardTile
             card={entry.card}
+            href={entry.href}
             variant={variant}
             quantity={entry.quantity}
             priceUsd={entry.priceUsd}

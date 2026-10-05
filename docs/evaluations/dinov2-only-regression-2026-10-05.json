@@ -1,0 +1,449 @@
+{
+  "evaluatedAt": "2026-10-05T11:41:05.005Z",
+  "manifestHash": "2442452ae3c301b3204287e549c422f8e08c30feb66d1248cbeba13e5fdeb33b",
+  "scope": "Fotos provistas ya preparadas; motor local DINOv2 puro top-8 vigente. Sin cámara, recorte cliente, HTTP ni precio. Primera consulta fría; posteriores calientes, no reinicios por foto.",
+  "productionReady": false,
+  "uniquePhotos": 5,
+  "repeats": 1,
+  "metrics": {
+    "positives": 5,
+    "negatives": 0,
+    "top1": 3,
+    "falsePredictions": 2,
+    "missingReferences": 0,
+    "retrievalMissesTop64": 1,
+    "negativePredictions": 0,
+    "falseSessionAcceptances": 0,
+    "acceptancePolicy": "La UI suma #1 DINOv2; no confirma edición/acabado ni persiste colección. No hay rechazo calibrado.",
+    "timing": {
+      "cold": {
+        "modelMs": {
+          "n": 1,
+          "p50": 101.538666,
+          "p95": 101.538666,
+          "p99": 101.538666
+        },
+        "indexMs": {
+          "n": 1,
+          "p50": 1227.5071670000002,
+          "p95": 1227.5071670000002,
+          "p99": 1227.5071670000002
+        },
+        "inferenceMs": {
+          "n": 1,
+          "p50": 228.8487500000001,
+          "p95": 228.8487500000001,
+          "p99": 228.8487500000001
+        },
+        "rankingMs": {
+          "n": 1,
+          "p50": 25.72420800000009,
+          "p95": 25.72420800000009,
+          "p99": 25.72420800000009
+        },
+        "totalMs": {
+          "n": 1,
+          "p50": 1593.19875,
+          "p95": 1593.19875,
+          "p99": 1593.19875
+        },
+        "coordinatorMs": {
+          "n": 1,
+          "p50": 1674.187958,
+          "p95": 1674.187958,
+          "p99": 1674.187958
+        }
+      },
+      "warm": {
+        "modelMs": {
+          "n": 4,
+          "p50": 0.00020899999981338624,
+          "p95": 0.0002500000000509317,
+          "p99": 0.0002500000000509317
+        },
+        "indexMs": {
+          "n": 4,
+          "p50": 13.769332999999733,
+          "p95": 14.164792000000034,
+          "p99": 14.164792000000034
+        },
+        "inferenceMs": {
+          "n": 4,
+          "p50": 216.95049999999992,
+          "p95": 227.62941599999976,
+          "p99": 227.62941599999976
+        },
+        "rankingMs": {
+          "n": 4,
+          "p50": 15.620124999999916,
+          "p95": 19.064707999999882,
+          "p99": 19.064707999999882
+        },
+        "totalMs": {
+          "n": 4,
+          "p50": 258.1926659999999,
+          "p95": 267.8284170000002,
+          "p99": 267.8284170000002
+        },
+        "coordinatorMs": {
+          "n": 4,
+          "p50": 258.52783299999965,
+          "p95": 268.1719170000001,
+          "p99": 268.1719170000001
+        }
+      }
+    }
+  },
+  "results": [
+    {
+      "sample": 0,
+      "repeat": 0,
+      "cardId": "me55c-106",
+      "conditions": [],
+      "cold": true,
+      "metadata": {
+        "revision": "8b1f705a3a7f6f062f6bdd21986c1583d3ef105d",
+        "precision": "int8",
+        "dimensions": 384,
+        "preprocessingHash": "8170121eafd1c4dd3122475255b0c6bb811cc598d38abcaf34ac9dd5ca483708",
+        "modelHash": "c179f8f7f592449c4c1bca4cd124a7538021428c5ffb89afde9503935b197efb"
+      },
+      "indexVersion": "9d89a62b919f5a489428a92b965ec6bf98f982a7a0f36abd5d36c2611808ebca",
+      "references": 20670,
+      "collections": 175,
+      "photoHash": "165be45c358c2c37faf737cd3fb46185c248152783a450315e10a59e379e2d64",
+      "expectedReferencePresent": true,
+      "retrievalRank": 1,
+      "finalRank": 1,
+      "retrievalLimit": 8,
+      "candidates": [
+        {
+          "id": "me55c-106",
+          "similarity": 0.7874177915345428,
+          "retrievalRank": 1
+        },
+        {
+          "id": "swsh4-9",
+          "similarity": 0.7457132088851391,
+          "retrievalRank": 2
+        },
+        {
+          "id": "ecard3-146",
+          "similarity": 0.7397283834416151,
+          "retrievalRank": 3
+        },
+        {
+          "id": "ex6-52",
+          "similarity": 0.7385929689529861,
+          "retrievalRank": 4
+        },
+        {
+          "id": "ex1-20",
+          "similarity": 0.7361903691104288,
+          "retrievalRank": 5
+        },
+        {
+          "id": "ex15-93",
+          "similarity": 0.734516276222172,
+          "retrievalRank": 6
+        },
+        {
+          "id": "base2-6",
+          "similarity": 0.7329983721303525,
+          "retrievalRank": 7
+        },
+        {
+          "id": "ex11-44",
+          "similarity": 0.7322392917043257,
+          "retrievalRank": 8
+        }
+      ],
+      "modelMs": 101.538666,
+      "indexMs": 1227.5071670000002,
+      "inferenceMs": 228.8487500000001,
+      "rankingMs": 25.72420800000009,
+      "totalMs": 1593.19875,
+      "coordinatorMs": 1674.187958
+    },
+    {
+      "sample": 1,
+      "repeat": 0,
+      "cardId": "me55-23",
+      "conditions": [],
+      "cold": false,
+      "metadata": {
+        "revision": "8b1f705a3a7f6f062f6bdd21986c1583d3ef105d",
+        "precision": "int8",
+        "dimensions": 384,
+        "preprocessingHash": "8170121eafd1c4dd3122475255b0c6bb811cc598d38abcaf34ac9dd5ca483708",
+        "modelHash": "c179f8f7f592449c4c1bca4cd124a7538021428c5ffb89afde9503935b197efb"
+      },
+      "indexVersion": "9d89a62b919f5a489428a92b965ec6bf98f982a7a0f36abd5d36c2611808ebca",
+      "references": 20670,
+      "collections": 175,
+      "photoHash": "0627b7fc7d103192b03ec4de5fcfadaaeb3da928318ede2d4daf3ea67f861a52",
+      "expectedReferencePresent": true,
+      "retrievalRank": 2,
+      "finalRank": 2,
+      "retrievalLimit": 8,
+      "candidates": [
+        {
+          "id": "ex16-48",
+          "similarity": 0.7795230018745984,
+          "retrievalRank": 1
+        },
+        {
+          "id": "me55-23",
+          "similarity": 0.7647471310119569,
+          "retrievalRank": 2
+        },
+        {
+          "id": "mcd19-11",
+          "similarity": 0.7553957549960709,
+          "retrievalRank": 3
+        },
+        {
+          "id": "bw6-53",
+          "similarity": 0.7514457476885713,
+          "retrievalRank": 4
+        },
+        {
+          "id": "swsh2-61",
+          "similarity": 0.7449793194483564,
+          "retrievalRank": 5
+        },
+        {
+          "id": "neo4-51",
+          "similarity": 0.7397369991950948,
+          "retrievalRank": 6
+        },
+        {
+          "id": "ex9-37",
+          "similarity": 0.7385315800086396,
+          "retrievalRank": 7
+        },
+        {
+          "id": "sm7-11",
+          "similarity": 0.7380775965072903,
+          "retrievalRank": 8
+        }
+      ],
+      "modelMs": 0.0002500000000509317,
+      "indexMs": 14.164792000000034,
+      "inferenceMs": 216.95049999999992,
+      "rankingMs": 19.064707999999882,
+      "totalMs": 262.80004099999996,
+      "coordinatorMs": 263.41754200000014
+    },
+    {
+      "sample": 2,
+      "repeat": 0,
+      "cardId": "me55-92",
+      "conditions": [],
+      "cold": false,
+      "metadata": {
+        "revision": "8b1f705a3a7f6f062f6bdd21986c1583d3ef105d",
+        "precision": "int8",
+        "dimensions": 384,
+        "preprocessingHash": "8170121eafd1c4dd3122475255b0c6bb811cc598d38abcaf34ac9dd5ca483708",
+        "modelHash": "c179f8f7f592449c4c1bca4cd124a7538021428c5ffb89afde9503935b197efb"
+      },
+      "indexVersion": "9d89a62b919f5a489428a92b965ec6bf98f982a7a0f36abd5d36c2611808ebca",
+      "references": 20670,
+      "collections": 175,
+      "photoHash": "5c120c9c877dd685cd59e0d938815b558ba9491c0cf8b90f6453dd52f00ce837",
+      "expectedReferencePresent": true,
+      "retrievalRank": 418,
+      "finalRank": null,
+      "retrievalLimit": 8,
+      "candidates": [
+        {
+          "id": "pop5-10",
+          "similarity": 0.6967035733706511,
+          "retrievalRank": 1
+        },
+        {
+          "id": "ex7-31",
+          "similarity": 0.6965434907329522,
+          "retrievalRank": 2
+        },
+        {
+          "id": "dp2-122",
+          "similarity": 0.6939221537196211,
+          "retrievalRank": 3
+        },
+        {
+          "id": "ex7-40",
+          "similarity": 0.6918488845484406,
+          "retrievalRank": 4
+        },
+        {
+          "id": "ex7-19",
+          "similarity": 0.6833636464820975,
+          "retrievalRank": 5
+        },
+        {
+          "id": "swsh5-96",
+          "similarity": 0.6808414524392505,
+          "retrievalRank": 6
+        },
+        {
+          "id": "ex10-54",
+          "similarity": 0.6768421933408084,
+          "retrievalRank": 7
+        },
+        {
+          "id": "dp7-88",
+          "similarity": 0.6718210349878933,
+          "retrievalRank": 8
+        }
+      ],
+      "modelMs": 0.0002500000000509317,
+      "indexMs": 13.45620800000006,
+      "inferenceMs": 213.26245900000004,
+      "rankingMs": 15.620124999999916,
+      "totalMs": 251.78500000000008,
+      "coordinatorMs": 252.32633299999998
+    },
+    {
+      "sample": 3,
+      "repeat": 0,
+      "cardId": "me55-137",
+      "conditions": [],
+      "cold": false,
+      "metadata": {
+        "revision": "8b1f705a3a7f6f062f6bdd21986c1583d3ef105d",
+        "precision": "int8",
+        "dimensions": 384,
+        "preprocessingHash": "8170121eafd1c4dd3122475255b0c6bb811cc598d38abcaf34ac9dd5ca483708",
+        "modelHash": "c179f8f7f592449c4c1bca4cd124a7538021428c5ffb89afde9503935b197efb"
+      },
+      "indexVersion": "9d89a62b919f5a489428a92b965ec6bf98f982a7a0f36abd5d36c2611808ebca",
+      "references": 20670,
+      "collections": 175,
+      "photoHash": "04269e0bdd830df030e66e68ac609a2d18f128aeab6e24f2b9dc0db35c75b0d6",
+      "expectedReferencePresent": true,
+      "retrievalRank": 1,
+      "finalRank": 1,
+      "retrievalLimit": 8,
+      "candidates": [
+        {
+          "id": "me55-137",
+          "similarity": 0.8698440005949594,
+          "retrievalRank": 1
+        },
+        {
+          "id": "sv8pt5-149",
+          "similarity": 0.6895564194276391,
+          "retrievalRank": 2
+        },
+        {
+          "id": "me2pt5-234",
+          "similarity": 0.6838240275982835,
+          "retrievalRank": 3
+        },
+        {
+          "id": "rsv10pt5-103",
+          "similarity": 0.6722417713362001,
+          "retrievalRank": 4
+        },
+        {
+          "id": "sm12-226",
+          "similarity": 0.6722020930262174,
+          "retrievalRank": 5
+        },
+        {
+          "id": "sv8pt5-156",
+          "similarity": 0.6522611254531197,
+          "retrievalRank": 6
+        },
+        {
+          "id": "sv2-262",
+          "similarity": 0.6421826844571278,
+          "retrievalRank": 7
+        },
+        {
+          "id": "swsh7-212",
+          "similarity": 0.6407459664741117,
+          "retrievalRank": 8
+        }
+      ],
+      "modelMs": 0.00020899999981338624,
+      "indexMs": 13.769332999999733,
+      "inferenceMs": 227.62941599999976,
+      "rankingMs": 15.629667000000154,
+      "totalMs": 267.8284170000002,
+      "coordinatorMs": 268.1719170000001
+    },
+    {
+      "sample": 4,
+      "repeat": 0,
+      "cardId": "me55-145",
+      "conditions": [],
+      "cold": false,
+      "metadata": {
+        "revision": "8b1f705a3a7f6f062f6bdd21986c1583d3ef105d",
+        "precision": "int8",
+        "dimensions": 384,
+        "preprocessingHash": "8170121eafd1c4dd3122475255b0c6bb811cc598d38abcaf34ac9dd5ca483708",
+        "modelHash": "c179f8f7f592449c4c1bca4cd124a7538021428c5ffb89afde9503935b197efb"
+      },
+      "indexVersion": "9d89a62b919f5a489428a92b965ec6bf98f982a7a0f36abd5d36c2611808ebca",
+      "references": 20670,
+      "collections": 175,
+      "photoHash": "2e957891906091e331a0af9b5d5818f7aa8d5fead74e062e67aa627e8b25e65a",
+      "expectedReferencePresent": true,
+      "retrievalRank": 1,
+      "finalRank": 1,
+      "retrievalLimit": 8,
+      "candidates": [
+        {
+          "id": "me55-145",
+          "similarity": 0.7786599609726274,
+          "retrievalRank": 1
+        },
+        {
+          "id": "swsh2-63",
+          "similarity": 0.6822103582313318,
+          "retrievalRank": 2
+        },
+        {
+          "id": "swsh3-78",
+          "similarity": 0.6730173669209814,
+          "retrievalRank": 3
+        },
+        {
+          "id": "swsh7-212",
+          "similarity": 0.6708752932845748,
+          "retrievalRank": 4
+        },
+        {
+          "id": "me55-133",
+          "similarity": 0.668656506692135,
+          "retrievalRank": 5
+        },
+        {
+          "id": "swsh10-176",
+          "similarity": 0.662723997871115,
+          "retrievalRank": 6
+        },
+        {
+          "id": "swsh8-216",
+          "similarity": 0.662182945567377,
+          "retrievalRank": 7
+        },
+        {
+          "id": "sv5-205",
+          "similarity": 0.6596732974170064,
+          "retrievalRank": 8
+        }
+      ],
+      "modelMs": 0.00020899999981338624,
+      "indexMs": 13.898916999999983,
+      "inferenceMs": 217.62212499999987,
+      "rankingMs": 15.570040999999947,
+      "totalMs": 258.1926659999999,
+      "coordinatorMs": 258.52783299999965
+    }
+  ]
+}

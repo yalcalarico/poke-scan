@@ -96,7 +96,7 @@ export function ScanSessionResume({ className }: { className?: string }) {
         hecho permanente de la sesión. Un `Alert tone="info"` con ícono de alerta
         haría que leer 7 cartas se sintiera como un problema, y no lo es.
       */}
-      <div className="flex items-center gap-3 rounded-panel border border-line bg-surface-2 p-4 shadow-sm">
+      <div className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 rounded-panel sm:grid-cols-[auto_minmax(0,1fr)_auto] border border-line bg-surface-2 p-4 shadow-sm">
         <div className="grid size-10 shrink-0 place-items-center rounded-full bg-brand-soft text-brand">
           <ScanLine aria-hidden="true" focusable="false" strokeWidth={1.75} className="h-5 w-5" />
         </div>
@@ -116,7 +116,7 @@ export function ScanSessionResume({ className }: { className?: string }) {
         */}
         <Link
           href="/escanear"
-          className={cn(buttonVariants({ variant: 'secondary', size: 'md' }), 'shrink-0')}
+          className={cn(buttonVariants({ variant: 'secondary', size: 'md' }), 'col-span-2 w-full sm:col-span-1 sm:w-auto')}
         >
           Organizar
         </Link>

@@ -27,13 +27,18 @@ export default function CardDetailLoading() {
 
       <ScreenContainer aria-busy="true">
         <div role="status" aria-label="Cargando la ficha de la carta" className="flex flex-col gap-6 md:gap-8">
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 md:gap-8">
-            <div className="flex flex-col items-center gap-5">
-              <Skeleton variant="card" className="w-full max-w-xs rounded-surface" />
-              <Skeleton className="h-6 w-40" />
+          <div className="grid grid-cols-1 items-start gap-5 md:grid-cols-2 md:gap-8">
+            <div className="flex flex-col items-center gap-3 md:gap-5">
+              <Skeleton variant="card" className="w-full max-w-56 rounded-surface md:max-w-xs" />
+              <Skeleton className="hidden h-6 w-40 md:block" />
             </div>
 
-            <div className="flex flex-col gap-5">
+            <div className="flex min-w-0 flex-col gap-5">
+              <div className="flex flex-col gap-1">
+                <Skeleton className="h-8 w-48" />
+                <Skeleton className="h-5 w-40" />
+                <Skeleton className="h-4 w-32" />
+              </div>
               <Surface padded={false} className="p-4">
                 <div className="flex items-center justify-between gap-3">
                   <Skeleton className="h-3 w-24" />
@@ -46,11 +51,11 @@ export default function CardDetailLoading() {
               <Skeleton variant="stat" className="h-11 w-full" />
 
               <div className="-mx-4 flex gap-2 overflow-hidden px-4 sm:mx-0 sm:px-0">
-                <span className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full bg-surface-2 px-3.5">
+                <span className="inline-flex h-11 shrink-0 items-center gap-1.5 rounded-full bg-surface-2 px-3.5">
                   <FolderPlus aria-hidden="true" focusable="false" strokeWidth={1.75} className="h-4 w-4 text-disabled" />
                   <Skeleton className="h-3 w-14" />
                 </span>
-                <span className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full bg-surface-2 px-3.5">
+                <span className="inline-flex h-11 shrink-0 items-center gap-1.5 rounded-full bg-surface-2 px-3.5">
                   <Share2 aria-hidden="true" focusable="false" strokeWidth={1.75} className="h-4 w-4 text-disabled" />
                   <Skeleton className="h-3 w-16" />
                 </span>

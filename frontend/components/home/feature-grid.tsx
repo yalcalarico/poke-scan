@@ -21,7 +21,7 @@ const FEATURES: readonly Feature[] = [
     href: `/escanear`,
     icon: ScanLine,
     title: 'Escaneá',
-    description: 'Encuadrá la carta y DINOv2 reconoce el dibujo automáticamente.',
+    description: 'Reconocé tus cartas con la cámara y consultá su valor.',
   },
   {
     href: `/buscar`,
@@ -49,9 +49,7 @@ const FEATURES: readonly Feature[] = [
  * tarjeta (§8.14) sobre una caja `bg-brand-soft`, y el texto nunca depende del
  * ícono: el ícono es `aria-hidden`.
  *
- * El `heading` es `sr-only` porque las tres tarjetas ya dicen para qué sirve cada
- * cosa en su propio título: un encabezado visible arriba sería una cuarta frase
- * que repite lo que está abajo (§10.1).
+ * En móvil los accesos son filas compactas; desde tablet se reparten en tres columnas.
  *
  * El `outline` del foco va **por fuera** con sus 4 px de aire (`offset-2` + 2 px
  * de grosor), que es el patrón de `Button`/`Chip`/`Select`. Acá se puede: la
@@ -62,8 +60,8 @@ const FEATURES: readonly Feature[] = [
 export function FeatureGrid() {
   return (
     <section aria-labelledby="home-features" className="flex flex-col gap-4">
-      <h2 id="home-features" className="sr-only">
-        Qué podés hacer con PokéScan
+      <h2 id="home-features" className="text-h3 text-primary">
+        A mano
       </h2>
 
       <ul className="grid gap-3 sm:grid-cols-3 sm:gap-4">
@@ -78,8 +76,8 @@ export function FeatureGrid() {
               href={feature.href}
               className="block h-full rounded-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--focus-ring)]"
             >
-              <Surface interactive className="flex h-full flex-col gap-2">
-                <span className="grid size-10 place-items-center rounded-control bg-brand-soft text-brand">
+              <Surface interactive className="grid h-full grid-cols-[auto_minmax(0,1fr)] items-start gap-x-3 gap-y-1 sm:flex sm:flex-col sm:gap-2">
+                <span className="row-span-2 grid size-10 place-items-center rounded-control bg-brand-soft text-brand">
                   <feature.icon
                     aria-hidden="true"
                     focusable="false"
@@ -88,7 +86,7 @@ export function FeatureGrid() {
                   />
                 </span>
                 <span className="text-h3 text-primary">{feature.title}</span>
-                <span className="text-body text-secondary">{feature.description}</span>
+                <span className="text-caption text-secondary sm:text-body">{feature.description}</span>
               </Surface>
             </Link>
           </li>

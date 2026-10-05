@@ -3,8 +3,8 @@ import type { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/cn';
 
 const SIZES = {
-  // 40 es el mínimo de todo control tappable (§0.5).
-  sm: 'h-10 w-10',
+  // El ícono compacto conserva el mismo objetivo táctil de 44 px.
+  sm: 'h-11 w-11',
   // 44 en `ScreenHeader` y `Sheet`, que es donde el doc lo pide (§8.2).
   md: 'h-11 w-11',
 } as const;
@@ -33,7 +33,7 @@ export interface IconButtonProps extends React.ButtonHTMLAttributes<HTMLButtonEl
 export function IconButton({
   icon: Icon,
   label,
-  size = 'sm',
+  size = 'md',
   className,
   type = 'button',
   ...props

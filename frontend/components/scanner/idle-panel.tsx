@@ -48,8 +48,8 @@ export function IdlePanel({
         <h2 className="text-h3 text-primary">{showCamera ? 'Escanear carta' : 'Reconocer una carta'}</h2>
         <p className="text-body text-secondary">
           {showCamera && visualCamera
-            ? 'Encuadrá la carta: DINOv2 la reconoce automáticamente y suma la primera coincidencia a la sesión con su valor.'
-            : 'DINOv2 compara tu foto con el catálogo y suma la primera coincidencia a la sesión con su valor.'}
+            ? 'Encuadrá la carta y mantenela quieta. La primera coincidencia se suma a esta sesión para que la revises.'
+            : 'Subí una foto nítida, sin reflejos y con una sola carta. La primera coincidencia se suma a esta sesión para que la revises.'}
         </p>
       </div>
 
@@ -80,7 +80,7 @@ export function IdlePanel({
 
         {sessionCount > 0 ? (
           <Button variant="ghost" size="md" onClick={onOrganize} fullWidth>
-            Organizar la sesión
+            Organizar la sesión ({sessionCount})
           </Button>
         ) : null}
       </div>

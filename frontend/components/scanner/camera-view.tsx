@@ -1,7 +1,7 @@
 'use client';
 
 import { X } from 'lucide-react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 
 import { cn } from '@/lib/cn';
 import {
@@ -67,6 +67,8 @@ export interface CameraViewProps {
   onPickFromGallery: () => void;
   onDiscard: () => void;
   onOrganize: () => void;
+  reviewActions?: ReactNode;
+  autoCapturePaused?: boolean;
 }
 
 /** `torch` no está en `MediaTrackConstraintSet` del lib.dom: es una extensión. */
@@ -154,6 +156,8 @@ export function CameraView({
   onPickFromGallery,
   onDiscard,
   onOrganize,
+  reviewActions,
+  autoCapturePaused = false,
 }: CameraViewProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
@@ -375,7 +379,7 @@ export function CameraView({
       try {
         context.drawImage(video, crop.x, crop.y, crop.width, crop.height, 0, 0, canvas.width, canvas.height);
         const image = context.getImageData(0, 0, canvas.width, canvas.height);
-        const state = visualGateRef.current.observe(frameSignature(image), hasAlignedCard(image), busy, performance.now());
+        const state = visualGateRef.current.observe(frameSignature(image), hasAlignedCard(image), busy || autoCapturePaused, performance.now());
         setVisualReady(state.ready);
         if (state.capture) void grabRef.current('auto');
       } catch {
@@ -384,7 +388,7 @@ export function CameraView({
       }
     }, 350);
     return () => clearInterval(timer);
-  }, [autoVisual, busy, frameRect, isLive]);
+  }, [autoVisual, autoCapturePaused, busy, frameRect, isLive]);
 
   const handleToggleContinuous = useCallback(() => {
     setContinuous((current) => !current);
@@ -410,16 +414,16 @@ export function CameraView({
     // `lib/scanner/camera.ts`, sin tocar el chrome.
   }, []);
 
-  const captureDisabled = !isLive || isStarting || isCapturing || busy;
+  const captureDisabled = !isLive || isStarting || isCapturing || busy || autoCapturePaused;
 
   const status: ActionBarProps['status'] = isStarting
     ? 'Abriendo la cámara…'
     : busy
-      ? autoVisual ? 'Reconociendo la carta con DINOv2…' : 'La cámara sigue encendida: enderezá la carta si querés.'
+      ? autoVisual ? 'Reconociendo la carta…' : 'La cámara sigue encendida: enderezá la carta si querés.'
       : isCapturing
         ? 'Capturando…'
         : autoVisual
-          ? visualReady ? 'Carta estable. Retirala para leer otra.' : 'Encuadrá la carta y mantenela quieta: la leemos automáticamente.'
+          ? visualReady ? 'Captura lista. Retirá la carta para leer otra.' : 'Encuadrá la carta y mantenela quieta: la leemos automáticamente.'
         : continuous
           ? 'Escaneo continuo: no muevas la carta.'
           : 'Encuadrá la carta dentro del marco.';
@@ -498,17 +502,11 @@ export function CameraView({
           className="absolute right-4 top-[calc(env(safe-area-inset-top)+1rem)]"
         /> : null}
 
-        {detected ? (
-          <DetectedCardBar
-            candidate={detected.candidate}
-            className="absolute inset-x-4 bottom-4"
-          />
-        ) : null}
-        {autoVisual && liveResult ? (
-          <div role="status" className="absolute inset-x-4 bottom-4 rounded-panel bg-on-media p-3 text-on-media-text">
-            {liveResult}
-          </div>
-        ) : null}
+        {detected || reviewActions || (autoVisual && liveResult) ? <div className="absolute inset-x-4 bottom-4 flex max-h-[60%] flex-col gap-2 overflow-y-auto py-1">
+          {detected ? <DetectedCardBar candidate={detected.candidate} /> : null}
+          {autoVisual && liveResult ? <div role="status" className="rounded-panel bg-on-media p-3 text-on-media-text">{liveResult}</div> : null}
+          {reviewActions}
+        </div> : null}
       </div>
 
       <ActionBar

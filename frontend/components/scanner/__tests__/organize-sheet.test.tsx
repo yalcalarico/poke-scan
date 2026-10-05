@@ -64,6 +64,17 @@ beforeEach(() => {
 });
 
 describe('Organizar: edición y confirmación', () => {
+  it('sin colecciones ofrece crearlas y no permite enviar un lote sin destino', async () => {
+    listCollections.mockResolvedValue([]);
+    const { onSaved } = mount();
+    expect(await screen.findByRole('link', { name: 'Ir a colecciones' })).toHaveAttribute('href', '/colecciones');
+    const save = screen.getByRole('button', { name: 'Agregar todas (1)' });
+    expect(save).toBeDisabled();
+    fireEvent.click(save);
+    expect(addItem).not.toHaveBeenCalled();
+    expect(onSaved).not.toHaveBeenCalled();
+  });
+
   it('no pide colecciones privadas mientras la hoja está cerrada', async () => {
     const { rerender } = render(<OrganizeSheet open={false} entries={[entry(1)]} onClose={vi.fn()} onSaved={vi.fn()} onRemove={vi.fn()} />);
     await act(async () => undefined);

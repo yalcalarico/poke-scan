@@ -1772,12 +1772,9 @@ durante la lectura. `index.lock` o `sets-index.lock` bloquean la recarga. Conser
 el snapshot anterior y responde `indexStale=true` si no puede actualizarlo;
 sin un snapshot válido devuelve error. No reinicia ONNX para recargar vectores.
 
-El ranking visual recupera 64 candidatos por coseno y compara sus dibujos
-mediante ORB + homografía RANSAC. Cada candidato agrega `retrievalRank`
-y `geometry` (`matches`, `inliers`, `coverage`, `verified`), o `null` si no hay
-imagen local utilizable. La respuesta agrega `verificationMs`,
-`verificationAvailable` y `retrievalLimit`. Primero van candidatos con geometría
-consistente, ordenados por inliers y coseno como desempate; sin corroboración
-conserva el ranking original. Si falla el verificador, conserva ese ranking con
-`verificationAvailable=false`. No descarga imágenes ni recalcula embeddings.
-Detalle y limitaciones: [evaluación geométrica](../../docs/evaluations/visual-geometry-2026-10-03.md).
+El ranking visual devuelve hasta ocho candidatos ordenados por similitud coseno
+DINOv2. Cada candidato incluye `retrievalRank`; `retrievalLimit` informa el tamaño
+del top devuelto. No hay ORB ni campos de geometría o verificación. El escaneo
+no abre imágenes de referencia: necesita modelo ONNX, metadata y vectores.
+No modifica pesos ni recalcula embeddings. La similitud no es una probabilidad
+ni certifica edición/acabado. Ver [evaluación DINOv2 puro](../../docs/evaluations/dinov2-only-2026-10-05.md).

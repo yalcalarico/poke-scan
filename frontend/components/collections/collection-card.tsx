@@ -43,7 +43,7 @@ export interface CollectionCardProps {
 /**
  * Cuántas miniaturas y cómo se reparten en la grilla de 2×2.
  *
- * Los huecos se resuelven estirando la primera: con 1 no hay grilla (una sola
+ * Las celdas se reparten sin recortar las cartas: con 1 no hay grilla (una sola
  * fila, la imagen toma todo), con 2 son dos mitades verticales, con 3 es la de la
  * izquierda completa y dos apiladas a la derecha, con 4 la grilla llena. Es el
  * collage que muestra la referencia y nunca deja un hueco negro.
@@ -141,12 +141,12 @@ export function CollectionCard({ collection, cover, className }: CollectionCardP
         {hasCover ? (
           <div
             className={cn(
-              'grid aspect-[4/3] grid-cols-2 grid-rows-2 gap-0.5 bg-surface-2',
+              'grid h-44 grid-cols-2 grid-rows-2 gap-2 bg-surface-2 p-3',
               images.length === 1 && 'grid-rows-1',
             )}
           >
             {images.map((image, index) => (
-              <div key={`${image.imageSmall}-${index}`} className={cn('relative', layout[index])}>
+              <div key={`${image.imageSmall}-${index}`} className={cn('relative min-h-0', layout[index])}>
                 <Image
                   src={image.imageSmall}
                   // El nombre de la colección ya está en el texto de abajo: un
@@ -154,13 +154,13 @@ export function CollectionCard({ collection, cover, className }: CollectionCardP
                   alt=""
                   fill
                   sizes="(max-width: 639px) 92vw, (max-width: 1023px) 45vw, 30vw"
-                  className="object-cover"
+                  className="object-contain"
                 />
               </div>
             ))}
           </div>
         ) : (
-          <div className="grid aspect-[4/3] place-items-center bg-brand-soft text-brand">
+          <div className="grid h-44 place-items-center bg-brand-soft text-brand">
             <Layers aria-hidden="true" focusable="false" strokeWidth={1.75} className="h-8 w-8" />
           </div>
         )}
@@ -172,7 +172,7 @@ export function CollectionCard({ collection, cover, className }: CollectionCardP
             nada en un flex row.
           */}
           <div className="flex min-w-0 items-center gap-2">
-            <p id={titleId} className="min-w-0 truncate text-body-strong text-primary" title={collection.name}>
+            <p id={titleId} className="min-w-0 flex-1 break-words text-body-strong text-primary" title={collection.name}>
               {collection.name}
             </p>
             {collection.isDefault ? (
@@ -184,6 +184,10 @@ export function CollectionCard({ collection, cover, className }: CollectionCardP
 
           <p className="text-caption text-tertiary tabular-nums">
             {formatCount(collection.itemCount)} {pluralize(collection.itemCount, 'carta', 'cartas')}
+          </p>
+
+          <p className="text-caption text-secondary tabular-nums">
+            {formatCount(collection.uniqueCount)} únicas · {formatCount(collection.duplicateCount)} duplicadas
           </p>
 
           <div className="mt-auto flex items-center justify-between gap-2 pt-2">

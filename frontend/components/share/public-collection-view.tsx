@@ -66,7 +66,7 @@ export function PublicCollectionView({ data }: PublicCollectionViewProps) {
               <p className="truncate text-caption text-secondary">
                 Colección de <span className="text-body-strong text-primary">{ownerDisplayName}</span>
               </p>
-              <h1 className="truncate text-h1 text-primary">{collectionName}</h1>
+              <h1 className="break-words text-h1 text-primary">{collectionName}</h1>
             </div>
           </div>
 
@@ -104,7 +104,7 @@ export function PublicCollectionView({ data }: PublicCollectionViewProps) {
         ) : null}
 
         <section aria-labelledby="cartas-compartidas" className="flex flex-col gap-4">
-          <h2 id="cartas-compartidas" className="flex items-center gap-2 text-h2 text-primary">
+          <h2 id="cartas-compartidas" className="flex flex-wrap items-center gap-2 text-h2 text-primary">
             <Layers aria-hidden="true" focusable="false" strokeWidth={1.75} className="h-5 w-5" />
             Cartas
             <span className="text-body text-tertiary tabular-nums">
@@ -127,7 +127,7 @@ export function PublicCollectionView({ data }: PublicCollectionViewProps) {
               size="sm"
               icon={Layers}
               title="Esta colección está vacía"
-              description={`${ownerDisplayName} todavía no agrego cartas a esta colección.`}
+              description={`${ownerDisplayName} todavía no agregó cartas a esta colección.`}
             />
           ) : (
             <PublicCardGrid items={items} label={`Cartas de ${ownerDisplayName}`} />
@@ -146,14 +146,14 @@ export function PublicCollectionView({ data }: PublicCollectionViewProps) {
           <div className="flex flex-wrap items-center justify-center gap-2">
             <Link
               href={"/buscar"}
-              className={cn(buttonVariants({ variant: 'secondary' }), 'h-10 px-4 text-label')}
+              className={cn(buttonVariants({ variant: 'secondary' }), 'px-4 text-label')}
             >
               <Search aria-hidden="true" focusable="false" strokeWidth={1.75} className="h-4 w-4" />
               Ver el catálogo
             </Link>
             <Link
               href={"/registro"}
-              className={cn(buttonVariants({ variant: 'primary' }), 'h-10 px-4 text-label')}
+              className={cn(buttonVariants({ variant: 'primary' }), 'px-4 text-label')}
             >
               <Plus aria-hidden="true" focusable="false" strokeWidth={1.75} className="h-4 w-4" />
               Armar mi colección

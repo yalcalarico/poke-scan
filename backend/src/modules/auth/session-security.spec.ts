@@ -56,4 +56,16 @@ describe('seguridad de sesión', () => {
       expect(() => readRefreshCookie(request(undefined, '1', cookie))).toThrow(UnauthorizedException);
     }
   });
+
+  it('admite el origen HTTPS LAN configurado y rechaza otra IP, puerto o protocolo', () => {
+    const cfg = config({
+      NODE_ENV: 'development', FRONTEND_URL: 'https://192.168.1.45:3100',
+      CORS_ORIGINS: 'https://192.168.1.45:3100,http://localhost:3100,http://127.0.0.1:3100',
+    });
+    expect(() => assertSessionRequest(request('https://192.168.1.45:3100'), cfg)).not.toThrow();
+    for (const origin of ['https://192.168.1.46:3100', 'https://192.168.1.45:3000', 'http://192.168.1.45:3100', 'null']) {
+      expect(() => assertSessionRequest(request(origin), cfg)).toThrow(ForbiddenException);
+    }
+    expect(() => assertSessionRequest(request('https://192.168.1.45:3100', ''), cfg)).toThrow(ForbiddenException);
+  });
 });
