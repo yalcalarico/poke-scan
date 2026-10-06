@@ -19,7 +19,9 @@ export const metadata: Metadata = {
  * El nombre de la app va arriba de la card, en `AuthShell`, compartido con el
  * registro, y dice "PokéScan" y no "Pokémon Scanner".
  */
-export default function LoginPage() {
+export default async function LoginPage({ searchParams }: { searchParams: Promise<{ next?: string }> }) {
+  const { next } = await searchParams;
+  const redirectPath = next === 'escanear' ? '/escanear' : '/buscar';
   return (
     <AuthShell
       title="Iniciar sesión"
@@ -36,7 +38,7 @@ export default function LoginPage() {
         </p>
       }
     >
-      <LoginForm />
+      <LoginForm redirectPath={redirectPath} />
     </AuthShell>
   );
 }

@@ -20,9 +20,8 @@ import { AutoVisualGate, frameSignature, hasAlignedCard } from '@/lib/scanner/au
 import { ActionBar, type ActionBarProps } from './action-bar';
 import { CardFrame } from './card-frame';
 import { CameraControls, NO_CAMERA_CAPABILITIES, type CameraCapabilities } from './camera-controls';
-import { DetectedCardBar, referencePrice } from './detected-bar';
+import { DetectedCardBar } from './detected-bar';
 import { HAPTIC, haptic } from './haptics';
-import { PriceChip } from './price-chip';
 import { frameToneFor, type SessionEntry } from './types';
 
 /**
@@ -69,6 +68,8 @@ export interface CameraViewProps {
   onOrganize: () => void;
   reviewActions?: ReactNode;
   autoCapturePaused?: boolean;
+  reviewOpen?: boolean;
+  onReview?: () => void;
 }
 
 /** `torch` no está en `MediaTrackConstraintSet` del lib.dom: es una extensión. */
@@ -158,7 +159,10 @@ export function CameraView({
   onOrganize,
   reviewActions,
   autoCapturePaused = false,
+  reviewOpen = false,
+  onReview,
 }: CameraViewProps) {
+  const viewportRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -183,20 +187,6 @@ export function CameraView({
    */
   const [frameRect, setFrameRect] = useState<BoxRect | null>(null);
 
-  /**
-   * El pulso del frame se **deriva**, no se cuenta con un `useEffect`: el
-   * `runId` de la sesión es único por captura, así que cambia exactamente
-   * cuando llega una lectura nueva.
-   *
-   * El baseline se congela en el montaje (un `useState` sin setter) para que el
-   * halo no pulse al reabrir la cámara: volver atrás desde un `Sheet` no es una
-   * lectura nueva. Se podría con un ref, pero leer un ref durante el render es
-   * exactamente lo que `react-hooks/refs` prohíbe.
-   */
-  const [pulseBaseline] = useState(() => detected?.runId ?? 0);
-  const currentRunId = detected?.runId ?? 0;
-  const pulseKey = currentRunId > pulseBaseline ? currentRunId : 0;
-
   useEffect(() => {
     handlersRef.current = { onCapture, onError, onClose };
   });
@@ -217,6 +207,31 @@ export function CameraView({
     return () => {
       observer.disconnect();
       window.removeEventListener('orientationchange', measure);
+    };
+  }, []);
+
+  useEffect(() => {
+    const viewport = window.visualViewport;
+    const root = viewportRef.current;
+    if (!root) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    // Safari cambia el área visible al mostrar sus barras o al volver del teclado.
+    const fitViewport = () => {
+      root.style.height = `${viewport?.height ?? window.innerHeight}px`;
+      root.style.width = `${viewport?.width ?? window.innerWidth}px`;
+      root.style.top = `${viewport?.offsetTop ?? 0}px`;
+      root.style.left = `${viewport?.offsetLeft ?? 0}px`;
+    };
+    fitViewport();
+    viewport?.addEventListener('resize', fitViewport);
+    viewport?.addEventListener('scroll', fitViewport);
+    window.addEventListener('resize', fitViewport);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      viewport?.removeEventListener('resize', fitViewport);
+      viewport?.removeEventListener('scroll', fitViewport);
+      window.removeEventListener('resize', fitViewport);
     };
   }, []);
 
@@ -429,7 +444,7 @@ export function CameraView({
           : 'Encuadrá la carta dentro del marco.';
 
   return (
-    <div className="fixed inset-0 z-media flex flex-col bg-canvas">
+    <div ref={viewportRef} className={cn("fixed left-0 top-0 flex h-dvh w-full flex-col overflow-hidden bg-canvas", reviewOpen ? "z-base" : "z-media")}>
       <div ref={stageRef} className="relative min-h-0 flex-1 overflow-hidden bg-on-media">
         <video
           ref={videoRef}
@@ -449,7 +464,7 @@ export function CameraView({
         <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-on-media/40" />
 
         <div aria-hidden="true" className="pointer-events-none absolute inset-0">
-          <CardFrame rect={frameRect} tone={autoVisual ? visualReady ? 'positive' : 'searching' : frameToneFor(detected?.candidate.score)} pulseKey={pulseKey} />
+          <CardFrame rect={frameRect} tone={autoVisual ? visualReady ? 'positive' : 'searching' : frameToneFor(detected?.candidate.score)} />
         </div>
 
         <div className="pointer-events-none absolute left-4 top-[calc(env(safe-area-inset-top)+1rem)]">
@@ -487,7 +502,11 @@ export function CameraView({
             tocar esto, leé el JSDoc de `price-chip.tsx`: la restricción es el
             rate limit de pokemontcg.io, no una preferencia.
           */}
-          {detected ? <PriceChip usd={referencePrice(detected.candidate)} className="mt-2" /> : null}
+
+        </div>
+
+        <div className="pointer-events-none absolute inset-x-16 top-[calc(env(safe-area-inset-top)+1rem)] flex min-h-11 items-center justify-center rounded-panel bg-on-media px-3 py-2 text-center text-on-media-text backdrop-blur-md">
+          <p className="truncate text-body-strong">{detected?.candidate.card.set?.name ?? detected?.candidate.card.setId ?? 'Encuadrá una carta'}</p>
         </div>
 
         {!hideControls ? <CameraControls
@@ -503,7 +522,11 @@ export function CameraView({
         /> : null}
 
         {detected || reviewActions || (autoVisual && liveResult) ? <div className="absolute inset-x-4 bottom-4 flex max-h-[60%] flex-col gap-2 overflow-y-auto py-1">
-          {detected ? <DetectedCardBar candidate={detected.candidate} /> : null}
+          {detected ? <button type="button" onClick={onReview} disabled={!onReview}
+            aria-label={`Revisar coincidencia de ${detected.candidate.card.name}`}
+            className="w-full rounded-panel text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-on-media-text">
+            <DetectedCardBar candidate={detected.candidate} />
+          </button> : null}
           {autoVisual && liveResult ? <div role="status" className="rounded-panel bg-on-media p-3 text-on-media-text">{liveResult}</div> : null}
           {reviewActions}
         </div> : null}

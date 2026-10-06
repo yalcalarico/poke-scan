@@ -22,6 +22,8 @@ import { addItem, listCollections } from '@/lib/api/collections';
 import { formatCardNumber } from '@/lib/format';
 import type { CollectionDto } from '@/types/api';
 
+import { ShowOrDash } from '@/components/cards/money';
+import { SwipeScanRow } from './swipe-scan-row';
 import { CardThumb } from './card-thumb';
 import { formatCount } from './copy';
 import type { SessionEntry } from './types';
@@ -33,12 +35,13 @@ type DraftStatus = 'idle' | 'saving' | 'done' | 'error';
 interface Draft {
   collectionId: string | null;
   quantity: number;
+  scanCount: number;
   status: DraftStatus;
   message: string | null;
 }
 
-function initialDraft(collectionId: string | null): Draft {
-  return { collectionId, quantity: 1, status: 'idle', message: null };
+function initialDraft(collectionId: string | null, quantity = 1): Draft {
+  return { collectionId, quantity, scanCount: quantity, status: 'idle', message: null };
 }
 
 function messageOf(error: unknown, fallback: string): string {
@@ -55,6 +58,7 @@ export interface OrganizeSheetProps {
   onSaved: (runIds: number[]) => void;
   /** Saca una lectura de la sesión sin guardarla. */
   onRemove: (runId: number) => void;
+  onReview?: (runId: number) => void;
 }
 
 /**
@@ -62,14 +66,25 @@ export interface OrganizeSheetProps {
  *
  * El caso real del escáner no es "agregar una carta", es "escaneé 20 cartas y
  * las tenía que agregar de a una". Acá las N lecturas de la sesión van en una
- * lista, cada una con su destino y su cantidad, y el footer las agrega todas en
+ * lista agrupada por carta, con un destino común y cantidades editables, y el footer las agrega todas en
  * una pasada.
  *
  * Si la carta ya está en esa colección con la misma variante y condición, el
  * backend suma la cantidad y devuelve el ítem actualizado como éxito. Una
  * respuesta de error no confirma que la carta se haya guardado.
  */
-export function OrganizeSheet({ open, entries, onClose, onSaved, onRemove }: OrganizeSheetProps) {
+export function OrganizeSheet({ open, entries: scans, onClose, onSaved, onRemove, onReview }: OrganizeSheetProps) {
+  // Agrupar sólo la presentación conserva las corridas para corregir candidatos.
+  const entries = useMemo(() => {
+    const groups = new Map<string, SessionEntry & { runIds: number[] }>();
+    for (const scan of scans) {
+      const previous = groups.get(scan.candidate.card.id);
+      if (previous) previous.runIds.push(scan.runId);
+      else groups.set(scan.candidate.card.id, { ...scan, runIds: [scan.runId] });
+    }
+    return [...groups.values()];
+  }, [scans]);
+  const [collectionId, setCollectionId] = useState<string | null>(null);
   const toast = useToast();
   const [drafts, setDrafts] = useState<Record<number, Draft>>({});
   const [isSavingAll, setIsSavingAll] = useState(false);
@@ -102,30 +117,37 @@ export function OrganizeSheet({ open, entries, onClose, onSaved, onRemove }: Org
    * doble montaje de StrictMode.
    */
   const defaultCollectionId =
-    collections.find((collection) => collection.isDefault)?.id ?? collections[0]?.id ?? null;
+    collectionId ?? collections.find((collection) => collection.isDefault)?.id ?? collections[0]?.id ?? null;
 
   const draftFor = useCallback(
-    (runId: number): Draft => drafts[runId] ?? initialDraft(defaultCollectionId),
-    [defaultCollectionId, drafts],
+    (runId: number): Draft => {
+      const scanCount = entries.find((entry) => entry.runId === runId)?.runIds.length ?? 1;
+      const stored = drafts[runId] ?? initialDraft(defaultCollectionId, scanCount);
+      return { ...stored, collectionId: defaultCollectionId, scanCount,
+        quantity: Math.max(1, Math.min(MAX_QUANTITY, stored.quantity + scanCount - stored.scanCount)) };
+    },
+    [defaultCollectionId, drafts, entries],
   );
 
   const patch = useCallback((runId: number, values: Partial<Draft>) => {
     setDrafts((current) => {
-      const draft = current[runId] ?? initialDraft(defaultCollectionId);
+      const scanCount = entries.find((entry) => entry.runId === runId)?.runIds.length ?? 1;
+      const stored = current[runId] ?? initialDraft(defaultCollectionId, scanCount);
+      const draft = { ...stored, scanCount, quantity: Math.max(1, Math.min(MAX_QUANTITY, stored.quantity + scanCount - stored.scanCount)) };
       return { ...current, [runId]: { ...draft, ...values } };
     });
-  }, [defaultCollectionId]);
+  }, [defaultCollectionId, entries]);
 
   const remove = useCallback(
     (runId: number) => {
-      onRemove(runId);
+      for (const id of entries.find((entry) => entry.runId === runId)?.runIds ?? [runId]) onRemove(id);
       setDrafts((current) => {
         const next = { ...current };
         delete next[runId];
         return next;
       });
     },
-    [onRemove],
+    [onRemove, entries],
   );
 
   const saveOne = useCallback(
@@ -177,7 +199,7 @@ export function OrganizeSheet({ open, entries, onClose, onSaved, onRemove }: Org
     // (Postgres), no contra pokemontcg.io, así que el rate limit externo no
     // aplica acá. El propio backend tolera 100 req/min contra un lote de 20.
     const outcomes = await Promise.all(entries.map((entry) => saveOne(entry)));
-    const savedRunIds = entries.filter((_, index) => outcomes[index]).map((entry) => entry.runId);
+    const savedRunIds = entries.filter((_, index) => outcomes[index]).flatMap((entry) => entry.runIds);
     const savedCount = savedRunIds.length;
 
     setIsSavingAll(false);
@@ -190,7 +212,7 @@ export function OrganizeSheet({ open, entries, onClose, onSaved, onRemove }: Org
 
     onSaved(savedRunIds);
 
-    if (savedCount === entries.length) {
+    if (outcomes.every(Boolean)) {
       toast.success(
         `Guardamos ${formatCount(savedCount)} ${
           savedCount === 1 ? 'carta' : 'cartas'
@@ -201,17 +223,17 @@ export function OrganizeSheet({ open, entries, onClose, onSaved, onRemove }: Org
     }
 
     setBulkError(
-      `Guardamos ${formatCount(savedCount)} de ${formatCount(entries.length)}. Las que faltaron siguen en la lista, con el motivo al lado.`,
+      `Guardamos ${formatCount(savedCount)} de ${formatCount(scans.length)}. Las que faltaron siguen en la lista, con el motivo al lado.`,
     );
-  }, [entries, onClose, onSaved, saveOne, toast]);
+  }, [entries, scans.length, onClose, onSaved, saveOne, toast]);
 
   const saveSingle = useCallback(async (entry: SessionEntry) => {
     if (savingAllRef.current) return;
     if (await saveOne(entry)) {
-      onSaved([entry.runId]);
+      onSaved(entries.find((group) => group.runId === entry.runId)?.runIds ?? [entry.runId]);
       toast.success('Guardamos esta carta en tu colección.');
     }
-  }, [onSaved, saveOne, toast]);
+  }, [onSaved, saveOne, toast, entries]);
 
   const collectionOptions = useMemo(
     () =>
@@ -231,7 +253,7 @@ export function OrganizeSheet({ open, entries, onClose, onSaved, onRemove }: Org
       open={open}
       onClose={onClose}
       size="full"
-      title="Organizar la sesión"
+      title="Revisar escaneos"
       subtitle={
         isEmpty
           ? undefined
@@ -240,7 +262,10 @@ export function OrganizeSheet({ open, entries, onClose, onSaved, onRemove }: Org
             } de guardar`
       }
       footer={
-        <div className="flex w-full flex-col gap-2 sm:flex-row">
+        <div className="flex w-full flex-col gap-2">
+          <p className="text-center text-body-strong text-primary">Total: <ShowOrDash usd={entries.some((entry) => entry.candidate.price?.market != null) ? entries.reduce((total, entry) => total + (entry.candidate.price?.market ?? 0) * draftFor(entry.runId).quantity, 0) : null} />
+            {entries.some((entry) => entry.candidate.price?.market == null) ? <span className="block text-caption text-tertiary">Hay cartas sin precio disponible</span> : null}
+          </p>
           <Button
             variant="primary"
             size="lg"
@@ -301,10 +326,14 @@ export function OrganizeSheet({ open, entries, onClose, onSaved, onRemove }: Org
 
       {status === 'ready' && !isEmpty && hasCollections ? (
         <div className="flex flex-col gap-4">
-          <p className="text-caption text-secondary">
-            Revisá nombre, set y número antes de guardar. Se agregan como variante Normal;
-            podés cambiarla después desde la colección.
-          </p>
+          <div className="sticky top-0 z-sticky bg-surface pb-3">
+            <Field id="scan-destination" label="Agregar a la colección">
+              <Select id="scan-destination" aria-labelledby="scan-destination-label" options={collectionOptions}
+                value={defaultCollectionId} onChange={setCollectionId}
+                disabled={isSavingAll || Object.values(drafts).some((draft) => draft.status === 'saving')}
+                placeholder="Elegí una colección" />
+            </Field>
+          </div>
         <ul className="grid items-start gap-4 md:grid-cols-2">
           {entries.map((entry) => {
             const card = entry.candidate.card;
@@ -313,94 +342,43 @@ export function OrganizeSheet({ open, entries, onClose, onSaved, onRemove }: Org
             // Prefijo de texto: un `id` que arranca con dígito es válido en
             // HTML5 pero no sirve como selector de CSS, y estos ids se leen
             // desde `<label for>` y desde los `aria-describedby`.
-            const collectionId = `scan-coleccion-${entry.runId}`;
             const quantityId = `scan-cantidad-${entry.runId}`;
 
             return (
-              <li key={entry.runId} className="flex flex-col gap-3 rounded-control bg-surface-2 p-3">
-                <div className="flex items-start gap-3">
-                  <CardThumb card={card} width={44} />
-
-                  <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-                    <p className="break-words text-body-strong text-primary" title={card.name}>
-                      {card.name}
-                    </p>
-                    <p className="break-words text-caption text-secondary" title={setName}>
-                      {setName}
-                      <span aria-hidden="true"> · </span>
-                      <span className="tabular-nums">
-                        {formatCardNumber(card.number, card.set?.printedTotal ?? null)}
-                      </span>
-                    </p>
+              <SwipeScanRow key={entry.runId} name={card.name} disabled={isSavingAll || draft.status === 'saving'} onRemove={() => remove(entry.runId)}>
+              <div className="flex flex-col gap-3 bg-surface-2 p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="break-words text-body-strong text-primary">{card.name}</p>
+                    <p className="break-words text-caption text-secondary">{setName} · {formatCardNumber(card.number, card.set?.printedTotal ?? null)}</p>
                   </div>
-
-                  <button
-                    type="button"
-                    disabled={isSavingAll || draft.status === 'saving'}
-                    onClick={() => remove(entry.runId)}
-                    aria-label={`Sacar ${card.name} de la sesión`}
-                    title="Sacar de la sesión"
-                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-control text-secondary transition-colors duration-fast ease-standard hover:bg-surface-3 hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--focus-ring)]"
-                  >
-                    <Trash2 aria-hidden="true" focusable="false" strokeWidth={1.75} className="h-5 w-5" />
-                  </button>
+                  <Button variant="ghost" disabled={isSavingAll || draft.status === 'saving'} onClick={() => remove(entry.runId)}
+                    className="sr-only focus:not-sr-only md:not-sr-only"
+                    aria-label={`Sacar ${card.name} de la sesión`}><Trash2 aria-hidden="true" className="size-5" /></Button>
                 </div>
-
-                {/*
-                  El `Field` y el control comparten `id` a propósito: es el
-                  patrón que documenta el JSDoc de `Field`. Sin eso el `<label>`
-                  no apunta a nada.
-                */}
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_7rem]">
-                  <Field id={collectionId} label="Colección">
-                    <Select
-                      id={collectionId}
-                      // El trigger del listbox es un `<button>` y el
-                      // `<label htmlFor>` no lo nombra: sin esto el select de
-                      // colección de cada fila quedaba sin nombre accesible.
-                      //
-                      // Hoy es redundante —el `Field` ya inyecta exactamente este
-                      // id por su `??`, que deja ganar a la prop del consumidor—
-                      // pero no es un conflicto ni un `aria-labelledby` duplicado:
-                      // `cloneElement` **reemplaza** la prop, no la agrega, así
-                      // que el atributo sale una sola vez. Y los dos caminos
-                      // resuelven la misma cadena (`${collectionId}-label` es el
-                      // `labelId` que el `Field` computa del `id` que le pasamos).
-                      // Se deja escrito a propósito: si algún día el `Field` deja
-                      // de inyectar, este es el que sostiene el nombre accesible,
-                      // y el síntoma si se borra es un combobox mudo en cada fila
-                      // sin error en ningún lado.
-                      aria-labelledby={`${collectionId}-label`}
-                      options={collectionOptions}
-                      disabled={isSavingAll || draft.status === 'saving'}
-                      value={draft.collectionId}
-                      onChange={(value) =>
-                        patch(entry.runId, { collectionId: value, status: 'idle', message: null })
-                      }
-                      placeholder="Elegí una colección"
-                    />
-                  </Field>
-
-                  <Field id={quantityId} label="Cantidad" hint={`Máximo ${formatCount(MAX_QUANTITY)}`}>
-                    <Input
-                      id={quantityId}
-                      type="number"
-                      inputMode="numeric"
-                      min={1}
-                      max={MAX_QUANTITY}
-                      value={draft.quantity}
-                      disabled={isSavingAll || draft.status === 'saving'}
-                      aria-describedby={`${quantityId}-hint`}
-                      onChange={(event) => {
-                        const parsed = Number.parseInt(event.target.value, 10);
-                        patch(entry.runId, {
-                          quantity: Number.isFinite(parsed)
-                            ? Math.min(MAX_QUANTITY, Math.max(1, parsed))
-                            : 1,
-                        });
-                      }}
-                    />
-                  </Field>
+                <div className="flex items-start gap-4">
+                  {onReview ? <button type="button" aria-label={`Revisar coincidencia de ${card.name}`}
+                    disabled={isSavingAll || draft.status === 'saving'} onClick={() => onReview(entry.runId)}
+                    className="self-start rounded-control focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--focus-ring)]">
+                    <CardThumb card={card} width={112} />
+                    <span className="mt-2 block text-caption text-brand">Revisar carta</span>
+                  </button> : <CardThumb card={card} width={112} />}
+                  <div className="flex min-w-0 flex-1 flex-col gap-3">
+                    <ShowOrDash usd={entry.candidate.price?.market ?? null} size="lg" />
+                    <dl className="flex flex-col gap-2 text-caption">
+                      <div className="flex justify-between gap-2"><dt className="text-secondary">Variante</dt><dd className="text-brand">Normal</dd></div>
+                      <div className="flex justify-between gap-2"><dt className="text-secondary">Tipo</dt><dd className="text-brand">Sin graduar</dd></div>
+                      <div className="flex justify-between gap-2"><dt className="text-secondary">Condición</dt><dd className="text-brand">Near Mint</dd></div>
+                    </dl>
+                    <Field id={quantityId} label="Cantidad">
+                      <Input id={quantityId} type="number" inputMode="numeric" min={1} max={MAX_QUANTITY} value={draft.quantity}
+                        disabled={isSavingAll || draft.status === 'saving'}
+                        onChange={(event) => {
+                          const parsed = Number.parseInt(event.target.value, 10);
+                          patch(entry.runId, { quantity: Number.isFinite(parsed) ? Math.min(MAX_QUANTITY, Math.max(1, parsed)) : 1 });
+                        }} />
+                    </Field>
+                  </div>
                 </div>
 
                 {/*
@@ -432,7 +410,8 @@ export function OrganizeSheet({ open, entries, onClose, onSaved, onRemove }: Org
                 >
                   {draft.status === 'done' ? 'Guardada' : 'Agregar'}
                 </Button>
-              </li>
+              </div>
+              </SwipeScanRow>
             );
           })}
         </ul>

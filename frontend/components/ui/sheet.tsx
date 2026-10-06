@@ -332,6 +332,8 @@ export function Sheet({
     // El gesto es solo de mobile: en `sm:` el panel es un diálogo y arrastrarlo
     // no significa nada.
     if (window.matchMedia('(min-width: 640px)').matches) return;
+    // Capturar el puntero del encabezado redirige el click de la X al contenedor.
+    if (event.target instanceof Element && event.target.closest('button, a, input, select, textarea, [role=button]')) return;
     if (event.pointerType === 'mouse' && event.button !== 0) return;
     event.currentTarget.setPointerCapture(event.pointerId);
     didDragRef.current = false;

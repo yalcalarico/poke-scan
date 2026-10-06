@@ -1,6 +1,6 @@
 'use client';
 
-import { Camera, ImageUp, Search } from 'lucide-react';
+import { Camera, CircleAlert, ImageUp, Search } from 'lucide-react';
 
 import { Button, Surface } from '@/components/ui';
 
@@ -40,6 +40,15 @@ export function IdlePanel({
 }: IdlePanelProps) {
   return (
     <Surface className="flex flex-col items-center gap-4 rounded-panel px-6 py-8 text-center">
+      {sessionCount > 0 ? <div role="status" className="flex w-full flex-col gap-3 rounded-panel border border-warning-border bg-warning-soft p-4">
+        <p className="flex items-center justify-center gap-2 text-body-strong text-warning">
+          <CircleAlert aria-hidden="true" className="size-5 shrink-0" />
+          {sessionCount} {sessionCount === 1 ? 'carta pendiente de organizar' : 'cartas pendientes de organizar'}
+        </p>
+        <Button variant="secondary" size="lg" onClick={onOrganize} fullWidth>
+          Organizar la sesión ({sessionCount})
+        </Button>
+      </div> : null}
       <div className="flex h-20 w-20 items-center justify-center rounded-full bg-brand-soft text-brand">
         {showCamera ? <Camera aria-hidden="true" focusable="false" strokeWidth={1.75} className="h-10 w-10" /> : <ImageUp aria-hidden="true" focusable="false" strokeWidth={1.75} className="h-10 w-10" />}
       </div>
@@ -78,11 +87,7 @@ export function IdlePanel({
           Buscar a mano
         </Button>
 
-        {sessionCount > 0 ? (
-          <Button variant="ghost" size="md" onClick={onOrganize} fullWidth>
-            Organizar la sesión ({sessionCount})
-          </Button>
-        ) : null}
+
       </div>
     </Surface>
   );

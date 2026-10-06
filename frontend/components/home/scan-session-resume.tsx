@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ScanLine } from 'lucide-react';
+import { CircleAlert } from 'lucide-react';
 
 import { readSession } from '@/components/scanner/session-storage';
 import { buttonVariants } from '@/components/ui';
@@ -91,18 +91,13 @@ export function ScanSessionResume({ className }: { className?: string }) {
 
   return (
     <div className={cn('flex flex-col gap-2', className)}>
-      {/*
-        `Surface` y no un `Alert`: esto no es un estado que está pasando, es un
-        hecho permanente de la sesión. Un `Alert tone="info"` con ícono de alerta
-        haría que leer 7 cartas se sintiera como un problema, y no lo es.
-      */}
-      <div className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 rounded-panel sm:grid-cols-[auto_minmax(0,1fr)_auto] border border-line bg-surface-2 p-4 shadow-sm">
-        <div className="grid size-10 shrink-0 place-items-center rounded-full bg-brand-soft text-brand">
-          <ScanLine aria-hidden="true" focusable="false" strokeWidth={1.75} className="h-5 w-5" />
+      <div className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 rounded-panel sm:grid-cols-[auto_minmax(0,1fr)_auto] border border-warning-border bg-warning-soft p-4 shadow-sm">
+        <div className="grid size-10 shrink-0 place-items-center rounded-full bg-warning-soft text-warning">
+          <CircleAlert aria-hidden="true" focusable="false" strokeWidth={1.75} className="h-5 w-5" />
         </div>
 
         <div className="flex min-w-0 flex-1 flex-col">
-          <p className="text-body-strong text-primary">Continuás donde quedaste</p>
+          <p className="text-body-strong text-primary">Cartas pendientes de organizar</p>
           <p className="text-caption text-secondary tabular-nums">
             {COUNT_FORMAT.format(count)}{' '}
             {pluralize(count, 'carta escaneada', 'cartas escaneadas')} sin agregar a tu colección

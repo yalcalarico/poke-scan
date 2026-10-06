@@ -1778,3 +1778,9 @@ del top devuelto. No hay ORB ni campos de geometría o verificación. El escaneo
 no abre imágenes de referencia: necesita modelo ONNX, metadata y vectores.
 No modifica pesos ni recalcula embeddings. La similitud no es una probabilidad
 ni certifica edición/acabado. Ver [evaluación DINOv2 puro](../../docs/evaluations/dinov2-only-2026-10-05.md).
+
+## `GET /api/portfolio`
+
+Autenticado. Devuelve `PortfolioDto`: `totalCards`, `unpricedCards`, `valueUsd` (nulo cuando todas las cartas carecen de precio), `history` (`date`, `valueUsd`, `totalCards`, `unpricedCards`) y `topCards` (hasta cinco posiciones por carta/variante ordenadas por precio unitario, con nombre, set, miniatura, cantidad y valores unitario y total). Sólo incluye colecciones del usuario autenticado y cotizaciones locales bajo la misma política de `/collections`. No realiza requests externos.
+
+Consultar registra o actualiza una observación diaria UTC del valor agregado en `portfolio_snapshots`. Devuelve hasta 365 observaciones; no inventa días previos ni días sin consulta. Al eliminar el usuario, sus observaciones se eliminan en cascada. Los tipos del contrato se mantienen en `portfolio.service.ts` y `frontend/types/api.ts`.

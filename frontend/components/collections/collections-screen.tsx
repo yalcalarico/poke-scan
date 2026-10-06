@@ -6,12 +6,14 @@ import { Check, Layers, Plus, Search } from 'lucide-react';
 
 import { ScreenContainer } from '@/components/layout/screen-container';
 import { ScreenHeader } from '@/components/layout/screen-header';
-import { Money } from '@/components/cards/money';
 import {
   Button,
   EmptyState,
   ErrorState,
   IconButton,
+  Input,
+  Field,
+  Select,
   buttonVariants,
 } from '@/components/ui';
 import { useAsync } from '@/hooks/use-async';
@@ -21,6 +23,7 @@ import { pluralize } from '@/lib/format';
 import { cn } from '@/lib/cn';
 import type { CollectionDto } from '@/types/api';
 
+import { PortfolioOverview } from './portfolio-overview';
 import { CollectionCard } from './collection-card';
 import { CollectionCreateSheet } from './collection-create-sheet';
 import { formatCount } from './collection-options';
@@ -63,6 +66,8 @@ const GRID = 'grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3';
 export function CollectionsScreen() {
   const { isLoading: isAuthLoading, isAuthenticated } = useAuth();
 
+  const [search, setSearch] = useState('');
+  const [sort, setSort] = useState('default');
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   /**
    * Las colecciones creadas en esta sesión, sobre las que trajo la API.
@@ -89,7 +94,7 @@ export function CollectionsScreen() {
     return listCollections();
   }, [isAuthenticated]);
 
-  const collections = useMemo(() => [...created, ...(data ?? [])], [created, data]);
+  const collections = useMemo(() => [...new Map([...(data ?? []), ...created].map((collection) => [collection.id, collection])).values()], [created, data]);
 
   const handleCreated = useCallback((collection: CollectionDto) => {
     setCreated((current) => [collection, ...current]);
@@ -99,17 +104,17 @@ export function CollectionsScreen() {
     () => collections.reduce((total, collection) => total + collection.itemCount, 0),
     [collections],
   );
-  const totalValue = useMemo(
-    () => collections.reduce((total, collection) => total + collection.totalValueUsd, 0),
-    [collections],
-  );
+  const visibleCollections = useMemo(() => {
+    const filtered = collections.filter((collection) => collection.name.toLocaleLowerCase('es').includes(search.trim().toLocaleLowerCase('es')));
+    return filtered.sort((a, b) => sort === 'value' ? b.totalValueUsd - a.totalValueUsd : sort === 'name' ? a.name.localeCompare(b.name, 'es') : Number(b.isDefault) - Number(a.isDefault));
+  }, [collections, search, sort]);
 
   const isLoading = isAuthLoading || (isAuthenticated && status === 'loading');
 
   return (
     <>
       <ScreenHeader
-        title="Colecciones"
+        title="Portafolio"
         action={
           isAuthenticated ? (
             <IconButton
@@ -175,6 +180,8 @@ export function CollectionsScreen() {
           </div>
         ) : null}
 
+        {isAuthenticated && status === 'ready' ? <div className="mb-6"><PortfolioOverview /></div> : null}
+
         {/* 4 · vacío con sesión */}
         {isAuthenticated && status === 'ready' && collections.length === 0 ? (
           <div className="flex flex-col gap-6">
@@ -221,13 +228,17 @@ export function CollectionsScreen() {
               {formatCount(totalCards)} {pluralize(totalCards, 'carta', 'cartas')}
             </p>
 
-            <p className="flex flex-wrap items-center justify-start gap-x-2 text-caption text-secondary">
-              Valor combinado
-              <Money usd={totalValue} tone="positive" size="md" />
-            </p>
-
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+              <Field id="collection-search" label="Buscar colecciones" className="flex-1">
+                <Input id="collection-search" type="search" placeholder="Nombre de la colección" value={search} onChange={(event) => setSearch(event.target.value)} />
+              </Field>
+              <Field id="collection-sort" label="Ordenar">
+                <Select id="collection-sort" options={[{ value: 'default', label: 'Principal primero' }, { value: 'name', label: 'Nombre' }, { value: 'value', label: 'Mayor valor' }]} value={sort} onChange={(value) => setSort(value ?? 'default')} />
+              </Field>
+            </div>
+            {visibleCollections.length === 0 ? <p role="status" className="text-body text-secondary">No encontramos colecciones con ese nombre.</p> : null}
             <div className={GRID}>
-              {collections.map((collection) => (
+              {visibleCollections.map((collection) => (
                 <CollectionCard key={collection.id} collection={collection} cover={collection.cover} />
               ))}
             </div>

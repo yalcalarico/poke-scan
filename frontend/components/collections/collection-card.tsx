@@ -40,91 +40,10 @@ export interface CollectionCardProps {
   className?: string;
 }
 
-/**
- * Cuántas miniaturas y cómo se reparten en la grilla de 2×2.
- *
- * Las celdas se reparten sin recortar las cartas: con 1 no hay grilla (una sola
- * fila, la imagen toma todo), con 2 son dos mitades verticales, con 3 es la de la
- * izquierda completa y dos apiladas a la derecha, con 4 la grilla llena. Es el
- * collage que muestra la referencia y nunca deja un hueco negro.
- *
- * Los `col-span-2` de la fila 1 dependen de que el contenedor declare
- * `grid-rows-1` cuando hay una sola imagen: si declarara dos filas, el `span` de
- * columnas quedaría con la mitad del alto.
- */
-const COVER_LAYOUT: Record<number, readonly string[]> = {
-  1: ['col-span-2'],
-  2: ['row-span-2', 'row-span-2'],
-  3: ['row-span-2', '', ''],
-  4: ['', '', '', ''],
-};
-
-const MAX_COVER_ITEMS = 4;
-
-/**
- * La tarjeta de `/colecciones`: portada, nombre, cantidad de cartas, valor
- * total y el acceso al progreso por set. Antes la misma tarjeta tenía tres
- * `Stat` con borde propio para mostrar el dato que hoy dice «24 cartas».
- *
- * ## El mosaico
- *
- * Es el salto visual más grande de la pantalla, y usa el `cover` que ya arma
- * `collections.service.ts::list` con **un** `$queryRaw` agregado para todas las
- * colecciones del listado. Traer la portada no es un N+1.
- *
- * El fallback de marca —`bg-brand-soft` con `Layers`— sigue existiendo para la
- * colección sin cartas, que es el único caso en que `cover` llega vacío. Se ve
- * deliberada en vez de rota.
- *
- * ## Por qué el `outline` del foco va hacia adentro
- *
- * El `Link` llega al borde de la `Surface` en los tres lados de arriba —arriba,
- * izquierda y derecha— y la `Surface` es `overflow-hidden` (para que el mosaic
- * respete el radio). Un `outline` con `offset-2` —el patrón de `Button`, `Chip`
- * y `Select`— se dibuja 4 px por fuera de la caja, o sea completamente afuera
- * de la `Surface`, y lo recorta el `overflow-hidden` de la propia `Surface`: el
- * indicador de foco no se vería.
- *
- * Por eso acá el offset va **negativo**. Es el mismo rodeo que ya usa la fila
- * del buscador del `Select` (`select.tsx:136`), que también vive dentro de un
- * `overflow-hidden`: se dibuja 2 px adentro del borde de la tarjeta, que es
- * justo donde el ojo lo espera en una card. El `rounded-t-surface` acompaña al
- * offset negativo: sin radio, el indicador de la parte de arriba saldría con
- * esquinas vivas contra una tarjeta de 16 px.
- *
- * El link del pie, en cambio, vive **adentro** con `p-2` alrededor, así que ahí
- * el `outline` va hacia afuera con los 4 px de aire de §4.4. El criterio es el
- * de §8.6: si el ancestro recorta, adentro; si no, afuera.
- *
- * ## La franja de abajo es la entrada al progreso por set
- *
- * `/colecciones/[id]/sets` —el progreso por set y el binder con el waffle— era
- * alcanzable **solo** desde el chip "Sets" que vive adentro del detalle de una
- * colección ya abierta. O sea: la ruta existía y no había forma de llegar sin
- * saber que existía. Agregar otro destino principal a la `BottomNav` no era la
- * decisión de esa feature (hoy Inicio más cuatro secciones en mobile), y una
- * pantalla nueva es una decisión de rutas.
- *
- * El pie de la tarjeta es el lugar donde el usuario ya está pensando en esa
- * colección concreta: es el único punto de `/colecciones` donde la respuesta a
- * "¿cuánto completé de este set?" se puede responder sin abrirla primero. Va
- * siempre, también con la colección vacía, porque la pantalla de destino tiene
- * su propio estado vacío y ahí es donde se explica.
- *
- * ## Por qué el `Link` principal no envuelve a este
- *
- * Un `<a>` dentro de otro `<a>` es HTML inválido y rompe la navegación por
- * teclado y el anuncio del lector de pantalla. Por eso la `Surface` se parte en
- * dos hermanos: el link grande (portada, nombre, cantidad y valor) y el link
- * chico del pie. Se pierde el "toda la card es el target", y a cambio el pie
- * puede ser un destino propio de 44 px —que es lo que §0.5 exige— en vez de un
- * punto de 20 px pegado al valor.
- */
 export function CollectionCard({ collection, cover, className }: CollectionCardProps) {
   const titleId = `coleccion-${collection.id}`;
-  const images = (cover ?? []).slice(0, MAX_COVER_ITEMS);
+  const images = (cover ?? []).slice(0, 4);
   const hasCover = images.length > 0;
-  const layout = COVER_LAYOUT[images.length] ?? [];
 
   return (
     <Surface
@@ -138,33 +57,6 @@ export function CollectionCard({ collection, cover, className }: CollectionCardP
         aria-labelledby={titleId}
         className="flex flex-1 flex-col rounded-t-surface focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[color:var(--focus-ring)]"
       >
-        {hasCover ? (
-          <div
-            className={cn(
-              'grid h-44 grid-cols-2 grid-rows-2 gap-2 bg-surface-2 p-3',
-              images.length === 1 && 'grid-rows-1',
-            )}
-          >
-            {images.map((image, index) => (
-              <div key={`${image.imageSmall}-${index}`} className={cn('relative min-h-0', layout[index])}>
-                <Image
-                  src={image.imageSmall}
-                  // El nombre de la colección ya está en el texto de abajo: un
-                  // alt con la carta sería leer la misma pantalla dos veces.
-                  alt=""
-                  fill
-                  sizes="(max-width: 639px) 92vw, (max-width: 1023px) 45vw, 30vw"
-                  className="object-contain"
-                />
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="grid h-44 place-items-center bg-brand-soft text-brand">
-            <Layers aria-hidden="true" focusable="false" strokeWidth={1.75} className="h-8 w-8" />
-          </div>
-        )}
-
         <div className="flex flex-1 flex-col gap-1 p-4">
           {/*
             `min-w-0` en el nombre y `shrink-0` en el badge: sin el primero el
@@ -200,6 +92,13 @@ export function CollectionCard({ collection, cover, className }: CollectionCardP
             />
           </div>
         </div>
+        {hasCover ? <div className="flex h-40 items-center justify-center gap-2 bg-surface-2 p-3">
+          {images.map((image, index) => <div key={`${image.imageSmall}-${index}`} className="relative h-full min-w-0 flex-1">
+            <Image src={image.imageSmall} alt="" fill sizes="(max-width: 639px) 22vw, 10vw" className="object-contain" />
+          </div>)}
+        </div> : <div className="flex min-h-32 flex-col items-center justify-center gap-2 bg-brand-soft p-4 text-brand">
+          <Layers aria-hidden="true" className="size-8" /><p className="text-caption text-secondary">Tus cartas van a aparecer acá</p>
+        </div>}
       </Link>
 
       {/*
@@ -215,6 +114,7 @@ export function CollectionCard({ collection, cover, className }: CollectionCardP
         fuera de contexto.
       */}
       <div className="border-t border-line-subtle p-2">
+        <Link href="/escanear" aria-label={`Sumar cartas a ${collection.name}`} className="mb-2 flex min-h-11 items-center justify-center gap-2 rounded-control border border-brand bg-brand-soft text-label text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--focus-ring)]">Sumar cartas</Link>
         <Link
           href={`/colecciones/${encodeURIComponent(collection.id)}/sets`}
           aria-label={`Progreso por set de ${collection.name}`}

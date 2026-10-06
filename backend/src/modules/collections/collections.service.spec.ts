@@ -3,6 +3,7 @@ import { Test, type TestingModule } from '@nestjs/testing';
 import { Prisma, PrismaClient } from '@prisma/client';
 import { PrismaService } from '../../prisma/index.js';
 import { PRICE_PROVIDER } from '../providers/card-provider.interface.js';
+import { PortfolioService } from './portfolio.service.js';
 import { CollectionsService } from './collections.service.js';
 import { AddItemDto } from './dto/add-item.dto.js';
 import { CreateCollectionDto } from './dto/create-collection.dto.js';
@@ -42,6 +43,7 @@ describe('CollectionsService', () => {
     moduleRef = await Test.createTestingModule({
       providers: [
         CollectionsService,
+        PortfolioService,
         { provide: PrismaService, useValue: prismaClient },
         { provide: PRICE_PROVIDER, useValue: PRICE_PROVIDER_STUB },
       ],
@@ -194,6 +196,33 @@ describe('CollectionsService', () => {
         fetchedAt: new Date('2024-06-01T00:00:00.000Z'),
       },
     });
+  });
+
+  it('el portafolio usa sólo cartas propias, el último precio y registra un punto por día', async () => {
+    const own = await createCollection(userA);
+    const other = await createCollection(userB);
+    await service.addItem(userA, own.id, addItem(TEST_CARD_ID, { quantity: 2 }));
+    await service.addItem(userA, own.id, addItem(TEST_CARD_NO_PRICE_ID, { quantity: 3 }));
+    await service.addItem(userB, other.id, addItem(TEST_CARD_ID, { quantity: 100 }));
+    const portfolio = moduleRef.get(PortfolioService);
+    const first = await portfolio.summary(userA);
+    expect(first).toMatchObject({ totalCards: 5, unpricedCards: 3, valueUsd: 198 });
+    expect(first.topCards).toHaveLength(1);
+    expect(first.topCards[0]).toMatchObject({ cardId: TEST_CARD_ID, quantity: 2, marketUsd: 99, valueUsd: 198 });
+    await service.addItem(userA, own.id, addItem(TEST_CARD_ID));
+    const updated = await portfolio.summary(userA);
+    expect(updated.history).toHaveLength(1);
+    expect(updated.history[0]?.valueUsd).toBe(297);
+    expect(await prismaClient.portfolioSnapshot.count({ where: { userId: userB } })).toBe(0);
+  });
+
+  it('sin precios el portafolio registra un valor desconocido, no cero', async () => {
+    const own = await createCollection(userA);
+    await service.addItem(userA, own.id, addItem(TEST_CARD_NO_PRICE_ID));
+    const summary = await moduleRef.get(PortfolioService).summary(userA);
+    expect(summary.valueUsd).toBeNull();
+    expect(summary.history[0]?.valueUsd).toBeNull();
+    expect(summary.topCards).toEqual([]);
   });
 
   async function createUser(email: string, username: string) {
@@ -793,6 +822,7 @@ describe('CollectionsService · cover de portada (B9)', () => {
     moduleRef = await Test.createTestingModule({
       providers: [
         CollectionsService,
+        PortfolioService,
         { provide: PrismaService, useValue: prismaClient },
         { provide: PRICE_PROVIDER, useValue: PRICE_PROVIDER_STUB },
       ],
@@ -988,6 +1018,7 @@ describe('CollectionsService · precio por item (latestMarketPriceJoin)', () => 
     moduleRef = await Test.createTestingModule({
       providers: [
         CollectionsService,
+        PortfolioService,
         { provide: PrismaService, useValue: prismaClient },
         { provide: PRICE_PROVIDER, useValue: PRICE_PROVIDER_STUB },
       ],
@@ -1122,6 +1153,7 @@ describe('CollectionsService · orden del listado y location de carta', () => {
     moduleRef = await Test.createTestingModule({
       providers: [
         CollectionsService,
+        PortfolioService,
         { provide: PrismaService, useValue: prismaClient },
         { provide: PRICE_PROVIDER, useValue: PRICE_PROVIDER_STUB },
       ],

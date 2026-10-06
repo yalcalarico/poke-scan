@@ -28,11 +28,17 @@ import { CreateCollectionDto } from './dto/create-collection.dto.js';
 import { ListItemsDto } from './dto/list-items.dto.js';
 import { UpdateCollectionDto } from './dto/update-collection.dto.js';
 import { UpdateItemDto } from './dto/update-item.dto.js';
+import { PortfolioService, type PortfolioDto } from './portfolio.service.js';
 
 @Controller()
 @UseGuards(JwtAuthGuard)
 export class CollectionsController {
-  constructor(private readonly collectionsService: CollectionsService) {}
+  constructor(private readonly collectionsService: CollectionsService, private readonly portfolioService: PortfolioService) {}
+
+  @Get('portfolio')
+  portfolio(@CurrentUser() user: AuthUser): Promise<PortfolioDto> {
+    return this.portfolioService.summary(user.sub);
+  }
 
   @Post('collections')
   create(

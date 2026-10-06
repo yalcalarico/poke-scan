@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { render, screen, waitFor, waitForElementToBeRemoved } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, waitForElementToBeRemoved } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useState } from 'react';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
@@ -373,4 +373,18 @@ describe('Sheet: cierre', () => {
     // Solo uno a la vez (§8.9): el primero se cerró al abrir el segundo.
     expect(screen.getAllByRole('dialog')).toHaveLength(1);
   });
+});
+
+it('el botón de cerrar no inicia el arrastre ni captura su puntero en mobile', async () => {
+  const onClose = vi.fn();
+  render(<Sheet open onClose={onClose} title="Revisión"><p>Una carta</p></Sheet>);
+  const close = await screen.findByRole('button', { name: 'Cerrar' });
+  const grab = close.closest('[data-slot="sheet-grab"]');
+  const capture = vi.fn();
+  if (!grab) throw new Error('No encontramos el encabezado');
+  Object.defineProperty(grab, 'setPointerCapture', { value: capture, configurable: true });
+  fireEvent.pointerDown(close, { pointerId: 1, pointerType: 'touch' });
+  expect(capture).not.toHaveBeenCalled();
+  fireEvent.click(close);
+  expect(onClose).toHaveBeenCalledOnce();
 });
