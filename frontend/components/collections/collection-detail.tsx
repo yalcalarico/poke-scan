@@ -15,6 +15,7 @@ import {
   EmptyState,
   ErrorState,
   IconButton,
+  Input,
   Select,
   Surface,
   buttonVariants,
@@ -38,7 +39,8 @@ import { formatDate, pluralize } from '@/lib/format';
 import { conditionShort, variantLabel } from '@/lib/variants';
 import type { CollectionDto, CollectionItemDto } from '@/types/api';
 
-import { CollectionBottomBar, DETAIL_CONTENT_INSET } from './collection-bottom-bar';
+import { CollectionActions } from './collection-actions';
+import { CollectionItemDetails } from './collection-item-details';
 import { CollectionFilters, type CollectionScope } from './collection-filters';
 import { COLLECTION_CHUNK, COLLECTION_PAGE_SIZE, formatCount } from './collection-options';
 import { CollectionRenameSheet } from './collection-rename-sheet';
@@ -193,6 +195,13 @@ export interface CollectionDetailScreenProps {
 export function CollectionDetailScreen({ collectionId }: CollectionDetailScreenProps) {
   const { isLoading: isAuthLoading, isAuthenticated } = useAuth();
 
+  const [search, setSearch] = useState('');
+  const [query, setQuery] = useState('');
+  useEffect(() => {
+    const timer = setTimeout(() => setQuery(search.trim()), 300);
+    return () => clearTimeout(timer);
+  }, [search]);
+
   const [scope, setScope] = useState<CollectionScope>('all');
   const [forTradeOnly, setForTradeOnly] = useState(false);
   const [sort, setSort] = useState<SortValue>('none');
@@ -229,7 +238,7 @@ export function CollectionDetailScreen({ collectionId }: CollectionDetailScreenP
    * ya cargadas —la página 3 de "por precio" no es la página 3 de "por nombre"—,
    * y remontar es la forma de que eso no requiera un efecto.
    */
-  const listKey = `${collectionId}|${scope}|${forTradeOnly ? 'trade' : 'all'}|${sort}`;
+  const listKey = `${collectionId}|${scope}|${forTradeOnly ? 'trade' : 'all'}|${sort}|${query}`;
 
   const ready = overview.data?.kind === 'ready' ? overview.data : null;
 
@@ -283,6 +292,8 @@ export function CollectionDetailScreen({ collectionId }: CollectionDetailScreenP
   const clearListFilters = useCallback(() => {
     setScope('all');
     setForTradeOnly(false);
+    setSearch('');
+    setQuery('');
   }, []);
 
   return (
@@ -317,7 +328,7 @@ export function CollectionDetailScreen({ collectionId }: CollectionDetailScreenP
         }
       />
 
-      <ScreenContainer labelledBy="titulo-coleccion" className={DETAIL_CONTENT_INSET}>
+      <ScreenContainer labelledBy="titulo-coleccion">
         <h1 id="titulo-coleccion" className="sr-only">
           {collection?.name ?? 'Colección'}
         </h1>
@@ -381,9 +392,9 @@ export function CollectionDetailScreen({ collectionId }: CollectionDetailScreenP
         ) : null}
 
         {/* 5 · datos del encabezado */}
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-4">
           {collection && stats ? (
-            <div className="flex flex-col gap-6">
+            <div className="flex flex-col gap-4">
               {/*
                 El error de refresco que no llegó a tumbar la pantalla. Sin esto,
                 editar una carta y que falle el `reload` dejaría los totales viejos
@@ -413,9 +424,12 @@ export function CollectionDetailScreen({ collectionId }: CollectionDetailScreenP
                   'carta',
                   'cartas',
                 )} · creada el ${formatDate(collection.createdAt)}`}
-                totalValueUsd={stats.totalValueUsd}
+                totalValueUsd={stats.totalValueUsd === 0 && missingPriceCount > 0 ? null : stats.totalValueUsd}
                 isDefault={collection.isDefault}
+                isPartial={missingPriceCount > 0}
               />
+
+              <CollectionActions collection={collection} onEdit={() => setIsSettingsOpen(true)} />
 
               <CollectionStats stats={stats} />
 
@@ -443,6 +457,8 @@ export function CollectionDetailScreen({ collectionId }: CollectionDetailScreenP
                   y por eso no suman al valor.
                 </Alert>
               ) : null}
+
+              <Input type="search" aria-label="Buscar cartas en esta colección" placeholder="Buscar cartas…" value={search} onChange={(event) => setSearch(event.target.value)} leadingIcon={Search} />
 
               <CollectionFilters
                 scope={scope}
@@ -472,6 +488,7 @@ export function CollectionDetailScreen({ collectionId }: CollectionDetailScreenP
               scope={scope}
               forTradeOnly={forTradeOnly}
               sort={sort}
+              search={query}
               listKey={listKey}
               enabled={!isMissing && (overview.status !== 'error' || Boolean(lastGood))}
               isVisible={Boolean(collection && stats && !isMissing)}
@@ -484,13 +501,6 @@ export function CollectionDetailScreen({ collectionId }: CollectionDetailScreenP
             />
           ) : null}
 
-          {/*
-            El total de la barra y el de la `CollectionSummary` salen de la
-            misma fila de `/stats`, así que no pueden desincronizarse.
-          */}
-          {collection && stats && !isMissing ? (
-            <CollectionBottomBar totalCards={stats.totalCards} totalValueUsd={stats.totalValueUsd} />
-          ) : null}
         </div>
       </ScreenContainer>
 
@@ -570,6 +580,7 @@ interface CollectionItemsProps {
   scope: CollectionScope;
   forTradeOnly: boolean;
   sort: SortValue;
+  search: string;
   /**
    * La `key` del remontaje, reutilizada como `resetKey` del troceo.
    *
@@ -601,6 +612,7 @@ function CollectionItems({
   scope,
   forTradeOnly,
   sort,
+  search,
   listKey,
   onClearListFilters,
   selectedItem,
@@ -659,6 +671,7 @@ function CollectionItems({
       listItems(collectionId, {
         page,
         pageSize: COLLECTION_PAGE_SIZE,
+        search: search || undefined,
         // Los dos filtros son server-side: el `where` del backend compone
         // `quantity: { gt: 1 }` con `isForTrade: true`, y el `total` sale del
         // `count` con el mismo filtro. Antes el de intercambio se filtraba en el
@@ -891,7 +904,8 @@ function CollectionItems({
     () =>
       itemsToRender.map((item) => ({
         card: item.card,
-        quantity: item.quantity,
+        priceUsd: item.price?.market ?? null,
+        action: <CollectionItemDetails item={item} />,
         // La misma carta puede estar dos veces con variantes distintas
         // (holofoil y normal) y la `key` sola las confunde: React reusa el nodo
         // y el primer hover se queda pegado al equivocado.
@@ -925,7 +939,7 @@ function CollectionItems({
    * marcadas mostraba "Esta colección está vacía" y mandaba a buscar una carta
    * que el usuario ya tenía.
    */
-  const hasFilter = scope !== 'all' || forTradeOnly;
+  const hasFilter = scope !== 'all' || forTradeOnly || Boolean(search);
   const isEmptyResult = !isLoading && !error && items.length === 0;
   const isEmptyCollection = isEmptyResult && !hasFilter;
   const isEmptyFilter = isEmptyResult && hasFilter;
@@ -939,6 +953,7 @@ function CollectionItems({
    * botón que acaba de tocar funcionó.
    */
   const emptyFilterCopy = (() => {
+    if (search) return { filterLabel: 'la búsqueda y los filtros', title: 'No encontramos esas cartas', description: 'Probá con otro nombre o quitá los filtros de esta colección.' };
     if (scope === 'duplicates' && forTradeOnly) {
       return {
         filterLabel: 'los filtros',
@@ -1016,7 +1031,7 @@ function CollectionItems({
 
       {/*
         La barra de la acción masiva aparece **arriba** de la grilla y no abajo,
-        aunque la `CollectionBottomBar` de totales esté fija al pie.
+        para conservar visibles la selección y su progreso.
 
         Es una decisión de reachability: la acción se aplica a lo que se ve, así
         que tiene que estar donde se decide, que es arriba de la lista. Abajo
@@ -1044,7 +1059,7 @@ function CollectionItems({
         taparla con un skeleton sería un parpadeo gratis.
       */}
       {isLoading && items.length === 0 ? (
-        <CardGridSkeleton count={COLLECTION_PAGE_SIZE} variant="collection" />
+        <CardGridSkeleton count={COLLECTION_PAGE_SIZE} variant="catalog" />
       ) : null}
 
       {/* 2 · error sin nada cargado */}
@@ -1097,10 +1112,10 @@ function CollectionItems({
       {itemsToRender.length > 0 ? (
         <div ref={gridRef}>
           <CardGrid
-            variant="collection"
+            variant="catalog"
             entries={entries}
             label="Cartas de la colección"
-            showSelection={selectedCount > 0 || isBulkRunning}
+            showSelection={isSelecting || selectedCount > 0 || isBulkRunning}
           />
         </div>
       ) : null}
@@ -1299,12 +1314,12 @@ function BulkTradeBar({
         title={
           selectedCount > MAX_BULK_ITEMS
             ? 'Demasiadas cartas para una sola vez'
-            : 'Esto hace una request por carta'
+            : 'Actualizá las cartas elegidas'
         }
       >
         {selectedCount > MAX_BULK_ITEMS
           ? `Llegaste a ${formatCount(MAX_BULK_ITEMS)} seleccionadas y el máximo por tanda es ese. Marcá las que quieras y después repetí con el resto.`
-          : 'El backend todavía no tiene una acción masiva, así que vamos a guardar las cambios de a una. Tardamos un poco más, pero no tocamos nada que no hayas elegido.'}
+          : 'Los cambios pueden tardar unos segundos. Vas a ver el progreso mientras se guardan.'}
       </Alert>
     </Surface>
   );

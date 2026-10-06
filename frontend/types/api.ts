@@ -261,6 +261,15 @@ export interface AuthResponseDto {
 }
 
 // ─── Colecciones ───
+export interface PortfolioDto {
+  totalCards: number;
+  unpricedCards: number;
+  valueUsd: number | null;
+  history: { date: string; valueUsd: number | null; totalCards: number; unpricedCards: number }[];
+  topCards: { cardId: string; name: string; imageSmall: string; setName: string; number: string;
+    variant: string; quantity: number; marketUsd: number; valueUsd: number }[];
+}
+
 /**
  * Una miniatura del mosaic de portada de `CollectionDto`.
  *

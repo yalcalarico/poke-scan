@@ -37,6 +37,7 @@ type LoadState = 'loading' | 'ready' | 'error';
 
 export interface ShareLinkCreatorProps {
   open: boolean;
+  initialCollectionId?: string;
   onClose: () => void;
   onCreated: (link: ShareLink) => void;
 }
@@ -48,7 +49,7 @@ export interface ShareLinkCreatorProps {
  * Referencia histórica: el creator anterior usaba un modal centrado y dos
  * `<select>` nativos (uno de ellos con un `<option>` por colección, sin buscador).
  */
-export function ShareLinkCreator({ open, onClose, onCreated }: ShareLinkCreatorProps) {
+export function ShareLinkCreator({ open, onClose, onCreated, initialCollectionId }: ShareLinkCreatorProps) {
   const shareUrl = useShareUrl();
   const copy = useCopyToClipboard();
 
@@ -77,7 +78,7 @@ export function ShareLinkCreator({ open, onClose, onCreated }: ShareLinkCreatorP
       setLoadError(null);
       setSubmitError(null);
       setCreated(null);
-      setCollection(ALL_COLLECTIONS);
+      setCollection(initialCollectionId ?? ALL_COLLECTIONS);
       setExpiration('never');
     });
 
@@ -100,7 +101,7 @@ export function ShareLinkCreator({ open, onClose, onCreated }: ShareLinkCreatorP
     return () => {
       cancelled = true;
     };
-  }, [open, reloadToken]);
+  }, [open, reloadToken, initialCollectionId]);
 
   const handleSubmit = useCallback(async () => {
     setIsCreating(true);

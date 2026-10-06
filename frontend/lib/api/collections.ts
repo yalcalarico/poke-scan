@@ -7,6 +7,7 @@ import type {
   CollectionItemDto,
   CollectionStatsDto,
   Paginated,
+  PortfolioDto,
 } from '@/types/api';
 import { apiFetch, buildQueryString } from './api-client';
 
@@ -84,6 +85,10 @@ export interface UpdateItemPayload {
 
 export function listCollections(): Promise<CollectionDto[]> {
   return apiFetch<CollectionDto[]>('/collections');
+}
+
+export function getPortfolio(signal?: AbortSignal): Promise<PortfolioDto> {
+  return apiFetch<PortfolioDto>('/portfolio', { signal });
 }
 
 export function getCollection(id: string): Promise<CollectionDto> {

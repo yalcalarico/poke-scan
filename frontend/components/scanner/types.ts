@@ -28,9 +28,8 @@ export function isSheetStage(stage: ScanStage): boolean {
 /**
  * Una carta leída que queda esperando a que el usuario la organice.
  *
- * Una entrada por **captura**, no por carta: escanear dos veces la misma carta
- * son dos entradas. Es lo predecible —`Organizar (2)` significa "leí 2 cosas"—
- * y el usuario ajusta la cantidad desde la fila si de verdad quiere 2 copias.
+ * Conservamos una entrada por captura para corregir candidatos. La revisión
+ * agrupa las cartas iguales y usa el número de capturas como cantidad inicial.
  */
 export interface SessionEntry {
   /** Corrida que la produjo. Permite reemplazar la entrada si el usuario elige otro candidato. */

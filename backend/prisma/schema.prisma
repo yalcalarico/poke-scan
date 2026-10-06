@@ -28,6 +28,7 @@ model User {
   collections   Collection[]
   shareLinks    ShareLink[]
   scanJobs      ScanJob[]
+  portfolioSnapshots PortfolioSnapshot[]
 
   // Fase 8: sistema de amigos. Cada Friendship es un par (requester, addressee)
   // con un único estado; las dos relaciones inversas permiten consultar
@@ -181,6 +182,18 @@ model Collection {
 
   @@index([userId])
   @@map("collections")
+}
+
+model PortfolioSnapshot {
+  userId String
+  day DateTime @db.Date
+  valueUsd Float?
+  totalCards Int
+  unpricedCards Int
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, day])
+  @@map("portfolio_snapshots")
 }
 
 model CollectionItem {

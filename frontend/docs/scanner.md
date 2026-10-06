@@ -4,15 +4,17 @@ Actualizado el 2026-10-03. DINOv2 es el único método de reconocimiento. Se ret
 
 ## Flujo de uso
 
+Para reconocer cartas hace falta iniciar sesión. Si no hay sesión, las acciones de cámara y galería llevan al login y, al entrar, vuelven a `/escanear`, sin capturar ni enviar una consulta antes.
+
 En teléfonos, “Escanear carta” abre la cámara. El marco es rojo mientras busca una carta y verde cuando encuentra una carta estable. Entonces captura el recorte y empieza a reconocer automáticamente, sin tocar el obturador. El botón central sigue disponible como respaldo. No se muestran controles de flash ni infinito.
 
 En escritorio y tablet no se ofrece cámara. “Subir una foto” usa el mismo reconocimiento visual. La búsqueda manual sigue disponible en todos los dispositivos.
 
-La primera predicción DINOv2 se suma automáticamente a la sesión. Revisá nombre, set y número antes de organizar; no hay rechazo calibrado. La barra muestra miniatura, nombre, set, número y valor; si falta precio muestra “Sin precio” o un guion, sin inventarlo. “Organizar” permite elegir la colección y cantidad y guardar las cartas; la hoja actual no ofrece un selector de variante. Sumar a la sesión no equivale a persistir en una colección.
+La primera predicción DINOv2 se suma automáticamente a la sesión. En la cámara, el set de esa carta aparece arriba y la coincidencia queda en un recuadro tocable abajo. Al tocarlo se abre una comparativa del recorte enviado con la carta del catálogo y las ocho alternativas: elegí otra y confirmá para reemplazar esa lectura, sin duplicarla. La captura automática queda pausada durante la revisión. Los precios se consultan sólo para la opción confirmada, mediante el cliente y la caché existentes. Revisá nombre, set y número antes de organizar; no hay rechazo calibrado. La barra muestra miniatura, nombre, set, número y valor; si falta precio muestra “Sin precio” o un guion, sin inventarlo. “Organizar” permite elegir la colección y cantidad y guardar las cartas; la hoja actual no ofrece un selector de variante. Sumar a la sesión no equivale a persistir en una colección.
 
 ## Cámara, recorte y orientación
 
-`components/scanner/camera-view.tsx` mantiene el video vivo durante el reconocimiento. `lib/scanner/camera.ts` calcula la misma guía para el dibujo y la captura, incluyendo el mapeo de `object-cover` al video original. El marco ocupa el 72 % del espacio disponible en pantallas móviles pequeñas, respetando la proporción 63/88 y los controles.
+`components/scanner/camera-view.tsx` mantiene el video vivo durante el reconocimiento. `lib/scanner/camera.ts` calcula la misma guía para el dibujo y la captura, incluyendo el mapeo de `object-cover` al video original. La vista se ajusta al `visualViewport` de Safari (barras del navegador, teclado y zoom), bloquea el scroll mientras está abierta y lo restaura al cerrar. Se dibuja una sola guía: no queda un halo blanco después de leer. El marco ocupa el 72 % del espacio disponible en pantallas móviles pequeñas, respetando la proporción 63/88 y los controles.
 
 La cámara entrega una foto ya recortada al marco: no vuelve a detectar bordes ni girarla. Las fotos subidas pasan por `lib/scanner/visual-photo.ts` y `preprocess.ts`: detectan el contorno, amplían el margen y orientan el recorte si el rectángulo es apaisado. El detector exige continuidad en los lados del candidato para evitar confundir el dibujo interno con toda la carta. El recorte se limita a 1400 px por lado largo y se envía en color.
 
@@ -59,3 +61,17 @@ Después de una consulta de cámara o galería aparece «¿No coincidió? Guard�
 La última captura se conserva sólo en memoria del navegador, fuera de la sesión restaurable. No se descarga automáticamente ni se guarda en el servidor, sessionStorage o localStorage. La siguiente captura la reemplaza; recargar o salir de la pantalla la pierde. Descartar la lectura/sesión también libera esa revisión. Si falló antes de preparar una imagen no hay recorte para bajar.
 
 Abrir la revisión en cámara pausa la captura automática hasta cerrarla, para evitar reemplazar la imagen mientras se revisa. La cámara permanece abierta. Las descargas requieren acciones separadas para funcionar sin múltiples descargas automáticas en navegadores móviles. Guardá ambos archivos cuando quieras reportar una coincidencia incorrecta e indicá después el set y número reales. La descarga física en Safari/PWA queda sujeta a verificación en teléfono.
+
+Al cerrar la cámara, la pantalla de entrada muestra un aviso con signo de exclamación y el botón para organizar las cartas pendientes; el inicio también resalta la sesión pendiente. La carta reconocida y su precio quedan en la cámara. Las fotos de galería mantienen el acceso «Revisar última foto» para corregir la coincidencia.
+
+«Continuar» abre la revisión de escaneos: el selector superior define una colección para todo el lote. Las lecturas del mismo ID se agrupan en una fila, con cantidad inicial igual a sus capturas; escanear otra copia incrementa esa cantidad. La cantidad sigue siendo editable. En mobile, deslizar una fila a la izquierda revela «Eliminar». Desde tablet (768 px) y en PC, se muestra la papelera y el gesto queda desactivado. La papelera también aparece al recibir foco de teclado en mobile. Eliminar retira todas las lecturas de esa fila. El guardado envía un alta por carta agrupada y retira sólo las corridas confirmadas por la API. El total incluye precios conocidos y avisa si faltan valores.
+
+Cerrar la cámara con lecturas pendientes pide confirmación. Cancelar mantiene la cámara y pausa las capturas mientras el aviso está abierto; salir conserva la sesión para organizarla después.
+
+En Revisar escaneos, la miniatura abre la misma comparativa y selección de
+candidatas que la cámara y la galería. Cada lectura conserva su recorte y ranking
+sólo en memoria mientras la pantalla sigue montada. Corregirla reemplaza ese
+runId y recalcula los grupos y el total, sin repetir el reconocimiento. Guardar o
+retirar lecturas libera sus recortes; las fotos no se escriben en sessionStorage.
+Tras recargar la página, las cartas pendientes siguen disponibles pero para
+recuperar una comparativa hay que volver a escanear.

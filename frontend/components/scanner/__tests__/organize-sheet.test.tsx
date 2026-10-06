@@ -99,7 +99,7 @@ describe('Organizar: edición y confirmación', () => {
     const user = userEvent.setup();
     mount();
     await ready();
-    await user.click(screen.getByRole('combobox', { name: 'Colección' }));
+    await user.click(screen.getByRole('combobox', { name: 'Agregar a la colección' }));
     await user.click(screen.getByRole('option', { name: /otra/ }));
     await user.click(screen.getByRole('button', { name: 'Agregar' }));
     await waitFor(() => expect(addItem).toHaveBeenCalledWith('otra', { cardId: 'card-1', quantity: 1 }));
@@ -173,8 +173,48 @@ describe('Organizar: lotes y concurrencia', () => {
     fireEvent.click(button);
     expect(addItem).toHaveBeenCalledTimes(1);
     expect(quantity).toBeDisabled();
-    expect(screen.getByRole('combobox', { name: 'Colección' })).toBeDisabled();
+    expect(screen.getByRole('combobox', { name: 'Agregar a la colección' })).toBeDisabled();
     expect(screen.getByRole('button', { name: 'Sacar Carta 1 de la sesión' })).toBeDisabled();
     await act(async () => pending.resolve({}));
   });
+});
+
+it('agrupa dos escaneos iguales, envía cantidad dos y retira ambas corridas', async () => {
+  const first = entry(1);
+  const second = { ...first, runId: 2 };
+  const { onSaved } = mount([first, second]);
+  const quantities = await ready();
+  expect(quantities).toHaveLength(1);
+  expect(quantities[0]).toHaveValue(2);
+  fireEvent.click(screen.getByRole('button', { name: 'Agregar todas (1)' }));
+  await waitFor(() => expect(onSaved).toHaveBeenCalledWith([1, 2]));
+  expect(addItem).toHaveBeenCalledTimes(1);
+  expect(addItem).toHaveBeenCalledWith('default', { cardId: 'card-1', quantity: 2 });
+});
+
+it('sacar una carta agrupada elimina todas sus lecturas', async () => {
+  const onRemove = vi.fn();
+  const first = entry(1);
+  render(<OrganizeSheet open entries={[first, { ...first, runId: 2 }]} onClose={vi.fn()} onSaved={vi.fn()} onRemove={onRemove} />);
+  await ready();
+  fireEvent.click(screen.getByRole('button', { name: 'Sacar Carta 1 de la sesión' }));
+  expect(onRemove.mock.calls).toEqual([[1], [2]]);
+});
+
+it('otra captura suma una copia incluso después de editar la cantidad', async () => {
+  const first = entry(1);
+  const props = { open: true, onClose: vi.fn(), onSaved: vi.fn(), onRemove: vi.fn() };
+  const { rerender } = render(<OrganizeSheet {...props} entries={[first]} />);
+  const [quantity] = await ready();
+  fireEvent.change(quantity, { target: { value: '3' } });
+  rerender(<OrganizeSheet {...props} entries={[first, { ...first, runId: 2 }]} />);
+  expect(screen.getByRole('spinbutton', { name: 'Cantidad' })).toHaveValue(4);
+});
+
+it('tocar la miniatura pide revisar la lectura correspondiente', async () => {
+  const onReview = vi.fn();
+  render(<OrganizeSheet open entries={[entry(7)]} onClose={vi.fn()} onSaved={vi.fn()} onRemove={vi.fn()} onReview={onReview} />);
+  await ready();
+  fireEvent.click(screen.getByRole('button', { name: 'Revisar coincidencia de Carta 7' }));
+  expect(onReview).toHaveBeenCalledWith(7);
 });

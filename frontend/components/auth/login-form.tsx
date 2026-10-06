@@ -32,7 +32,7 @@ interface LoginFieldErrors {
  *   pertenece a ningún input en particular, y ponerlo debajo del formulario es
  *   lo que lo hace legible sin que el lector salte de campo en campo.
  */
-export function LoginForm() {
+export function LoginForm({ redirectPath = POST_LOGIN_PATH }: { redirectPath?: '/buscar' | '/escanear' }) {
   const router = useRouter();
   const { login } = useAuth();
 
@@ -70,7 +70,7 @@ export function LoginForm() {
       // `replace` y no `push`: la pantalla de login no es una pantalla de la que
       // se vuelva con el botón de atrás. Es el mismo criterio que usa
       // `RequireAuth` para mandar a `/login`.
-      router.replace(POST_LOGIN_PATH);
+      router.replace(redirectPath);
     } catch (err) {
       if (err instanceof ApiError) {
         setSubmitError(

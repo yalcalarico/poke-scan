@@ -211,7 +211,7 @@ export function ActionBar({
           disabled={sessionCount === 0}
           className="shrink-0"
         >
-          Organizar ({formatCount(sessionCount)})
+          Continuar ({formatCount(sessionCount)})
         </Button>
       </div>
     </div>

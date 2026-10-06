@@ -2,7 +2,7 @@
 
 import { Layers } from 'lucide-react';
 
-import { Badge, Stat, StatGrid, Surface } from '@/components/ui';
+import { Badge, StatValue, Surface } from '@/components/ui';
 import { useCurrency } from '@/hooks/use-currency';
 import type { CollectionStatsResponse } from '@/lib/api/collections';
 
@@ -13,8 +13,9 @@ export interface CollectionSummaryProps {
   /** Bajada del nombre: cantidad de cartas y fecha de creación. */
   subtitle: string;
   /** Valor total en **USD**. Lo formatea `useCurrency`; el crudo nunca sale de acá. */
-  totalValueUsd: number;
+  totalValueUsd: number | null;
   isDefault?: boolean;
+  isPartial?: boolean;
 }
 
 /**
@@ -35,6 +36,7 @@ export function CollectionSummary({
   subtitle,
   totalValueUsd,
   isDefault = false,
+  isPartial = false,
 }: CollectionSummaryProps) {
   const { formatMoney } = useCurrency();
 
@@ -66,8 +68,8 @@ export function CollectionSummary({
           `text-overline` ya trae `uppercase`, así que el copy va en minúscula y
           se ve en caja alta sola.
         */}
-        <p className="text-overline text-tertiary">Valor</p>
-        <p className="break-all text-display text-positive tabular-nums">{formatMoney(totalValueUsd)}</p>
+        <p className="text-overline text-tertiary">{isPartial ? 'Valor parcial' : 'Valor'}</p>
+        <p className="break-all text-display text-positive tabular-nums">{totalValueUsd === null ? '—' : formatMoney(totalValueUsd)}</p>
       </div>
     </Surface>
   );
@@ -80,11 +82,14 @@ export interface CollectionStatsProps {
 /** El valor ya está en la cabecera; acá quedan los cuatro conteos. */
 export function CollectionStats({ stats }: CollectionStatsProps) {
   return (
-    <StatGrid columns={4}>
-      <Stat label="Cartas" value={formatCount(stats.totalCards)} />
-      <Stat label="Únicas" value={formatCount(stats.uniqueCards)} />
-      <Stat label="Duplicadas" value={formatCount(stats.duplicateCards)} />
-      <Stat label="Sets" value={formatCount(stats.setsCount)} />
-    </StatGrid>
+    <dl className="grid grid-cols-4 gap-2 border-y border-line py-3">
+      {[
+        ['Cartas', stats.totalCards], ['Únicas', stats.uniqueCards],
+        ['Duplicadas', stats.duplicateCards], ['Sets', stats.setsCount],
+      ].map(([label, value]) => <div key={label} className="flex min-w-0 flex-col gap-1">
+        <dt className="text-caption text-tertiary">{label}</dt>
+        <StatValue value={formatCount(Number(value))} />
+      </div>)}
+    </dl>
   );
 }

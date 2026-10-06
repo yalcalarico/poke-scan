@@ -5,15 +5,17 @@ import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from '
 import { ScreenContainer } from '@/components/layout/screen-container';
 import { ScreenHeader } from '@/components/layout/screen-header';
 import { CameraView, IdlePanel, MAX_SESSION_ENTRIES, OrganizeSheet, PHASE_DETAIL, PHASE_HEADLINE,
-  ScanPreview, DetectedCardBar, appendSessionEntry, cameraNoticeCopy, clearSession, formatCount,
+  ScanPreview, appendSessionEntry, cameraNoticeCopy, clearSession, formatCount,
   isCameraStage, readSession, writeSession, type CameraNoticeKind, type CaptureSource,
   type ScanPhase, type ScanStage, type SessionEntry } from '@/components/scanner';
-import { Alert, Button, Surface, useToast } from '@/components/ui';
+import { Alert, Button, Sheet, Surface, useToast } from '@/components/ui';
 import { isCameraSupported, isSecureContextForCamera } from '@/lib/scanner/camera';
+import { useAuth } from '@/hooks/use-auth';
 import { useMobileCamera } from '@/hooks/use-mobile-camera';
 import { recognizeCameraCard } from '@/lib/scanner/camera-visual';
 import { prepareVisualPhoto } from '@/lib/scanner/visual-photo';
-import { VisualDiagnostics } from '@/components/scanner/visual-diagnostics';
+import { getCardPrices } from '@/lib/api/cards';
+import { ScanMatchSheet } from '@/components/scanner/scan-match-sheet';
 import { CaptureReviewActions } from '@/components/scanner/capture-review';
 import type { CaptureReview } from '@/lib/scanner/capture-review';
 import type { CameraError, ScannedCapture } from '@/lib/scanner/types';
@@ -30,7 +32,9 @@ function subscribeToEnv(): () => void { return () => {}; }
 interface Notice { kind: CameraNoticeKind; detail: string | null }
 
 export default function ScanPage() {
+  const [exitPending, setExitPending] = useState(false);
   const router = useRouter();
+  const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
   const toast = useToast();
   const mobileCamera = useMobileCamera();
   const env = useSyncExternalStore(subscribeToEnv, getBrowserEnv, () => null);
@@ -40,9 +44,11 @@ export default function ScanPage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [phase, setPhase] = useState<ScanPhase>('preparing');
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [visualResult, setVisualResult] = useState<VisualIdentifyResponseDto | null>(null);
   const [captureReview, setCaptureReview] = useState<CaptureReview | null>(null);
+  const reviewsRef = useRef(new Map<number, CaptureReview>());
+  const [organizeReview, setOrganizeReview] = useState<CaptureReview | null>(null);
   const [reviewOpen, setReviewOpen] = useState(false);
+  const [matchPending, setMatchPending] = useState(false);
   const [session, setSession] = useState<SessionEntry[]>([]);
   /**
    * `true` cuando el primer render ya leyó el storage. Antes de eso el guardado
@@ -106,6 +112,8 @@ export default function ScanPage() {
 
   // La cámara ya entrega el recorte del marco. Solo la galería detecta y orienta.
   const runRecognition = useCallback(async (load: () => Promise<string>, from: 'camera' | 'gallery') => {
+    if (isAuthLoading) return;
+    if (!isAuthenticated) { router.push('/login?next=escanear'); return; }
     const runId = ++runIdRef.current;
     abortRef.current?.abort();
     const controller = new AbortController();
@@ -114,23 +122,28 @@ export default function ScanPage() {
     setStage('processing');
     setPhase('preparing');
     setErrorMessage(null);
-    setVisualResult(null);
     setCaptureReview(null);
     setReviewOpen(false);
     try {
       const image = await load();
       controller.signal.throwIfAborted();
-      setCaptureReview({ image, source: from, capturedAt: new Date().toISOString(), runId, result: null, error: null });
+      const review: CaptureReview = { image, source: from, capturedAt: new Date().toISOString(), runId, result: null, error: null };
+      setCaptureReview(review);
       setPhase('searching');
       const candidate = await recognizeCameraCard(image,
         AbortSignal.any([controller.signal, AbortSignal.timeout(35_000)]),
         (result) => {
           if (runIdRef.current !== runId) return;
-          setVisualResult(result);
-          setCaptureReview((current) => current?.runId === runId ? { ...current, result } : current);
+          review.result = result;
+          setCaptureReview({ ...review });
         });
       if (runIdRef.current !== runId || controller.signal.aborted) return;
       if (!candidate) throw new Error('No encontramos una carta. Probá sin reflejos y con la carta llenando el marco.');
+      reviewsRef.current.set(runId, review);
+      if (reviewsRef.current.size > MAX_SESSION_ENTRIES) {
+        const oldest = reviewsRef.current.keys().next().value;
+        if (oldest !== undefined) reviewsRef.current.delete(oldest);
+      }
       setSession((current) => appendSessionEntry(current, { runId, candidate }));
       setStage(from === 'camera' ? 'camera' : 'idle');
     } catch (error) {
@@ -139,7 +152,7 @@ export default function ScanPage() {
       setCaptureReview((current) => current?.runId === runId ? { ...current, error: error instanceof Error ? error.message : 'No pudimos reconocer la carta.' } : current);
       setStage(from === 'camera' ? 'camera' : 'error');
     }
-  }, []);
+  }, [isAuthLoading, isAuthenticated, router]);
 
   const handleCapture = useCallback((capture: ScannedCapture, source: CaptureSource) => {
     const now = Date.now();
@@ -166,12 +179,14 @@ export default function ScanPage() {
   }, [runRecognition]);
 
   const openCamera = useCallback(() => {
+    if (isAuthLoading) return;
+    if (!isAuthenticated) { router.push('/login?next=escanear'); return; }
     if (!cameraAvailable) return;
     setCameraNotice(null);
     setErrorMessage(null);
     setCaptureMode('camera');
     setStage('camera');
-  }, [cameraAvailable]);
+  }, [cameraAvailable, isAuthLoading, isAuthenticated, router]);
   const handleCameraError = useCallback((kind: CameraError, detail?: string) => {
     setCameraNotice({ kind, detail: detail ?? null });
     setStage('idle');
@@ -186,6 +201,7 @@ export default function ScanPage() {
 
   const handleSaved = useCallback((runIds: number[]) => {
     const saved = new Set(runIds);
+    for (const id of runIds) reviewsRef.current.delete(id);
     setSession((current) => current.filter((entry) => !saved.has(entry.runId)));
   }, []);
 
@@ -201,12 +217,14 @@ export default function ScanPage() {
    */
   const handleDiscardAll = useCallback(() => {
     clearSession();
+    reviewsRef.current.clear();
     setSession([]);
     setCaptureReview(null);
     setReviewOpen(false);
   }, []);
 
   const handleRemove = useCallback((runId: number) => {
+    reviewsRef.current.delete(runId);
     setSession((current) => current.filter((entry) => entry.runId !== runId));
   }, []);
 
@@ -218,19 +236,39 @@ export default function ScanPage() {
     [],
   );
 
+  const confirmMatch = async (match: VisualIdentifyResponseDto['candidates'][number]) => {
+    const review = organizeReview ?? captureReview;
+    if (!review || matchPending) return;
+    const runId = review.runId;
+    setMatchPending(true);
+    try {
+      const existing = session.find((entry) => entry.runId === runId)?.candidate;
+      const prices = existing?.card.id === match.card.id ? existing.prices ?? []
+        : await getCardPrices(match.card.id, AbortSignal.timeout(5000)).then((response) => response.prices).catch(() => []);
+      setSession((current) => current.map((entry) => entry.runId === runId ? { ...entry, candidate: {
+        card: match.card, score: Math.max(0, Math.min(1, match.similarity)), rawScore: match.similarity,
+        price: prices[0] ?? (existing?.card.id === match.card.id ? existing.price : null), prices,
+      } } : entry));
+      setReviewOpen(false);
+      setOrganizeReview(null);
+      toast.success('Actualizamos la carta de esta lectura.');
+    } finally { setMatchPending(false); }
+  };
+
   const progress = null;
   const headline = PHASE_HEADLINE[phase];
   const showShell = !showCamera;
-  const reviewActions = captureReview && stage !== 'processing'
+  const reviewActions = captureReview && !detected && stage !== 'processing'
     ? <CaptureReviewActions review={captureReview} open={reviewOpen} onOpenChange={setReviewOpen} /> : null;
   return <>
     {showShell ? <>
       <ScreenHeader title="Escanear" back={{ href: '/buscar', label: 'buscar' }} />
       <ScreenContainer className="flex flex-col gap-4">
         {stage === 'idle' ? <>
+          {!isAuthLoading && !isAuthenticated ? <Alert tone="info" title="Iniciá sesión para reconocer cartas">Podés explorar el catálogo sin cuenta. Para usar el escáner, entrá a tu cuenta primero.</Alert> : null}
           <IdlePanel visualCamera showCamera={mobileCamera} cameraAvailable={cameraAvailable}
             sessionCount={session.length} onScan={openCamera}
-            onPickFromGallery={() => fileInputRef.current?.click()}
+            onPickFromGallery={() => { if (isAuthLoading) return; if (!isAuthenticated) { router.push('/login?next=escanear'); return; } fileInputRef.current?.click(); }}
             onManualSearch={goManualSearch} onOrganize={() => openOrganize('idle')} />
           {cameraNotice ? <Alert tone="error" title={cameraNoticeCopy(cameraNotice.kind).title}>
             <p>{cameraNoticeCopy(cameraNotice.kind).hint}</p>
@@ -241,8 +279,8 @@ export default function ScanPage() {
             {cameraNoticeCopy('unsupported').hint}</Alert> : null}
           {mobileCamera && env && env.supported && !env.secure ? <Alert tone="warning" title={cameraNoticeCopy('insecure-context').title}>
             {cameraNoticeCopy('insecure-context').hint}</Alert> : null}
-          {detected ? <DetectedCardBar candidate={detected.candidate} /> : null}
-          {visualResult ? <VisualDiagnostics result={visualResult} /> : null}
+          {detected && captureMode === 'gallery' && captureReview?.runId === detected.runId ?
+            <Button variant="secondary" onClick={() => setReviewOpen(true)}>Revisar última foto</Button> : null}
           {session.length > 0 ? <div className="flex flex-col gap-1">
             <p className="text-caption text-tertiary">{formatCount(session.length)} {session.length === 1 ? 'carta leída pendiente' : 'cartas leídas pendientes'} de guardar en una colección.</p>
             {session.length >= MAX_SESSION_ENTRIES ? <p className="text-caption text-tertiary">Esta sesión conserva hasta {formatCount(MAX_SESSION_ENTRIES)} cartas. Organizá estas antes de seguir escaneando.</p> : null}
@@ -267,14 +305,35 @@ export default function ScanPage() {
         {reviewActions}
       </ScreenContainer>
     </> : null}
-    {showCamera ? <CameraView autoVisual autoCapturePaused={reviewOpen} reviewActions={reviewActions} liveResult={errorMessage} busy={stage === 'processing'} detected={detected}
+    {showCamera ? <CameraView autoVisual reviewOpen={reviewOpen || exitPending} onReview={captureReview?.runId === detected?.runId ? () => setReviewOpen(true) : undefined} autoCapturePaused={reviewOpen || matchPending || exitPending} reviewActions={reviewActions} liveResult={errorMessage} busy={stage === 'processing'} detected={detected}
       headline={headline} detail={PHASE_DETAIL[phase]} progress={progress} previewUrl={previewUrl}
       sessionCount={session.length} onCapture={handleCapture} onError={handleCameraError}
-      onClose={() => { abortRef.current?.abort(); runIdRef.current += 1; setStage('idle'); }}
-      onPickFromGallery={() => fileInputRef.current?.click()} onDiscard={discardLast}
+      onClose={() => { if (session.length > 0) setExitPending(true); else { abortRef.current?.abort(); runIdRef.current += 1; setStage('idle'); } }}
+      onPickFromGallery={() => { if (isAuthLoading) return; if (!isAuthenticated) { router.push('/login?next=escanear'); return; } fileInputRef.current?.click(); }} onDiscard={discardLast}
       onOrganize={() => openOrganize('camera')} /> : null}
-    <OrganizeSheet open={stage === 'organizing'} entries={session} onClose={() => setStage(organizeReturn)}
-      onSaved={handleSaved} onRemove={handleRemove} />
+    {(() => {
+      const review = organizeReview ?? captureReview;
+      const entry = session.find((item) => item.runId === review?.runId);
+      return review && entry ? <ScanMatchSheet
+        key={`${review.runId}-${entry.candidate.card.id}`} review={review} candidate={entry.candidate}
+        open={Boolean(organizeReview) || reviewOpen} pending={matchPending}
+        onOpenChange={(open) => { if (!matchPending) { setReviewOpen(open); if (!open) setOrganizeReview(null); } }}
+        onConfirm={(match) => void confirmMatch(match)} onManualSearch={() => { setReviewOpen(false); setOrganizeReview(null); goManualSearch(); }} /> : null;
+    })()}
+    <OrganizeSheet open={stage === 'organizing' && !organizeReview} entries={session} onClose={() => setStage(organizeReturn)}
+      onSaved={handleSaved} onRemove={handleRemove}
+      onReview={(runId) => {
+        const review = reviewsRef.current.get(runId);
+        if (review) setOrganizeReview(review);
+        else toast.info('Esta captura ya no está disponible. Volvé a escanear la carta para comparar las opciones.');
+      }} />
+    <Sheet open={exitPending} onClose={() => setExitPending(false)} title="¿Salir del escáner?"
+      footer={<div className="flex gap-3">
+        <Button variant="secondary" onClick={() => setExitPending(false)} className="flex-1">Seguir escaneando</Button>
+        <Button onClick={() => { abortRef.current?.abort(); runIdRef.current += 1; setExitPending(false); setStage('idle'); }} className="flex-1">Salir</Button>
+      </div>}>
+      <p className="text-body text-secondary">Todavía no agregaste estos escaneos a una colección. Si salís, quedan pendientes para organizar después.</p>
+    </Sheet>
     <input ref={fileInputRef} type="file" accept="image/*" className="sr-only" aria-label="Elegir una foto de la carta"
       onChange={(event) => { const file = event.target.files?.[0]; event.target.value = ''; handleFile(file); }} />
   </>;
