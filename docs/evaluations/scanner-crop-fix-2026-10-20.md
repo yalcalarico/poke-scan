@@ -1,4 +1,5 @@
 # Corrección de recorte y numeración V2 — 20/10/2026
+Contraste posterior de los originales con otro decodificador: [resultados y límites de reproducibilidad](scanner-baseline-contrast-2026-10-20.md).
 
 **Corrección implementada y validada localmente.** El recorte de la muestra de Umbreon conserva ahora la carta completa y la referencia correcta vuelve a las alternativas. El total impreso coincide entre propuesta, revisión y organizador. La primera coincidencia de esta foto sigue siendo Luxray: no se declara resuelto el top-1 ni la precisión general.
 

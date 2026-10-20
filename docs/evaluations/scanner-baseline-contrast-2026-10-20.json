@@ -1,0 +1,166 @@
+{
+  "date": "2026-10-20",
+  "scope": "Cinco originales HEIC existentes; contraste antes/después del último parche del 20/10, no reconstrucción byte a byte del 06/10",
+  "decoder": "ImageIO nativo de macOS con transformación EXIF, PNG sólo en memoria; sharp resize a ancho máximo 1280",
+  "historicalDecoder": "sharp directo sobre los originales; actualmente falla con bad seek",
+  "modelHash": "c179f8f7f592449c4c1bca4cd124a7538021428c5ffb89afde9503935b197efb",
+  "inputHashes": {
+    "IMG_4985": "69af036665f76a31acd24873b7e5272ba3663b103057f7e586c9b9fa1a0f95b1",
+    "IMG_4986": "fb698d229804f2a9b069e75977425424461a6be6500d93f13ed0cac19c3e9ff0",
+    "IMG_4987": "2a572911910635f93e64cafed20d1532c88868f264f5b499906480fb046911fd",
+    "IMG_4988": "f220d3efb66f3295a8c57d857942c737d26a86825556179572445e446e485eae",
+    "IMG_4989": "7b9cd499b93a2a17a7a6739db4f4f771ea472e7118267e9ce9d5ea7ac3710d01"
+  },
+  "beforeModuleHash": "10baafe101d31f0f794f48c40c0428b9874130a2ab3273d0e8e56945920446fa",
+  "afterModuleHash": "1d6c37ba4c8a218f0f5ddabc0cf32346c55297fc3e65873f2ca246b13d284bff",
+  "rows": [
+    {
+      "fixture": "IMG_4985",
+      "expected": "me55c-106",
+      "versions": [
+        {
+          "label": "before",
+          "dimensions": [
+            879,
+            1228
+          ],
+          "rotation": 0,
+          "perspective": true,
+          "expectedRank": 3,
+          "top": "ecard3-146"
+        },
+        {
+          "label": "after",
+          "dimensions": [
+            879,
+            1228
+          ],
+          "rotation": 0,
+          "perspective": true,
+          "expectedRank": 3,
+          "top": "ecard3-146"
+        }
+      ]
+    },
+    {
+      "fixture": "IMG_4986",
+      "expected": "me55-23",
+      "versions": [
+        {
+          "label": "before",
+          "dimensions": [
+            958,
+            1338
+          ],
+          "rotation": 0,
+          "perspective": true,
+          "expectedRank": 1,
+          "top": "me55-23"
+        },
+        {
+          "label": "after",
+          "dimensions": [
+            958,
+            1338
+          ],
+          "rotation": 0,
+          "perspective": true,
+          "expectedRank": 1,
+          "top": "me55-23"
+        }
+      ]
+    },
+    {
+      "fixture": "IMG_4987",
+      "expected": "me55-92",
+      "versions": [
+        {
+          "label": "before",
+          "dimensions": [
+            803,
+            1121
+          ],
+          "rotation": 0,
+          "perspective": true,
+          "expectedRank": 2,
+          "top": "xy5-55"
+        },
+        {
+          "label": "after",
+          "dimensions": [
+            803,
+            1121
+          ],
+          "rotation": 0,
+          "perspective": true,
+          "expectedRank": 2,
+          "top": "xy5-55"
+        }
+      ]
+    },
+    {
+      "fixture": "IMG_4988",
+      "expected": "me55-137",
+      "versions": [
+        {
+          "label": "before",
+          "dimensions": [
+            971,
+            1357
+          ],
+          "rotation": 0,
+          "perspective": true,
+          "expectedRank": 1,
+          "top": "me55-137"
+        },
+        {
+          "label": "after",
+          "dimensions": [
+            971,
+            1357
+          ],
+          "rotation": 0,
+          "perspective": true,
+          "expectedRank": 1,
+          "top": "me55-137"
+        }
+      ]
+    },
+    {
+      "fixture": "IMG_4989",
+      "expected": "me55-145",
+      "versions": [
+        {
+          "label": "before",
+          "dimensions": [
+            906,
+            1265
+          ],
+          "rotation": 0,
+          "perspective": true,
+          "expectedRank": 1,
+          "top": "me55-145"
+        },
+        {
+          "label": "after",
+          "dimensions": [
+            906,
+            1265
+          ],
+          "rotation": 0,
+          "perspective": true,
+          "expectedRank": 1,
+          "top": "me55-145"
+        }
+      ]
+    }
+  ],
+  "beforeTop1": 3,
+  "afterTop1": 3,
+  "beforeTop8": 5,
+  "afterTop8": 5,
+  "historicalTop1": 5,
+  "historicalTop8": 5,
+  "queryPhotosPersisted": false,
+  "conclusion": "El último parche no cambia los rankings observados en estos originales. La diferencia frente al 5/5 histórico no tiene causa demostrada; la decodificación usada ahora difiere."
+}
