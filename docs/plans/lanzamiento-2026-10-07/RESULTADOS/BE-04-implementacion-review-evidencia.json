@@ -1,0 +1,300 @@
+{
+  "task": "BE-04",
+  "phase": "implementation_review",
+  "reviewer": "Sol HIGH",
+  "date": "2026-10-08",
+  "result": "accepted_focused_gate_pending",
+  "baseline": {
+    "verified_files": 15,
+    "algorithm": "git blob SHA-1",
+    "files": [
+      {
+        "file": "backend/src/common/sql/latest-price.ts",
+        "initial_git_blob_sha1": "d6c39bc20d75580b60aeca77134b7518ce0368bf",
+        "reconstructed_matches": true
+      },
+      {
+        "file": "backend/src/jobs/sync-prices.service.ts",
+        "initial_git_blob_sha1": "bc2448f47da0c58c3206c137c70e18f00c6d1c8e",
+        "reconstructed_matches": true
+      },
+      {
+        "file": "backend/src/modules/cards/cards.service.ts",
+        "initial_git_blob_sha1": "6172cb13afc007e3561003ad00073ec9c016f15f",
+        "reconstructed_matches": true
+      },
+      {
+        "file": "backend/src/modules/cards/cards.service.spec.ts",
+        "initial_git_blob_sha1": "2f315df73d6b0d79cacbc779af1c478a14c23376",
+        "reconstructed_matches": true
+      },
+      {
+        "file": "backend/src/modules/collections/collections.service.ts",
+        "initial_git_blob_sha1": "cd4f8d7272f38aaa7ad9e4922ee8e1e15f69c120",
+        "reconstructed_matches": true
+      },
+      {
+        "file": "backend/src/modules/collections/collections.service.spec.ts",
+        "initial_git_blob_sha1": "1e97226700f27e0caa6e37ec9541dba24c0c1275",
+        "reconstructed_matches": true
+      },
+      {
+        "file": "backend/src/modules/collections/portfolio.service.ts",
+        "initial_git_blob_sha1": "09b31c00019ab1ae9a5bd551430e178f42a98c57",
+        "reconstructed_matches": true
+      },
+      {
+        "file": "backend/src/modules/share/share.service.ts",
+        "initial_git_blob_sha1": "121b70b1260178a91894a70bcd76b7a12938ccce",
+        "reconstructed_matches": true
+      },
+      {
+        "file": "backend/src/modules/share/share.service.spec.ts",
+        "initial_git_blob_sha1": "9da3772118b7127792ed739535212783e9144d55",
+        "reconstructed_matches": true
+      },
+      {
+        "file": "frontend/types/api.ts",
+        "initial_git_blob_sha1": "b2cedad85d73ad0708a296f819079728a4cd7dee",
+        "reconstructed_matches": true
+      },
+      {
+        "file": "frontend/lib/api/schema.ts",
+        "initial_git_blob_sha1": "c378b8fed95c21dfcc87b9985795d44db73ab217",
+        "reconstructed_matches": true
+      },
+      {
+        "file": "frontend/lib/api/collections.ts",
+        "initial_git_blob_sha1": "46e3ceda450aeeeb01a16ab1e1860a84634973ea",
+        "reconstructed_matches": true
+      },
+      {
+        "file": "frontend/lib/api/share.ts",
+        "initial_git_blob_sha1": "849dade396c536b7344772d0d72d03203f567191",
+        "reconstructed_matches": true
+      },
+      {
+        "file": "backend/docs/api.md",
+        "initial_git_blob_sha1": "38661ff7549688d750610e492f021a006796cee8",
+        "reconstructed_matches": true
+      },
+      {
+        "file": "backend/docs/pricing.md",
+        "initial_git_blob_sha1": "7b23b673f89ef22db9ffa2c922a1c5145245f0a9",
+        "reconstructed_matches": true
+      }
+    ],
+    "preexisting_patch_preserved": true,
+    "db_before_snapshot_available": false
+  },
+  "implementation_files": [
+    {
+      "file": "backend/src/common/sql/latest-price.ts",
+      "sha256": "87d2f0d20e7a47b68e460671c3abdcb27fa3a3becb67ca73af7f33b150565f7b"
+    },
+    {
+      "file": "backend/src/jobs/sync-prices.service.ts",
+      "sha256": "d4ddbda2e2ab192be41a927eeb8a379d0a6e40c6048ae6b369a9a7a7386e7c29"
+    },
+    {
+      "file": "backend/src/modules/cards/cards.service.ts",
+      "sha256": "fe5abf0a8659c4361156b9026cdbb34c2394e823685f62158c71e3e7e1fe2fa3"
+    },
+    {
+      "file": "backend/src/modules/cards/cards.service.spec.ts",
+      "sha256": "0e18d6bbb7f04c52677db999faa8c5fc5ae6fee160579e20f17c64d95bd00818"
+    },
+    {
+      "file": "backend/src/modules/collections/collections.service.ts",
+      "sha256": "a2d13f3c9ecbc88fbd9a8ab4e87bc2bcb0fdd6614af651aff18612f0f1ef2a19"
+    },
+    {
+      "file": "backend/src/modules/collections/collections.service.spec.ts",
+      "sha256": "09abff761ab9a5d0521add254800196f5b88f7c830524250da1aa742c713c606"
+    },
+    {
+      "file": "backend/src/modules/collections/portfolio.service.ts",
+      "sha256": "bc733c6a4d8c60a7e2bc39543697e7d39c93a707050eea2bd46935465a12a9e7"
+    },
+    {
+      "file": "backend/src/modules/share/share.service.ts",
+      "sha256": "306b6290135591dbdeee63b22b0d015eb44bed5fc640f8ce4eb056ff70fb8c62"
+    },
+    {
+      "file": "backend/src/modules/share/share.service.spec.ts",
+      "sha256": "c794a12465442457d89c5269ca8bd37de6f3f710f911e6c4471c8bc4fb32a1ff"
+    },
+    {
+      "file": "frontend/types/api.ts",
+      "sha256": "9e04e75166f87fc7e2e92e04201bef501da646463a5868c7ae30b80c040689cb"
+    },
+    {
+      "file": "frontend/lib/api/schema.ts",
+      "sha256": "5b2ad36af603350df34f2e0f13c207e7844a0c6fa8d9ce5e79f338bfa36f478b"
+    },
+    {
+      "file": "frontend/lib/api/collections.ts",
+      "sha256": "5c8c611895de26e31c2815fc46a3b0e2e0e9e479ecee5e5ce6288fd825bc999a"
+    },
+    {
+      "file": "backend/docs/api.md",
+      "sha256": "bc742c4bbd013b8dac6c8b7ae0aa7ab11d1fc9ce96ef87b1de5067a16fee0311"
+    },
+    {
+      "file": "backend/docs/pricing.md",
+      "sha256": "742419241b6a489f3a0f2db56ab1c54d8668b5f8c2abae108e8d12918e7150a9"
+    },
+    {
+      "file": "backend/src/common/price-metadata.ts",
+      "sha256": "6ce53e6cb9f70301452bf37a7fa59f33b67d5e939c8ce669bcacf5a3b4846041"
+    },
+    {
+      "file": "backend/src/common/price-metadata.spec.ts",
+      "sha256": "c567a834e792472638dd6011c79875bf22a5f3fc9c9e8f7d805dfd64fbc65fb2"
+    },
+    {
+      "file": "backend/src/jobs/sync-prices.cache.spec.ts",
+      "sha256": "21fd0c0fa77f17018f977822ebae46dd7026f3a85580b597822e105f30ab7ea0"
+    },
+    {
+      "file": "backend/src/modules/collections/portfolio.service.spec.ts",
+      "sha256": "b164f656b6065c05cb636565f3509b7ffafe2ab9053a73f535fc59f9cb6a964a"
+    },
+    {
+      "file": "frontend/lib/api/schema.price-metadata.test.ts",
+      "sha256": "f6583c9fc48cb58b6ce32ed46a484a2a66aac32ec1d7dbea9e15dc46362ea0b1"
+    },
+    {
+      "file": "frontend/lib/api/cards.ts",
+      "sha256": "b213d280abfb8d88b31de0c48c7630136adad4d09fec548eb3b7d6d6e6c7fcb6"
+    }
+  ],
+  "validation": [
+    {
+      "command": "pnpm run stop",
+      "result": "passed"
+    },
+    {
+      "command": "pnpm --dir backend exec vitest run src/common/price-metadata.spec.ts src/jobs/sync-prices.cache.spec.ts src/modules/collections/portfolio.service.spec.ts",
+      "result": "passed",
+      "files": 3,
+      "tests": 10,
+      "db_io": false,
+      "redis_io": false,
+      "provider_io": false
+    },
+    {
+      "command": "pnpm --dir frontend exec vitest run lib/api/schema.price-metadata.test.ts lib/api/schema.share.test.ts lib/api/collections.idempotency.test.ts",
+      "result": "passed",
+      "files": 3,
+      "tests": 18
+    },
+    {
+      "command": "python3 /private/tmp/be04-review-run.py pnpm --dir backend exec vitest run src/modules/cards/cards.service.spec.ts src/modules/collections/collections.service.spec.ts src/modules/share/share.service.spec.ts",
+      "result": "passed",
+      "files": 3,
+      "tests": 144,
+      "database": "be04_review_20261008_sol_test",
+      "source_database": "pokemon_cards_test",
+      "test_url_resolved_by": "test/test-env.ts resolveTestDatabaseUrl",
+      "dev_database_distinct": true,
+      "file_parallelism": false,
+      "redis": "in-memory double",
+      "provider_io": false
+    },
+    {
+      "command": "pnpm --dir backend exec oxlint --type-aware [13 archivos BE-04 reservados]",
+      "result": "passed"
+    },
+    {
+      "command": "pnpm --dir backend run build",
+      "result": "passed"
+    },
+    {
+      "command": "pnpm --dir frontend exec eslint lib/api/schema.ts types/api.ts lib/api/collections.ts lib/api/cards.ts lib/api/schema.price-metadata.test.ts",
+      "result": "passed"
+    },
+    {
+      "command": "pnpm --dir frontend exec tsc --noEmit --pretty false",
+      "result": "passed"
+    },
+    {
+      "command": "pnpm --dir backend exec tsc --noEmit --pretty false --incremental false",
+      "result": "baseline_failure_reproduced",
+      "baseline_diagnostics": 8,
+      "current_diagnostics": 8,
+      "same_normalized_diagnostics": true,
+      "diagnostics": [
+        "src/jobs/sync-prices.service.spec.ts(LINE,COL): error TS2430: Interface 'StubProvider' incorrectly extends interface 'PriceProvider'.",
+        "src/jobs/tcgdex-set-mapping.service.spec.ts(LINE,COL): error TS2430: Interface 'StubProvider' incorrectly extends interface 'PriceProvider'.",
+        "src/modules/cards/cards.service.spec.ts(LINE,COL): error TS18048: 'card.set' is possibly 'undefined'.",
+        "src/modules/cards/cards.service.spec.ts(LINE,COL): error TS2322: Type '{ supertype: \"Pokémon\"; subtypes: readonly []; types: readonly [\"Fire\"]; rarity: \"Common\"; imageSmall: \"https://example.test/small.png\"; imageLarge: \"https://example.test/large.png\"; rawJson: {}; setId: string; id: string; name: string; number: string; artist: string; }' is not assignable to type '(Without<CardCreateInput, CardUncheckedCreateInput> & CardUncheckedCreateInput) | (Without<...> & CardCreateInput)'.",
+        "src/redis/redis.service.spec.ts(LINE,COL): error TS7006: Parameter 'c' implicitly has an 'any' type.",
+        "src/redis/redis.service.spec.ts(LINE,COL): error TS7006: Parameter 'c' implicitly has an 'any' type.",
+        "test/app.e2e-spec.ts(LINE,COL): error TS2307: Cannot find module 'supertest/types' or its corresponding type declarations.",
+        "test/auth-session.e2e-spec.ts(LINE,COL): error TS2307: Cannot find module 'supertest/types' or its corresponding type declarations."
+      ]
+    },
+    {
+      "command": "git diff --check -- [archivos reservados]",
+      "result": "passed"
+    }
+  ],
+  "attempts_corrected": [
+    {
+      "kind": "own_test_import_duplicate",
+      "result": "corrected_and_full_db_rerun_passed"
+    },
+    {
+      "kind": "legacy_secondary_fixture_unique_collisions",
+      "failures": 2,
+      "result": "exact_secondary_cleanup_completed_and_full_db_rerun_passed"
+    },
+    {
+      "kind": "frontend_unused_test_binding",
+      "result": "removed_final_lint_passed"
+    },
+    {
+      "kind": "source_fixture_read_only_query_column_mismatch",
+      "result": "corrected_before_any_mutation"
+    }
+  ],
+  "cleanup": {
+    "isolated_test_database": {
+      "created_from_test_only": true,
+      "ownership_marker_verified": true,
+      "suite_fixture_users_remaining_before_drop": 0,
+      "suite_fixture_cards_remaining_before_drop": 0,
+      "dropped_exact_database": true,
+      "remaining": 0
+    },
+    "source_test_cleanup": {
+      "scope": "two secondary Luna fixtures only",
+      "identity_attribute_match": true,
+      "creation_window_matches_luna_execution": true,
+      "fixture_users_matched": 2,
+      "known_fixture_collections_matched": 1,
+      "unexpected_child_relations": 0,
+      "transaction": "SERIALIZABLE + current_database + exact identity/count/relations guards",
+      "users_deleted": 2,
+      "collections_deleted_by_cascade": 1,
+      "fixture_users_remaining": 0,
+      "dev_database_touched": false,
+      "broad_cleanup": false,
+      "baseline_db_preservation_claim": false
+    },
+    "redis_real_touched": false,
+    "provider_calls": 0,
+    "own_stacks": 0,
+    "own_suites_running": 0,
+    "ports_3000_3001_free": true,
+    "tmp_baselines_retained_for_final_gate": true
+  },
+  "limits": [
+    "No global pnpm check ni suite completa: gate BE-04 + FE-03 pendiente.",
+    "Sin UI/web/API aislada completa en esta revisión; SQL real y contrato enfocados verificados.",
+    "El typecheck backend tiene ocho errores reproducidos en baseline; build producción aprobado.",
+    "Sin snapshot DB previo de Luna; cleanup fuente TEST exacto no acredita preservación histórica de toda la DB.",
+    "No se acreditan upstream timestamp ni participantes ni mercado argentino."
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "url": "https://tcgcsv.com/tcgplayer/3/24837/products",
+  "retrievedAt": "2026-10-13T19:29:03.998750+00:00",
+  "bytes": 43341,
+  "sha256": "c60f1ec4125308d2cba5cd707542a1c32e5b260234c8550a4af6dc7630ecb9f3",
+  "requests": 1,
+  "retries": 0,
+  "purpose": "First read of previously unqueried Classic products; no repeated price pull or external writes"
+}

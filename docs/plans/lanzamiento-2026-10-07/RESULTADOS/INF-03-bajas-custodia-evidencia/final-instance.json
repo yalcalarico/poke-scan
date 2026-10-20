@@ -1,0 +1,50 @@
+{
+  "atUtc": "2026-10-13T02:14:12.145340+00:00",
+  "intentionalUserInstanceAlive": true,
+  "url": "http://localhost:3000",
+  "api": {
+    "pid": 91520,
+    "parent": 91519,
+    "role": "local-user-request-api",
+    "port": 3001,
+    "listenerPid": 91531
+  },
+  "next": {
+    "pid": 91534,
+    "parent": 91533,
+    "role": "local-user-request-next",
+    "port": 3000,
+    "listenerPid": 91545
+  },
+  "checks": [
+    {
+      "route": "http://localhost:3000/login",
+      "status": 200
+    },
+    {
+      "route": "http://localhost:3000/eliminar-cuenta",
+      "status": 200
+    },
+    {
+      "route": "http://localhost:3001/api/health",
+      "status": 200
+    },
+    {
+      "route": "http://localhost:3001/api/ready",
+      "status": 200,
+      "databaseReady": true
+    },
+    {
+      "route": "http://localhost:3001/api/ops/metrics",
+      "status": 404
+    },
+    {
+      "route": "http://localhost:3001/api/auth/account-deletion-availability",
+      "status": 401,
+      "noStore": true
+    }
+  ],
+  "ancestryVerified": true,
+  "mode": "Habitual dev database with validated compiled outputs; external providers/jobs/mail and account deletion disabled; no synthetic user fixtures written to dev",
+  "ownQAResourcesGone": true
+}

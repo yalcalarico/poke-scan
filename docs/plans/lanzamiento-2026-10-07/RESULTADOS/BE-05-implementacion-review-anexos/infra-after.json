@@ -1,0 +1,38 @@
+{
+  "dev": {
+    "cards": 20670,
+    "sets": 176,
+    "users": 22,
+    "collections": 22,
+    "items": 69,
+    "shares": 13,
+    "prices": 29325,
+    "jobs": 18721,
+    "migrations": 11,
+    "gin": 5
+  },
+  "test": {
+    "cards": 20670,
+    "sets": 176,
+    "users": 2,
+    "collections": 3,
+    "items": 2,
+    "shares": 1,
+    "prices": 188,
+    "jobs": 0,
+    "migrations": 11,
+    "gin": 5
+  },
+  "infra": {
+    "postgres": {
+      "id": "18aa2f6937521ae010930ae98cbee45f2fa435b554c65cf90daaffba0c641ba8",
+      "state": "running",
+      "health": "healthy"
+    },
+    "redis": {
+      "id": "f2d2ca0ad580fe8ca3e94a59b4b6d5a53d761036ba1d14e45b8543a978bbb15f",
+      "state": "running",
+      "health": "healthy"
+    }
+  }
+}

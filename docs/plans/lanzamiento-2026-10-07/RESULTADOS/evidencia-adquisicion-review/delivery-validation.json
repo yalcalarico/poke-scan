@@ -1,0 +1,69 @@
+{
+  "validatedAtUtc": "2026-10-10T14:36:41.060312+00:00",
+  "linksVerified": 15,
+  "links": [
+    {
+      "target": "evidencia-adquisicion-review/baseline.json",
+      "exists": true
+    },
+    {
+      "target": "evidencia-adquisicion-review/input-copy-verification.json",
+      "exists": true
+    },
+    {
+      "target": "evidencia-adquisicion-review/review.diff",
+      "exists": true
+    },
+    {
+      "target": "FE-07-SEO-03-review-evidencia.json",
+      "exists": true
+    },
+    {
+      "target": "evidencia-adquisicion-review/read-sources.json",
+      "exists": true
+    },
+    {
+      "target": "evidencia-adquisicion-review/logs/stop-before-regression.log",
+      "exists": true
+    },
+    {
+      "target": "evidencia-adquisicion-review/logs/regression-before.log",
+      "exists": true
+    },
+    {
+      "target": "evidencia-adquisicion-review/logs/regression-after.log",
+      "exists": true
+    },
+    {
+      "target": "evidencia-adquisicion-review/logs/lint-frontend-after-last-source.log",
+      "exists": true
+    },
+    {
+      "target": "evidencia-adquisicion-review/logs/typecheck-frontend-after-last-source.log",
+      "exists": true
+    },
+    {
+      "target": "evidencia-adquisicion-review/logs/diff-check-final.log",
+      "exists": true
+    },
+    {
+      "target": "evidencia-adquisicion-review/static-review.json",
+      "exists": true
+    },
+    {
+      "target": "evidencia-adquisicion-review/static-review.py",
+      "exists": true
+    },
+    {
+      "target": "evidencia-adquisicion-review/incidencias.json",
+      "exists": true
+    },
+    {
+      "target": "evidencia-adquisicion-review/preservation-final.json",
+      "exists": true
+    }
+  ],
+  "finalProductHashesVerified": 8,
+  "nonProductBaselineHashesPreserved": 538,
+  "ownedRuntimeResources": []
+}

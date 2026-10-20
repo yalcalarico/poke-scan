@@ -1,0 +1,36 @@
+{
+  "sourceFilesVerified": 501,
+  "sourceChanges": [],
+  "outputs": {
+    "backend/dist": {
+      "files": 277,
+      "runtimeAdded": [],
+      "runtimeRemoved": [],
+      "runtimeChanged": []
+    },
+    "frontend/.next": {
+      "files": 2082,
+      "runtimeAdded": [],
+      "runtimeRemoved": [],
+      "runtimeChanged": []
+    }
+  },
+  "portsAfter": {
+    "3000": {
+      "free": true,
+      "listeners": ""
+    },
+    "3001": {
+      "free": true,
+      "listeners": ""
+    },
+    "56391": {
+      "free": true,
+      "listeners": ""
+    },
+    "56392": {
+      "free": true,
+      "listeners": ""
+    }
+  }
+}

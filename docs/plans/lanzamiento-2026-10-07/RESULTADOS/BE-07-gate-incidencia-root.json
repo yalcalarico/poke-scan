@@ -1,0 +1,22 @@
+{
+  "checkedAtUtc": "2026-10-09T13:01:17.116896+00:00",
+  "sourceBaselineCount": 501,
+  "changedInAuthorizedExtension": [
+    "frontend/components/scanner/__tests__/organize-sheet.test.tsx"
+  ],
+  "unchangedCount": 500,
+  "currentTestSha256": "e4a6807e587d9ba3d4f4095886c74becdaa4bfb77ed183cf894c45e75e93fcf4",
+  "artifactSha256": {
+    "organize-sheet.received.tsx": "d27c46ec06a9dafeee0d45c5e2a565aa963dbcbe96f7cc8a8fc7f157d4398893",
+    "organize-sheet.correction.diff": "3fd191d69a20b25f5bd7f68dd02934caf61e034f4ba22aab373a565247670489",
+    "frontend-diagnostico.md": "09ac20a34ef3427f0f0e3361a72d8b041adc0db25a63286e05c5a07446d1f85c",
+    "frontend-causal-premature.log": "0b3d8b4d3702cf334f9f41487e21f82c8c5d48fb812f6923d44ffe373dc2616d",
+    "frontend-corrected-file.log": "253a1e417879f2657599d3970631ba6b1c18138b6803e990468179f7a23f67f4",
+    "check-standard-corrected.log": "27100d79e3f4de0963399face2a17aa4f79cf5c8e07cce2a3459cd6852d3d373",
+    "readiness-focal.log": "24703158ec19e1cc1cd56afeab00c9d83cc225566f3e81b1405c3f647e5d357e"
+  },
+  "acceptedTestCorrectionOnly": true,
+  "review": "Exact final allocations unchanged; controlled unresolved response retains two parts/saving/no success, resolution waits confirmed allocation and toast; uncertain status waits persisted effect. Product, config, timeout, skips unchanged.",
+  "globalGateAccepted": false,
+  "limits": "First global frontend484/486 failed; second backend404/405 failed socket hang up. Focal24 frontend/4 readiness does not replace standard. No runtime or batch acceptance."
+}

@@ -1,0 +1,42 @@
+{
+  "classification": "legacy contract difference, no regression introduced by transport config",
+  "privateUniqueCards": "COUNT(item.id) = groups",
+  "publicUniqueCards": "COUNT(DISTINCT cardId) = card IDs",
+  "syntheticObservedPrivate": 7,
+  "syntheticObservedPublic": 6,
+  "sameSyntheticCollection": true,
+  "privateLabel": "Únicas",
+  "publicLabel": "Cartas únicas",
+  "handoff": "copy/semantic clarification of private label in a future UI scope, without DTO or product edits in this gate",
+  "sourceFiles": [
+    {
+      "path": "backend/src/modules/collections/collections.service.ts",
+      "sha256": "a2d13f3c9ecbc88fbd9a8ab4e87bc2bcb0fdd6614af651aff18612f0f1ef2a19",
+      "matchesHistoricalSource": true
+    },
+    {
+      "path": "backend/src/modules/share/share.service.ts",
+      "sha256": "306b6290135591dbdeee63b22b0d015eb44bed5fc640f8ce4eb056ff70fb8c62",
+      "matchesHistoricalSource": true
+    },
+    {
+      "path": "frontend/components/collections/collection-summary.tsx",
+      "sha256": "199c90e00a9659798046c225b2a5f62db43a1da6f7d94921d025c55c1d63e6d8",
+      "matchesHistoricalSource": true
+    },
+    {
+      "path": "frontend/components/share/public-collection-view.tsx",
+      "sha256": "2b3a5ab6c1851a19a587b2e70ec04b8277db7479aa194dd8a3b810884c270c54",
+      "matchesHistoricalSource": true
+    },
+    {
+      "path": "frontend/types/api.ts",
+      "sha256": "9e04e75166f87fc7e2e92e04201bef501da646463a5868c7ae30b80c040689cb",
+      "matchesHistoricalSource": true
+    }
+  ],
+  "documentedBy": [
+    "frontend/types/api.ts:421",
+    "backend/docs/api.md:1007"
+  ]
+}

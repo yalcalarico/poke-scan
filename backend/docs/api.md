@@ -11,22 +11,22 @@
 
 ## Índice
 
-| Grupo | Endpoints |
+| Grupo | Referencia |
 |---|---|
-| [Salud](#salud) | 1 |
-| [Auth](#auth) | 4 |
-| [Usuarios](#usuarios) | 1 |
-| [Cartas y sets](#cartas-y-sets) | 8 |
-| [Colecciones](#colecciones) | 14 |
-| [Compartir](#compartir) | 6 |
-| [Moneda](#moneda) | 2 |
-| [Amigos](#amigos) | 7 |
-| [Jobs (admin)](#jobs-admin) | 3 |
-| **Total** | **46** |
+| Salud | [Salud](#salud) |
+| Autenticación y baja de cuenta | [Auth](#auth) |
+| Usuarios | [Usuarios](#usuarios) |
+| Cartas, sets e historial de precios | [Cartas y sets](#cartas-y-sets) |
+| Colecciones e items | [Colecciones](#colecciones) |
+| Compartir | [Compartir](#compartir) |
+| Moneda | [Moneda](#moneda) |
+| Amigos | [Amigos](#amigos) |
+| Administración de sync y precios | [Jobs (admin)](#jobs-admin) |
+| Comparación de fuentes y series | [Comparaciones](#comparación-de-fuentes-y-series-usd) |
+| Métricas privadas | [Operación privada](#operación-privada) |
+| Portfolio | [`GET /api/portfolio`](#portfolio) |
 
-> El conteo sale de los decorators de ruta de los 12 controllers. Cuando se
-> agrega un endpoint hay que actualizar el número: el índice es la única forma de
-> detectar que la tabla quedó vieja.
+El índice enumera grupos y secciones para orientar la navegación; las rutas de cada sección y sus decorators son la referencia para el contrato vigente.
 
 ---
 
@@ -34,7 +34,7 @@
 
 ### Autenticación
 
-- **Access token**: JWT firmado con `JWT_SECRET`, payload `{ sub, email }`,
+- **Access token**: JWT firmado con `JWT_SECRET`, payload `{ sub, email, authVersion }`,
  Expira a los 15 min (`JWT_ACCESS_TTL`).
 - **Refresh token**: **no es un JWT**. Es `randomBytes(48).toString('base64url')`
   que se guarda hasheado con SHA-256 en `refresh_tokens.tokenHash`
@@ -74,6 +74,10 @@ Cada `POST /auth/refresh` **revoca** el token usado y emite uno nuevo:
 4. Si `expiresAt` ya pasó → `401 Refresh token expirado`.
 5. Se marca `revokedAt` y se crea el token siguiente en la misma transacción; el HTTP renueva la cookie sin exponer el refresh en JSON.
 
+Un refresh emitido con `issuedAuthVersion` anterior al `User.authVersion` se
+rechaza sin revocar sesiones de la versión actual. Esto permite que un refresh
+robado anterior a un reset no desloguee el inicio de sesión posterior.
+
 `POST /auth/logout` es **idempotente**: revoca el token si estaba vivo y siempre
 devuelve `{ success: true }`, incluso con un token inexistente.
 
@@ -106,6 +110,7 @@ explícito. Los controllers protegidos son `UsersController`, `CollectionsContro
 | Global (todas las rutas) | `ThrottlerModule.forRoot([{ ttl: 60_000, limit: 100 }])` + `ThrottlerGuard` como `APP_GUARD` |
 | `POST /auth/register` | `@Throttle({ default: { limit: 5, ttl: 60_000 } })` |
 | `POST /auth/login` | `@Throttle({ default: { limit: 5, ttl: 60_000 } })` |
+| `POST /auth/account-deletions` | 3/IP/min + 5/cuenta/15min durable; cuenta incluye intentos con contraseña incorrecta |
 
 Tracker por IP. Al exceder: `429 Too Many Requests`.
 Detalle en [pricing.md](pricing.md) y [gotchas.md](gotchas.md).
@@ -188,11 +193,121 @@ una superficie de monitoring. Para debuggear está el log.
 curl -s http://localhost:3001/api/health
 ```
 
+### `GET /api/ready`
+
+Público, sin body ni auth. No-store y exento del throttler global porque lo usa
+el gateway de infraestructura. Es readiness, no liveness: `/api/health` conserva
+su respuesta HTTP 200 para los probes que ya existen.
+
+Responde **200** con `status: "ready"` cuando PostgreSQL responde y el scanner
+está `ready` o `disabled`. Responde **503** con `status: "not_ready"` cuando la
+DB no responde o el scanner está `initializing`, `unavailable` o `incompatible`.
+Un scanner deshabilitado deja lista la API general, pero no habilita el piloto de
+reconocimiento. `busy` informa una inferencia activa sin retirar la instancia.
+Redis informa `disabled`, `ready` o `degraded`; su caída no cambia readiness ni
+liveness porque los flujos existentes tienen fallback.
+
+```json
+{
+  "status": "not_ready",
+  "degraded": false,
+  "detail": {
+    "database": { "state": "ready" },
+    "scanner": { "state": "initializing", "busy": false },
+    "redis": { "state": "disabled" }
+  }
+}
+```
+
+La consulta DB usa un cliente Prisma 6 dedicado, pool de una conexión y límites
+de conexión/adquisición/socket de 1 s, `statement_timeout` de 750 ms y deadline
+HTTP de 4 s. Resultados se coalescen mientras hay una consulta activa y se
+cachean hasta 1 s. El timeout HTTP no cancela por sí mismo una promesa Prisma;
+los límites efectivos del driver y del servidor acotan esa operación. El
+arranque DB conserva el fail-fast existente.
+
+Con scanner habilitado, un warmup IPC de lifecycle crea la sesión ONNX y valida
+el índice antes de marcarlo listo. No calcula embeddings ni usa fotos. El probe
+lee el estado cacheado y nunca inicia el worker, descarga artefactos ni recorre
+el índice. Fallos clasificables se reintentan fuera del probe con backoff de
+5/15/30/60 s. Modelo/índice ausente es `unavailable`; metadata/vector
+incompatible es `incompatible`. La respuesta no contiene rutas, errores
+privados, secretos, hashes ni datos del usuario.
+
+Los flags de scanner se configuran al arrancar; para cambiarlos en operación,
+reiniciá la instancia. Arrancar deshabilitado no crea worker ni timers. Shutdown
+cancela tanto warmup como inferencia pendiente y evita nuevos reintentos. Un
+fallo de warmup retira la generación antes de validar de nuevo modelo e índice.
+
+La infraestructura debe esperar un primer `ready` antes de admitir tráfico y
+después sondear según su política. No usar `/api/ready` como liveness de Docker:
+su HEALTHCHECK actual sigue apuntando a `/api/health`.
+
 ---
 
 ## Auth
 
 Controller: `src/modules/auth/auth.controller.ts`. Prefijo `/auth`.
+
+### Eliminación propia de cuenta
+
+`GET /api/auth/account-deletion-availability` requiere bearer vigente y devuelve sólo `{available:boolean}`, sin caché ni detalles internos. Por defecto queda deshabilitada hasta provisionar la custodia de supresiones.
+
+`POST /api/auth/account-deletions` exige bearer propio, seguridad de sesión/Origin y JSON `{password, confirmation: 'ELIMINAR'}`. `200 {success:true}` confirma commit y limpia la cookie; contraseña/versión incorrecta401, confirmación inválida400, Origin403, límites429 y resultado incierto503. Errores con códigos explícitos en `AccountDeletionErrorCode`, sin datos personales/no-store. No refresh ni replay automático de la baja.
+
+La intención durable se acepta antes de borrar PG con cascadas personales. Un commit incierto bloquea acceso a esa cuenta; el arranque habilitado reconcilia antes de escuchar. Los enlaces públicos quedan revocados por autoridad PG, con invalidación best effort de sus claves Redis conocidas. Registro mínimo independiente, custodia/checkpoint vigente, plazo30d desde creación original y protocolo de restore cerrado en [procedimiento de baja](../../docs/infra/account-deletion.md). No implica operación productiva ni eliminación de copias ya descargadas por terceros.
+
+### Recuperación de cuenta
+
+`POST /api/auth/password-recovery-requests` recibe JSON `{ "email": string }` y
+responde `202` con un texto genérico tanto si la cuenta existe como si no. La
+entrega corre en background dentro de un ticket de 2 s; la respuesta no espera
+la búsqueda de cuenta ni al adaptador de correo. El correo queda deshabilitado
+hasta conectar un puerto de entrega acreditado. Si la configuración HMAC o la
+base no está disponible, responde `503` antes de buscar la cuenta. El limitador
+compartido en PostgreSQL aplica 5 pedidos/15 min por IP, 3 por identificador/hora
+más 60 s entre admisiones del mismo identificador y 1000 operaciones/min
+globales. Los topes de IP/global responden `429` con `Retry-After`; los topes
+por identidad mantienen la respuesta `202` genérica.
+El DTO normaliza `trim().toLowerCase()` antes de validar. El `202` acredita
+recepción, no entrega; saturación local, cuenta ausente o fallo de transporte
+mantienen ese cuerpo. No se promete igualdad de latencias.
+
+`POST /api/auth/password-recoveries` recibe `{ "token": string,
+"newPassword": string }`; no requiere sesión y devuelve `{ "success": true }`
+sólo después del commit. Un token ausente, inválido, usado, revocado o vencido
+responde `400 RECOVERY_LINK_INVALID`; validación de contraseña responde
+`400 INPUT_INVALID`. Ambos endpoints exigen el header de sesión y Origin
+permitidos, están exentos del throttler en memoria y envían
+`Cache-Control: no-store`, `Pragma: no-cache` y `Expires: 0` también en errores.
+La ausencia de `Origin` sigue permitida; si está presente debe coincidir con
+la política vigente. El header `X-Session-Request: 1` es obligatorio.
+El token tiene 32 bytes aleatorios, se almacena únicamente su SHA-256, vence a
+los 30 min por defecto (configurable con `RECOVERY_TOKEN_TTL_SECONDS`) y se
+limitan a tres tokens activos por cuenta sin expulsar tokens anteriores.
+El TTL configurado acepta enteros de 60 a 86400 s; fuera de rango usa 1800 s.
+Cambiar esa configuración no altera el vencimiento persistido de otros enlaces.
+El consumo de un enlace recibido no depende de la disponibilidad posterior
+del correo. Un fallo de transporte conserva el token ya confirmado: no prueba
+que nadie lo recibió. El reenvío requiere un nuevo pedido sujeto a las cuotas.
+Formularios no JSON y JSON malformado reciben `400 INPUT_INVALID` sin eco;
+los campos públicos del error se limitan a `email`, `newPassword` y `request`.
+La contraseña no se recorta. La cookie se limpia sólo después del commit.
+
+El reset incrementa `User.authVersion`, bloquea la fila de usuario y consume el
+token, revoca otros tokens de recuperación y refresh en una transacción. Los
+JWT emitidos incluyen esa versión; el guard consulta la versión actual en
+PostgreSQL en cada request. JWT legacy sin claim sólo se aceptan si
+`JWT_LEGACY_CUTOFF` tiene una fecha fija válida, `iat` es anterior y la cuenta
+conserva versión cero; sin cutoff se rechazan. Un refresh emitido antes de un
+reset no revoca sesiones nuevas al ser reutilizado.
+Login relee hash y versión bajo el mismo lock antes de emitir una sesión;
+refresh comprueba vencimiento con reloj PostgreSQL después del lock. El guard
+rechaza payloads JWT no objeto con `401`; si PostgreSQL falla, responde `503`.
+
+El adaptador de correo de prueba sólo se inyecta en el harness aislado, sin
+endpoint de debug ni SMTP. Su ensayo requiere una base propia marcada y vacía;
+ver [`testing.md`](testing.md).
 
 ### `POST /api/auth/register`
 
@@ -495,6 +610,8 @@ interface CardPriceDto {
   cardId: string; variant: string;
   low: number | null; mid: number | null; high: number | null; market: number | null;
   currency: string; source: string; fetchedAt: string;
+  evaluatedAt: string; freshness: 'fresh' | 'stale' | 'unknown';
+  upstreamUpdatedAt: string | null; upstreamFreshness: 'fresh' | 'stale' | 'unknown';
   // Procedencia de la fila. `provider: null` es una cotización anterior a la
   // columna: se puede mostrar como último conocido, y `isStale` la marca.
   provider: string | null;
@@ -519,6 +636,19 @@ interface ConversionMeta {
   rate: number; rateType: 'blue'|'oficial'; fetchedAt: string; stale: boolean;
 }
 ```
+
+Los precios de items y las referencias públicas agregan la misma metadata
+adentro de `price`. `evaluatedAt` queda fijado al calcular la respuesta y se
+preserva en caché. `freshness` describe la antigüedad de `fetchedAt`, no la del
+mercado. Hoy `upstreamUpdatedAt` es `null` y `upstreamFreshness` es `unknown`;
+una fecha de consulta no acredita una actualización de la fuente. Las cachés
+legacy sin estos campos siguen siendo válidas y se interpretan como desconocidas.
+
+Los agregados incluyen `valuation: { amount, currency: 'USD', evaluatedAt,
+coverage, recency }`. La cobertura cuenta copias con `market` conocido (incluye
+cero); `amount` es `0` para vacío, `null` si ninguna copia tiene precio y el
+subtotal conocido si es parcial. Los snapshots históricos derivan cobertura de
+sus contadores guardados y llevan `evaluatedAt: null` y `recency: null`.
 
 #### Variación de 30 días (`change`, `changeUsd`, `changePercent`, `windowLabel`)
 
@@ -1186,21 +1316,65 @@ curl 'http://localhost:3001/api/collections/$ID/items?sort=number' \
 
 **Semántica de `quantity`**: "agregar N copias **más**". Si ya existe un item
 con el mismo `(collectionId, cardId, variant, condition)` — hay un
-`@@unique` compuesto — se le **incrementa** `quantity` en vez de crear otra fila. Hay
-handling de la carrera por el `P2002` (dos requests idénticos simultáneos).
+`@@unique` compuesto — se le **incrementa** `quantity` en vez de crear otra fila.
+`INSERT ... ON CONFLICT DO UPDATE` resuelve la carrera de dos altas simultáneas
+sin intentar consultar dentro de una transacción PostgreSQL abortada. Conserva
+las notas existentes y solo abre la marca de intercambio si el alta envía `true`.
+
+Para escrituras cuyo resultado pudo perderse, el cliente puede enviar
+`Idempotency-Key: <UUID>` (idealmente un UUID generado una sola vez por intento).
+La clave queda vinculada al usuario y al hash de colección + payload normalizado.
+El header pasa por DTO + `ValidationPipe` y se normaliza a minúsculas: cambiar
+mayúsculas del UUID no crea otro intento. Una clave vacía o headers duplicados
+concatenados se rechazan; no se convierten en una llamada sin protección.
+Dentro de 30 días, repetir la misma clave y payload devuelve el ítem sin volver a
+incrementar; la misma clave con otro payload responde `409`. Dos claves distintas
+siguen siendo dos altas deliberadas. El guardado del ítem y del registro de clave
+es atómico. Las llamadas antiguas sin header conservan la semántica actual.
+La respuesta sigue siendo `CollectionItemDto`; `quantity` refleja el total actual
+del ítem, por lo que el cliente acredita el delta enviado por su operación y no
+usa ese total para deducir cuánto sumó el intento. El replay devuelve el estado
+actual del ítem (también sus atributos/notas), no un snapshot de la respuesta
+original. No vuelve a aplicar notas ni la marca de intercambio del payload.
+
+Después de 30 días, la clave persistida funciona como tombstone: devuelve `410`
+y no vuelve a escribir. Al llegar un reintento vencido se borra el ID del
+resultado y quedan la clave, el hash de payload y el vencimiento para impedir que
+un replay antiguo vuelva a sumar.
+Si el ítem se eliminó antes de repetir, también devuelve `410` indicando que la
+operación ya se había confirmado. El cliente debe conservar la misma clave para
+resolver un intento incierto; una nueva alta deliberada usa otra.
 
 Además, encola un refresco de precio en background (`enqueueRefresh`), por eso
 el `price` de la respuesta puede venir `null` aunque la carta tenga precio.
+Si la cola o la consulta de precio falla después del commit, la respuesta conserva
+el éxito del alta y puede devolver `price: null`; el precio no decide si se guardó.
+
+Para FE-01, una respuesta válida `201` del intento o su replay acredita la
+operación original. Persistí esa confirmación y el retiro de partes juntos en el
+draft. Una falla de red, aborto, cuerpo inválido o `5xx` mantiene el intento
+incierto, con cuenta/destino, clave y payload originales bloqueados. Un `409` no
+autoriza otra clave: puede señalar datos distintos o una resolución pendiente.
+Un `410` prueba que esa clave ya tuvo una escritura confirmada, pero no permite
+reconstruir el estado actual o reponer un ítem eliminado: no volver a sumar.
+Una colección eliminada responde `404`; eso no niega un commit anterior.
+Una respuesta de validación/autorización/ownership acredita que **esa solicitud**
+no escribió, sin resolver por sí sola un intento anterior cuyo resultado se perdió.
+Para una nueva alta deliberada, usá otra clave únicamente por acción explícita.
 
 | Error | Cuándo |
 |---|---|
 | `400` | `variant`/`condition` inválidos |
 | `404 Colección no encontrada: <id>` | No es del usuario |
 | `404 Carta no encontrada: <cardId>` | El cardId no está en el catálogo |
+| `409` | Clave ya usada con otro payload o solicitud concurrente aún sin resolución |
+| `410` | Venció la ventana segura de 30 días o se eliminó el ítem ya confirmado |
+| `400` | `Idempotency-Key` no es UUID válido |
 
 ```bash
 curl -X POST http://localhost:3001/api/collections/$ID/items \
   -H "Authorization: Bearer $TOKEN" -H 'content-type: application/json' \
+  -H 'Idempotency-Key: 4b2db49b-6ea0-4f04-9f3a-17eddfbc0434' \
   -d '{"cardId":"base1-4","variant":"holofoil","condition":"NM","quantity":2}'
 ```
 
@@ -1334,12 +1508,37 @@ interface ShareLinkDto {
 interface SharedCollectionDto {   // GET /s/:slug
   ownerDisplayName: string;
   collectionName: string;         // "Todas las colecciones" si no es una sola
-  items: CollectionItemDto[];     // máx. 500
-  stats: CollectionStatsDto;
+  items: PublicSharedItemDto[];   // máx. 500 grupos, orden addedAt DESC, id ASC
+  stats: PublicShareStatsDto;     // scope completo, no se limita a los 500 visibles
   truncated: boolean;             // había más de 500
   sharedAt: string;
 }
+
+interface PublicSharedItemDto {
+  card: CardDto;                  // datos públicos del catálogo
+  variant: CardVariant;
+  condition: CardCondition;
+  quantity: number;
+  price: null | {
+    market: number | null; currency: string; provider: string | null;
+    source: string; fetchedAt: string;
+  };
+}
+
+interface PublicShareStatsDto {
+  totalGroups: number; totalCards: number; uniqueCards: number;
+  duplicateCards: number; setsCount: number;
+  totalValueUsd: number | null; pricedGroups: number; cardsMissingPrice: number;
+}
 ```
+
+`totalCards` suma copias; `duplicateCards` cuenta grupos con quantity > 1.
+`totalValueUsd` es 0 para un scope vacío, `null` si hay grupos sin ninguna
+referencia, y un subtotal si la cobertura es parcial. `pricedGroups` y
+`cardsMissingPrice` siempre suman `totalGroups`. El límite es de filas/grupos,
+sin paginación; los agregados describen todas las colecciones del enlace.
+El scope "todas" es dinámico: nuevas colecciones e items del dueño aparecen al
+consultar mientras el enlace siga vigente.
 
 ### `POST /api/share`
 
@@ -1390,8 +1589,12 @@ idempotente) e invalida la caché. `404` si no es suyo.
 
 ### `GET /api/s/:slug`
 
-**Público, sin Bearer.** Devuelve `SharedCollectionDto`. El payload completo se
-cachea en Redis bajo `share:<slug>` por 5 minutos.
+**Público, sin Bearer.** Devuelve `SharedCollectionDto` con
+`Cache-Control: no-store`. El servicio comprueba en PostgreSQL que el link siga
+activo y que `expiresAt` sea posterior al instante de consulta antes de cada
+lectura de Redis. El payload se cachea hasta 5 minutos bajo el namespace
+`share:public-v2:<provider>:<slug>`; no lee keys legacy. El TTL se limita al
+vencimiento y no se escribe si ya no queda un segundo entero.
 
 Cada hit incrementa `viewCount` con un `updateMany` atómico sin await (fire and
 forget): **la respuesta devuelve el valor de `viewCount` desactualizado** (de
@@ -1656,8 +1859,7 @@ class RefreshPricesDto { cardIds: string[] }           // @ArrayNotEmpty(), @Arr
 ### `POST /api/jobs/sync-catalog`
 
 **202 Accepted** (`@HttpCode(202)`). Body `SyncCatalogDto`: `force?` (boolean).
-Si `force` no viene y existe la clave Redis `sync:cards:complete`, el job
-termina `skipped` sin gastar requests.
+Si `force` no viene y el estado PostgreSQL `sync_state` indica que el catálogo del proveedor ya está completo, el job termina `skipped` (hace una consulta de sondeo para conocer el total). El cursor reanudable y el flag de completitud viven en PostgreSQL; el lock que evita dos syncs simultáneos sigue usando Redis con TTL renovable.
 
 Crea un `ScanJob` y **devuelve de inmediato** (`void this.runSync(...)`): el
 sync corre en background. Poll con `GET /jobs/:id`.
@@ -1779,8 +1981,45 @@ no abre imágenes de referencia: necesita modelo ONNX, metadata y vectores.
 No modifica pesos ni recalcula embeddings. La similitud no es una probabilidad
 ni certifica edición/acabado. Ver [evaluación DINOv2 puro](../../docs/evaluations/dinov2-only-2026-10-05.md).
 
+<a id="portfolio"></a>
+
 ## `GET /api/portfolio`
 
-Autenticado. Devuelve `PortfolioDto`: `totalCards`, `unpricedCards`, `valueUsd` (nulo cuando todas las cartas carecen de precio), `history` (`date`, `valueUsd`, `totalCards`, `unpricedCards`) y `topCards` (hasta cinco posiciones por carta/variante ordenadas por precio unitario, con nombre, set, miniatura, cantidad y valores unitario y total). Sólo incluye colecciones del usuario autenticado y cotizaciones locales bajo la misma política de `/collections`. No realiza requests externos.
+Autenticado. Devuelve `PortfolioDto`: `totalCards`, `unpricedCards`, `valueUsd` (nulo cuando todas las cartas carecen de precio), `history` (`date`, `valueUsd`, `totalCards`, `unpricedCards`) y `topCards` (hasta cinco posiciones por carta/variante ordenadas por precio unitario, con nombre, set, miniatura, cantidad y valores unitario y total). `valuation` es el importe canónico con cobertura por copias y recencia evaluada. Cada punto de `history` trae `valuation` derivada de sus propios contadores con `evaluatedAt:null`/`recency:null`; cada top card trae `reference` de la misma fila seleccionada, con proveedor/mercado/moneda/consulta y los cuatro campos de metadata. Sólo incluye colecciones del usuario autenticado y cotizaciones locales bajo la misma política de `/collections`. No realiza requests externos.
 
 Consultar registra o actualiza una observación diaria UTC del valor agregado en `portfolio_snapshots`. Devuelve hasta 365 observaciones; no inventa días previos ni días sin consulta. Al eliminar el usuario, sus observaciones se eliminan en cascada. Los tipos del contrato se mantienen en `portfolio.service.ts` y `frontend/types/api.ts`.
+
+
+## Operación privada
+
+`GET /api/ops/metrics` devuelve señales operativas agregadas del escáner, cola de precios y Redis. Requiere el secreto de servidor `X-Metrics-Token`, independiente del JWT de usuarios; permanece oculto sin configuración válida. Alcance temporal, buckets, estados y consumo están en [metrics.md](metrics.md). No se consume desde el frontend ni recibe eventos de participantes.
+
+### Comparación de fuentes y series USD
+
+`GET /cards/:id/comparison?variant=normal&days=30` es público y sólo lee datos
+locales (puede encolar un grupo faltante). `variant` usa el enum de colecciones;
+`days` entero entre 7 y 365. Variante por defecto **normal**, fija para las dos
+series. Devuelve `cardId`, `variant`, `currency: USD`, `windowDays`,
+`activeProvider`, `evaluatedAt`, estado `tcgcsv` y dos `series`:
+`provider`, `source: tcgplayer`, `currency: USD`, `current` y `points` diarios.
+Cada precio tiene `date`, `market/low/mid/high` nullable, `fetchedAt`,
+`feedPublishedAt` nullable, `upstreamUpdatedAt: null` y `freshness`.
+Sin observación actual `current` es null; los días ausentes no se completan.
+`tcgcsv.state` distingue disabled/unsupported/pending/ready/failed y declara
+`groupId` y `nextAttemptAt`. Un fallo puede conservar un precio conocido viejo.
+
+`GET /collections/:id/comparison?days=30` y `GET /portfolio/comparison?days=30`
+son autenticados; una colección ajena da 404. Devuelven `collectionId` (null en
+portfolio), `currency`, `windowDays`, `activeProvider`, `evaluatedAt` y dos
+`series` por proveedor con política `exact-variant-market-usd-v1`, `current` y
+`points`. Cada punto incluye `date`, `valueUsd` nullable, `totalCopies`,
+`pricedCopies`, `unpricedCopies`, `freshCopies`, `staleCopies`,
+`unknownFreshnessCopies`, `oldestFetchedAt/newestFetchedAt/feedPublishedAt`,
+`compositionFingerprint`, `compositionChanged`, `provisional`, `evaluatedAt`
+y `cutAt`. Vacío vale cero; todo sin precio vale null; cobertura parcial es
+subtotal. Hoy es provisional. La serie no reinterpreta inventarios pasados.
+
+Las tres rutas llevan `Cache-Control: no-store`. Sin migración nueva devuelven
+503 con mensaje de actualización local pendiente. El contrato exacto está en
+`src/jobs/comparison.dto.ts`. `GET /cards/:id/prices/history` también admite
+`provider=tcgcsv`; los contratos legacy conservan su comportamiento previo.

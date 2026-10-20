@@ -1,0 +1,73 @@
+{
+  "catalogPriceCoverage": {
+    "cards": 20670,
+    "pricedCards": 16940,
+    "pricedInLast24h": 0,
+    "latestFetchedAt": "2026-10-10T15:06:53.918"
+  },
+  "anniversarySets": [
+    {
+      "id": "me55",
+      "name": "30th Celebration",
+      "tcgdexSetId": "30th",
+      "releaseDate": "2026-09-16T00:00:00",
+      "cards": 161,
+      "priced_cards": 0
+    },
+    {
+      "id": "me55c",
+      "name": "30th Celebration: Classic Collection",
+      "tcgdexSetId": null,
+      "releaseDate": "2026-09-16T00:00:00",
+      "cards": 30,
+      "priced_cards": 0
+    }
+  ],
+  "anniversaryCardsSample": [
+    {
+      "id": "me55-1",
+      "name": "Exeggcute",
+      "number": "1",
+      "setId": "me55"
+    },
+    {
+      "id": "me55-10",
+      "name": "Ninetales",
+      "number": "10",
+      "setId": "me55"
+    },
+    {
+      "id": "me55-100",
+      "name": "Yveltal",
+      "number": "100",
+      "setId": "me55"
+    },
+    {
+      "id": "me55-101",
+      "name": "Galarian Meowth",
+      "number": "101",
+      "setId": "me55"
+    },
+    {
+      "id": "me55-102",
+      "name": "Jirachi ex",
+      "number": "102",
+      "setId": "me55"
+    }
+  ],
+  "queuedJobs": [
+    {
+      "status": "completed",
+      "count": 18531
+    },
+    {
+      "status": "failed",
+      "count": 190
+    }
+  ],
+  "ownedItemCoverageAggregate": {
+    "storedItemGroups": 69,
+    "withMarket": 41,
+    "withoutMarket": 28
+  }
+}

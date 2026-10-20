@@ -1,0 +1,368 @@
+{
+  "runId": "inf03-13853346799c",
+  "startedAt": "2026-10-12T04:15:33.154Z",
+  "steps": {
+    "sourceBootstrapMs": 1745,
+    "backupMs": 1116
+  },
+  "tests": {
+    "positive": 55,
+    "negative": 4
+  },
+  "ownedResources": [
+    {
+      "type": "network",
+      "name": "inf03-13853346799c-source-net",
+      "runId": "inf03-13853346799c",
+      "role": "source"
+    },
+    {
+      "type": "volume",
+      "name": "inf03-13853346799c-source-pgdata",
+      "runId": "inf03-13853346799c",
+      "role": "source"
+    },
+    {
+      "type": "container",
+      "name": "inf03-13853346799c-source-pg",
+      "runId": "inf03-13853346799c",
+      "role": "source"
+    },
+    {
+      "type": "network",
+      "name": "inf03-13853346799c-destination-net",
+      "runId": "inf03-13853346799c",
+      "role": "destination"
+    },
+    {
+      "type": "volume",
+      "name": "inf03-13853346799c-destination-pgdata",
+      "runId": "inf03-13853346799c",
+      "role": "destination"
+    },
+    {
+      "type": "container",
+      "name": "inf03-13853346799c-destination-pg",
+      "runId": "inf03-13853346799c",
+      "role": "destination"
+    }
+  ],
+  "cleanup": {
+    "attempted": true,
+    "complete": true,
+    "errors": [],
+    "hostTemporaryRemoved": true
+  },
+  "tooling": {
+    "node": "v22.20.0",
+    "pnpm": "10.17.1",
+    "platform": "darwin",
+    "arch": "arm64",
+    "age": "v1.2.1",
+    "ageRelease": "https://github.com/FiloSottile/age/releases/download/v1.2.1/age-v1.2.1-darwin-arm64.tar.gz",
+    "ageArchiveSha256": null,
+    "toolSource": "provided-local-no-download",
+    "ageBinarySha256": "d2b0d4211fd9e364ea8dd1cb150653a7f21dfc08e96632de444aa209db5fc0d0",
+    "postgresImage": "postgres@sha256:0ea6700a3b4f0ae6ce746519073558aed4d88a79d8d07622a9a644946c7319c4",
+    "postgresImageId": "sha256:4b5d4fd438e2c1ce13106e4996fc604f0a1cff39cde48b546fcac3cf1a233c3a",
+    "postgresRepoDigests": [
+      "postgres@sha256:0ea6700a3b4f0ae6ce746519073558aed4d88a79d8d07622a9a644946c7319c4"
+    ]
+  },
+  "sharedHealthBefore": [
+    {
+      "name": "pokemon-scanner-db",
+      "id": "18aa2f6937521ae010930ae98cbee45f2fa435b554c65cf90daaffba0c641ba8",
+      "health": "healthy"
+    },
+    {
+      "name": "pokemon-scanner-redis",
+      "id": "f2d2ca0ad580fe8ca3e94a59b4b6d5a53d761036ba1d14e45b8543a978bbb15f",
+      "health": "healthy"
+    }
+  ],
+  "startingContainerSnapshotRecorded": true,
+  "sharedContainersBefore": [
+    "pokemon-scanner-db 18aa2f693752",
+    "pokemon-scanner-redis f2d2ca0ad580",
+    "transfer_9827e108f4ba-redis 7c06fad3e066"
+  ],
+  "backup": {
+    "backupId": "88898435-8efc-4aba-8775-a1323f5acf47",
+    "ciphertextBytes": 352024,
+    "ciphertextSha256": "0b99e02b0208546075df25a7dfeed48d871b6548bf7fcffca45e7a373a7ba13b",
+    "encryption": "age-v1.2.1",
+    "createdAt": "2026-10-12T04:15:39.822Z",
+    "durationMs": 972,
+    "migrations": 13,
+    "dumpBytes": 346901,
+    "dumpSha256": "33656661d66b0a3cd77279d62ef4ee5696e0ca805eb041a44cbd67b052734451",
+    "receiptSha256": "3cc92671384ff95eac1b3556450b789522afdb12226557d74fd1231f961d440b",
+    "fixtureStatementAt": "2026-10-12T04:15:38.490000Z",
+    "includedCommitObservedAfterSQL": "2026-10-12T04:15:38.661Z"
+  },
+  "multichunk": {
+    "ciphertextBytes": 352024,
+    "minimumChunks": 5
+  },
+  "checks": [
+    {
+      "id": "backup-registered-durable",
+      "pass": true
+    },
+    {
+      "id": "backup-staging-clean-before-success",
+      "pass": true
+    },
+    {
+      "id": "simulated-destination-explicit-init-with-existing-inventory",
+      "pass": true
+    },
+    {
+      "id": "actual-age-ciphertext-uploaded",
+      "pass": true
+    },
+    {
+      "id": "uploaded-hash-matches-registered-backup",
+      "pass": true
+    },
+    {
+      "id": "upload-identical-object-idempotent",
+      "pass": true
+    },
+    {
+      "id": "idempotent-upload-keeps-original-date",
+      "pass": true
+    },
+    {
+      "id": "corrupt-transfer-object-download-rejected",
+      "pass": true
+    },
+    {
+      "id": "corrupt-download-never-published-quarantine",
+      "pass": true
+    },
+    {
+      "id": "actual-age-ciphertext-downloaded",
+      "pass": true
+    },
+    {
+      "id": "download-is-quarantine-not-restore-admission",
+      "pass": true
+    },
+    {
+      "id": "downloaded-ciphertext-and-receipt-bit-identical",
+      "pass": true
+    },
+    {
+      "id": "download-no-clobber-existing-destination",
+      "pass": true
+    },
+    {
+      "id": "quarantine-cannot-reregister-or-renew-original",
+      "pass": true
+    },
+    {
+      "id": "real-backblaze-mode-refused-before-contact",
+      "pass": true
+    },
+    {
+      "id": "original-fixture-hash-before-controlled-replacement",
+      "pass": true
+    },
+    {
+      "id": "controlled-fixture-replacement-did-not-change-inventory",
+      "pass": true
+    },
+    {
+      "id": "downloaded-bytes-readmitted-only-against-original-current-record",
+      "pass": true
+    },
+    {
+      "id": "baja-after-snapshot-current-independent-record",
+      "pass": true
+    },
+    {
+      "id": "no-restore-before-transfer-and-current-guards",
+      "pass": true
+    },
+    {
+      "id": "source-full-id-before-loss",
+      "pass": true
+    },
+    {
+      "id": "source-actually-gone",
+      "pass": true
+    },
+    {
+      "id": "restore-only-success-after-suppressions",
+      "pass": true
+    },
+    {
+      "id": "single-actual-pg-restore",
+      "pass": true
+    },
+    {
+      "id": "deleted-account-and-all-fixture-relations-stay-gone",
+      "pass": true
+    },
+    {
+      "id": "other-account-and-collection-preserved",
+      "pass": true
+    },
+    {
+      "id": "catalog-preserved",
+      "pass": true
+    },
+    {
+      "id": "migration-and-five-gin-preserved",
+      "pass": true
+    },
+    {
+      "id": "restore-plaintext-staging-removed",
+      "pass": true
+    },
+    {
+      "id": "compiled-api-ready-after-replay",
+      "pass": true
+    },
+    {
+      "id": "old-account-login-denied",
+      "pass": true
+    },
+    {
+      "id": "other-account-login-works",
+      "pass": true
+    },
+    {
+      "id": "old-signed-access-denied",
+      "pass": true
+    },
+    {
+      "id": "deleted-share-api-404",
+      "pass": true
+    },
+    {
+      "id": "other-account-api-collection-works",
+      "pass": true
+    },
+    {
+      "id": "compiled-next-started",
+      "pass": true
+    },
+    {
+      "id": "real-browser-login-and-preserved-collection",
+      "pass": true
+    },
+    {
+      "id": "real-session-persists-after-reload",
+      "pass": true
+    },
+    {
+      "id": "restored-deleted-share-unavailable-real-browser",
+      "pass": true
+    },
+    {
+      "id": "no-external-provider-contact",
+      "pass": true
+    },
+    {
+      "id": "destination-exclusivity-reestablished",
+      "pass": true
+    },
+    {
+      "id": "exact-30-days-dry-run-keeps-ciphertext",
+      "pass": true
+    },
+    {
+      "id": "durable-intent-survives-controlled-interruption",
+      "pass": true
+    },
+    {
+      "id": "resume-retirement-completes-once",
+      "pass": true
+    },
+    {
+      "id": "retirement-idempotent",
+      "pass": true
+    },
+    {
+      "id": "retired-copy-can-never-reopen",
+      "pass": true
+    },
+    {
+      "id": "only-registered-expired-backup-unlinked",
+      "pass": true
+    },
+    {
+      "id": "transfer-retirement-default-dry-run-keeps-bytes",
+      "pass": true
+    },
+    {
+      "id": "uploader-role-cannot-retire-simulated-objects",
+      "pass": true
+    },
+    {
+      "id": "transfer-durable-intent-keeps-interrupted-retirement",
+      "pass": true
+    },
+    {
+      "id": "transfer-retirement-resumed-once",
+      "pass": true
+    },
+    {
+      "id": "transfer-retirement-next-call-zero",
+      "pass": true
+    },
+    {
+      "id": "expired-simulated-object-bytes-gone-tombstone-preserved",
+      "pass": true
+    },
+    {
+      "id": "known-fixture-quarantines-explicitly-removed",
+      "pass": true
+    },
+    {
+      "id": "suppression-record-not-pruned-at-30-days",
+      "pass": true
+    }
+  ],
+  "restore": {
+    "restored": true,
+    "backupId": "88898435-8efc-4aba-8775-a1323f5acf47",
+    "migrations": 13,
+    "dumpBytes": 346901,
+    "schemaFingerprint": "1363b823a220be0f716bafbf3f90f63ccfc0a096839419ffc908da1c62876434",
+    "pgTrgm": "1.6",
+    "validTrigramIndexes": 5,
+    "validatedConstraints": 36,
+    "constraintScope": "public",
+    "ownership": true,
+    "suppressionsApplied": true
+  },
+  "verification": {
+    "migrations": 13,
+    "validTrigramIndexes": 5
+  },
+  "localRecoveryMs": 13872,
+  "timeSimulation": "Exact 30-day library fixture clock; no real 30-day wait, CLI clock flag, wall-clock change, power loss or TTL claim",
+  "endedAt": "2026-10-12T04:15:47.026Z",
+  "testResult": "passed",
+  "sharedContainersAfter": [
+    "pokemon-scanner-db 18aa2f693752",
+    "pokemon-scanner-redis f2d2ca0ad580",
+    "transfer_9827e108f4ba-redis 7c06fad3e066"
+  ],
+  "sharedHealthAfter": [
+    {
+      "name": "pokemon-scanner-db",
+      "id": "18aa2f6937521ae010930ae98cbee45f2fa435b554c65cf90daaffba0c641ba8",
+      "health": "healthy"
+    },
+    {
+      "name": "pokemon-scanner-redis",
+      "id": "f2d2ca0ad580fe8ca3e94a59b4b6d5a53d761036ba1d14e45b8543a978bbb15f",
+      "health": "healthy"
+    }
+  ]
+}

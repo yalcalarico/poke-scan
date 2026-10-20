@@ -5,6 +5,8 @@ import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
 
+import { validateQueries, summarizeIdentity } from './scanner-evaluation-metrics.mjs';
+
 const hash = (bytes) => createHash('sha256').update(bytes).digest('hex');
 const percentile = (values, p) =>
   values.length
@@ -94,7 +96,7 @@ if (process.argv[2] === '--worker') {
   const [manifestArg, outputArg, repeatsArg = '2'] = process.argv.slice(2);
   if (!manifestArg || manifestArg === '--help') {
     console.log(
-      'Uso desde backend: node scripts/scanner-evaluate-current.mjs MANIFIESTO REPORTE [REPETICIONES=2]\nManifiesto: [{path, cardId: ID o null, conditions?: [etiquetas]}]. Fotos ya preparadas; sin recorte de navegador. No descarga ni modifica el índice.',
+      'Uso desde backend: node scripts/scanner-evaluate-current.mjs MANIFIESTO REPORTE [REPETICIONES=2]\nManifiesto: [{path, cardId: ID o null, conditions?: [etiquetas], origin?: original/gallery-crop/camera-crop, labelStatus?: positive/negative/unlabelled, split?: development/holdout}]. Fotos ya preparadas; sin recorte de navegador. No descarga ni modifica el índice.',
     );
     process.exit(manifestArg === '--help' ? 0 : 1);
   }
@@ -105,26 +107,7 @@ if (process.argv[2] === '--worker') {
   if (resolve(outputArg) === manifest)
     throw new Error('El reporte no puede reemplazar el manifiesto.');
   const manifestBytes = await readFile(manifest);
-  const queries = JSON.parse(manifestBytes.toString());
-  if (
-    !Array.isArray(queries) ||
-    !queries.length ||
-    !queries.every(
-      (q) =>
-        q &&
-        typeof q.path === 'string' &&
-        q.path.length > 0 &&
-        (q.cardId === null ||
-          (typeof q.cardId === 'string' &&
-            /^[a-zA-Z0-9_!?-]+$/.test(q.cardId))) &&
-        (q.conditions === undefined ||
-          (Array.isArray(q.conditions) &&
-            q.conditions.every((c) => typeof c === 'string'))),
-    )
-  )
-    throw new Error(
-      'Manifiesto inválido: etiquetá el ID exacto o null para negativos.',
-    );
+  const queries = validateQueries(JSON.parse(manifestBytes.toString()));
   const child = fork(fileURLToPath(import.meta.url), ['--worker'], {
     execArgv: [],
     stdio: ['ignore', 'ignore', 'inherit', 'ipc'],
@@ -177,6 +160,9 @@ if (process.argv[2] === '--worker') {
           repeat,
           cardId: query.cardId,
           conditions: query.conditions ?? [],
+          labelStatus: query.labelStatus,
+          origin: query.origin,
+          split: query.split,
           ...result,
           coordinatorMs: performance.now() - start,
         });
@@ -185,9 +171,6 @@ if (process.argv[2] === '--worker') {
         );
       }
     }
-    const first = results.filter((r) => r.repeat === 0);
-    const positives = first.filter((r) => r.cardId !== null);
-    const negatives = first.filter((r) => r.cardId === null);
     const timings = (rows) =>
       Object.fromEntries(
         [
@@ -220,35 +203,17 @@ if (process.argv[2] === '--worker') {
       resolve(outputArg),
       JSON.stringify(
         {
+          schemaVersion: 2,
           evaluatedAt: new Date().toISOString(),
           manifestHash: hash(manifestBytes),
           scope:
             'Fotos provistas ya preparadas; motor local DINOv2 puro top-8 vigente. Sin cámara, recorte cliente, HTTP ni precio. Primera consulta fría; posteriores calientes, no reinicios por foto.',
           productionReady: false,
-          uniquePhotos: queries.length,
+          samples: queries.length,
+          uniquePhotos: new Set(results.filter(r => r.repeat === 0).map(r => r.photoHash)).size,
           repeats,
           metrics: {
-            positives: positives.length,
-            negatives: negatives.length,
-            top1: positives.filter((r) => r.candidates[0]?.id === r.cardId)
-              .length,
-            falsePredictions: positives.filter(
-              (r) => r.candidates[0]?.id !== r.cardId,
-            ).length,
-            missingReferences: positives.filter(
-              (r) => !r.expectedReferencePresent,
-            ).length,
-            retrievalMissesTop64: positives.filter(
-              (r) => r.retrievalRank === null || r.retrievalRank > 64,
-            ).length,
-            negativePredictions: negatives.filter(
-              (r) => r.candidates.length > 0,
-            ).length,
-            falseSessionAcceptances: negatives.filter(
-              (r) => r.candidates.length > 0,
-            ).length,
-            acceptancePolicy:
-              'La UI suma #1 DINOv2; no confirma edición/acabado ni persiste colección. No hay rechazo calibrado.',
+            ...summarizeIdentity(results),
             timing: {
               cold: timings(results.filter((r) => r.cold)),
               warm: timings(results.filter((r) => !r.cold)),

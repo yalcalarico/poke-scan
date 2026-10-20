@@ -1,14 +1,18 @@
 'use client';
 
+import { PreviewSheet as Sheet } from '@/components/visual-preview/preview-sheet';
+
 import Image from 'next/image';
 import { useState } from 'react';
-import { Button, Sheet, SheetBody, SheetFooter, SheetHeader } from '@/components/ui';
+import { Button, SheetBody, SheetFooter, SheetHeader } from '@/components/ui';
 import { formatCardNumber } from '@/lib/format';
 import type { CaptureReview } from '@/lib/scanner/capture-review';
 import type { RecognizedCard, VisualIdentifyResponseDto } from '@/types/api';
 import { cn } from '@/lib/cn';
 import { CardThumb } from './card-thumb';
 import { CaptureReviewActions } from './capture-review';
+import { CaptureQualityNotice } from '@/components/scanner/capture-quality-notice';
+import { VisualCard } from '@/components/visual-preview/holo-card';
 
 type Match = VisualIdentifyResponseDto['candidates'][number];
 
@@ -28,6 +32,7 @@ export function ScanMatchSheet({ review, candidate, open, pending, onOpenChange,
   return <Sheet open={open} onClose={() => onOpenChange(false)} title="Revisá la coincidencia" subtitle="Compará tu captura y elegí la carta correcta.">
     <SheetHeader />
     <SheetBody className="flex flex-col gap-4 [&>*]:shrink-0">
+      <CaptureQualityNotice quality={review.quality} />
       <div className="grid grid-cols-2 gap-3">
         <figure className="min-w-0">
           <div className="relative aspect-[63/88] overflow-hidden rounded-control bg-surface-2">
@@ -36,9 +41,11 @@ export function ScanMatchSheet({ review, candidate, open, pending, onOpenChange,
           <figcaption className="mt-2 text-center text-caption text-secondary">Tu captura</figcaption>
         </figure>
         <figure className="min-w-0">
+          <VisualCard plainCurrent>
           <div className="relative aspect-[63/88] overflow-hidden rounded-control bg-surface-2">
             <Image src={card.imageLarge || card.imageSmall} alt={`Referencia de ${card.name}`} fill sizes="(max-width: 640px) 45vw, 280px" className="object-contain" />
           </div>
+          </VisualCard>
           <figcaption className="mt-2 text-center text-caption text-secondary">Carta del catálogo</figcaption>
         </figure>
       </div>

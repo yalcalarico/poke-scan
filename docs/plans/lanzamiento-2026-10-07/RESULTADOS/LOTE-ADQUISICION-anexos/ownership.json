@@ -1,0 +1,50 @@
+{
+  "runId": "adquisicion-gate-8e4fa11b7ccb",
+  "owner": "/root/adquisicion_review_sol",
+  "createdAtUtc": "2026-10-10T14:39:10.635785+00:00",
+  "root": "/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app",
+  "annex": "/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/docs/plans/lanzamiento-2026-10-07/RESULTADOS/LOTE-ADQUISICION-anexos",
+  "database": "adq_8e4fa11b7ccb_test",
+  "databaseComment": "adquisicion-gate-8e4fa11b7ccb|owner=/root/adquisicion_review_sol",
+  "redis": "adquisicion-gate-8e4fa11b7ccb-redis",
+  "redisLabel": "adquisicion-gate-8e4fa11b7ccb|owner=/root/adquisicion_review_sol",
+  "redisPort": 56396,
+  "resources": [
+    {
+      "role": "database",
+      "name": "adq_8e4fa11b7ccb_test",
+      "pgContainer": "18aa2f6937521ae010930ae98cbee45f2fa435b554c65cf90daaffba0c641ba8",
+      "comment": "adquisicion-gate-8e4fa11b7ccb|owner=/root/adquisicion_review_sol"
+    },
+    {
+      "role": "redis",
+      "name": "adquisicion-gate-8e4fa11b7ccb-redis",
+      "id": "df3730e10a4df770b4e93b4416aade62d91e665f50815550ab4d8ef4b00cabd9",
+      "label": "adquisicion-gate-8e4fa11b7ccb|owner=/root/adquisicion_review_sol",
+      "bind": "127.0.0.1:56396",
+      "tmpfs": true
+    }
+  ],
+  "liveResources": [],
+  "processes": [],
+  "plannedResources": [
+    {
+      "role": "database",
+      "name": "adq_8e4fa11b7ccb_test",
+      "comment": "adquisicion-gate-8e4fa11b7ccb|owner=/root/adquisicion_review_sol"
+    },
+    {
+      "role": "redis",
+      "name": "adquisicion-gate-8e4fa11b7ccb-redis",
+      "label": "adquisicion-gate-8e4fa11b7ccb|owner=/root/adquisicion_review_sol",
+      "bind": "127.0.0.1:56396"
+    }
+  ],
+  "databaseCommentVerifiedBeforeDrop": true,
+  "databaseConnectionsBeforeDrop": 0,
+  "cloneDropped": true,
+  "redisRemoved": true,
+  "sourceCountsUnchanged": true,
+  "sourceInfraIDsUnchangedHealthy": true,
+  "cleanupAt": "2026-10-10T14:42:15.910700+00:00"
+}

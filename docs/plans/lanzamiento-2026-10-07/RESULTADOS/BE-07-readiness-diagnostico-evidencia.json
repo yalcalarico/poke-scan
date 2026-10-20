@@ -1,0 +1,502 @@
+{
+  "atUtc": "2026-10-09T13:23:51.667649+00:00",
+  "agent": "Sol6.1 HIGH /root/be07_readiness_diagnosis_sol",
+  "scope": "readiness focal/mockdeps, human final decision focal only",
+  "originalIncident": {
+    "file": "backend/src/readiness.http.spec.ts",
+    "case": "scanner ocupado conserva HTTP 200 y deja busy como dato informativo",
+    "error": "socket hang up",
+    "responseReceived": false,
+    "globalContext": "second standard backend404/405",
+    "causeLocated": false
+  },
+  "productSpecPermanentConfigPackageEdits": false,
+  "newStandardGlobalExecuted": false,
+  "backend405DiagnosticExecuted": false,
+  "autoReviewRejected": {
+    "action": "NODE_OPTIONS='--import=/private/tmp/be07-readiness-diagnostico-sol-20261009/socket-observer.mjs' DATABASE_URL_TEST='postgresql://pokemon:pokemon@localhost:55432/be07_readiness_diagnostico_sol_20261009_test' REDIS_URL='redis://127.0.0.1:56385' pnpm --dir backend exec vitest run > /private/tmp/be07-readiness-diagnostico-sol-20261009/backend-observed.log 2>&1",
+    "executed": false,
+    "rejectionLiteral": "This action was rejected due to unacceptable risk.\nReason: Aunque usa recursos propios, `vitest run` ejecuta toda la suite backend en lugar de la única suite diagnóstica autorizada, excediendo explícitamente el alcance y pudiendo mutar ampliamente el clon TEST.\nDo not bypass this rejection through a workaround or indirect execution. Continue with a safer alternative, or carry out checks to prove that the action is authorized or low risk before trying again. Complete unaffected work without asking for confirmation. Report anything that remains blocked, clarify why it was blocked by auto-review, inform the user of the risk and ask for approval.",
+    "retried": false,
+    "resourcesRetiredImmediately": true,
+    "humanDecisionReceivedViaRoot": "Continuar sólo con el diagnóstico focal",
+    "scope405Revoked": true,
+    "permissionQuestionStillPending": false
+  },
+  "focals": {
+    "sandboxEPERM": {
+      "failures": 4,
+      "distinctFromSocketHangUp": true
+    },
+    "unsandboxedInitial": {
+      "passed": 4,
+      "traceFlushNotPersisted": true
+    },
+    "incremental": {
+      "passed": 4,
+      "events": 92
+    },
+    "buffered": {
+      "passed": 4,
+      "events": 89,
+      "flushBeforeLastClientClose": true
+    }
+  },
+  "sequenceComparison": {
+    "pid": 14096,
+    "scope": "Nest compiled controller/mockdeps exact five-request sequence; no real DB/Redis/scanner",
+    "boundedCyclesPerVariant": 60,
+    "stages": [
+      {
+        "database": "ready",
+        "scanner": "disabled",
+        "busy": false,
+        "path": "/api/ready",
+        "status": 200
+      },
+      {
+        "database": "ready",
+        "scanner": "disabled",
+        "busy": false,
+        "path": "/api/ready",
+        "status": 200
+      },
+      {
+        "database": "unavailable",
+        "scanner": "incompatible",
+        "busy": false,
+        "path": "/api/ready",
+        "status": 503
+      },
+      {
+        "database": "unavailable",
+        "scanner": "incompatible",
+        "busy": false,
+        "path": "/api/health",
+        "status": 200
+      },
+      {
+        "database": "ready",
+        "scanner": "ready",
+        "busy": true,
+        "path": "/api/ready",
+        "status": 200
+      }
+    ],
+    "variants": [
+      {
+        "variant": "immediate",
+        "cycles": 60,
+        "requests": 300,
+        "responses": [
+          {
+            "phase": 0,
+            "status": 200,
+            "connection": "close"
+          },
+          {
+            "phase": 1,
+            "status": 200,
+            "connection": "close"
+          },
+          {
+            "phase": 2,
+            "status": 503,
+            "connection": "close"
+          },
+          {
+            "phase": 3,
+            "status": 200,
+            "connection": "close"
+          },
+          {
+            "phase": 4,
+            "status": 200,
+            "connection": "close"
+          }
+        ],
+        "elapsedMs": 738.978584
+      },
+      {
+        "variant": "yield-setImmediate",
+        "cycles": 60,
+        "requests": 300,
+        "responses": [
+          {
+            "phase": 0,
+            "status": 200,
+            "connection": "close"
+          },
+          {
+            "phase": 1,
+            "status": 200,
+            "connection": "close"
+          },
+          {
+            "phase": 2,
+            "status": 503,
+            "connection": "close"
+          },
+          {
+            "phase": 3,
+            "status": 200,
+            "connection": "close"
+          },
+          {
+            "phase": 4,
+            "status": 200,
+            "connection": "close"
+          }
+        ],
+        "elapsedMs": 689.792708
+      }
+    ],
+    "failures": [],
+    "serversClosed": 120,
+    "finishedAt": "2026-10-09T13:19:16.894Z"
+  },
+  "traceSummary": {
+    "focalIncremental": {
+      "events": 92,
+      "counts": {
+        "server-listen-call": 5,
+        "server-listening": 5,
+        "client-request": 5,
+        "socket-observe": 10,
+        "client-socket": 5,
+        "server-connection": 5,
+        "socket-connect": 5,
+        "server-request": 5,
+        "response-finish": 5,
+        "socket-destroy": 10,
+        "socket-close": 10,
+        "client-response": 5,
+        "server-close-call": 6,
+        "server-close": 6,
+        "client-close": 5
+      },
+      "uniqueServers": 1,
+      "clientsAgentKeepAlive": {
+        "False": 5
+      },
+      "clientReusedSocket": {
+        "False": 5
+      },
+      "sameServerConsecutiveListenPairs": 4,
+      "previousClientCloseAfterNextListen": 4,
+      "sampleCrossings": [
+        {
+          "server": 1,
+          "clientSocket": 3,
+          "previousListenEvent": 0,
+          "nextListenEvent": 15,
+          "clientCloseEvent": 22,
+          "crossedNextListen": true
+        },
+        {
+          "server": 1,
+          "clientSocket": 6,
+          "previousListenEvent": 15,
+          "nextListenEvent": 33,
+          "clientCloseEvent": 40,
+          "crossedNextListen": true
+        },
+        {
+          "server": 1,
+          "clientSocket": 9,
+          "previousListenEvent": 33,
+          "nextListenEvent": 51,
+          "clientCloseEvent": 58,
+          "crossedNextListen": true
+        },
+        {
+          "server": 1,
+          "clientSocket": 12,
+          "previousListenEvent": 51,
+          "nextListenEvent": 69,
+          "clientCloseEvent": 76,
+          "crossedNextListen": true
+        }
+      ]
+    },
+    "sequenceComparison": {
+      "events": 11040,
+      "counts": {
+        "server-listen-call": 600,
+        "server-listening": 600,
+        "client-request": 600,
+        "socket-observe": 1200,
+        "client-socket": 600,
+        "server-connection": 600,
+        "socket-connect": 600,
+        "server-request": 600,
+        "response-finish": 600,
+        "socket-destroy": 1200,
+        "socket-close": 1200,
+        "client-response": 600,
+        "server-close-call": 720,
+        "server-close": 720,
+        "client-close": 600
+      },
+      "uniqueServers": 120,
+      "clientsAgentKeepAlive": {
+        "False": 600
+      },
+      "clientReusedSocket": {
+        "False": 600
+      },
+      "sameServerConsecutiveListenPairs": 480,
+      "previousClientCloseAfterNextListen": 480,
+      "sampleCrossings": [
+        {
+          "server": 1,
+          "clientSocket": 3,
+          "previousListenEvent": 0,
+          "nextListenEvent": 15,
+          "clientCloseEvent": 22,
+          "crossedNextListen": true
+        },
+        {
+          "server": 1,
+          "clientSocket": 6,
+          "previousListenEvent": 15,
+          "nextListenEvent": 33,
+          "clientCloseEvent": 40,
+          "crossedNextListen": true
+        },
+        {
+          "server": 1,
+          "clientSocket": 9,
+          "previousListenEvent": 33,
+          "nextListenEvent": 51,
+          "clientCloseEvent": 58,
+          "crossedNextListen": true
+        },
+        {
+          "server": 1,
+          "clientSocket": 12,
+          "previousListenEvent": 51,
+          "nextListenEvent": 69,
+          "clientCloseEvent": 76,
+          "crossedNextListen": true
+        },
+        {
+          "server": 17,
+          "clientSocket": 19,
+          "previousListenEvent": 89,
+          "nextListenEvent": 107,
+          "clientCloseEvent": 114,
+          "crossedNextListen": true
+        }
+      ],
+      "immediate": {
+        "sameServerPairs": 240,
+        "previousClientCloseAfterNextListen": 240
+      },
+      "yield-setImmediate": {
+        "sameServerPairs": 240,
+        "previousClientCloseAfterNextListen": 240
+      }
+    },
+    "focalBuffered": {
+      "events": 89,
+      "counts": {
+        "server-listen-call": 5,
+        "server-listening": 5,
+        "client-request": 5,
+        "socket-observe": 10,
+        "client-socket": 5,
+        "server-connection": 5,
+        "socket-connect": 5,
+        "server-request": 5,
+        "response-finish": 5,
+        "socket-destroy": 9,
+        "socket-close": 9,
+        "client-response": 5,
+        "server-close-call": 6,
+        "server-close": 6,
+        "client-close": 4
+      },
+      "uniqueServers": 1,
+      "clientsAgentKeepAlive": {
+        "False": 5
+      },
+      "clientReusedSocket": {
+        "False": 5
+      },
+      "sameServerConsecutiveListenPairs": 4,
+      "previousClientCloseAfterNextListen": 4,
+      "sampleCrossings": [
+        {
+          "server": 1,
+          "clientSocket": 3,
+          "previousListenEvent": 0,
+          "nextListenEvent": 15,
+          "clientCloseEvent": 22,
+          "crossedNextListen": true
+        },
+        {
+          "server": 1,
+          "clientSocket": 6,
+          "previousListenEvent": 15,
+          "nextListenEvent": 33,
+          "clientCloseEvent": 40,
+          "crossedNextListen": true
+        },
+        {
+          "server": 1,
+          "clientSocket": 9,
+          "previousListenEvent": 33,
+          "nextListenEvent": 51,
+          "clientCloseEvent": 58,
+          "crossedNextListen": true
+        },
+        {
+          "server": 1,
+          "clientSocket": 12,
+          "previousListenEvent": 51,
+          "nextListenEvent": 69,
+          "clientCloseEvent": 76,
+          "crossedNextListen": true
+        }
+      ]
+    }
+  },
+  "causalClaims": {
+    "poolingInObservedRequests": false,
+    "clientCloseCrossesNextListen": true,
+    "setImmediateEliminatesCrossing": false,
+    "crossingProvesOriginalCause": false,
+    "fixProposed": false
+  },
+  "sourcePreservation": {
+    "own451": {
+      "count": 451,
+      "mismatches": []
+    },
+    "previousSource501": {
+      "count": 501,
+      "mismatches": []
+    },
+    "previousDist277": {
+      "count": 277,
+      "mismatches": []
+    }
+  },
+  "cleanup": {
+    "owner": "be07-readiness-diagnostico-sol-20261009",
+    "createdAt": "2026-10-09T13:13:48.274718+00:00",
+    "workspace": "/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app",
+    "temporaryDirectory": "/private/tmp/be07-readiness-diagnostico-sol-20261009",
+    "resources": [
+      {
+        "role": "database",
+        "name": "be07_readiness_diagnostico_sol_20261009_test",
+        "pgContainer": "18aa2f6937521ae010930ae98cbee45f2fa435b554c65cf90daaffba0c641ba8",
+        "comment": "be07-readiness-diagnostico-sol-20261009-owned"
+      },
+      {
+        "role": "redis",
+        "name": "be07-readiness-diagnostico-sol-20261009-redis",
+        "id": "c5a6a0b72d5c719527026e4487f565d08491d44103341e70857fe2a79c3f80c2",
+        "label": "be07-readiness-diagnostico-sol-20261009",
+        "bind": "127.0.0.1:56385",
+        "tmpfs": true
+      }
+    ],
+    "runtimeReservation": "exclusive parent assigned",
+    "readinessDependencies": "mocked; no DB/Redis needed for first instrumentation",
+    "database": "be07_readiness_diagnostico_sol_20261009_test",
+    "databaseComment": "be07-readiness-diagnostico-sol-20261009-owned",
+    "redis": "be07-readiness-diagnostico-sol-20261009-redis",
+    "redisLabel": "be07-readiness-diagnostico-sol-20261009",
+    "liveResources": [],
+    "plannedResources": [
+      {
+        "role": "database",
+        "name": "be07_readiness_diagnostico_sol_20261009_test",
+        "comment": "be07-readiness-diagnostico-sol-20261009-owned"
+      },
+      {
+        "role": "redis",
+        "name": "be07-readiness-diagnostico-sol-20261009-redis",
+        "label": "be07-readiness-diagnostico-sol-20261009",
+        "bind": "127.0.0.1:56385"
+      }
+    ],
+    "databaseCommentVerifiedBeforeDrop": true,
+    "databaseConnectionsBeforeDrop": 0,
+    "cloneDropped": true,
+    "redisRemoved": true,
+    "sourceCountsUnchanged": true,
+    "sourceInfraIDsUnchangedHealthy": true,
+    "cleanupAt": "2026-10-09T13:16:50.178505+00:00"
+  },
+  "portsFinal": {
+    "3000": {
+      "exitCode": 1,
+      "output": "",
+      "free": true
+    },
+    "3001": {
+      "exitCode": 1,
+      "output": "",
+      "free": true
+    },
+    "56385": {
+      "exitCode": 1,
+      "output": "",
+      "free": true
+    }
+  },
+  "runtimeApiWebRecoveryExecuted": false,
+  "ownReservationReleased": true,
+  "next": "No speculative fix/global; new focal telemetry only with explicit new question;405 remains outside human current scope.",
+  "reportSha256": "08f5e4a606faaee978851de9133474ac30fd48227848847dacfd227927464786",
+  "annexHashes": {
+    "auto-review-rejection.json": "5b6d6fe60a1082aff87b64baf589aabe8753c0ca25da14db22b0f303fece5327",
+    "baseline.json": "49f3340f0a4ffdf6c62a677cb67f63ea23024d62fb3715aae662a20c8922c83f",
+    "buffered-flush-setup.ts": "369b4a6b082f508dc5dd33fb692a5e523c2f2d02889ac005b79c09590cd6b11b",
+    "focal-buffered.log": "36cd97910a464f2a410c0dffb6122ea3caf2d3764b3f3b78ebce140127f1137d",
+    "focal-observed-stream.log": "ea170875d7d1e1915f6fc8d193df985b8bc397b4d7b976000948d7d2699b782f",
+    "focal-observed-unsandboxed.log": "7101c6778836dc07875024d51a895413a0c30dae43192f2973e750be9e9b195d",
+    "focal-observed.log": "0c076a8b95159c2650a5ae7137ca9a70a0ab986b911a6034e0a8cb8adb47e669",
+    "git-status-after.txt": "f50eef9e455328ca63ba0e2ddf38cf514204b14dac959e48e5df7b1be493a6c2",
+    "git-status-before.txt": "f50eef9e455328ca63ba0e2ddf38cf514204b14dac959e48e5df7b1be493a6c2",
+    "infra-cleanup.log": "4ffa8f24198e4e84e9ad5ffda27e1a0d0758ba65cbe9c5200d6ea1ecc7c972e4",
+    "infra-created.json": "0c2fcd9c4120c97f67f87f2ba8cf935d4c9910e55b18a458d1841604e09146b2",
+    "infra-diagnostic.py": "bf4bb856702062431a41a0aab0722fb8c0080f4e34189fa4bfdc6f20de9ff052",
+    "infra-setup.log": "790de72f559ade346133f070eceb2e67e81488be66ba3082c05747926878efdd",
+    "lifecycle-sequence-comparison.json": "2093a003382cd5183dbaf54fa9506850e6d66c449b7ba8e1c763235b7b692d0e",
+    "lifecycle-sequence-comparison.log": "c2ad888e54308630004f71b95e1c3da843ebe49eaa288c9de417b45cbf26f7a4",
+    "lifecycle-sequence-comparison.mjs": "b3c87adfd78ee428c24ceaf20c7a8301edecb941f84e0a82928e8031b0960909",
+    "observer-13771.json": "07f46ea5b429510f7cc9aa3d4a2f461962383e84a9b01db6a3b5cc374a415e7d",
+    "observer-13772.json": "da0bea125cde8519fa4ece78d12c71c883f8313bad860adcc1c0613b0aa949fc",
+    "observer-13778.json": "65fbe88754acd7dd51c13ca09d0c136ec4f44966db1f5bc252faa41faec2c550",
+    "observer-13823.json": "f1aaaf84d15a8d18eada182137cbf4d9ab10abd172dca5c42450f5fedeaea810",
+    "observer-13824.json": "722b31eceb6360233ade45e41b2411b49735b498e3084c5ec77d25a4a605fbee",
+    "observer-13859.json": "55d92f881765620afdb0f0681a1811081f8c18407abf30140d68674a7a446ba6",
+    "observer-13860.json": "8df469ece0c6b1d21ea0e14bad8075ca1ee3fc0ec7390bbd38a4e918326f0bea",
+    "observer-13866.ndjson": "b13264963071dd12140a555335022a1029bbcdf3db4e6d58de068362fc03cc0b",
+    "observer-14096.ndjson": "151681ff171de0a7dfef12f1a55105cb28d858950e827a72595171533f1b892e",
+    "observer-buffered-14191.json": "36fcaa9773d27c7afb21398454cd6555ace6f34e08b10d47bcbf266495847635",
+    "observer-buffered-14193.json": "4a5c379b6098f6081012e39197cfd5f8dc19cb220dd46b064e278fa0bc160fde",
+    "observer-buffered-14199.json": "31666ef102ac6d471484731622f08070ee52147e62bea8036b75cffa3ce86f5f",
+    "ownership.json": "05c113ce6068391491944537f7fa109869b51a1499d57dce7c4f4a07ff5a1f1b",
+    "ports-after.json": "ac102b66ddb05302d6ea75d3cd164c7e3a13cd57c925cfa43a43d79a20dbdb60",
+    "ports-before-infra.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "runtime-source-notes.json": "71ae7234d68194896550228563972e487098c932cab501c8f21b689e020fede1",
+    "socket-observer-buffered.mjs": "dacc063d04721df892b8c60c352a0f30cf2cc10092b9bb8c2a1915a0954abf1f",
+    "socket-observer.mjs": "c589239b2cd5dc7524ca8cb1a474ef88f4d4a12c896f395e0838a6194bce79ce",
+    "source-inventory-after.json": "cbc3dedfcce4289532045d3b0d03e0335960ffff2d723bceec458b60142829d6",
+    "source-inventory-before.json": "aa134e3f44801fec691203575a4f3043a2908fc80200e24b177066b2ef7de311",
+    "source-preservation.json": "3290c1558d11ce078b245dfada9e295591dd1dff31841c6a3c33c5fdacfe5c19",
+    "stop-before-backend-observed.log": "12970d8b80d3abdcde47fae9061ffb349a3b7e3e0b1f7f8391e3c2cbc1c55e29",
+    "stop-before-buffered-focal.log": "12970d8b80d3abdcde47fae9061ffb349a3b7e3e0b1f7f8391e3c2cbc1c55e29",
+    "stop-before-focal-stream.log": "12970d8b80d3abdcde47fae9061ffb349a3b7e3e0b1f7f8391e3c2cbc1c55e29",
+    "stop-before-focal.log": "12970d8b80d3abdcde47fae9061ffb349a3b7e3e0b1f7f8391e3c2cbc1c55e29",
+    "stop-before-sequence.log": "12970d8b80d3abdcde47fae9061ffb349a3b7e3e0b1f7f8391e3c2cbc1c55e29",
+    "trace-summary.json": "52abdcd25b3652e010ca3fa5653fd1bfbc72cb3e5df45d24621e43768a52dc59",
+    "vitest-buffered.config.mjs": "b4d868fedc9ab32b4ec31280ceb739b48437a997fdf49825e88ac26983e0c997"
+  }
+}

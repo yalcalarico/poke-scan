@@ -1,0 +1,19 @@
+{
+  "command": [
+    "pnpm",
+    "--dir",
+    "frontend",
+    "exec",
+    "vitest",
+    "run",
+    "components/auth/recovery-experience.test.tsx",
+    "lib/recovery/recovery-capture-script.test.ts",
+    "lib/api/recovery-api.test.ts",
+    "lib/api/session-generation.test.ts",
+    "lib/api/api-client.test.ts",
+    "lib/__tests__/service-worker-routing.test.ts",
+    "hooks/use-auth.test.tsx"
+  ],
+  "exitCode": 0,
+  "finishedAtUtc": "2026-10-10T02:16:41.995732+00:00"
+}

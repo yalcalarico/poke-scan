@@ -1,0 +1,136 @@
+{
+  "acceptedAtUtc": "2026-10-11T23:33:37.394877+00:00",
+  "BE05": "complete locally",
+  "completedIDs": 20,
+  "pendingIDs": 18,
+  "global": {
+    "exactStandardStopCheck": true,
+    "tests": 1055,
+    "skips": 0,
+    "backendVitest": 459,
+    "backendScripts": 13,
+    "e2e": 6,
+    "frontend": 562,
+    "rootScripts": 15,
+    "lintTypesNestNextTurbopack": true
+  },
+  "focused": {
+    "backend": 20,
+    "frontendSW": 15,
+    "twoPreexistingSWIncluded": true
+  },
+  "integrated": {
+    "checks": 69,
+    "functional": 64,
+    "ownership": 5,
+    "actualEncryptedPgDumpPgRestore": true,
+    "independentTrustedCheckpoint": true,
+    "deletedAccountsRemainSuppressed": 2,
+    "screenshots": 7
+  },
+  "verification": {
+    "sourceCopies": 32,
+    "artifactHashes": 118,
+    "reportLinks": 11,
+    "runtimeFilesIntact": 1403,
+    "baseline453CapturedAfterDispatchNotFullDirtySnapshot": true,
+    "sharedDBVerification": "bounded counts, not per-row content snapshot"
+  },
+  "cleanup": {
+    "standardSourceUnchanged": true,
+    "standardCounts": {
+      "migrations": 11,
+      "users": 2,
+      "collections": 3,
+      "items": 2,
+      "shares": 1,
+      "cards": 20670,
+      "gin": 5,
+      "priced": 7
+    },
+    "sharedRedisHealthy": true,
+    "sharedRedisFullID": "f2d2ca0ad580fe8ca3e94a59b4b6d5a53d761036ba1d14e45b8543a978bbb15f",
+    "ownDatabaseAbsent": true,
+    "ownRestoreDatabaseAbsent": true,
+    "ownRedisRemovedByFullId": true,
+    "SQLConnectionsBeforeDrop": 0,
+    "markersAndFullIDsVerified": true,
+    "sharedCounts": {
+      "migrations": 13,
+      "users": 22,
+      "collections": 22,
+      "items": 69,
+      "shares": 13,
+      "cards": 20670,
+      "gin": 5
+    },
+    "sharedInventoryUnchanged": true,
+    "finishedAtUtc": "2026-10-11T23:31:04.298935+00:00"
+  },
+  "userInstance": {
+    "atUtc": "2026-10-11T23:31:50.670132+00:00",
+    "intentionalUserInstanceAlive": true,
+    "url": "http://localhost:3000",
+    "api": {
+      "pid": 69666,
+      "parent": 69665,
+      "role": "local-user-request-api",
+      "port": 3001,
+      "listenerPid": 69677
+    },
+    "next": {
+      "pid": 69680,
+      "parent": 69679,
+      "role": "local-user-request-next",
+      "port": 3000,
+      "listenerPid": 69691
+    },
+    "checks": [
+      {
+        "route": "http://localhost:3000/login",
+        "status": 200
+      },
+      {
+        "route": "http://localhost:3000/eliminar-cuenta",
+        "status": 200
+      },
+      {
+        "route": "http://localhost:3001/api/health",
+        "status": 200
+      },
+      {
+        "route": "http://localhost:3001/api/ready",
+        "status": 200,
+        "databaseReady": true
+      },
+      {
+        "route": "http://localhost:3001/api/ops/metrics",
+        "status": 404
+      },
+      {
+        "route": "http://localhost:3001/api/auth/account-deletion-availability",
+        "status": 401,
+        "noStore": true
+      }
+    ],
+    "ancestryVerified": true,
+    "mode": "Habitual dev database with validated compiled outputs; external providers/jobs/mail and account deletion disabled; no synthetic user fixtures written to dev",
+    "ownQAResourcesGone": true
+  },
+  "delegation": {
+    "assignments": 3,
+    "limit": 4,
+    "activeSubagents": 0,
+    "rootOnlySharedWriters": true
+  },
+  "limits": [
+    "real activation/default dev deletion disabled",
+    "external mail/domain/miniPC/off-host operation pending",
+    "backup pruning/inventory and custody operational setup pending",
+    "HMAC integrity is not freshness without trusted current custody",
+    "no physical bfcache/phones/screenreader/production claims"
+  ],
+  "historicalFailuresPreserved": true,
+  "automationUnchanged": "PAUSED;2hours",
+  "nextStep": "Inventory/expiry30d and guard integration into INF03; not started, ask user before continuing"
+}

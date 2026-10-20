@@ -1,0 +1,128 @@
+{
+  "task": "FE-07 + SEO-03, implementación local",
+  "date": "2026-10-10",
+  "inputs": {
+    "copy": "RESULTADOS/MKT-01-copy.md",
+    "copyReview": "RESULTADOS/MKT-01-review.md",
+    "seoBrief": "RESULTADOS/SEO-03-contenido.md",
+    "seoReview": "RESULTADOS/SEO-03-review.md",
+    "nextVersionInstalled": "16.3.6",
+    "nextGuides": [
+      "frontend/node_modules/next/dist/docs/01-app/01-getting-started/14-metadata-and-og-images.md",
+      "frontend/node_modules/next/dist/docs/01-app/03-api-reference/04-functions/generate-metadata.md",
+      "frontend/node_modules/next/dist/docs/01-app/03-api-reference/03-file-conventions/01-metadata/opengraph-image.md"
+    ]
+  },
+  "productFiles": [
+    "frontend/components/marketing/landing-page.tsx",
+    "frontend/components/marketing/faq-section.tsx",
+    "frontend/components/marketing/__tests__/faq-section.test.tsx",
+    "frontend/app/(marketing)/page.tsx",
+    "frontend/app/(marketing)/faq/page.tsx",
+    "frontend/app/(marketing)/opengraph-image.tsx",
+    "frontend/lib/marketing/acquisition-metadata.ts",
+    "frontend/lib/marketing/__tests__/acquisition-metadata.test.ts"
+  ],
+  "runs": [
+    {
+      "command": "pnpm run stop",
+      "exitCode": 0,
+      "log": "evidencia-adquisicion-implementacion/logs/stop-final.log"
+    },
+    {
+      "command": "pnpm --dir frontend exec vitest run components/marketing/__tests__/faq-section.test.tsx lib/marketing/__tests__/acquisition-metadata.test.ts",
+      "exitCode": 0,
+      "testFilesPassed": 2,
+      "testsPassed": 6,
+      "log": "evidencia-adquisicion-implementacion/logs/test-focused-final.log"
+    },
+    {
+      "command": "pnpm --dir frontend run lint",
+      "exitCode": 0,
+      "log": "evidencia-adquisicion-implementacion/logs/lint-frontend-final.log"
+    },
+    {
+      "command": "pnpm --dir frontend exec tsc --noEmit",
+      "exitCode": 0,
+      "stdoutStderr": "empty",
+      "log": "evidencia-adquisicion-implementacion/logs/typecheck-frontend-final.log"
+    },
+    {
+      "command": "git diff --check",
+      "exitCode": 0,
+      "stdoutStderr": "empty",
+      "log": "evidencia-adquisicion-implementacion/logs/diff-check-final.log"
+    }
+  ],
+  "preservation": {
+    "source": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/LOTE-CUENTA-anexos/sources-final.json",
+    "sourceInventorySha256": "35d5733a8299c71aba1b7db11e0f486427259128a0c222c6aa8ec94ab7dcd36a",
+    "baselineFiles": 507,
+    "unchanged": 502,
+    "changed": [
+      {
+        "path": "frontend/app/(marketing)/faq/page.tsx",
+        "baselineSha256": "d2d96fb9009da52cb788b2ae39493287855b8f221265636228e44d1bedc9b9b5",
+        "currentSha256": "cdcf2d98a07957426587a86f851a7659fec00e5db659f5593d7ec528d85e5c34",
+        "expectedAcquisitionDelta": true
+      },
+      {
+        "path": "frontend/app/(marketing)/page.tsx",
+        "baselineSha256": "bbb661d27ae8d4fd7190162265260c1ef25701c6771716aa685bba3a3d06a0c6",
+        "currentSha256": "a186669ea2efa2520de951273eb7e22a92a8086413fec2a74f204919a1d9b240",
+        "expectedAcquisitionDelta": true
+      },
+      {
+        "path": "frontend/components/marketing/__tests__/faq-section.test.tsx",
+        "baselineSha256": "c222735ef138ee44cc26826ab5eb1c7cadfd65104b9fd5579b0a295e1bd2d3ba",
+        "currentSha256": "5b00f659cc446981f2b9e49e69e37590dd4bdc194a35059c11a8b25272eb391a",
+        "expectedAcquisitionDelta": true
+      },
+      {
+        "path": "frontend/components/marketing/faq-section.tsx",
+        "baselineSha256": "cf3fd767abb33c025137fb3a7c0d138f97574123f97b98017f5c467a75aa5112",
+        "currentSha256": "6de1178c68081d68db86f70866e4e549745393eabd98e261b6d0bf5ebd09d571",
+        "expectedAcquisitionDelta": true
+      },
+      {
+        "path": "frontend/components/marketing/landing-page.tsx",
+        "baselineSha256": "41ad37ed441902a8f60b8c78300af3167961ad0cdee4420cdbb80878d24f355c",
+        "currentSha256": "5bba09ef9ef828ff404a67bdb063c6d54d6a0faab346dddb05f3132b88ed4f2d",
+        "expectedAcquisitionDelta": true
+      }
+    ],
+    "missing": [],
+    "newAcquisitionFilesOutsideBaselineInventory": [
+      "frontend/app/(marketing)/opengraph-image.tsx",
+      "frontend/lib/marketing/acquisition-metadata.ts",
+      "frontend/lib/marketing/__tests__/acquisition-metadata.test.ts"
+    ],
+    "expectedTrackedChanges": [
+      "frontend/app/(marketing)/faq/page.tsx",
+      "frontend/app/(marketing)/page.tsx",
+      "frontend/components/marketing/__tests__/faq-section.test.tsx",
+      "frontend/components/marketing/faq-section.tsx",
+      "frontend/components/marketing/landing-page.tsx"
+    ]
+  },
+  "generatedImage": {
+    "routeFile": "frontend/app/(marketing)/opengraph-image.tsx",
+    "declaredContentType": "image/png",
+    "declaredSize": {
+      "width": 1200,
+      "height": 630
+    },
+    "sourceAsset": "frontend/public/icons/icon-512.png",
+    "servedOrVisuallyVerified": false
+  },
+  "limits": [
+    "No se ejecutaron build, preview servido, navegador, API, DB/Redis ni check global.",
+    "No se afirma que el preview OG/Twitter esté servido ni que la imagen generada se haya inspeccionado visualmente.",
+    "Dominio productivo y salida desplegada siguen pendientes; metadata URLs permanecen relativas al metadataBase ya configurado.",
+    "No se actualizaron planes centrales ni se cerraron IDs."
+  ],
+  "reservation": {
+    "status": "released",
+    "ownedRuntimeResources": []
+  }
+}

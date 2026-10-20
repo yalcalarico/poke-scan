@@ -1,0 +1,12 @@
+{
+  "restoreCopies": 18,
+  "completedLotCopies": 23,
+  "withNewIntentionCopies": 25,
+  "groups": 12,
+  "postRequests": 16,
+  "differentKeys": 15,
+  "uncertainReplaySameKey": true,
+  "uncertainCopies": 3,
+  "newIntentionDifferentKey": true,
+  "exactMap": true
+}

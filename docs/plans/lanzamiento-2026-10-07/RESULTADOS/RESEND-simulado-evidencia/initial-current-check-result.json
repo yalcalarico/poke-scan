@@ -1,0 +1,27 @@
+{
+  "purpose": "Resend simulated adapter validation",
+  "records": [
+    {
+      "phase": "stop",
+      "command": [
+        "pnpm",
+        "run",
+        "stop"
+      ],
+      "exitCode": 0,
+      "startedAtUtc": "2026-10-11T22:05:34.964400+00:00",
+      "finishedAtUtc": "2026-10-11T22:05:35.405478+00:00"
+    },
+    {
+      "phase": "check",
+      "command": [
+        "pnpm",
+        "run",
+        "check"
+      ],
+      "exitCode": 1,
+      "startedAtUtc": "2026-10-11T22:05:35.405868+00:00",
+      "finishedAtUtc": "2026-10-11T22:06:51.775299+00:00"
+    }
+  ]
+}

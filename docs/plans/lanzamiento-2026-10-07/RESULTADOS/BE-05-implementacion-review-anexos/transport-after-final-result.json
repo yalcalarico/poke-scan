@@ -1,0 +1,15 @@
+{
+  "command": [
+    "pnpm",
+    "exec",
+    "vitest",
+    "run",
+    "--config",
+    "vitest.config.recovery-harness.ts",
+    "-t",
+    "error posterior al handoff"
+  ],
+  "exitCode": 0,
+  "finishedAtUtc": "2026-10-10T01:38:57.368232+00:00",
+  "ownDatabase": "be05_review_2af1fb6f7757_test"
+}

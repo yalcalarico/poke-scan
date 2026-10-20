@@ -1,3 +1,10 @@
+> **ARCHIVO HISTÓRICO — 20/10/2026.** Este diseño/plan fue sustituido o su ejecución
+> terminó. Se conserva en su ruta original para mantener enlaces y anchors.
+> Las instrucciones, checkboxes, conteos y afirmaciones del cuerpo describen su
+> momento; no son órdenes ni capacidades actuales. Referencia vigente:
+> [guía de reemplazo](../estado-actual.md) y [estado del proyecto](../estado-actual.md).
+> Los pendientes válidos se mantienen en el registro actual o el roadmap del escáner.
+
 > Nota de vigencia (2026-10-03): este documento conserva evidencia histórica. La lectura de texto y el comparador fueron retirados; el flujo actual usa únicamente DINOv2. Consultá [scanner.md](../../frontend/docs/scanner.md).
 
 # Plan Frontend: Producto, UX e Integración

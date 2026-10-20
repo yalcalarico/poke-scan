@@ -1,30 +1,43 @@
 import { ValidationPipe } from '@nestjs/common';
+import type { Server } from 'node:http';
 import type { INestApplication } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { Test } from '@nestjs/testing';
 import { PrismaClient } from '@prisma/client';
 import request from 'supertest';
-import type { App } from 'supertest/types';
 import { AuthController } from '../src/modules/auth/auth.controller.js';
 import { AuthService } from '../src/modules/auth/auth.service.js';
+import { PasswordRecoveryService } from '../src/modules/auth/password-recovery.service.js';
+import { RECOVERY_MAIL_PORT } from '../src/modules/auth/recovery-mail.port.js';
 import { PrismaService } from '../src/prisma/index.js';
 
 describe('sesión HTTP con cookie', () => {
   const prisma = new PrismaClient();
-  let app: INestApplication<App>;
+  let app: INestApplication<Parameters<typeof request>[0]>;
   const email = 'cookie-security@test.local';
   beforeAll(async () => {
     const module = await Test.createTestingModule({
       imports: [ConfigModule.forRoot({ isGlobal: true }),
         JwtModule.register({ secret: 'test-session-security-secret', signOptions: { expiresIn: '15m' } })],
       controllers: [AuthController],
-      providers: [AuthService, { provide: PrismaService, useValue: prisma }],
+      providers: [AuthService, PasswordRecoveryService,
+        { provide: RECOVERY_MAIL_PORT, useValue: { available: false, caseGeneration: 0, deliver: async () => undefined } },
+        { provide: PrismaService, useValue: prisma }],
     }).compile();
     app = module.createNestApplication();
     app.setGlobalPrefix('api');
     app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
     await app.init();
+    const server = app.getHttpServer() as unknown as Server;
+    await new Promise<void>((resolve, reject) => {
+      server.once('error', reject);
+      server.listen(0, '127.0.0.1', () => { server.removeListener('error', reject); resolve(); });
+    });
+    const address = server.address();
+    if (!address || typeof address === 'string' || address.address !== '127.0.0.1') {
+      throw new Error('SESSION_TEST_LOOPBACK_LISTENER_GUARD');
+    }
   });
   beforeEach(async () => { await prisma.user.deleteMany({ where: { email } }); });
   afterAll(async () => {
@@ -55,7 +68,7 @@ describe('sesión HTTP con cookie', () => {
       .set('X-Session-Request', '1').set('Cookie', initial.split(';')[0]!).send({}).expect(200);
     expect(refreshed.body).not.toHaveProperty('refreshToken');
     const next = cookies(refreshed.headers)[0]!;
-    expect(next.split(';')[0]).not.toBe(initial.split(';')[0]);
+    expect(next.split(';')[0] !== initial.split(';')[0]).toBe(true);
     const loggedOut = await request(app.getHttpServer()).post('/api/auth/logout')
       .set('X-Session-Request', '1').set('Cookie', next.split(';')[0]!).send({}).expect(200);
     expect(cookies(loggedOut.headers)[0]).toContain('pcs.refreshToken=;');

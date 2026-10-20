@@ -1,0 +1,54 @@
+{
+  "date": "2026-10-20",
+  "purpose": "Versiones anteriores exactas; sus instrucciones/recursos/estados no están vigentes. Enlaces relativos se interpretan desde originalPath.",
+  "snapshots": [
+    {
+      "originalPath": "docs/plans/lanzamiento-2026-10-07/CONTEXTO-PART2.md",
+      "snapshotPath": "docs/archive/orchestration-2026-10-20/CONTEXTO-PART2.md.txt",
+      "sha256": "812d66a0ac8caffe0045f10e173f45c135bd3acca08d7cf000326aaecb443e13",
+      "bytes": 70560
+    },
+    {
+      "originalPath": "docs/plans/lanzamiento-2026-10-07/11-orquestacion.md",
+      "snapshotPath": "docs/archive/orchestration-2026-10-20/11-orquestacion.md.txt",
+      "sha256": "316cbf027b7cea9ef80934a1c4604c4a9fa2ea825de32941d0b244b61ce149f9",
+      "bytes": 73691
+    },
+    {
+      "originalPath": "docs/plans/lanzamiento-2026-10-07/10-decisiones-y-contratos.md",
+      "snapshotPath": "docs/archive/orchestration-2026-10-20/10-decisiones-y-contratos.md.txt",
+      "sha256": "89d2d687190c87c4dd91cdb60efe629da74de97d305e5523f4b4adf72eda1398",
+      "bytes": 65295
+    },
+    {
+      "originalPath": "docs/plans/lanzamiento-2026-10-07/REGISTRO-TAREAS.md",
+      "snapshotPath": "docs/archive/orchestration-2026-10-20/REGISTRO-TAREAS.md.txt",
+      "sha256": "413e8aaa3d97b638dcf21c00856a44712fa217dea921298c25181924aab03e48",
+      "bytes": 65343
+    },
+    {
+      "originalPath": "docs/plans/lanzamiento-2026-10-07/STATUS-CHECKLIST.md",
+      "snapshotPath": "docs/archive/orchestration-2026-10-20/STATUS-CHECKLIST.md.txt",
+      "sha256": "370d20be2fcfa7ebd4cb641f18d11a2bc6ec71c0bbf883858ac1e5a085ddf36c",
+      "bytes": 69169
+    },
+    {
+      "originalPath": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/ORQUESTACION-ESTADO.md",
+      "snapshotPath": "docs/archive/orchestration-2026-10-20/RESULTADOS/ORQUESTACION-ESTADO.md.txt",
+      "sha256": "b97cbab9618cf000400193010c551648f5198bcc61b5b8ccf4a7e0d2f315be30",
+      "bytes": 137979
+    },
+    {
+      "originalPath": "docs/infra/PROMPT-mini-pc-cloudflare.md",
+      "snapshotPath": "docs/archive/orchestration-2026-10-20/PROMPT-mini-pc-cloudflare.md.txt",
+      "sha256": "7d39d633c0938841e920d991299b6c1dc55e01a9440532b5a7a4b7609aed5656",
+      "bytes": 14960
+    },
+    {
+      "originalPath": "docs/plans/scanner-improvements.md",
+      "snapshotPath": "docs/archive/orchestration-2026-10-20/scanner-improvements.md.txt",
+      "sha256": "3edc37fa08943c8cfe5fa0ff5b6258f8493003666599b1786fb13024e07519ec",
+      "bytes": 41789
+    }
+  ]
+}

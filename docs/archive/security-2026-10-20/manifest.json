@@ -1,0 +1,7 @@
+{
+  "originalPath": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/SEO-01-runtime-anexos/harness/control-proxy.mjs",
+  "originalSha256": "4e577149343dec2bade25824f0bd0ea39867f86d52a729e1cbae11cd80ddb137",
+  "preservedAt": "docs/archive/security-2026-10-20/control-proxy.mjs.txt",
+  "maintainedImplementation": "scripts/qa/control-proxy.mjs",
+  "reason": "Alerta CodeQL SSRF: el origen no debe construirse concatenando req.url. La ruta antigua ahora es una entrada al helper corregido; los recibos anteriores conservan el hash del snapshot original."
+}

@@ -6,8 +6,27 @@ coverage
 .gitignore
 *.md
 *.tsbuildinfo
+.scanner-index/
+.scanner-models/
+.scanner-references/
+.scanner-captures/
+.scanner-fixtures/
+.scanner-index-*
+.scanner-models-*
 .env
 .env.local
 .env.*.local
 Dockerfile
 .dockerignore
+
+# Secretos, sesiones locales y fotos de consulta no forman parte del contexto.
+.env.*
+!.env.example
+**/*.pem
+**/*.key
+**/*.p12
+**/*.pfx
+**/*.ses
+**/*.srl
+.scanner-*/
+captures/

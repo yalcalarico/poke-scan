@@ -1,0 +1,206 @@
+{
+  "generatedAt": "2026-10-11T15:47:14.184Z",
+  "processStartedAt": "2026-10-11T15:47:12.231Z",
+  "metrics": {
+    "since": "2026-10-11T15:47:12.231Z",
+    "counters": {
+      "scanner_http_requests": 7,
+      "scanner_http_2xx": 1,
+      "scanner_http_3xx": 0,
+      "scanner_http_4xx": 2,
+      "scanner_http_5xx": 4,
+      "scanner_http_401": 1,
+      "scanner_http_400": 1,
+      "scanner_http_503": 4,
+      "scanner_http_aborted": 0,
+      "inference_started": 1,
+      "inference_completed": 1,
+      "inference_failed": 0,
+      "admission_busy": 4,
+      "admission_unavailable": 0,
+      "admission_cancelled": 0,
+      "admission_disabled": 0,
+      "admission_invalid": 0,
+      "warmup_ready": 1,
+      "warmup_failed": 0
+    },
+    "histograms": {
+      "scanner_http_duration_ms": {
+        "count": 7,
+        "sumMs": 220.67137399999933,
+        "buckets": [
+          2,
+          4,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "boundsMs": [
+          10,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          5000,
+          30000
+        ]
+      },
+      "worker_duration_ms": {
+        "count": 1,
+        "sumMs": 114.80145799999991,
+        "buckets": [
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "boundsMs": [
+          10,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          5000,
+          30000
+        ]
+      },
+      "inference_duration_ms": {
+        "count": 1,
+        "sumMs": 67.3812919999998,
+        "buckets": [
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "boundsMs": [
+          10,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          5000,
+          30000
+        ]
+      },
+      "index_duration_ms": {
+        "count": 1,
+        "sumMs": 16.595250000000078,
+        "buckets": [
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "boundsMs": [
+          10,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          5000,
+          30000
+        ]
+      },
+      "model_duration_ms": {
+        "count": 1,
+        "sumMs": 0.0005419999999958236,
+        "buckets": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "boundsMs": [
+          10,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          5000,
+          30000
+        ]
+      },
+      "warmup_duration_ms": {
+        "count": 1,
+        "sumMs": 1359.5067920000001,
+        "buckets": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0
+        ],
+        "boundsMs": [
+          10,
+          50,
+          100,
+          250,
+          500,
+          1000,
+          5000,
+          30000
+        ]
+      }
+    }
+  },
+  "scanner": {
+    "state": "ready",
+    "busy": false
+  },
+  "queue": {
+    "state": "available",
+    "sampledAt": "2026-10-11T15:47:13.680Z",
+    "statuses": {
+      "pending": {
+        "count": 0,
+        "oldestAgeMs": null,
+        "retries": 0
+      },
+      "processing": {
+        "count": 0,
+        "oldestAgeMs": null,
+        "retries": 0
+      }
+    }
+  },
+  "redis": {
+    "configured": true,
+    "available": true,
+    "degradedSince": null,
+    "lastErrorAt": null
+  }
+}

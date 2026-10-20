@@ -1,0 +1,64 @@
+{
+  "atUtc": "2026-10-13T23:09:33.610646+00:00",
+  "intentionalUserInstanceAlive": true,
+  "url": "http://localhost:3000",
+  "api": {
+    "pid": 20543,
+    "parent": 20542,
+    "role": "local-user-request-api",
+    "port": 3001,
+    "listenerPid": 20554
+  },
+  "next": {
+    "pid": 20251,
+    "parent": 20250,
+    "role": "local-user-request-next",
+    "port": 3000,
+    "listenerPid": 20262
+  },
+  "checks": [
+    {
+      "route": "http://localhost:3000/login",
+      "status": 200
+    },
+    {
+      "route": "http://localhost:3000/eliminar-cuenta",
+      "status": 200
+    },
+    {
+      "route": "http://localhost:3001/api/health",
+      "status": 200
+    },
+    {
+      "route": "http://localhost:3001/api/cards/me55-18/comparison?variant=holofoil&days=30",
+      "status": 200,
+      "tcgcsvQueuedWithoutSyntheticPrices": true,
+      "activeProviderUnchanged": true
+    },
+    {
+      "route": "http://localhost:3001/api/portfolio/comparison",
+      "status": 401
+    },
+    {
+      "route": "http://localhost:3001/api/ready",
+      "status": 200,
+      "databaseReady": true
+    },
+    {
+      "route": "http://localhost:3001/api/ops/metrics",
+      "status": 404
+    },
+    {
+      "route": "http://localhost:3001/api/auth/account-deletion-availability",
+      "status": 401,
+      "noStore": true
+    }
+  ],
+  "ancestryVerified": true,
+  "mode": "Habitual dev database with validated compiled outputs; TCGCSV comparison for two known groups queued for tomorrow, other external providers/legacy jobs/mail and account deletion disabled; daily local comparison snapshots enabled20:35UTC; no synthetic user fixtures written to dev",
+  "ownQAResourcesGone": true,
+  "comparisonSnapshotsDailyEnabled": true,
+  "comparisonSnapshotTimeUTC": "20:35",
+  "tcgcsvRealIngestionEnabled": true,
+  "firstTCGCSVRunUtc": "2026-10-14T14:22:14.533Z"
+}

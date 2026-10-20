@@ -1,0 +1,32 @@
+{
+  "scope": "Promote existing visual V2 to app default",
+  "standardGate": {
+    "sharedThread": "Listar pendientes fuera de la miniPC",
+    "executionId": "exec-8519298e-53b1-4a9b-8219-72bddc6cbd69",
+    "command": "/bin/zsh -lc 'pnpm run stop && pnpm run check'",
+    "exitCode": 0,
+    "durationMs": 138246,
+    "stdoutTruncated": true,
+    "frontendHashesVerified": 7
+  },
+  "focusedInitialPassed": 22,
+  "focusedRegressionPassed": 32,
+  "browserVerified": true,
+  "ownQAResourcesCleaned": true,
+  "devCountsPreservedDuringOwnTests": true,
+  "appIntentionallyLive": {
+    "frontend": {
+      "pid": 83693,
+      "port": 3000,
+      "process": "83682 next-server (v16.3.6)"
+    },
+    "backend": {
+      "pid": 83726,
+      "port": 3001,
+      "process": "83673 node --enable-source-maps /Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/backend/dist/main"
+    }
+  },
+  "delegatedAgents": 0,
+  "coordinationExplicitlyAuthorized": true,
+  "finishedAtUtc": "2026-10-20T13:01:23.530909+00:00"
+}

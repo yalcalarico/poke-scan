@@ -1,0 +1,28 @@
+{
+  "evaluatedAt": "2026-10-06T15:02:00.190Z",
+  "scope": "SIGINT real sobre CLIs directo y por set, fixtures sinteticas cacheadas en temporal. Catalogo/modelo leidos, indice de produccion sin escritura. No mide precision ni red.",
+  "temporaryDirectory": "/var/folders/5y/06b1k3pd2fz121396fbcrpf00000gn/T/scanner-index-resume-N63yOz",
+  "setId": "mcd19",
+  "results": [
+    {
+      "case": "direct SIGINT/resume",
+      "ok": true,
+      "interruptedExit": 130,
+      "savedBeforeResume": 1,
+      "completedOnResume": 2,
+      "total": 3,
+      "downloads": 0
+    },
+    {
+      "case": "batch SIGINT/resume/skip and exclusive lock",
+      "ok": true,
+      "interruptedExit": 130,
+      "competitorExit": 1,
+      "directCompetitorExit": 1,
+      "savedBeforeResume": 1,
+      "completedOnResume": 11,
+      "total": 12,
+      "downloads": 0
+    }
+  ]
+}

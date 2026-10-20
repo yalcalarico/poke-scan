@@ -1,0 +1,9 @@
+{
+  "checkedAtUtc": "2026-10-09T12:36:02.106242+00:00",
+  "artifacts": 8,
+  "sourceHashesBeforeCentralUpdate": 32,
+  "linksAnchorsLines": 57,
+  "mismatches": [],
+  "acceptedPhase": "Preparación independiente de cuenta como entrada al borrador BE-05; UX-04 espera borrador. NEG-03 completo/GO cobro pendientes.",
+  "limits": "No tests/runtime/legal guidance/people/production. Link line bounds independently checked; content/context reviewed Sol HIGH."
+}

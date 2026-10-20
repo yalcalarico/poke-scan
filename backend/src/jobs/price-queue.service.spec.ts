@@ -15,6 +15,10 @@ const TEST_CARD_PREFIX = 'test-queue-';
 const TEST_CARD_A = `${TEST_CARD_PREFIX}a`;
 const TEST_CARD_B = `${TEST_CARD_PREFIX}b`;
 const TEST_CARD_C = `${TEST_CARD_PREFIX}c`;
+const PRIORITY_SET_HIGH = `${TEST_CARD_PREFIX}priority-high`;
+const PRIORITY_SET_LOW = `${TEST_CARD_PREFIX}priority-low`;
+const PRIORITY_CARD_HIGH = `${TEST_CARD_PREFIX}priority-card-high`;
+const PRIORITY_CARD_LOW = `${TEST_CARD_PREFIX}priority-card-low`;
 
 /**
  * Estos tests van contra la tabla de verdad, y eso es el punto: la cola es una
@@ -54,10 +58,22 @@ describe('cola de precios persistente', () => {
       prismaClient as unknown as PrismaService,
       providerStub,
     );
+    for (const setId of [PRIORITY_SET_HIGH, PRIORITY_SET_LOW]) {
+      await prismaClient.cardSet.create({ data: { id: setId, name: setId } });
+    }
+    for (const [id, setId] of [[PRIORITY_CARD_HIGH, PRIORITY_SET_HIGH], [PRIORITY_CARD_LOW, PRIORITY_SET_LOW]] as const) {
+      await prismaClient.card.create({ data: {
+        id, setId, name: id, number: '1', supertype: 'Pokémon', subtypes: [], types: [],
+        imageSmall: '', imageLarge: '', rawJson: {},
+      } });
+    }
   });
 
   afterAll(async () => {
     await prismaClient.priceRefreshJob.deleteMany({});
+    await prismaClient.priceSyncSet.deleteMany({ where: { setId: { in: [PRIORITY_SET_HIGH, PRIORITY_SET_LOW] } } });
+    await prismaClient.card.deleteMany({ where: { id: { in: [PRIORITY_CARD_HIGH, PRIORITY_CARD_LOW] } } });
+    await prismaClient.cardSet.deleteMany({ where: { id: { in: [PRIORITY_SET_HIGH, PRIORITY_SET_LOW] } } });
     await prismaClient.providerRateLimit.deleteMany({});
     await prismaClient.$disconnect();
   });
@@ -126,6 +142,22 @@ describe('cola de precios persistente', () => {
   });
 
   describe('claim', () => {
+    it('respeta la prioridad diaria del set aunque el set lento tenga un job más antiguo', async () => {
+      const today = new Date();
+      const syncDate = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()));
+      await prismaClient.priceSyncSet.createMany({ data: [
+        { setId: PRIORITY_SET_HIGH, origin: 'curated', priority: 1 },
+        { setId: PRIORITY_SET_LOW, origin: 'collection', priority: 100 },
+      ] });
+      await queue.enqueueAsync(PRIORITY_CARD_HIGH, 'daily', syncDate);
+      await queue.enqueueAsync(PRIORITY_CARD_LOW, 'daily', syncDate);
+      await prismaClient.priceRefreshJob.update({ where: { cardId: PRIORITY_CARD_LOW }, data: { availableAt: new Date(Date.now() - 60_000) } });
+
+      const claimed = await queue.claimNext('prioridad-diaria');
+
+      expect(claimed?.cardId).toBe(PRIORITY_CARD_HIGH);
+    });
+
     it('dos instancias nunca toman la misma fila', async () => {
       await queue.enqueueAsync(TEST_CARD_A);
       await queue.enqueueAsync(TEST_CARD_B);
@@ -145,18 +177,19 @@ describe('cola de precios persistente', () => {
       expect(await queue.claimNext('instancia-3')).toBeNull();
     });
 
-    it('el claim suma un intento y deja quién lo tomó', async () => {
+    it('el claim no consume intentos hasta iniciar una llamada y deja quién lo tomó', async () => {
       await queue.enqueueAsync(TEST_CARD_A);
 
       const claimed = await queue.claimNext('instancia-1');
 
-      expect(claimed?.attempts).toBe(1);
+      expect(claimed?.attempts).toBe(0);
       const row = await prismaClient.priceRefreshJob.findUniqueOrThrow({
         where: { cardId: TEST_CARD_A },
       });
-      expect(row.attempts).toBe(1);
+      expect(row.attempts).toBe(0);
       expect(row.lockedBy).toBe('instancia-1');
       expect(row.lockedAt).not.toBeNull();
+      expect(await queue.startAttempt(claimed!.id)).toBe(1);
     });
 
     it('una fila con availableAt en el futuro no se reclama', async () => {
@@ -174,8 +207,8 @@ describe('cola de precios persistente', () => {
     it('el orden es FIFO por availableAt, no por orden de inserción', async () => {
       await prismaClient.priceRefreshJob.createMany({
         data: [
-          { id: 'tarde', cardId: TEST_CARD_B, availableAt: new Date(Date.now() + 10_000) },
-          { id: 'pronto', cardId: TEST_CARD_A, availableAt: new Date(Date.now() - 10_000) },
+          { id: 'tarde', cardId: TEST_CARD_B, origin: 'interactive', availableAt: new Date(Date.now() + 10_000) },
+          { id: 'pronto', cardId: TEST_CARD_A, origin: 'interactive', availableAt: new Date(Date.now() - 10_000) },
         ],
       });
 
@@ -189,9 +222,10 @@ describe('cola de precios persistente', () => {
     it('un fallo con intentos disponibles vuelve a pending con backoff creciente', async () => {
       await queue.enqueueAsync(TEST_CARD_A);
       const first = await queue.claimNext('instancia-1');
+      const attempts = await queue.startAttempt(first!.id);
       const t0 = Date.now();
 
-      const status = await queue.fail(first!.id, first!.attempts, 'tcgdex 503');
+      const status = await queue.fail(first!.id, attempts, 'tcgdex 503');
 
       expect(status).toBe('pending');
       const row = await prismaClient.priceRefreshJob.findUniqueOrThrow({
@@ -266,6 +300,7 @@ describe('cola de precios persistente', () => {
         data: {
           id: 'abandonado',
           cardId: TEST_CARD_A,
+          origin: 'interactive',
           status: 'processing',
           lockedBy: 'proceso-muerto',
           lockedAt: new Date(Date.now() - 60 * 60 * 1000),
@@ -300,6 +335,7 @@ describe('cola de precios persistente', () => {
         data: {
           id: 'abandonado',
           cardId: TEST_CARD_A,
+          origin: 'interactive',
           status: 'processing',
           lockedBy: 'proceso-muerto',
           lockedAt: new Date(Date.now() - 60 * 60 * 1000),
@@ -312,9 +348,8 @@ describe('cola de precios persistente', () => {
       const claimed = await queue.claimNext('instancia-nueva');
 
       expect(claimed?.cardId).toBe(TEST_CARD_A);
-      // `attempts` arranca en 0 porque la fila se insertó a mano: el primer
-      // claim real es el que lo sube a 1. La recuperación no inventa intentos.
-      expect(claimed?.attempts).toBe(1);
+      // La recuperación no inventa intentos y el claim espera al gate.
+      expect(claimed?.attempts).toBe(0);
     });
   });
 
@@ -398,10 +433,11 @@ describe('cola de precios persistente', () => {
 
     beforeAll(async () => {
       const syncPricesStub = {
-        fetchAndStore: vi.fn(async (cardId: string) => {
+        fetchAndStoreWithOutcome: vi.fn(async (cardId: string, _daily: boolean, onRequest?: () => Promise<void>) => {
+          await onRequest?.();
           refreshes.push(cardId);
           if (failNext) throw new Error('tcgdex 503');
-          return [];
+          return { prices: [], status: 'no_quote' as const, checkedAt: new Date(), quoteCount: 0 };
         }),
       };
       moduleRef = await Test.createTestingModule({
@@ -431,7 +467,7 @@ describe('cola de precios persistente', () => {
     });
 
     afterAll(async () => {
-      worker.onModuleDestroy();
+      await worker.onModuleDestroy();
       await moduleRef.close();
     });
 
@@ -447,11 +483,31 @@ describe('cola de precios persistente', () => {
       await vi.waitFor(() => {
         expect(refreshes).toEqual([TEST_CARD_C]);
       }, WAIT_FOR_WORKER);
-      const row = await prismaClient.priceRefreshJob.findUniqueOrThrow({
-        where: { cardId: TEST_CARD_C },
-      });
-      expect(row.status).toBe('completed');
-      expect(row.completedAt).not.toBeNull();
+      // El proveedor puede terminar antes de que el worker confirme el job en PostgreSQL.
+      await vi.waitFor(async () => {
+        const row = await prismaClient.priceRefreshJob.findUniqueOrThrow({
+          where: { cardId: TEST_CARD_C },
+        });
+        expect(row.status).toBe('completed');
+        expect(row.completedAt).not.toBeNull();
+      }, WAIT_FOR_WORKER);
+    }, TEST_TIMEOUT_MS);
+
+    it('no reclama ni consume intentos durante una pausa durable del proveedor', async () => {
+      const blockedUntil = new Date(Date.now() + 600);
+      await prismaClient.providerRateLimit.create({ data: {
+        providerId: 'tcgdex', lastCalledAt: new Date(Date.now() - 60_000), blockedUntil,
+      } });
+      await queue.enqueueAsync(TEST_CARD_C);
+      await new Promise((resolve) => setTimeout(resolve, 150));
+
+      const paused = await prismaClient.priceRefreshJob.findUniqueOrThrow({ where: { cardId: TEST_CARD_C } });
+      expect(refreshes).toEqual([]);
+      expect(paused).toMatchObject({ status: 'pending', attempts: 0, lockedBy: null });
+
+      await vi.waitFor(() => expect(refreshes).toEqual([TEST_CARD_C]), WAIT_FOR_WORKER);
+      const resumed = await prismaClient.priceRefreshJob.findUniqueOrThrow({ where: { cardId: TEST_CARD_C } });
+      expect(resumed.attempts).toBe(1);
     }, TEST_TIMEOUT_MS);
 
     it('un fallo del proveedor no tira el worker: la fila queda para el reintento', async () => {

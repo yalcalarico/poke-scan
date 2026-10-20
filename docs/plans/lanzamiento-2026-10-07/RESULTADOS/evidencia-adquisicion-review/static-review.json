@@ -1,0 +1,60 @@
+{
+  "method": "Lectura local y contraste WCAG2.x calculado desde tokens CSS; no browser/render",
+  "contrast": [
+    {
+      "theme": "light",
+      "background": "surface-2",
+      "token": "text-tertiary",
+      "value": "#6f6f7a",
+      "ratio": 4.67975810545344,
+      "passesAA": true
+    },
+    {
+      "theme": "dark",
+      "background": "surface-2",
+      "token": "text-tertiary",
+      "value": "#8a8a95",
+      "ratio": 4.906432185085802,
+      "passesAA": true
+    }
+  ],
+  "imageTokens": [
+    {
+      "imageName": "canvas",
+      "cssToken": "--canvas",
+      "value": "#f4f4f6",
+      "matchesCurrentRoot": true
+    },
+    {
+      "imageName": "brand",
+      "cssToken": "--brand",
+      "value": "#d81c23",
+      "matchesCurrentRoot": true
+    },
+    {
+      "imageName": "textPrimary",
+      "cssToken": "--text-primary",
+      "value": "#0b0b0f",
+      "matchesCurrentRoot": true
+    },
+    {
+      "imageName": "textSecondary",
+      "cssToken": "--text-secondary",
+      "value": "#5c5c68",
+      "matchesCurrentRoot": true
+    }
+  ],
+  "skipLinkTargets": [
+    {
+      "path": "frontend/components/marketing/landing-page.tsx",
+      "receivedMainId": false,
+      "currentMainId": true
+    },
+    {
+      "path": "frontend/app/(marketing)/faq/page.tsx",
+      "receivedMainId": false,
+      "currentMainId": true
+    }
+  ],
+  "fontSourceReview": "Next16.3.6 compiled/@vercel/og/index.node.js carga Geist-Regular.ttf con fs; existe fallback de assets din\u00e1micos. No se ejecut\u00f3 ImageResponse ni se midi\u00f3 red en revisi\u00f3n."
+}

@@ -1,0 +1,48 @@
+{
+  "ownCloneOnly": true,
+  "cases": [
+    {
+      "case": "One variant mobile",
+      "selectorCount": 0,
+      "autoVariant": "holofoil"
+    },
+    {
+      "case": "Multiple variants mobile",
+      "options": [
+        "normal",
+        "holofoil"
+      ]
+    },
+    {
+      "case": "One variant mobile dark",
+      "selectorCount": 0,
+      "autoVariant": "holofoil",
+      "width": 390,
+      "horizontalOverflow": false
+    },
+    {
+      "case": "Multiple variants desktop dark keyboard",
+      "selected": "holofoil",
+      "width": 1280,
+      "horizontalOverflow": false
+    },
+    {
+      "case": "Multiple variants desktop light",
+      "selectorCount": 1,
+      "width": 1280,
+      "horizontalOverflow": false
+    },
+    {
+      "case": "One variant mobile light",
+      "selectorCount": 0,
+      "autoVariant": "holofoil",
+      "width": 390,
+      "horizontalOverflow": false
+    }
+  ],
+  "themeRestored": true,
+  "sessionLogoutInvoked": true,
+  "temporaryTabClosed": true,
+  "viewportReset": true,
+  "screenshotsTracesVideos": false
+}

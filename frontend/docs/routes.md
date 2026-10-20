@@ -1,15 +1,17 @@
 # Rutas y pantallas
 
-Las 13 rutas del frontend: quién las puede ver, si son Server o Client Component,
+**Apariencia predeterminada,20/10/2026:** el usuario eligió V2 tras probarla con el público. Las rutas normales de la app activan sus efectos sin parámetro; `visual=v2` y `/buscar-v2` siguen funcionando. La alternativa anterior se elige explícitamente con `visual=classic`, mediante el selector Clásica/Actual. Se retiró el menú duplicado V2: la navegación principal vuelve a sus cinco destinos. Contexto de búsqueda y datos compartidos se conservan; esta decisión reemplaza el carácter optativo de los checkpoints16/10 siguientes.
+
+Las pantallas del frontend (16 archivos `page.tsx` al 20/10/2026): quién las puede ver, si son Server o Client Component,
 de dónde sacan los datos y por qué están donde están. El detalle de los
 componentes está en [`components.md`](components.md); las reglas de estilo, en
 [`design-system.md`](design-system.md); el modo de trabajo, en
 [`build-guide.md`](build-guide.md).
 
-**No hay prefijo ni versión.** `/buscar` es `/buscar`: no hay `/v2/buscar`, y no
-queda ningún alias. Cuando la app se renombró, la URL pública **no** se movió, así
-que no hay dos direcciones para el mismo contenido y ningún `robots: noindex`
-haciendo de parche.
+**Un solo árbol de app, dos apariencias.** Las rutas habituales usan V2 por
+defecto; `visual=classic` elige Clásica y `visual=v2` sigue siendo compatible.
+`/buscar-v2` reutiliza `CatalogSearch`; no es otro catálogo ni otra sesión.
+La navegación principal conserva cinco destinos.
 
 > **Disclaimer sobre números de línea**: las referencias apuntan a **archivo +
 > símbolo + fragmento de código**, que es lo que no se mueve. Cuando el archivo y el
@@ -25,14 +27,17 @@ haciendo de parche.
 | `/faq` | `app/(marketing)/faq/` | Server | no | `page.tsx` | `FaqSection` |
 | `/inicio` | `app/(app)/inicio/` | Server | no | `page.tsx` | `HomeCta`, `ScanSessionResume` |
 | `/buscar` | `app/(app)/buscar/` | Server | no | `page.tsx` | `CatalogSearch` |
-| `/carta/[id]` | `app/(app)/carta/[id]/` | Server async | no | `page.tsx` | `CardActions`, `CardPriceSection` |
+| `/buscar-v2` | `app/(app)/buscar-v2/` | Server | no | `page.tsx` | el mismo `CatalogSearch`, entrada compatible de V2 |
+| `/carta/[id]` | `app/(app)/carta/[id]/` | Server async | no | `page.tsx` | `CardActions`, `CardPriceSection`, `CardComparisonPanel` |
 | `/escanear` | `app/(app)/escanear/` | **Client** | no | — (la página es client) | la página entera |
 | `/colecciones` | `app/(app)/colecciones/` | Server (finito) | degrada | `page.tsx` | `CollectionsScreen` |
 | `/colecciones/[id]` | `app/(app)/colecciones/[id]/` | Server (finito) | **sí**, a mano | `page.tsx` | `CollectionDetailScreen` |
 | `/colecciones/[id]/sets` | `app/(app)/colecciones/[id]/sets/` | Server (envoltura) | **sí**, implícito | `page.tsx` | `SetProgressScreen` |
-| `/ajustes` | `app/(app)/ajustes/` | Server | **sí** | `page.tsx` | `RequireAuth` + 5 secciones |
+| `/ajustes` | `app/(app)/ajustes/` | Server | **sí** | `page.tsx` | `RequireAuth` + secciones de cuenta/preferencias/shares/sesión/eliminación |
 | `/login` | `app/(auth)/login/` | Server | no | `page.tsx` | `LoginForm` |
 | `/registro` | `app/(auth)/registro/` | Server | no | `page.tsx` | `RegisterForm` |
+| `/recuperar` | `app/(auth)/recuperar/` | Server + client | no | `page.tsx` | `RecoveryExperience`, captura efímera del fragmento |
+| `/eliminar-cuenta` | `app/(auth)/eliminar-cuenta/` | Server + client | **sí**, espera bootstrap | `page.tsx` | `AccountDeletionExperience` |
 | `/share/[slug]` | `app/share/[slug]/` | Server async | no | `page.tsx` | ninguno (todo server) |
 
 Además hay rutas que no son pantallas:
@@ -51,7 +56,7 @@ Los archivos de chrome del árbol, que no son rutas pero se heredan:
 | `app/providers.tsx` | los cuatro providers de la app entera. |
 | `app/(marketing)/layout.tsx` | `/` y `/faq`: `MarketingShell`, sin navegación de la app. |
 | `app/(app)/layout.tsx` | las pantallas de la app PWA: `<AppShell>`, con `BottomNav`. |
-| `app/(auth)/layout.tsx` | `/login` y `/registro`: `<PlainShell>`, sin nav. |
+| `app/(auth)/layout.tsx` | `/login`, `/registro`, `/recuperar` y `/eliminar-cuenta`: `<PlainShell>`, sin nav. |
 | `app/share/layout.tsx` | `/share/[slug]`: `<PlainShell>`, sin nav. |
 | `app/pwa-sw-register.tsx` | el service worker, solo en producción. |
 
@@ -63,6 +68,12 @@ Y las fronteras: `app/(app)/error.tsx`, `app/(auth)/error.tsx`,
 
 ## 1. Por qué no hay un prefijo de versión
 
+La apariencia actual es V2 por defecto desde el 20/10. El selector
+Clásica/Actual conserva parámetros, identidad y contexto de regreso. No hay menú
+V2 adicional. `visual=v2` y `/buscar-v2` se mantienen por compatibilidad; no
+crean un segundo árbol ni separan los datos. La explicación histórica siguiente
+se refiere al antiguo prefijo `/v2/*`, retirado con el rediseño de septiembre.
+
 Antes de que existiera este árbol, la app nueva convivía con la anterior bajo
 `/v2/*`, porque **Next no permite que dos route groups resuelvan el mismo path**:
 `app/(app)/buscar/page.tsx` ya servía `/buscar`, y poner la pantalla nueva en el
@@ -71,8 +82,8 @@ es cambiar la URL de una de las dos, y cambiar la de la que estaba en producció
 significaba romper los links de `manifest.json`, del service worker y de todos los
 que se habían compartido.
 
-Hoy **no hay dos versiones que colisionen**, así que el prefijo no tiene razón de
-ser: `/buscar` es la pantalla nueva y nada más. `components/nav.ts` no tiene
+Hoy **no hay dos árboles que colisionen**: `/buscar` usa el catálogo común y
+`/buscar-v2` es su entrada visual compatible. `components/nav.ts` no tiene
 constante de base — los `href` de `NAV_ITEMS` son absolutos — así que agregar una
 pantalla es agregar un `page.tsx`, no editar una lista de prefijos.
 
@@ -102,7 +113,7 @@ app/
   (auth)/                 ← RAMA 3: sin BottomNav
     layout.tsx            ← <PlainShell>
     error.tsx
-    login/  registro/
+    login/  registro/  recuperar/  eliminar-cuenta/
   share/                  ← RAMA 4: sin BottomNav
     layout.tsx            ← <PlainShell>
     [slug]/
@@ -286,10 +297,10 @@ un error de tipeo.
 
 ## 5. Qué rutas requieren sesión
 
-**Ninguna bloquea el acceso en el server.** La sesión vive en el navegador
-(`sessionStorage`), así que el server no sabe si hay token. El patrón es el
-contrario del que uno esperaría: la ruta renderiza siempre y el componente cliente
-decide.
+**La autorización de datos la aplica la API.** El access token vive en memoria
+cliente y el refresh en cookie HttpOnly. Los componentes/guards esperan el
+bootstrap antes de pedir datos privados; renderizar el shell de una ruta no
+confirma sesión ni habilita acceso. Ver [cliente y sesión](api-client.md).
 
 - **`/ajustes`** es la única con un guard dedicado: `RequireAuth` hace
   `router.replace('/login')` cuando `isLoading` ya terminó y
@@ -299,7 +310,7 @@ decide.
   sin sesión renderiza un `EmptyState` con CTA a `/login`
   (`!isAuthLoading && !isAuthenticated`), y no dispara ningún fetch — el
   `useAsync` corta antes.
-- **`/colecciones`** distingue **cuatro** estados en vez de tres: `loading` ·
+- **`/colecciones`** distingue **cinco** estados: `loading` ·
   `error` · **no autenticado** · vacío · listo. El `IconButton` de "Nueva
   colección" en el header **no se renderiza** sin sesión (no sale `disabled`, no
   existe), y el estado vacío tiene su propio copy, porque "no hay nada que crear
@@ -426,6 +437,8 @@ Ver §4. No figura en la tabla de §6 porque no produce una URL distinta.
 | `/buscar` | `useAsync` + `useInfiniteList` desde el cliente (`searchCards`, `getSets`) | ninguna | `AbortSignal` de `apiFetch` |
 | `/carta/[id]` — carta | `fetch` en el server | `next: { revalidate: 3600 }` (`REVALIDATE`) | — |
 | `/carta/[id]` — **precios** | `getCardPrices()` en `CardPriceSection` al hidratar | caché Redis/Postgres del backend | estado de carga propio; no bloquea SSR |
+| `/carta/[id]` — comparación | `getCardComparison()` desde `CardComparisonPanel` | API local, sin caché de navegador | variante y período fijan la corrida; panel independiente |
+| `/colecciones*` — comparación | `getCollectionComparison()` desde `CollectionComparisonPanel` | API local, sin caché de navegador | requiere sesión; no bloquea contenido existente |
 | `/carta/[id]` — otras del set | Server Component bajo `Suspense` | `next: { revalidate: 3600 }` | fallback vacío; no bloquea la ficha |
 | `/colecciones*` | `lib/api/*` desde el cliente | ninguna | `AbortSignal` de `apiFetch` |
 | `/escanear` | `identifyVisual` desde el cliente | ninguna | AbortSignal con 35 s para reconocer y 5 s para precio |
@@ -513,3 +526,39 @@ es de Next, no de la pantalla:
 Los workarounds (sacar el `loading.tsx` del segmento, o mover el chequeo a
 `middleware.ts` / un route handler) siguen sin estar implementados. El detalle del
 mecanismo está en [`gotchas.md`](gotchas.md) §10.
+
+## Recuperación de cuenta
+
+`/recuperar` es dinámica, sin navegación de la app, con metadata noindex/noarchive,
+referrer deshabilitado y headers no-store. El script de captura del layout raíz
+lee un fragmento estricto antes de hidratar y lo quita con `replaceState`; conserva
+los campos ajenos de history.state y sólo agrega un marcador sin secreto. Token y
+contraseñas quedan en memoria; el body del POST legítimo sí los necesita. No hay GET
+de validación ni consumo por mount, preview o petición de otro enlace.
+
+El HTML inicial usa method POST y campos/submit deshabilitados hasta hidratar;
+el fallback nativo no habilita un GET con email en query. Sin controlador de captura,
+un fragmento presente falla cerrado. La ruta SSR completa se verifica en el gate.
+
+Cada entrada nueva, incluso un push a la misma ruta bare, pierde los campos y el
+resultado previo. StrictMode no relee el fragmento ya quitado. Recarga, volver o
+bfcache de un enlace marcado muestran enlace no disponible; pagehide descarta el
+token y el formulario. Si no se puede quitar el fragmento, la vista falla cerrada.
+Las integraciones reales con los parches de history de Next requieren el gate.
+
+202 dice «Recibimos tu pedido», sin repetir el email ni prometer entrega. El éxito
+del cambio ofrece login manual; un resultado incierto también prioriza login y
+permite iniciar un pedido nuevo, sin repetir el POST anterior. 400 de campos enfoca
+el campo inválido; 403 requiere volver a empezar. La espera de 429 usa header seguro
+o 60 segundos de fallback: no tiene contador anunciado cada segundo ni envío al
+terminar. Los títulos tienen hasta cuatro palabras, ambas claves cuentan codepoints
+sin trim/truncamiento y los toggles tienen tamaño local propuesto de 44px.
+
+No se agregó UI de eliminación: canal, operador y retención de backups siguen las
+decisiones pendientes del procedimiento BE-05.
+
+## Eliminación desde Ajustes
+
+`Revisar eliminación` abre `/eliminar-cuenta` en PlainShell, para conservar una confirmación visible cuando la baja cierre la sesión. Espera la recuperación de sesión antes de consultar disponibilidad; si está deshabilitada o no es verificable, no pide la contraseña. Con disponibilidad confirmada exige contraseña actual, ELIMINAR y checkbox explícito. Un único POST coordinado con login/refresh, sin replay. Éxito exacto limpia sólo la época vigente; resultado incierto no ofrece reenviar a ciegas. Contraseña/confirmación se vacían al cambiar de página/historial. No-store/no-referrer/noindex y exclusión/purga del SWv6; no usa un shell offline para este flujo.
+
+Validación local real con cuentas sintéticas, ambos temas/390y1280, capturas y restore en [cierre de baja](../../docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-eliminacion-validacion.md). Activación habitual pendiente de custodia/operación real.

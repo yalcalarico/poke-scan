@@ -10,14 +10,6 @@ import { toPublicSharedCollection } from '@/lib/api/schema';
 import type { PublicSharedCollection } from '@/lib/api/share';
 import { formatPrice, pluralize } from '@/lib/format';
 
-/**
- * 60 s. El backend ya cachea `/s/:slug` en Redis y el dato cambia recién cuando
- * el dueño edita la colección o cuando alguien la mira, así que bajar de 60 s no
- * aporta nada y sube la carga de la ruta pública, que es la que más tráfico
- * tiene.
- */
-const REVALIDATE_SECONDS = 60;
-
 type FetchResult =
   | { kind: 'ok'; data: PublicSharedCollection }
   /** Slug que no existe, revocado o vencido: los tres son la misma 404. */
@@ -34,7 +26,7 @@ const fetchSharedCollection = cache(async (slug: string): Promise<FetchResult> =
   try {
     response = await fetch(`${getApiBaseUrl()}/s/${encodeURIComponent(slug)}`, {
       headers: { Accept: 'application/json' },
-      next: { revalidate: REVALIDATE_SECONDS },
+      cache: 'no-store',
     });
   } catch {
     return { kind: 'error' };
@@ -71,7 +63,11 @@ export async function generateMetadata({
    * de la colección y el del dueño, y la description el resumen con las cartas
    * y el valor: es lo único que se ve antes de entrar.
    */
-  const description = `Colección de cartas Pokémon de ${ownerDisplayName}: ${stats.totalCards} cartas en ${stats.setsCount} ${pluralize(stats.setsCount, 'set', 'sets')}, valor total ${formatPrice(stats.totalValueUsd, 'USD')}.`;
+  const value = stats.totalValueUsd === null
+    ? 'valor desconocido'
+    : `${stats.pricedGroups > 0 && stats.cardsMissingPrice > 0 ? 'valor parcial' : 'valor de referencia'} USD ${formatPrice(stats.totalValueUsd, 'USD')}`;
+  const coverage = `${stats.pricedGroups} de ${stats.totalGroups} grupos con referencia`;
+  const description = `Colección de cartas Pokémon de ${ownerDisplayName}: ${stats.totalGroups} ${pluralize(stats.totalGroups, 'grupo', 'grupos')} en ${stats.setsCount} ${pluralize(stats.setsCount, 'set', 'sets')}, ${value} (${coverage}).`;
 
   return {
     title: `${collectionName} · ${ownerDisplayName}`,

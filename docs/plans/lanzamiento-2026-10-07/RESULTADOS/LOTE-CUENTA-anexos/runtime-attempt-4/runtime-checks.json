@@ -1,0 +1,276 @@
+[
+  {
+    "id": "runtime-ownership-before-fixture",
+    "pass": true
+  },
+  {
+    "id": "owned-auth-empty-before-factory",
+    "pass": true,
+    "removedOwnCopiedUsers": 5
+  },
+  {
+    "id": "factory-inert-until-listener",
+    "pass": true
+  },
+  {
+    "id": "listener-before-payload",
+    "pass": true
+  },
+  {
+    "id": "ssr-status-headers",
+    "pass": true
+  },
+  {
+    "id": "ssr-robots-native-inert",
+    "pass": true
+  },
+  {
+    "id": "owned-rate-fixture-rate",
+    "pass": true
+  },
+  {
+    "id": "real-429-ui-disabled",
+    "pass": true
+  },
+  {
+    "id": "owned-rate-fixture-http-errors",
+    "pass": true
+  },
+  {
+    "id": "real-malformed-input-no-store",
+    "pass": true
+  },
+  {
+    "id": "real-403-family-no-store",
+    "pass": true
+  },
+  {
+    "id": "real-503-general-before-lookup",
+    "pass": true
+  },
+  {
+    "id": "owned-rate-fixture-ui-errors",
+    "pass": true
+  },
+  {
+    "id": "mail-request-4",
+    "pass": true
+  },
+  {
+    "id": "mail-receiver-4",
+    "pass": true
+  },
+  {
+    "id": "ui-fixture-input-field",
+    "pass": true
+  },
+  {
+    "id": "ui-fixture-unavailable-change",
+    "pass": true
+  },
+  {
+    "id": "ui-fixture-unknown-code",
+    "pass": true
+  },
+  {
+    "id": "ui-fixture-malformed-success",
+    "pass": true
+  },
+  {
+    "id": "unicode-eight-codepoints-real-reset",
+    "pass": true
+  },
+  {
+    "id": "login-helper-input-target",
+    "pass": true,
+    "partialPasswordLabelMatches": 2
+  },
+  {
+    "id": "unicode-password-real-login",
+    "pass": true
+  },
+  {
+    "id": "visual-empty-390-light",
+    "pass": true,
+    "viewportWidth": 390,
+    "theme": "light"
+  },
+  {
+    "id": "contrast-computed-390-light",
+    "pass": true,
+    "samples": [
+      {
+        "selector": "h1",
+        "ratio": 19.64,
+        "required": 3
+      },
+      {
+        "selector": "label",
+        "ratio": 6.59,
+        "required": 4.5
+      },
+      {
+        "selector": "button[type=submit]",
+        "ratio": 5.11,
+        "required": 4.5
+      },
+      {
+        "selector": "h1+p",
+        "ratio": 6.59,
+        "required": 4.5
+      }
+    ]
+  },
+  {
+    "id": "keyboard-first-field-390-light",
+    "pass": true
+  },
+  {
+    "id": "screenshot-empty-390-light",
+    "pass": true
+  },
+  {
+    "id": "zoom200-no-horizontal-390-light",
+    "pass": true
+  },
+  {
+    "id": "visual-empty-390-dark",
+    "pass": true,
+    "viewportWidth": 390,
+    "theme": "dark"
+  },
+  {
+    "id": "contrast-computed-390-dark",
+    "pass": true,
+    "samples": [
+      {
+        "selector": "h1",
+        "ratio": 16.7,
+        "required": 3
+      },
+      {
+        "selector": "label",
+        "ratio": 7.12,
+        "required": 4.5
+      },
+      {
+        "selector": "button[type=submit]",
+        "ratio": 5.94,
+        "required": 4.5
+      },
+      {
+        "selector": "h1+p",
+        "ratio": 7.12,
+        "required": 4.5
+      }
+    ]
+  },
+  {
+    "id": "keyboard-first-field-390-dark",
+    "pass": true
+  },
+  {
+    "id": "screenshot-empty-390-dark",
+    "pass": true
+  },
+  {
+    "id": "zoom200-no-horizontal-390-dark",
+    "pass": true
+  },
+  {
+    "id": "visual-empty-1280-light",
+    "pass": true,
+    "viewportWidth": 1280,
+    "theme": "light"
+  },
+  {
+    "id": "contrast-computed-1280-light",
+    "pass": true,
+    "samples": [
+      {
+        "selector": "h1",
+        "ratio": 19.64,
+        "required": 3
+      },
+      {
+        "selector": "label",
+        "ratio": 6.59,
+        "required": 4.5
+      },
+      {
+        "selector": "button[type=submit]",
+        "ratio": 5.11,
+        "required": 4.5
+      },
+      {
+        "selector": "h1+p",
+        "ratio": 6.59,
+        "required": 4.5
+      }
+    ]
+  },
+  {
+    "id": "keyboard-first-field-1280-light",
+    "pass": true
+  },
+  {
+    "id": "screenshot-empty-1280-light",
+    "pass": true
+  },
+  {
+    "id": "zoom200-no-horizontal-1280-light",
+    "pass": true
+  },
+  {
+    "id": "visual-empty-1280-dark",
+    "pass": true,
+    "viewportWidth": 1280,
+    "theme": "dark"
+  },
+  {
+    "id": "contrast-computed-1280-dark",
+    "pass": true,
+    "samples": [
+      {
+        "selector": "h1",
+        "ratio": 16.7,
+        "required": 3
+      },
+      {
+        "selector": "label",
+        "ratio": 7.12,
+        "required": 4.5
+      },
+      {
+        "selector": "button[type=submit]",
+        "ratio": 5.94,
+        "required": 4.5
+      },
+      {
+        "selector": "h1+p",
+        "ratio": 7.12,
+        "required": 4.5
+      }
+    ]
+  },
+  {
+    "id": "keyboard-first-field-1280-dark",
+    "pass": true
+  },
+  {
+    "id": "screenshot-empty-1280-dark",
+    "pass": true
+  },
+  {
+    "id": "zoom200-no-horizontal-1280-dark",
+    "pass": true
+  },
+  {
+    "id": "sw-real-activation-purge",
+    "pass": true
+  },
+  {
+    "id": "sw-online-network-not-cached",
+    "pass": true
+  }
+]

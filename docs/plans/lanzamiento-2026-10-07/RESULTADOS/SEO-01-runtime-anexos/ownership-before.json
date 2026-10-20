@@ -1,0 +1,162 @@
+{
+  "task": "SEO-01 runtime local",
+  "createdAt": "2026-10-08T20:54:07.131616+00:00",
+  "owner": "runtime audit agent /root/seo01_runtime_luna",
+  "resourcesCreated": [
+    {
+      "type": "postgres-database",
+      "name": "seo01_runtime_sol_20261008_test",
+      "ownerComment": "owner=seo01-runtime-sol-20261008; operator=/root/seo01_runtime_luna; purpose=SEO-01 local runtime audit"
+    },
+    {
+      "type": "redis-container",
+      "name": "seo01-runtime-sol-20261008-redis",
+      "containerId": "ad7d4456b82b225dd85ddb8ac20299e77dc6fe75709ae9f8249eae1ebf79492c",
+      "label": "codex.owner=seo01-runtime-sol-20261008",
+      "bind": "127.0.0.1:56379"
+    },
+    {
+      "type": "backend-process",
+      "pid": 3250,
+      "sessionId": 33266,
+      "bind": "*:3001",
+      "command": "python run-owned.py backend -> node backend/dist/main.js",
+      "networkGuard": "harness/network-guard.mjs"
+    },
+    {
+      "type": "frontend-process",
+      "pid": 3305,
+      "sessionId": 48081,
+      "bind": "127.0.0.1:3000",
+      "command": "python run-owned.py frontend -> next start existing webpack .next",
+      "networkGuard": "harness/network-guard.mjs"
+    },
+    {
+      "type": "harness-proxy",
+      "pid": 3261,
+      "sessionId": 63363,
+      "bind": "127.0.0.1:3002",
+      "command": "node harness/control-proxy.mjs",
+      "purpose": "local API forwarder and single controlled 503"
+    }
+  ],
+  "resourcesPreexisting": {
+    "postgres_listener": "Docker PID 99974 on 127.0.0.1:55432; shared, not owned",
+    "redis_listener": "Docker PID 99974 on 127.0.0.1:6379; shared, not owned",
+    "ports3000_3001": "free at baseline"
+  },
+  "repo": "/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app",
+  "gitStatusLines": 175,
+  "gitStatusSha256": "00dbda71d83137c17ec6d3fec028722b7f2485ed1fd26cf676389ccba760a17b",
+  "frontendSourceSha256": {
+    "frontend/app/layout.tsx": "4f142a61056cfb3819f0160f5d94b3459020bea37fff718944cfc5a33082ed8c",
+    "frontend/app/robots.ts": "8e2b98aab41ea03faccaa8155893697b07b4eb5a3470ef0ba7788c4efda2d47b",
+    "frontend/app/sitemap.ts": "64160f8083a097b8ee92c6542b809f634b5787b81eb7d26e04cfa198eb930a29",
+    "frontend/app/(marketing)/page.tsx": "bbb661d27ae8d4fd7190162265260c1ef25701c6771716aa685bba3a3d06a0c6",
+    "frontend/app/(marketing)/faq/page.tsx": "d2d96fb9009da52cb788b2ae39493287855b8f221265636228e44d1bedc9b9b5",
+    "frontend/app/(app)/buscar/page.tsx": "289af2e7e52607999d5ea12a614613996ec0cd65c549a1433c5eef014bcf5fd0",
+    "frontend/app/(app)/carta/[id]/page.tsx": "ca095cb6c2538d383b09067c677a93dcb6df1799f1ec19fd2e15c3750558ee0c",
+    "frontend/app/(app)/inicio/page.tsx": "399a61f054fe18edaa7524f3c9fb27528acc8a7491528e10f6b5c86fd926f71b",
+    "frontend/app/(app)/colecciones/page.tsx": "80b6509a0fd14523e058ce426a14f59e8c308bfe04a1eb92f0f490243fca0dbe",
+    "frontend/app/(app)/ajustes/page.tsx": "694c6dc325035d92b1fdabfd81354e84139621f16e801e77b1e0dae8c51046f9",
+    "frontend/app/(app)/escanear/page.tsx": "c13ef2730c23480bd8e5b3261a8f18b7c2c91cdaec74dd4ae6908ffc9af6e06d",
+    "frontend/app/(auth)/layout.tsx": "97244768a02a10a6d3c8ee3586120cfe4702aa3027d9dc3722af4b3dd7df2701",
+    "frontend/app/(auth)/login/page.tsx": "63406d7d408c48cd5423cf14b00712547128729101b6a0fbbaf4bacbe56c6eaf",
+    "frontend/app/(auth)/registro/page.tsx": "09204e0bb0d0358f679e9fcfe3d433142a6a1d964ee75b222fde4674fa61305e",
+    "frontend/app/share/[slug]/page.tsx": "a2c7b3dc3a1159a8deb7f505cbc7e271519c7b11610ae0042ec7bfb02fb34072",
+    "frontend/lib/api/api-client.ts": "2273f6f6adedaca136b7cf26925b01b2ea7cad34e44a7d3f6896b2f471d9225d"
+  },
+  "frontendNextBuildId": "NZkIeTzxfiKhm5bMdwd1i",
+  "frontendNextFiles": 3254,
+  "backendDistFiles": 277,
+  "ownerMarker": "SEO-01-runtime-sol-20261008",
+  "resourcesPlanned": [
+    {
+      "type": "postgres-database",
+      "name": "seo01_runtime_sol_20261008_test",
+      "template": "pokemon_cards_test",
+      "ownerComment": "owner=seo01-runtime-sol-20261008; purpose=SEO-01 local runtime audit",
+      "creationState": "created",
+      "createdAt": "2026-10-08T20:55:29.058989+00:00"
+    },
+    {
+      "type": "redis-container",
+      "name": "seo01-runtime-sol-20261008-redis",
+      "label": "codex.owner=seo01-runtime-sol-20261008",
+      "bind": "127.0.0.1:56379",
+      "creationState": "created",
+      "containerId": "ad7d4456b82b",
+      "createdAt": "2026-10-08T20:55:38.993593+00:00"
+    },
+    {
+      "type": "backend-process",
+      "bind": "127.0.0.1:3001",
+      "owner": "this agent only",
+      "creationState": "running",
+      "createdAt": "2026-10-09T00:27:54.972924+00:00",
+      "commandMarker": "run-owned.py backend; port 3001 loopback",
+      "previousAttempt": "exit 1 before listen: production session security requires HTTPS origin; no source/resource changes",
+      "pid": 3250,
+      "runtime": "backend/dist, NODE_ENV=development, jobs/crons/scanner disabled"
+    },
+    {
+      "type": "frontend-process",
+      "bind": "127.0.0.1:3000",
+      "owner": "this agent only",
+      "creationState": "starting",
+      "commandMarker": "run-owned.py frontend; Next production start from existing webpack output"
+    },
+    {
+      "type": "harness-proxy",
+      "bind": "127.0.0.1:3002",
+      "owner": "/root/seo01_runtime_luna",
+      "creationState": "running",
+      "purpose": "forward all API requests to 3001; inject one controlled synthetic 503",
+      "pid": 3261
+    }
+  ],
+  "operator": {
+    "agent": "/root/seo01_runtime_luna",
+    "model": "gpt-6-luna",
+    "modelName": "GPT-6 Luna"
+  },
+  "fixturePlan": {
+    "setId": "seo01-runtime-luna-set-20261008",
+    "cardId": "seo01-runtime-luna-card-20261008",
+    "ownerEmailPolicy": "random fictitious example.invalid generated in-process; never copied to evidence",
+    "collectionName": "Colección sintética SEO",
+    "shareStates": [
+      "active",
+      "revoked",
+      "expired"
+    ],
+    "creationState": "created"
+  },
+  "fixtures": {
+    "creationState": "created",
+    "createdAt": "2026-10-09T00:29:20.886992+00:00",
+    "identityValuesOmitted": true,
+    "shareSlugsStoredOnlyInPrivateRuntimeState": true,
+    "ownerEmailPasswordStoredOnlyInPrivateRuntimeState": true
+  },
+  "networkGuard": {
+    "path": "/private/tmp/seo01-runtime-sol-20261008/harness/network-guard.mjs",
+    "sha256": "2d8c9e667688d9ff20fa316cc2746d7cc147547735643b085cf7c75ffca57c89",
+    "externalAttempts": 0
+  },
+  "measurement": {
+    "httpResponses": 67,
+    "routeUaMatrix": 66,
+    "controlled503NormalUa": 1,
+    "apiChecks": 7,
+    "domCases": [
+      "search-q",
+      "card-valid-returnTo",
+      "share-missing"
+    ],
+    "finishedAt": "2026-10-09T00:33:55Z",
+    "report": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/SEO-01-runtime.md",
+    "evidence": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/SEO-01-runtime-evidencia.json"
+  },
+  "cleanupStatus": "pending"
+}

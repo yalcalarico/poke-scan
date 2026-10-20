@@ -1,0 +1,23 @@
+{
+  "acceptedResearch": true,
+  "dateClient": "2026-10-13",
+  "delegations": 1,
+  "executor": "gpt-6-luna/medium",
+  "rootVerifiedPublicGETs": 6,
+  "rootPublic30thCardPricingNull": true,
+  "TCGCSVEnglishGroup": 24722,
+  "TCGCSVClassicGroup": 24837,
+  "EnglishNumberedProductsWithMarket": 161,
+  "ClassicPriceRecordsWithMarket": 30,
+  "fullCanonicalMappingVerified": false,
+  "termsRedistributionResolved": false,
+  "liveWorkerRemainsDisabled": true,
+  "noProductOrDBRedisMutation": true,
+  "noTestsBuildsForDocumentOnly": true,
+  "artifactHashesVerified": 10,
+  "localReportLinksVerified": 5,
+  "IDsComplete": 20,
+  "IDsPending": 18,
+  "noScreenshots": true,
+  "automationUnchanged": "PAUSED/two-hours"
+}

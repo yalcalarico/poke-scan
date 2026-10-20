@@ -1,0 +1,19 @@
+{
+  "acceptedAtUtc": "2026-10-10T14:29:07.574584+00:00",
+  "status": "implementation_input_verified_review_and_gate_pending",
+  "artifactHashesVerified": 30,
+  "productAndFinalCopiesVerified": 8,
+  "priorCuentaSources": 507,
+  "unchanged": 502,
+  "authorizedDeltas": [
+    "frontend/app/(marketing)/faq/page.tsx",
+    "frontend/app/(marketing)/page.tsx",
+    "frontend/components/marketing/__tests__/faq-section.test.tsx",
+    "frontend/components/marketing/faq-section.tsx",
+    "frontend/components/marketing/landing-page.tsx"
+  ],
+  "linksVerified": 7,
+  "focusedTests": 6,
+  "standardGateRun": false,
+  "IDsClosed": []
+}

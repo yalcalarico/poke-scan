@@ -111,6 +111,12 @@ describe('TcgdexSetMappingService', () => {
     provider.getSetDetail.mockReset();
   });
 
+  it.each(['me55c', 'cel25c'])('no intenta mapear %s porque no tiene equivalencia verificable', async (setId) => {
+    await expect(service.resolve(setId)).resolves.toBeNull();
+    expect(provider.listSets).not.toHaveBeenCalled();
+    expect(provider.getSetDetail).not.toHaveBeenCalled();
+  });
+
   it('mapea por nombre normalizado y persiste el tcgdexSetId', async () => {
     await createSet(prismaClient, `${TEST_SET_PREFIX}swsh`, 'Darkness Ablaze', [
       '1',

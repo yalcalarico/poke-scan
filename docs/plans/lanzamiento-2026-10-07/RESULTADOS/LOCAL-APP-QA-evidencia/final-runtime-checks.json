@@ -1,0 +1,86 @@
+{
+  "health": {
+    "status": 200,
+    "bytes": 128,
+    "contentType": "application/json; charset=utf-8",
+    "body": {
+      "status": "ok",
+      "degraded": false,
+      "detail": {
+        "redis": {
+          "configured": true,
+          "available": true,
+          "degradedSince": null,
+          "lastErrorAt": null
+        }
+      }
+    }
+  },
+  "ready": {
+    "status": 200,
+    "bytes": 142,
+    "contentType": "application/json; charset=utf-8",
+    "body": {
+      "status": "ready",
+      "degraded": false,
+      "detail": {
+        "database": {
+          "state": "ready"
+        },
+        "scanner": {
+          "state": "ready",
+          "busy": false
+        },
+        "redis": {
+          "state": "ready"
+        }
+      }
+    }
+  },
+  "web": {
+    "status": 200,
+    "bytes": 103810,
+    "contentType": "text/html; charset=utf-8"
+  },
+  "loginPage": {
+    "status": 200,
+    "bytes": 34219,
+    "contentType": "text/html; charset=utf-8"
+  },
+  "catalog": {
+    "status": 200,
+    "bytes": 85122,
+    "contentType": "text/html; charset=utf-8"
+  },
+  "manifest": {
+    "status": 200,
+    "bytes": 1507,
+    "contentType": "application/json; charset=UTF-8"
+  },
+  "sw": {
+    "status": 200,
+    "bytes": 9373,
+    "contentType": "application/javascript; charset=UTF-8"
+  },
+  "og": {
+    "status": 200,
+    "bytes": 47138,
+    "contentType": "image/png",
+    "dimensions": [
+      1200,
+      630
+    ]
+  },
+  "unknownAccountLogin": {
+    "status": 401,
+    "message": "Credenciales inv\u00e1lidas"
+  },
+  "recoveryWithoutMailProvider": {
+    "status": 503,
+    "message": "No pudimos procesar el pedido ahora. Prob\u00e1 m\u00e1s tarde."
+  },
+  "requestWithoutSessionHeader": {
+    "observedStatus": 403,
+    "expectedSecurityRejection": true
+  }
+}

@@ -1,0 +1,207 @@
+{
+  "focalIncremental": {
+    "events": 92,
+    "counts": {
+      "server-listen-call": 5,
+      "server-listening": 5,
+      "client-request": 5,
+      "socket-observe": 10,
+      "client-socket": 5,
+      "server-connection": 5,
+      "socket-connect": 5,
+      "server-request": 5,
+      "response-finish": 5,
+      "socket-destroy": 10,
+      "socket-close": 10,
+      "client-response": 5,
+      "server-close-call": 6,
+      "server-close": 6,
+      "client-close": 5
+    },
+    "uniqueServers": 1,
+    "clientsAgentKeepAlive": {
+      "False": 5
+    },
+    "clientReusedSocket": {
+      "False": 5
+    },
+    "sameServerConsecutiveListenPairs": 4,
+    "previousClientCloseAfterNextListen": 4,
+    "sampleCrossings": [
+      {
+        "server": 1,
+        "clientSocket": 3,
+        "previousListenEvent": 0,
+        "nextListenEvent": 15,
+        "clientCloseEvent": 22,
+        "crossedNextListen": true
+      },
+      {
+        "server": 1,
+        "clientSocket": 6,
+        "previousListenEvent": 15,
+        "nextListenEvent": 33,
+        "clientCloseEvent": 40,
+        "crossedNextListen": true
+      },
+      {
+        "server": 1,
+        "clientSocket": 9,
+        "previousListenEvent": 33,
+        "nextListenEvent": 51,
+        "clientCloseEvent": 58,
+        "crossedNextListen": true
+      },
+      {
+        "server": 1,
+        "clientSocket": 12,
+        "previousListenEvent": 51,
+        "nextListenEvent": 69,
+        "clientCloseEvent": 76,
+        "crossedNextListen": true
+      }
+    ]
+  },
+  "sequenceComparison": {
+    "events": 11040,
+    "counts": {
+      "server-listen-call": 600,
+      "server-listening": 600,
+      "client-request": 600,
+      "socket-observe": 1200,
+      "client-socket": 600,
+      "server-connection": 600,
+      "socket-connect": 600,
+      "server-request": 600,
+      "response-finish": 600,
+      "socket-destroy": 1200,
+      "socket-close": 1200,
+      "client-response": 600,
+      "server-close-call": 720,
+      "server-close": 720,
+      "client-close": 600
+    },
+    "uniqueServers": 120,
+    "clientsAgentKeepAlive": {
+      "False": 600
+    },
+    "clientReusedSocket": {
+      "False": 600
+    },
+    "sameServerConsecutiveListenPairs": 480,
+    "previousClientCloseAfterNextListen": 480,
+    "sampleCrossings": [
+      {
+        "server": 1,
+        "clientSocket": 3,
+        "previousListenEvent": 0,
+        "nextListenEvent": 15,
+        "clientCloseEvent": 22,
+        "crossedNextListen": true
+      },
+      {
+        "server": 1,
+        "clientSocket": 6,
+        "previousListenEvent": 15,
+        "nextListenEvent": 33,
+        "clientCloseEvent": 40,
+        "crossedNextListen": true
+      },
+      {
+        "server": 1,
+        "clientSocket": 9,
+        "previousListenEvent": 33,
+        "nextListenEvent": 51,
+        "clientCloseEvent": 58,
+        "crossedNextListen": true
+      },
+      {
+        "server": 1,
+        "clientSocket": 12,
+        "previousListenEvent": 51,
+        "nextListenEvent": 69,
+        "clientCloseEvent": 76,
+        "crossedNextListen": true
+      },
+      {
+        "server": 17,
+        "clientSocket": 19,
+        "previousListenEvent": 89,
+        "nextListenEvent": 107,
+        "clientCloseEvent": 114,
+        "crossedNextListen": true
+      }
+    ],
+    "immediate": {
+      "sameServerPairs": 240,
+      "previousClientCloseAfterNextListen": 240
+    },
+    "yield-setImmediate": {
+      "sameServerPairs": 240,
+      "previousClientCloseAfterNextListen": 240
+    }
+  },
+  "focalBuffered": {
+    "events": 89,
+    "counts": {
+      "server-listen-call": 5,
+      "server-listening": 5,
+      "client-request": 5,
+      "socket-observe": 10,
+      "client-socket": 5,
+      "server-connection": 5,
+      "socket-connect": 5,
+      "server-request": 5,
+      "response-finish": 5,
+      "socket-destroy": 9,
+      "socket-close": 9,
+      "client-response": 5,
+      "server-close-call": 6,
+      "server-close": 6,
+      "client-close": 4
+    },
+    "uniqueServers": 1,
+    "clientsAgentKeepAlive": {
+      "False": 5
+    },
+    "clientReusedSocket": {
+      "False": 5
+    },
+    "sameServerConsecutiveListenPairs": 4,
+    "previousClientCloseAfterNextListen": 4,
+    "sampleCrossings": [
+      {
+        "server": 1,
+        "clientSocket": 3,
+        "previousListenEvent": 0,
+        "nextListenEvent": 15,
+        "clientCloseEvent": 22,
+        "crossedNextListen": true
+      },
+      {
+        "server": 1,
+        "clientSocket": 6,
+        "previousListenEvent": 15,
+        "nextListenEvent": 33,
+        "clientCloseEvent": 40,
+        "crossedNextListen": true
+      },
+      {
+        "server": 1,
+        "clientSocket": 9,
+        "previousListenEvent": 33,
+        "nextListenEvent": 51,
+        "clientCloseEvent": 58,
+        "crossedNextListen": true
+      },
+      {
+        "server": 1,
+        "clientSocket": 12,
+        "previousListenEvent": 51,
+        "nextListenEvent": 69,
+        "clientCloseEvent": 76,
+        "crossedNextListen": true
+      }
+    ]
+  }
+}

@@ -1,0 +1,86 @@
+{
+  "checkedAtUtc": "2026-10-09T19:25:56.595528+00:00",
+  "scope": "Sólo propuesta documental sandbox; fuentes selectivas sin env/secretos/búsqueda exhaustiva/snapshot global.",
+  "received": [
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-01-correo-sandbox.md",
+      "copy": "INF-01-correo-sandbox-recibido.md",
+      "sha256": "c4e4294c5449884e720a0049d01c740f0c5d7f6e7f0b83658c0261f242266d06",
+      "bytes": 11389
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/evidencia-inf01-correo-sandbox/baseline.json",
+      "copy": "baseline-recibido.json",
+      "sha256": "9238b841516492326242591ad65c1ace60cbe4e22e1117e9900e03597ec193b3",
+      "bytes": 1270
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/evidencia-inf01-correo-sandbox/verificacion.json",
+      "copy": "verificacion-recibida.json",
+      "sha256": "fd68fd19680ef80cc2a05700e8d6d8769dd1a52973c4387d5716b88ece874f1f",
+      "bytes": 1879
+    }
+  ],
+  "sources": [
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-01-entorno.md",
+      "sha256": "9ad9f19907bd4747ed6b17d61814467aff05d1746c5044b52104044bbedbc9bd",
+      "bytes": 24614
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-01-review.md",
+      "sha256": "9f1221fec14197d6037000f681b81bc85a6ebad423a50635c021cbb9fceaa952",
+      "bytes": 8443
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-contrato-borrador.md",
+      "sha256": "9b0c36f8bacc6192b3dc7f8ee695e1cc0992798e1fbd15302b4ec6fc38362a74",
+      "bytes": 32309
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-borrador-review.md",
+      "sha256": "10c874de3674be711e828397e77cfab3c20003470df21a6b9ca0474a52ff1cc3",
+      "bytes": 5743
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-borrador-aceptacion-root.json",
+      "sha256": "584855ba0788ed58a68197de516283633c262c1b03ecd2f41032895de47e6c88",
+      "bytes": 683
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/UX-04-cuenta.md",
+      "sha256": "d652eced63e071a909cdc1ceb3ed97a30b57e440b80f28b726d8b3627c8a560a",
+      "bytes": 20679
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/UX-04-review.md",
+      "sha256": "ae9ed98de5a24d0b548102c5df9fb7b9160936419075906e20e9153b7a61cbe6",
+      "bytes": 4639
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/UX-04-aceptacion-root.json",
+      "sha256": "7b560b2048b2de9687d5800f10f703eca33258b0d0a8b141d3707f560cc90a53",
+      "bytes": 791
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/NEG-03-cuenta-requisitos.md",
+      "sha256": "79365783583653359d4abcf9c682dfd9b06cf6def20158b5f23aeef914afe20b",
+      "bytes": 23869
+    },
+    {
+      "path": "AGENTS.md",
+      "sha256": "0a44196ce9194cafcd54094af02e90e73f0da0f693604d0876d97bf14ee30688",
+      "bytes": 12424
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/05-infraestructura.md",
+      "sha256": "c76dc5989c6e682bd31300055720c8ccbacdc6b8dc70820c6eda2c7a91e1256a",
+      "bytes": 10854
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/11-orquestacion.md",
+      "sha256": "f4e06406d53514a1cca90d827837766a19dec3d52c2f9682c76280acf419ad93",
+      "bytes": 18067
+    }
+  ]
+}

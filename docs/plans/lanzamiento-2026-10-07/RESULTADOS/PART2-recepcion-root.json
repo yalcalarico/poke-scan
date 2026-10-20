@@ -1,0 +1,13 @@
+{
+  "checkedAtUtc": "2026-10-09T13:12:58.952757+00:00",
+  "phase": "PART2 recepción previa a diagnóstico",
+  "annexHashesVerified": 34,
+  "annexMismatches": [],
+  "currentSourcesCompared": 501,
+  "sourceMismatches": [],
+  "gateAccepted": false,
+  "diagnosisAgent": "/root/be07_readiness_diagnosis_sol",
+  "newSuitesByRoot": false,
+  "resourcesCreatedByRoot": false,
+  "limits": "Verificación estática de fuentes y anexos; no consulta Docker/DB ni validación runtime nueva."
+}

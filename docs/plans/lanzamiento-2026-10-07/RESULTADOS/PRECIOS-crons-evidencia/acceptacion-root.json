@@ -1,0 +1,51 @@
+{
+  "acceptedBy": "/root",
+  "step": "Crons TCGCSV/TCGdex y comando pnpm",
+  "standardCheck": {
+    "command": "pnpm run check",
+    "passed": 1236,
+    "skips": 0,
+    "backendBuild": "Nest",
+    "frontendBuild": "Next Turbopack"
+  },
+  "focused": 62,
+  "ownRuntimeControls": 20,
+  "guardControls": 21,
+  "sourceFilesHashed": 26,
+  "artifactsHashed": 23,
+  "mappedSets": 143,
+  "missingSets": 33,
+  "currentCsvQuotedCards": 2034,
+  "newRealGroupsPublished": 19,
+  "migrationAdditive": "14\u219215;22tables and GIN unchanged",
+  "cleanup": "own clone/Redis removed;sharedTEST and Redis healthy",
+  "intentionallyLive": {
+    "api": {
+      "listenerPid": 25649,
+      "wrapper": {
+        "pid": 25638,
+        "parent": 25637,
+        "role": "local-user-request-api",
+        "port": 3001
+      },
+      "port": 3001
+    },
+    "next": {
+      "listenerPid": 25662,
+      "wrapper": {
+        "pid": 25651,
+        "parent": 25650,
+        "role": "local-user-request-next",
+        "port": 3000
+      },
+      "port": 3000
+    }
+  },
+  "delegationsUsed": 4,
+  "delegationsMax": 4,
+  "activeAgents": 0,
+  "sourceArchiveHistoryAvailable": false,
+  "overallIDs": "20/38;no new ID closure",
+  "automation": "PAUSED;2hours;unchanged",
+  "acceptedAtUtc": "2026-10-14T00:42:16.184514+00:00"
+}

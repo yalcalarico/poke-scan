@@ -1,0 +1,10 @@
+{
+  "phase": "http-errors-and-rate",
+  "kind": "Error",
+  "gateId": "real-403-family-no-store",
+  "stackFrames": [
+    "    at record (file:///private/tmp/cuenta-gate-a4b26947b392/runtime.mjs:18:131)",
+    "    at file:///private/tmp/cuenta-gate-a4b26947b392/runtime.mjs:61:1166",
+    "    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)"
+  ]
+}

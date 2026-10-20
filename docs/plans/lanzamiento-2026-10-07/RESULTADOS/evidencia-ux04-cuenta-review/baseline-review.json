@@ -1,0 +1,156 @@
+{
+  "checkedAtUtc": "2026-10-09T18:02:34.680459+00:00",
+  "scope": "Reserva UX-04 documental; sólo fuentes selectivas y skill, no huella global, env, secretos, runtime o auditoría global.",
+  "received": [
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/UX-04-cuenta.md",
+      "copy": "UX-04-cuenta-recibido.md",
+      "sha256": "c366aabfcfd8de2d304e84b95c8bb5e3e16ca67e96b1354c1f8b713551aab335",
+      "bytes": 14303
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/evidencia-ux04-cuenta/baseline-selectivo.json",
+      "copy": "baseline-selectivo-recibido.json",
+      "sha256": "a546607296ba6ce1b76fe59c37896057bab33364db276ec827b1774cd01bec89",
+      "bytes": 4044
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/evidencia-ux04-cuenta/verificacion-estatica.json",
+      "copy": "verificacion-estatica-recibida.json",
+      "sha256": "47726403b4e0c1dba7efa2b80ba54c3d757a59f4eace8948e08494972e95db4d",
+      "bytes": 2383
+    }
+  ],
+  "sources": [
+    {
+      "path": "AGENTS.md",
+      "sha256": "0a44196ce9194cafcd54094af02e90e73f0da0f693604d0876d97bf14ee30688",
+      "bytes": 12424
+    },
+    {
+      "path": "frontend/AGENTS.md",
+      "sha256": "63f2c50380ed6303237cce215ce27af1d620d094c215e28d1b1538a3c070e3bb",
+      "bytes": 678
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/03-ui-ux.md",
+      "sha256": "6fd798bbb2867c00e18ac53a689233105cd01b167bbdb4a8a73eea203ee04a19",
+      "bytes": 9776
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/10-decisiones-y-contratos.md",
+      "sha256": "a040c6d51aa674adc7449b9dc683e1d1f5fa0cc6aaf0b6f2377991827a2ab6e5",
+      "bytes": 19459
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-contrato-borrador.md",
+      "sha256": "9b0c36f8bacc6192b3dc7f8ee695e1cc0992798e1fbd15302b4ec6fc38362a74",
+      "bytes": 32309
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-borrador-review.md",
+      "sha256": "10c874de3674be711e828397e77cfab3c20003470df21a6b9ca0474a52ff1cc3",
+      "bytes": 5743
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-borrador-aceptacion-root.json",
+      "sha256": "584855ba0788ed58a68197de516283633c262c1b03ecd2f41032895de47e6c88",
+      "bytes": 683
+    },
+    {
+      "path": "frontend/docs/design-system.md",
+      "sha256": "8c9016a295de3720215ba6553d5255d28af386e46724479218820800b421c241",
+      "bytes": 66052
+    },
+    {
+      "path": "frontend/docs/build-guide.md",
+      "sha256": "a7dcd0631ee3124d5887f797597751588235041b28216ec1223fd78f924d8cdc",
+      "bytes": 11540
+    },
+    {
+      "path": "frontend/docs/components.md",
+      "sha256": "63d488adbd5ae6064568450ec7b3342dac24c16f0965d06c3f356e9b698c8c81",
+      "bytes": 74476
+    },
+    {
+      "path": "frontend/docs/routes.md",
+      "sha256": "5b18947635a90656e57fd7f4286eadbf2b589264e492d46d2aff33bc6c4069a5",
+      "bytes": 27898
+    },
+    {
+      "path": "frontend/docs/gotchas.md",
+      "sha256": "b41b5a0f9c7beb1435120b1a132a1c91ee2f2f91e5558dcb3c5dacc6f10f7f4c",
+      "bytes": 55208
+    },
+    {
+      "path": "frontend/components/auth/auth-shell.tsx",
+      "sha256": "ea3ff37dc713c14cf912390bede8cd9accb79a3798ccb182f800bd9730e49e2d",
+      "bytes": 2575
+    },
+    {
+      "path": "frontend/components/auth/login-form.tsx",
+      "sha256": "55486e4e7e7bd0476a6e1259317224db1a7ac8df1d9f2ffa0660d690deddd709",
+      "bytes": 4725
+    },
+    {
+      "path": "frontend/components/ui/field.tsx",
+      "sha256": "e5f0b1cf5386e81609cdd55a94ca2d7d50245c8c26f3295ae1798e41c4388ffd",
+      "bytes": 12339
+    },
+    {
+      "path": "frontend/components/ui/password-input.tsx",
+      "sha256": "a7b301f3b11b6339b3760ca4433349ed96444dbe856c1347abcbc08649bbec99",
+      "bytes": 2882
+    },
+    {
+      "path": "frontend/components/ui/alert.tsx",
+      "sha256": "355f7dec16deff53c2d7c3c31e970f783d5ef89b3521c7d50cb8663b781968be",
+      "bytes": 5317
+    },
+    {
+      "path": "frontend/components/ui/button.tsx",
+      "sha256": "10a18a1a4f68d13d4469b080f935847524647ea78a880d30214b6fb5e8f06d3a",
+      "bytes": 5005
+    },
+    {
+      "path": "frontend/hooks/use-auth.tsx",
+      "sha256": "8e59872c612fc20d66f5503464b8ca83e7319f0876e75498297705cca7681745",
+      "bytes": 3414
+    },
+    {
+      "path": "frontend/lib/api/token-storage.ts",
+      "sha256": "ce7e03a78388c4c1743eebc7a5af362829a83283ded6188bab37d9440d21b6e0",
+      "bytes": 1006
+    },
+    {
+      "path": "/Users/ysmaelalcalarico/.codex/skills/frontend-ios-elegante/SKILL.md",
+      "sha256": "3cbb358c79765375167f2cfb84910117c192c171a10734bdcaef50d59dd6b7b8",
+      "bytes": 6637
+    },
+    {
+      "path": "/Users/ysmaelalcalarico/.codex/skills/frontend-ios-elegante/references/direccion-visual.md",
+      "sha256": "b44d64e09ace49dae860373234eb49974461fd82c6c8078fc4e92cc396fe78d1",
+      "bytes": 2354
+    },
+    {
+      "path": "frontend/components/ui/input.tsx",
+      "sha256": "56eaed6f72d7410f53fdfc366f6583c0e79c458bcd2a4da40833a89ab1d2226c",
+      "bytes": 6626
+    },
+    {
+      "path": "frontend/lib/api/api-client.ts",
+      "sha256": "2273f6f6adedaca136b7cf26925b01b2ea7cad34e44a7d3f6896b2f471d9225d",
+      "bytes": 5993
+    },
+    {
+      "path": "frontend/lib/api/auth.ts",
+      "sha256": "4eee2697a27eaba4aef33e9f6487aa7b2c84d49cc3b08f05d4272cfc01872e89",
+      "bytes": 1254
+    },
+    {
+      "path": "backend/src/modules/auth/dto/register.dto.ts",
+      "sha256": "8854ae661ff1670e70d3c02c01fd5ce4250a1fe92b946d19dab628d3d1a4c57a",
+      "bytes": 488
+    }
+  ]
+}

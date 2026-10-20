@@ -3,6 +3,7 @@ import { Prisma } from '@prisma/client';
 import { NUMERIC_CARD_NUMBER } from '../../common/sql/numeric-number.js';
 import { SyncPricesService, PRICE_MAX_AGE_MS } from '../../jobs/sync-prices.service.js';
 import { PrismaService } from '../../prisma/index.js';
+import { priceMetadata, type PriceMetadataDto } from '../../common/price-metadata.js';
 import { CurrencyService, type RateView } from '../currency/currency.service.js';
 import type { RateType } from '../currency/currency.constants.js';
 import { PRICE_PROVIDER, type PriceProvider } from '../providers/card-provider.interface.js';
@@ -124,6 +125,10 @@ export interface CardPriceDto {
   currency: string;
   source: string;
   fetchedAt: string;
+  evaluatedAt: string;
+  freshness: PriceMetadataDto['freshness'];
+  upstreamUpdatedAt: string | null;
+  upstreamFreshness: PriceMetadataDto['upstreamFreshness'];
   /** Solo con `?currency=ARS`. `null` si no hay rate cacheado. */
   priceArs?: PriceArsDto | null;
   /**
@@ -190,6 +195,10 @@ export interface PriceHistoryPointDto {
   low: number | null;
   mid: number | null;
   high: number | null;
+  evaluatedAt: string;
+  freshness: PriceMetadataDto['freshness'];
+  upstreamUpdatedAt: string | null;
+  upstreamFreshness: PriceMetadataDto['upstreamFreshness'];
 }
 
 /** El delta agregado de la ventana, o `null` si no hay nada honesto que decir. */
@@ -803,6 +812,10 @@ export class CardsService {
         currency: price.currency,
         source: price.source,
         fetchedAt: toIso(price.fetchedAt) ?? new Date(0).toISOString(),
+        evaluatedAt: price.evaluatedAt,
+        freshness: price.freshness,
+        upstreamUpdatedAt: price.upstreamUpdatedAt,
+        upstreamFreshness: price.upstreamFreshness,
       };
 
       dto.change =
@@ -884,6 +897,7 @@ export class CardsService {
       this.priceHistoryRows(id, query.variant ?? null, from, provider, source, currency),
     ]);
 
+    const evaluatedAt = new Date();
     const points: PriceHistoryPointDto[] = rows.map((row) => ({
       date: row.date,
       fetchedAt: toIso(row.fetchedAt) ?? row.date,
@@ -891,6 +905,7 @@ export class CardsService {
       low: toNumber(row.low),
       mid: toNumber(row.mid),
       high: toNumber(row.high),
+      ...priceMetadata(row.fetchedAt, provider, this.priceProvider.id, evaluatedAt),
     }));
 
     const withMarket = points.filter(

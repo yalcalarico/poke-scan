@@ -1,0 +1,17 @@
+{
+  "capturedAt": "2026-10-08T20:55:24.364253+00:00",
+  "receivedExpectedSha256": "8d20ec317e15942dc3028c73b2b26f747fee56de2efc78ca7078cb2beb0bf465",
+  "files": {
+    "AGENTS.md": "0a44196ce9194cafcd54094af02e90e73f0da0f693604d0876d97bf14ee30688",
+    "docs/plans/lanzamiento-2026-10-07/README.md": "24ec5dee918d19778b3a7bfd4187fecf1eff2e2f855ffdd2a26ed0843fc1eced",
+    "docs/plans/lanzamiento-2026-10-07/07-marketing.md": "46691ec0a3b6cc3aefc31b0827d7711180cabdaf09680e994bfdfae6793f1707",
+    "docs/plans/lanzamiento-2026-10-07/10-decisiones-y-contratos.md": "a1334c37eab2be2893cfdba65f2e294eaa8c2f5820950a9e572c999c50a71b3c",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/MKT-01-copy.md": "8d20ec317e15942dc3028c73b2b26f747fee56de2efc78ca7078cb2beb0bf465",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/RES-04-fuentes.md": "1d8d9db271f8a9c4691c5477c490a14a8e8268a44b564798b00a57344625126a",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/UX-03-valores.md": "66838aefa7b8bb6f751f547150da5ed33b3649f64fee57f096995dd9a0e300c0",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/RES-01-segmento.md": "c8e1e8d4651a190bc609028aec053d16902be089341e201797e5aeb82f42b5fc",
+    "frontend/components/marketing/landing-page.tsx": "41ad37ed441902a8f60b8c78300af3167961ad0cdee4420cdbb80878d24f355c",
+    "frontend/components/marketing/faq-section.tsx": "cf3fd767abb33c025137fb3a7c0d138f97574123f97b98017f5c467a75aa5112"
+  },
+  "receivedMatchesExpected": true
+}

@@ -1,0 +1,5 @@
+{
+  "manifestInitialError": "La generación inicial mezcló Paths relativos con root absoluto y falló en relative_to antes de escribir el manifest. Se corrigió resolviendo out como absoluto.",
+  "firstValidation": "Los links a validacion.json y hashes-finales.json se comprobaron antes de existir sus artefactos generados. Fuentes, 3 briefs, 35 hashes y 424 invariantes ya pasaron; la validación final se repite después de generar ambos.",
+  "productErrorsConfirmed": false
+}

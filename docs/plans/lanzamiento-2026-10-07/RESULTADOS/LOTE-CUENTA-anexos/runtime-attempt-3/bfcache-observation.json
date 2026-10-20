@@ -1,0 +1,5 @@
+{
+  "pageshowPersistedObserved": false,
+  "realBfcacheAccredited": false,
+  "limit": "Back/reload passed; Chrome Playwright did not demonstrate bfcache. Synthetic coverage remains in FE-04 review."
+}

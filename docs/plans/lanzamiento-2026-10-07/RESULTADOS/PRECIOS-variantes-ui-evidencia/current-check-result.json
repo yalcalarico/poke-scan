@@ -1,0 +1,27 @@
+{
+  "purpose": "TCGCSV comparison and chart validation",
+  "records": [
+    {
+      "phase": "stop",
+      "command": [
+        "pnpm",
+        "run",
+        "stop"
+      ],
+      "exitCode": 0,
+      "startedAtUtc": "2026-10-13T23:35:23.376630+00:00",
+      "finishedAtUtc": "2026-10-13T23:35:23.801539+00:00"
+    },
+    {
+      "phase": "check",
+      "command": [
+        "pnpm",
+        "run",
+        "check"
+      ],
+      "exitCode": 0,
+      "startedAtUtc": "2026-10-13T23:35:23.801916+00:00",
+      "finishedAtUtc": "2026-10-13T23:37:26.575436+00:00"
+    }
+  ]
+}

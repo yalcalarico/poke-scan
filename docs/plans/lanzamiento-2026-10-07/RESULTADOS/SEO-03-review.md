@@ -1,0 +1,44 @@
+# SEO-03 — Revisión documental Sol HIGH
+
+2026-10-09 UTC (8/10 en Argentina) · agente `/root/seo03_review_sol`. **Fase documental aceptada después de correcciones; SEO-03 completo sigue pendiente.** Los tres briefs y el handoff técnico están preparados. La imagen no se implementó y no hay preview servido comprobado de landing/FAQ. No se actualizan estados centrales desde esta revisión.
+
+Se recibió [SEO-03-contenido.md](SEO-03-contenido.md), preservado exactamente en la [copia recibida](evidencia-seo03-review/SEO-03-contenido-recibido.md), SHA-256 `c75b557c6178ebb1678ec80eaa44dca25bd305827aaf6f00bd4f5836503689e1`. [Baseline](evidencia-seo03-review/baseline.json) registra HEAD, árbol dirty y hashes previos; no se parte de un checkout limpio ni se atribuye todo el trabajo local a SEO-03.
+
+## Hallazgos y correcciones
+
+| Punto revisado | Corrección o comprobación | Alcance |
+|---|---|---|
+| Identidad de fuentes | La tabla recibida tiene 14 filas: 13 hashes coinciden y RES-04 contiene un hash mal formado de 63 caracteres. Se recalculó `1d8d9db271f8a9c4691c5477c490a14a8e8268a44b564798b00a57344625126a` y se amplió la tabla a las 35 fuentes del baseline. | Hash calculado desde bytes, sin reemplazar por una expectativa literal. La primera regex omitía la fila de 63; se corrigió para capturar toda celda y validar formato aparte. |
+| Hipótesis y claims | Intenciones/consultas siguen hipotéticas, sin volúmenes, ranking, demanda medida ni precisión. Se explicitan prestaciones Free y el split catálogo histórico pokemontcg.io / precios TCGdex con mercado TCGplayer, desde RES-04 aceptado. | No hubo Google, Search Console, entrevistas ni requests a APIs de proveedor. Tampoco se revalidaron comercial o jurídicamente las fuentes de RES-04. |
+| CTA y capacidad local | `/buscar` existe; controles nombre/número/artista habilitados y `searchBy` enviado. CSV básico existe y declara USD/ausencia; historial de carta y observaciones de portafolio por consulta se conservan como Free desde MKT-01/UX-03 y docs locales. Escaneo/guardado requieren cuenta y conexión; no promesa offline o de cámara general. | Lectura de fuente; no nuevo flujo runtime ni homologación física. AGENTS §8 mantiene una nota histórica de B1/B2/B6 que no sustituye el cliente actual inspeccionado; no se editó AGENTS. |
+| Métrica por pieza | Se separan visitas/clics observables de tarea completada, comprensión y primera copia persistida/comprobada. `N1/N2/N3` incluyen inicios y abandonos; ayuda separada. Precio exige tres criterios espontáneos y objetivo ≥10/≥90 %, sin resultados. | Propuesta de observación manual conforme a RES-03, sin analytics ni emisión de eventos nuevos. Estudio guiado separado de activación espontánea. |
+| Rúbrica y rutas | El anchor `#rúbrica-de-comprensión-del-precio` ya corresponde al encabezado real de RES-03 y se conserva. Se agregan tres rutas editoriales candidatas explícitamente inexistentes, sin convertirlas en CTAs ni incluirlas en sitemap/canonical. | Enlaces locales con `%28/%29` resueltos tras decodificar. No implementación ni nueva obligación de FE-07. |
+| Auditoría OG/Twitter | Root/marketing/landing/FAQ no declaran imagen de adquisición; tampoco hay archivos `opengraph-image` o `twitter-image` en `app`. La landing sustituye el objeto OG raíz; no hereda automáticamente `siteName`/`locale`. | Lectura de exports/árbol, no head servido ni modo de render medido. `summary_large_image` por sí solo no acredita imagen. |
+| Handoff de preview | Propuesta 1200×630 con marca/copy/icono actual, alt y verificación por ruta. Convención por segmento frente a exports, prioridad de archivos y combinación superficial explícitas; optimización default documentada sin declararla observada. | No asset ni URL final inventados. INF-01/dominio/salida productivos pendientes; base local explícita puede verificar posteriormente sin atribuir producción. |
+| Gates y ownership | FE-07 recibe handoff sujeto a habilitación de coordinación. Gate histórico EPERM se fecha al recibido; reserva BUILD-GATE-causalSol de root queda independiente. | Esta revisión no congela ese diagnóstico ni exige invariantes de `next.config.ts`/output, no abre frontend ni corrige privacidad/streaming/auth de SEO-01. |
+
+Se leyeron AGENTS raíz/frontend y las entradas del plan; se contrastaron MKT-01-copy/review, RES-04-fuentes/review, RES-03, UX-03/DEC-03 y SEO-01 documental/runtime-review. La inspección de producto fue selectiva sobre exports de adquisición, controles/envío de búsqueda, CSV, rutas y docs de escáner/portafolio. El icono 512×512 existente se vio con `view_image`; sus cuatro PNG hermanos tienen dimensiones verificadas en encabezado. No se crearon ni editaron assets.
+
+Se consultaron las guías empaquetadas con **Next 16.3.6** y dos fuentes primarias actuales. [Next OG/Twitter](https://nextjs.org/docs/app/api-reference/file-conventions/metadata/opengraph-image) documenta convenciones por segmento, tags, dimensiones/alt y optimización default condicionada. [generateMetadata](https://nextjs.org/docs/app/api-reference/functions/generate-metadata) documenta URL relativa con `metadataBase`, prioridad de archivos y sustitución superficial de objetos. El sitio mostraba **16.4.0**; se registra esa diferencia, sin cambiar dependencias ni atribuir la versión web al runtime local. [Registro de consulta](evidencia-seo03-review/web-verificado.json).
+
+## Aceptación del plan por fase
+
+| Criterio SEO-03 | Resultado de esta revisión |
+|---|---|
+| 2–3 briefs con consulta, evidencia, CTA y medición | Tres, aceptados documentalmente: duplicadas, variantes y referencia USD/ARS. Intención hipotética y denominadores explícitos. |
+| Sin precio local fabricado ni Pro inexistente | Cumple en copy/handoff; condición sin ajuste, referencia por variante/fuente, faltantes y ARS al cambio actual. Historial no equivale a ROI ni serie de FX histórica. |
+| OG/Twitter revisados y recomendación técnica vigente | Auditoría estática y propuesta aceptadas. No se presume herencia de objetos ni preview servido por leer fuente. |
+| Preview de adquisición con título/imagen correctos | **Pendiente:** implementar bajo reserva habilitada, medir HTML/tags/imagen por ruta y observar el preview disponible. La medición productiva necesita dominio/configuración/salida efectivos. |
+| Metadata pública y handoff frontend cuando haga falta | Handoff preparado; metadata y assets sin cambios por alcance documental. No se inicia FE-07 con gate previo pendiente. |
+
+La matriz runtime SEO-01 existente conserva su alcance y pendientes de clasificación puntual/dominio; no se repitió ni se aprobó privacidad desde `noindex`. SEO-03 no toma ownership de ese trabajo ni requiere resolverlo para aceptar sus briefs documentales. Su ID completo sí conserva el criterio de preview aún incumplido.
+
+## Evidencia y preservación
+
+[Fuentes verificadas](evidencia-seo03-review/fuentes-verificadas.json), [validación reproducible](evidencia-seo03-review/validacion.json), [script documental](evidencia-seo03-review/validar.py), [diff contra recibido](evidencia-seo03-review/correcciones.diff) y [manifest de hashes finales](evidencia-seo03-review/hashes-finales.json) permiten comprobar resultados. El manifest final excluye su propio hash para evitar autorreferencia. Los hashes de planes son una captura fechada; cambios posteriores del coordinador no significan edición de este revisor.
+
+Resultado enfocado: tres briefs con intención/pregunta/evidencia/CTA/medición, 35 filas de hashes válidas y concordantes con baseline, 35 enlaces locales comprobados, incluidos los anchors RES-03/DEC-03. Las propuestas editoriales no tienen archivos de página. La [primera validación](evidencia-seo03-review/validacion-inicial.json) corrió antes de generarse los propios JSON enlazados; la primera generación del manifest también mezcló paths relativos/absolutos. Se conservaron esas [incidencias](evidencia-seo03-review/verificacion-incidencias.json), se corrigió el orden/path y la validación final pasó. No eran fallos de producto.
+
+Se compararon los 424 archivos de producto del baseline en app/components/hooks/lib/types/public y backend/src/prisma, además de detectar altas/bajas en esos mismos árboles. `frontend/next.config.ts` y outputs de build quedan fuera de invariantes por la corrección concurrente autorizada de root; no se abrieron `.next` ni `dist`.
+
+Únicos archivos escritos: brief SEO-03, este review y `evidencia-seo03-review/`. Sin producto/exports/configuración/dependencias, tests, build, servidor, DB/Redis, browser, API de app/precios, fotos/modelo/índice privados, otros chats, contactos o publicaciones. Validación documental enfocada; no se afirma `pnpm run check` verde. **Reserva documental liberada; sin procesos ni recursos runtime propios.** Coordinación conserva registro/planes y aceptación central de la fase.

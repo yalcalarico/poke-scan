@@ -1,0 +1,23 @@
+{
+  "atUtc": "2026-10-09T17:44:33.925242+00:00",
+  "acceptedAsFocusedContextOnly": true,
+  "causeLocated": false,
+  "gateAccepted": false,
+  "annexes": 16,
+  "annexMismatches": [],
+  "source501Mismatches": [],
+  "prior44AnnexMismatches": [],
+  "reportHashVerified": true,
+  "evidenceSha256": "4f99671c8e2312f7814b345ebd2ba63910d81dbe63b07062673e52344cd612b5",
+  "rootCurrentListeners": {
+    "3000": "",
+    "3001": "",
+    "58802": "",
+    "58804": "",
+    "58806": "",
+    "58808": "",
+    "58810": ""
+  },
+  "humanScope": "Continuar sólo con el diagnóstico focal",
+  "limits": "Root verifica fuentes/anexos actuales y puertos; cleanup y PID por evidencia del productor. CLI exit0 no acredita exitCode0 del worker. Sin nuevo global ni APIweb."
+}

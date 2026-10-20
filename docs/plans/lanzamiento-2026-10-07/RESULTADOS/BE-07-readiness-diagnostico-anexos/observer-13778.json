@@ -1,0 +1,38 @@
+{
+  "pid": 13778,
+  "code": 0,
+  "node": "v22.20.0",
+  "events": [
+    {
+      "n": 0,
+      "ns": "693510810453416",
+      "event": "server-listen-call",
+      "server": 1,
+      "listening": false,
+      "connections": 0
+    },
+    {
+      "n": 1,
+      "ns": "693510814413541",
+      "event": "server-close-call",
+      "server": 1,
+      "listening": false,
+      "connections": 0,
+      "stack": "Error: \n    at Server.http.Server.close (file:///private/tmp/be07-readiness-diagnostico-sol-20261009/socket-observer.mjs:35:156)\n    at file:///Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/backend/node_modules/.pnpm/@nestjs+platform-express@12.1.0_@nestjs+common@12.1.0_class-transformer@0.5.1_class-val_0ba6559b1582586bacb67d1a7365cf27/node_modules/@nestjs/platform-express/adapters/express-adapter.js:157:55\n    at new Promise (<anonymous>)\n    at ExpressAdapter.close (file:///Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/backend/node_modules/.pnpm/@nestjs+platform-express@12.1.0_@nestjs+common@12.1.0_class-transformer@0.5.1_class-val_0ba6559b1582586bacb67d1a7365cf27/node_modules/@nestjs/platform-express/adapters/express-adapter.js:157:16)\n    at Proxy.dispose (file:///Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/backend/node_modules/.pnpm/@nestjs+core@12.1.0_@nestjs+common@12.1.0_class-transformer@0.5.1_class-validator@0.15._470e0a43d0242a02d4b5d876c5d0d26e/node_modules/@nestjs/core/nest-application.js:66:33)\n    at processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at Proxy.runShutdownSequence (file:///Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/backend/node_modules/.pnpm/@nestjs+core@12.1.0_@nestjs+common@12.1.0_class-transformer@0.5.1_class-validator@0.15._470e0a43d0242a02d4b5d876c5d0d26e/node_modules/@nestjs/core/nest-application-context.js:147:9)\n    at Proxy.close (file:///Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/backend/node_modules/.pnpm/@nestjs+core@12.1.0_@nestjs+common@12.1.0_class-transformer@0.5.1_class-validator@0.15._470e0a43d0242a02d4b5d876c5d0d26e/node_modules/@nestjs/core/nest-application-context.js:123:9)\n    at /Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/backend/src/readiness.http.spec.ts:51:5"
+    },
+    {
+      "n": 2,
+      "ns": "693510814534416",
+      "event": "server-error",
+      "server": 1,
+      "code": "EPERM"
+    },
+    {
+      "n": 3,
+      "ns": "693510814552000",
+      "event": "server-close",
+      "server": 1,
+      "listening": false
+    }
+  ]
+}

@@ -30,10 +30,11 @@ describe('Prueba visual: límites y opt-in', () => {
       ).toBeGreaterThan(0);
     }
   });
-  it('rechaza fotos vacías sin cargar ONNX', async () => {
+  it('rechaza fotos vacías sin crear worker ni cargar ONNX', async () => {
     process.env.SCANNER_VISUAL_ENABLED = '1';
+    const service = new VisualIdentifyService();
     await expect(
-      new VisualIdentifyService().identify(
+      service.identify(
         Object.assign(new VisualIdentifyDto(), {
           image: 'data:image/png;base64,',
         }),
@@ -48,22 +49,20 @@ describe('Prueba visual: aislamiento y cancelación', () => {
     if (previous === undefined) delete process.env.SCANNER_VISUAL_ENABLED;
     else process.env.SCANNER_VISUAL_ENABLED = previous;
   });
-  it('rechaza concurrencia y recupera después de bytes inválidos', async () => {
+  it('rechaza fotos antes de la inicialización del módulo', async () => {
     process.env.SCANNER_VISUAL_ENABLED = '1';
     const service = new VisualIdentifyService();
-    const dto = Object.assign(new VisualIdentifyDto(), {
-      image: 'data:image/png;base64,YQ==',
+    await expect(
+      service.identify(
+        Object.assign(new VisualIdentifyDto(), {
+          image: 'data:image/png;base64,YQ==',
+        }),
+      ),
+    ).rejects.toThrow('todavía no está disponible');
+    expect(service.readinessStatus()).toEqual({
+      state: 'initializing',
+      busy: false,
     });
-    try {
-      const first = expect(service.identify(dto)).rejects.toThrow(
-        'imagen válida',
-      );
-      await expect(service.identify(dto)).rejects.toThrow('ocupado');
-      await first;
-      await expect(service.identify(dto)).rejects.toThrow('imagen válida');
-    } finally {
-      service.onModuleDestroy();
-    }
   });
   it('cancela antes de enviar una foto y libera el motor', async () => {
     process.env.SCANNER_VISUAL_ENABLED = '1';

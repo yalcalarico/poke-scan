@@ -1,0 +1,10 @@
+{
+  "baselineFiles": 1429,
+  "unchangedFiles": 1427,
+  "deltasAfterRuntime": [
+    "scripts/inf04-monitor-common.mjs",
+    "scripts/inf04-monitor.test.mjs"
+  ],
+  "authorizedRootRegressions": true,
+  "preCorrectionRuntimeNotAssertedFinal": true
+}

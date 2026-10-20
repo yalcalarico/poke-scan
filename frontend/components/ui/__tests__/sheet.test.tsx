@@ -143,6 +143,16 @@ describe('Sheet: apertura', () => {
 });
 
 describe('Sheet: foco atrapado', () => {
+  it('Shift+Tab desde el panel inicial enfoca el último control sin salir del diálogo', async () => {
+    const user = userEvent.setup();
+    render(<Harness />);
+    await open(user);
+    expect(panel()).toHaveFocus();
+    await user.tab({ shift: true });
+    expect(screen.getByRole('button', { name: 'Tercero' })).toHaveFocus();
+    expect(panel()).toContainElement(document.activeElement as HTMLElement);
+  });
+
   it('Tab desde el último control vuelve al primero', async () => {
     const user = userEvent.setup();
     render(<Harness />);

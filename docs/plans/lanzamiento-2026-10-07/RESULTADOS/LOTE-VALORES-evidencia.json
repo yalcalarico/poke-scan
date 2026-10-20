@@ -1,0 +1,1029 @@
+{
+  "status": "gate integrado abierto por build estándar Next EPERM",
+  "date": "2026-10-08",
+  "reviewer": "GPT-6.1 Sol HIGH",
+  "codeChanges": [],
+  "ownCodeDiffEmpty": true,
+  "receivedHashes": 296,
+  "receivedReservedCodeHashesUnchanged": 105,
+  "finalSourceHashes": 430,
+  "runtimeBuildHashes": 510,
+  "standardGlobal": {
+    "command": "pnpm run check",
+    "flags": "SCANNER_VISUAL_ENABLED=0; DATABASE_URL_TEST clon propio; REDIS_URL instancia propia; resto defaults unit; e2e flags del config propio",
+    "sandbox": "require_escalated aprobado, sin rechazo auto-review",
+    "exit": 1,
+    "lint": "passed backend/front colors+urls",
+    "frontendTypes": "passed",
+    "backendWideSpecTypes": "not run; 8 baseline diagnostics documented by BE-04; no full backend tsc green claim",
+    "nestBuild": "passed",
+    "backendVitest": {
+      "files": 28,
+      "passed": 389,
+      "failed": 0,
+      "skips": 0
+    },
+    "backendNode": {
+      "passed": 13,
+      "failed": 0,
+      "skips": 0
+    },
+    "backendE2E": {
+      "files": 2,
+      "passed": 6,
+      "failed": 0,
+      "skips": 0
+    },
+    "frontendVitest": {
+      "files": 59,
+      "passed": 486,
+      "failed": 0,
+      "skips": 0
+    },
+    "totalPassed": 894,
+    "totalSkips": 0,
+    "nextBuild": {
+      "bundler": "Turbopack",
+      "version": "16.3.6",
+      "status": "failed",
+      "reason": "EPERM binding internal port for CSS PostCSS subprocess",
+      "standardGateApproved": false
+    }
+  },
+  "alternativeBuild": {
+    "command": "pnpm --dir frontend run build --webpack",
+    "status": "passed",
+    "currentSource": true,
+    "satisfiesStandardGate": false
+  },
+  "bindDiagnostics": {
+    "authorizedEphemeralNodeLoopback": "passed",
+    "authorizedEphemeralNodeDefaultHost": "passed",
+    "TurbopackSpecificBindResolved": false,
+    "frameworkConfigDependencyChanges": false
+  },
+  "integration": {
+    "api": {
+      "source": "current compiled Nest + current Next routes",
+      "checks": [
+        {
+          "name": "real-register-cookie-session",
+          "passed": true
+        },
+        {
+          "name": "real-login",
+          "passed": true
+        },
+        {
+          "name": "aggregate-exact-variant-copy-scope-mixed",
+          "passed": true
+        },
+        {
+          "name": "distinct-vacía",
+          "passed": true
+        },
+        {
+          "name": "distinct-cero",
+          "passed": true
+        },
+        {
+          "name": "distinct-desconocida",
+          "passed": true
+        },
+        {
+          "name": "item-exact-saved-attributes-and-reference",
+          "passed": true
+        },
+        {
+          "name": "latest-null-does-not-fallback-mid",
+          "passed": true
+        },
+        {
+          "name": "filter-does-not-shrink-summary-scope",
+          "passed": true
+        },
+        {
+          "name": "portfolio-snapshot-own-coverage-ranking-same-row",
+          "passed": true
+        },
+        {
+          "name": "card-hero-delta-canonical-source-cache-evaluation",
+          "passed": true
+        },
+        {
+          "name": "history-envelope-null-variant-UTC-provenance",
+          "passed": true
+        },
+        {
+          "name": "ownership-and-auth",
+          "passed": true
+        },
+        {
+          "name": "public-allowlist-full-scope-cache-evaluation",
+          "passed": true
+        },
+        {
+          "name": "uuid-replay-and-deliberate-new-intent",
+          "passed": true
+        }
+      ],
+      "payloads": {
+        "main": {
+          "amount": 49,
+          "currency": "USD",
+          "evaluatedAt": "2026-10-08T19:35:43.189Z",
+          "coverage": {
+            "totalCopies": 11,
+            "pricedCopies": 9,
+            "unpricedCopies": 2,
+            "coverageRatio": 0.8181818181818182
+          },
+          "recency": {
+            "freshness": "mixed",
+            "freshCopies": 6,
+            "staleCopies": 2,
+            "unknownFreshnessCopies": 1,
+            "upstreamFreshness": "unknown",
+            "oldestFetchedAt": "2026-10-06T19:35:42.840Z",
+            "newestFetchedAt": "2026-10-08T19:35:42.840Z"
+          }
+        },
+        "vacía": {
+          "amount": 0,
+          "currency": "USD",
+          "evaluatedAt": "2026-10-08T19:35:43.193Z",
+          "coverage": {
+            "totalCopies": 0,
+            "pricedCopies": 0,
+            "unpricedCopies": 0,
+            "coverageRatio": null
+          },
+          "recency": {
+            "freshness": "unknown",
+            "freshCopies": 0,
+            "staleCopies": 0,
+            "unknownFreshnessCopies": 0,
+            "upstreamFreshness": "unknown",
+            "oldestFetchedAt": null,
+            "newestFetchedAt": null
+          }
+        },
+        "cero": {
+          "amount": 0,
+          "currency": "USD",
+          "evaluatedAt": "2026-10-08T19:35:43.197Z",
+          "coverage": {
+            "totalCopies": 2,
+            "pricedCopies": 2,
+            "unpricedCopies": 0,
+            "coverageRatio": 1
+          },
+          "recency": {
+            "freshness": "fresh",
+            "freshCopies": 2,
+            "staleCopies": 0,
+            "unknownFreshnessCopies": 0,
+            "upstreamFreshness": "unknown",
+            "oldestFetchedAt": "2026-10-08T19:35:42.840Z",
+            "newestFetchedAt": "2026-10-08T19:35:42.840Z"
+          }
+        },
+        "desconocida": {
+          "amount": null,
+          "currency": "USD",
+          "evaluatedAt": "2026-10-08T19:35:43.199Z",
+          "coverage": {
+            "totalCopies": 2,
+            "pricedCopies": 0,
+            "unpricedCopies": 2,
+            "coverageRatio": 0
+          },
+          "recency": {
+            "freshness": "unknown",
+            "freshCopies": 0,
+            "staleCopies": 0,
+            "unknownFreshnessCopies": 0,
+            "upstreamFreshness": "unknown",
+            "oldestFetchedAt": null,
+            "newestFetchedAt": null
+          }
+        },
+        "portfolio": {
+          "totalCards": 15,
+          "unpricedCards": 4,
+          "valueUsd": 49,
+          "valuation": {
+            "amount": 49,
+            "currency": "USD",
+            "evaluatedAt": "2026-10-08T19:35:43.214Z",
+            "coverage": {
+              "totalCopies": 15,
+              "pricedCopies": 11,
+              "unpricedCopies": 4,
+              "coverageRatio": 0.7333333333333333
+            },
+            "recency": {
+              "freshness": "mixed",
+              "freshCopies": 8,
+              "staleCopies": 2,
+              "unknownFreshnessCopies": 1,
+              "upstreamFreshness": "unknown",
+              "oldestFetchedAt": "2026-10-06T19:35:42.840Z",
+              "newestFetchedAt": "2026-10-08T19:35:42.840Z"
+            }
+          },
+          "topCards": [
+            {
+              "cardId": "valgate-card2",
+              "name": "Carta de prueba 2",
+              "imageSmall": "/icons/icon-192.png",
+              "setName": "Set de prueba de valores",
+              "number": "2",
+              "variant": "normal",
+              "quantity": 3,
+              "marketUsd": 10,
+              "valueUsd": 30,
+              "reference": {
+                "provider": "tcgdex",
+                "source": "tcgplayer",
+                "currency": "USD",
+                "fetchedAt": "2026-10-08T19:35:42.840Z",
+                "evaluatedAt": "2026-10-08T19:35:43.214Z",
+                "freshness": "fresh",
+                "upstreamUpdatedAt": null,
+                "upstreamFreshness": "unknown"
+              }
+            },
+            {
+              "cardId": "valgate-card5",
+              "name": "Carta de prueba 5",
+              "imageSmall": "/icons/icon-192.png",
+              "setName": "Set de prueba de valores",
+              "number": "5",
+              "variant": "normal",
+              "quantity": 1,
+              "marketUsd": 6,
+              "valueUsd": 6,
+              "reference": {
+                "provider": "tcgdex",
+                "source": "tcgplayer",
+                "currency": "USD",
+                "fetchedAt": "2026-10-10T19:35:42.840Z",
+                "evaluatedAt": "2026-10-08T19:35:43.214Z",
+                "freshness": "unknown",
+                "upstreamUpdatedAt": null,
+                "upstreamFreshness": "unknown"
+              }
+            },
+            {
+              "cardId": "valgate-card2",
+              "name": "Carta de prueba 2",
+              "imageSmall": "/icons/icon-192.png",
+              "setName": "Set de prueba de valores",
+              "number": "2",
+              "variant": "reverseHolofoil",
+              "quantity": 1,
+              "marketUsd": 5,
+              "valueUsd": 5,
+              "reference": {
+                "provider": "tcgdex",
+                "source": "tcgplayer",
+                "currency": "USD",
+                "fetchedAt": "2026-10-08T19:35:42.840Z",
+                "evaluatedAt": "2026-10-08T19:35:43.214Z",
+                "freshness": "fresh",
+                "upstreamUpdatedAt": null,
+                "upstreamFreshness": "unknown"
+              }
+            },
+            {
+              "cardId": "valgate-card4",
+              "name": "Carta de prueba 4",
+              "imageSmall": "/icons/icon-192.png",
+              "setName": "Set de prueba de valores",
+              "number": "4",
+              "variant": "normal",
+              "quantity": 2,
+              "marketUsd": 4,
+              "valueUsd": 8,
+              "reference": {
+                "provider": "tcgdex",
+                "source": "tcgplayer",
+                "currency": "USD",
+                "fetchedAt": "2026-10-06T19:35:42.840Z",
+                "evaluatedAt": "2026-10-08T19:35:43.214Z",
+                "freshness": "stale",
+                "upstreamUpdatedAt": null,
+                "upstreamFreshness": "unknown"
+              }
+            },
+            {
+              "cardId": "valgate-card1",
+              "name": "Carta de prueba 1",
+              "imageSmall": "/icons/icon-192.png",
+              "setName": "Set de prueba de valores",
+              "number": "1",
+              "variant": "normal",
+              "quantity": 4,
+              "marketUsd": 0,
+              "valueUsd": 0,
+              "reference": {
+                "provider": "tcgdex",
+                "source": "tcgplayer",
+                "currency": "USD",
+                "fetchedAt": "2026-10-08T19:35:42.840Z",
+                "evaluatedAt": "2026-10-08T19:35:43.214Z",
+                "freshness": "fresh",
+                "upstreamUpdatedAt": null,
+                "upstreamFreshness": "unknown"
+              }
+            }
+          ],
+          "history": [
+            {
+              "date": "2026-10-03",
+              "valueUsd": 9,
+              "totalCards": 3,
+              "unpricedCards": 1,
+              "valuation": {
+                "amount": 9,
+                "currency": "USD",
+                "evaluatedAt": null,
+                "coverage": {
+                  "totalCopies": 3,
+                  "pricedCopies": 2,
+                  "unpricedCopies": 1,
+                  "coverageRatio": 0.6666666666666666
+                },
+                "recency": null
+              }
+            },
+            {
+              "date": "2026-10-08",
+              "valueUsd": 49,
+              "totalCards": 15,
+              "unpricedCards": 4,
+              "valuation": {
+                "amount": 49,
+                "currency": "USD",
+                "evaluatedAt": null,
+                "coverage": {
+                  "totalCopies": 15,
+                  "pricedCopies": 11,
+                  "unpricedCopies": 4,
+                  "coverageRatio": 0.7333333333333333
+                },
+                "recency": null
+              }
+            }
+          ]
+        },
+        "prices": [
+          {
+            "cardId": "valgate-card2",
+            "variant": "normal",
+            "low": null,
+            "mid": null,
+            "high": null,
+            "market": 10,
+            "provider": "tcgdex",
+            "isStale": false,
+            "currency": "USD",
+            "source": "tcgplayer",
+            "fetchedAt": "2026-10-08T19:34:24.769Z",
+            "evaluatedAt": "2026-10-08T19:34:25.165Z",
+            "freshness": "fresh",
+            "upstreamUpdatedAt": null,
+            "upstreamFreshness": "unknown",
+            "change": {
+              "usd": 8,
+              "percent": 400,
+              "windowDays": 30,
+              "from": "2026-08-29T19:35:42.840Z"
+            },
+            "changeUsd": 8,
+            "changePercent": 400,
+            "windowLabel": "últimos 30 días"
+          },
+          {
+            "cardId": "valgate-card2",
+            "variant": "reverseHolofoil",
+            "low": null,
+            "mid": null,
+            "high": null,
+            "market": 5,
+            "provider": "tcgdex",
+            "isStale": false,
+            "currency": "USD",
+            "source": "tcgplayer",
+            "fetchedAt": "2026-10-08T19:34:24.769Z",
+            "evaluatedAt": "2026-10-08T19:34:25.165Z",
+            "freshness": "fresh",
+            "upstreamUpdatedAt": null,
+            "upstreamFreshness": "unknown",
+            "change": {
+              "usd": -45,
+              "percent": -90,
+              "windowDays": 30,
+              "from": "2026-08-29T19:35:42.840Z"
+            },
+            "changeUsd": -45,
+            "changePercent": -90,
+            "windowLabel": "últimos 30 días"
+          }
+        ],
+        "history": {
+          "cardId": "valgate-card2",
+          "provider": "tcgdex",
+          "source": "tcgplayer",
+          "variant": null,
+          "currency": "USD",
+          "windowDays": 90,
+          "from": "2026-08-29",
+          "to": "2026-10-08",
+          "points": [
+            {
+              "date": "2026-08-29",
+              "fetchedAt": "2026-08-29T19:35:42.840Z",
+              "market": 50,
+              "low": null,
+              "mid": null,
+              "high": null,
+              "evaluatedAt": "2026-10-08T19:35:43.230Z",
+              "freshness": "stale",
+              "upstreamUpdatedAt": null,
+              "upstreamFreshness": "unknown"
+            },
+            {
+              "date": "2026-10-04",
+              "fetchedAt": "2026-10-04T19:35:42.840Z",
+              "market": 7,
+              "low": null,
+              "mid": null,
+              "high": null,
+              "evaluatedAt": "2026-10-08T19:35:43.230Z",
+              "freshness": "stale",
+              "upstreamUpdatedAt": null,
+              "upstreamFreshness": "unknown"
+            },
+            {
+              "date": "2026-10-08",
+              "fetchedAt": "2026-10-08T19:35:42.840Z",
+              "market": 10,
+              "low": null,
+              "mid": null,
+              "high": null,
+              "evaluatedAt": "2026-10-08T19:35:43.230Z",
+              "freshness": "fresh",
+              "upstreamUpdatedAt": null,
+              "upstreamFreshness": "unknown"
+            }
+          ],
+          "change": {
+            "changeUsd": -40,
+            "changePercent": -80
+          }
+        },
+        "public": {
+          "ownerDisplayName": "Coleccionista de prueba",
+          "collectionName": "Valores · principal",
+          "items": [
+            {
+              "card": {
+                "id": "valgate-card2",
+                "name": "Carta de prueba 2",
+                "supertype": "Pokémon",
+                "subtypes": [],
+                "hp": null,
+                "types": [],
+                "number": "2",
+                "rarity": null,
+                "artist": null,
+                "setId": "valgate-set",
+                "imageSmall": "/icons/icon-192.png",
+                "imageLarge": "/icons/icon-192.png",
+                "set": {
+                  "id": "valgate-set",
+                  "name": "Set de prueba de valores",
+                  "series": "Fixture",
+                  "printedTotal": null,
+                  "total": null,
+                  "releaseDate": "2026-06-30T19:35:42.840Z",
+                  "logoUrl": null,
+                  "symbolUrl": null
+                }
+              },
+              "variant": "reverseHolofoil",
+              "condition": "MP",
+              "quantity": 1,
+              "price": {
+                "market": 5,
+                "currency": "USD",
+                "provider": "tcgdex",
+                "source": "tcgplayer",
+                "fetchedAt": "2026-10-08T19:35:42.840Z",
+                "evaluatedAt": "2026-10-08T19:35:43.249Z",
+                "freshness": "fresh",
+                "upstreamUpdatedAt": null,
+                "upstreamFreshness": "unknown"
+              }
+            },
+            {
+              "card": {
+                "id": "valgate-card6",
+                "name": "Carta de prueba 6",
+                "supertype": "Pokémon",
+                "subtypes": [],
+                "hp": null,
+                "types": [],
+                "number": "6",
+                "rarity": null,
+                "artist": null,
+                "setId": "valgate-set",
+                "imageSmall": "/icons/icon-192.png",
+                "imageLarge": "/icons/icon-192.png",
+                "set": {
+                  "id": "valgate-set",
+                  "name": "Set de prueba de valores",
+                  "series": "Fixture",
+                  "printedTotal": null,
+                  "total": null,
+                  "releaseDate": "2026-06-30T19:35:42.840Z",
+                  "logoUrl": null,
+                  "symbolUrl": null
+                }
+              },
+              "variant": "normal",
+              "condition": "LP",
+              "quantity": 1,
+              "price": null
+            },
+            {
+              "card": {
+                "id": "valgate-card5",
+                "name": "Carta de prueba 5",
+                "supertype": "Pokémon",
+                "subtypes": [],
+                "hp": null,
+                "types": [],
+                "number": "5",
+                "rarity": null,
+                "artist": null,
+                "setId": "valgate-set",
+                "imageSmall": "/icons/icon-192.png",
+                "imageLarge": "/icons/icon-192.png",
+                "set": {
+                  "id": "valgate-set",
+                  "name": "Set de prueba de valores",
+                  "series": "Fixture",
+                  "printedTotal": null,
+                  "total": null,
+                  "releaseDate": "2026-06-30T19:35:42.840Z",
+                  "logoUrl": null,
+                  "symbolUrl": null
+                }
+              },
+              "variant": "normal",
+              "condition": "LP",
+              "quantity": 1,
+              "price": {
+                "market": 6,
+                "currency": "USD",
+                "provider": "tcgdex",
+                "source": "tcgplayer",
+                "fetchedAt": "2026-10-10T19:35:42.840Z",
+                "evaluatedAt": "2026-10-08T19:35:43.249Z",
+                "freshness": "unknown",
+                "upstreamUpdatedAt": null,
+                "upstreamFreshness": "unknown"
+              }
+            },
+            {
+              "card": {
+                "id": "valgate-card4",
+                "name": "Carta de prueba 4",
+                "supertype": "Pokémon",
+                "subtypes": [],
+                "hp": null,
+                "types": [],
+                "number": "4",
+                "rarity": null,
+                "artist": null,
+                "setId": "valgate-set",
+                "imageSmall": "/icons/icon-192.png",
+                "imageLarge": "/icons/icon-192.png",
+                "set": {
+                  "id": "valgate-set",
+                  "name": "Set de prueba de valores",
+                  "series": "Fixture",
+                  "printedTotal": null,
+                  "total": null,
+                  "releaseDate": "2026-06-30T19:35:42.840Z",
+                  "logoUrl": null,
+                  "symbolUrl": null
+                }
+              },
+              "variant": "normal",
+              "condition": "LP",
+              "quantity": 2,
+              "price": {
+                "market": 4,
+                "currency": "USD",
+                "provider": "tcgdex",
+                "source": "tcgplayer",
+                "fetchedAt": "2026-10-06T19:35:42.840Z",
+                "evaluatedAt": "2026-10-08T19:35:43.249Z",
+                "freshness": "stale",
+                "upstreamUpdatedAt": null,
+                "upstreamFreshness": "unknown"
+              }
+            },
+            {
+              "card": {
+                "id": "valgate-card3",
+                "name": "Carta de prueba 3",
+                "supertype": "Pokémon",
+                "subtypes": [],
+                "hp": null,
+                "types": [],
+                "number": "3",
+                "rarity": null,
+                "artist": null,
+                "setId": "valgate-set",
+                "imageSmall": "/icons/icon-192.png",
+                "imageLarge": "/icons/icon-192.png",
+                "set": {
+                  "id": "valgate-set",
+                  "name": "Set de prueba de valores",
+                  "series": "Fixture",
+                  "printedTotal": null,
+                  "total": null,
+                  "releaseDate": "2026-06-30T19:35:42.840Z",
+                  "logoUrl": null,
+                  "symbolUrl": null
+                }
+              },
+              "variant": "normal",
+              "condition": "LP",
+              "quantity": 1,
+              "price": {
+                "market": null,
+                "currency": "USD",
+                "provider": "tcgdex",
+                "source": "tcgplayer",
+                "fetchedAt": "2026-10-08T19:35:42.840Z",
+                "evaluatedAt": "2026-10-08T19:35:43.249Z",
+                "freshness": "fresh",
+                "upstreamUpdatedAt": null,
+                "upstreamFreshness": "unknown"
+              }
+            },
+            {
+              "card": {
+                "id": "valgate-card2",
+                "name": "Carta de prueba 2",
+                "supertype": "Pokémon",
+                "subtypes": [],
+                "hp": null,
+                "types": [],
+                "number": "2",
+                "rarity": null,
+                "artist": null,
+                "setId": "valgate-set",
+                "imageSmall": "/icons/icon-192.png",
+                "imageLarge": "/icons/icon-192.png",
+                "set": {
+                  "id": "valgate-set",
+                  "name": "Set de prueba de valores",
+                  "series": "Fixture",
+                  "printedTotal": null,
+                  "total": null,
+                  "releaseDate": "2026-06-30T19:35:42.840Z",
+                  "logoUrl": null,
+                  "symbolUrl": null
+                }
+              },
+              "variant": "normal",
+              "condition": "LP",
+              "quantity": 3,
+              "price": {
+                "market": 10,
+                "currency": "USD",
+                "provider": "tcgdex",
+                "source": "tcgplayer",
+                "fetchedAt": "2026-10-08T19:35:42.840Z",
+                "evaluatedAt": "2026-10-08T19:35:43.249Z",
+                "freshness": "fresh",
+                "upstreamUpdatedAt": null,
+                "upstreamFreshness": "unknown"
+              }
+            },
+            {
+              "card": {
+                "id": "valgate-card1",
+                "name": "Carta de prueba 1",
+                "supertype": "Pokémon",
+                "subtypes": [],
+                "hp": null,
+                "types": [],
+                "number": "1",
+                "rarity": null,
+                "artist": null,
+                "setId": "valgate-set",
+                "imageSmall": "/icons/icon-192.png",
+                "imageLarge": "/icons/icon-192.png",
+                "set": {
+                  "id": "valgate-set",
+                  "name": "Set de prueba de valores",
+                  "series": "Fixture",
+                  "printedTotal": null,
+                  "total": null,
+                  "releaseDate": "2026-06-30T19:35:42.840Z",
+                  "logoUrl": null,
+                  "symbolUrl": null
+                }
+              },
+              "variant": "normal",
+              "condition": "LP",
+              "quantity": 2,
+              "price": {
+                "market": 0,
+                "currency": "USD",
+                "provider": "tcgdex",
+                "source": "tcgplayer",
+                "fetchedAt": "2026-10-08T19:35:42.840Z",
+                "evaluatedAt": "2026-10-08T19:35:43.249Z",
+                "freshness": "fresh",
+                "upstreamUpdatedAt": null,
+                "upstreamFreshness": "unknown"
+              }
+            }
+          ],
+          "stats": {
+            "totalGroups": 7,
+            "totalCards": 11,
+            "uniqueCards": 6,
+            "duplicateCards": 3,
+            "setsCount": 1,
+            "totalValueUsd": 49,
+            "pricedGroups": 5,
+            "cardsMissingPrice": 2,
+            "valuation": {
+              "amount": 49,
+              "currency": "USD",
+              "evaluatedAt": "2026-10-08T19:35:43.249Z",
+              "coverage": {
+                "totalCopies": 11,
+                "pricedCopies": 9,
+                "unpricedCopies": 2,
+                "coverageRatio": 0.8181818181818182
+              },
+              "recency": {
+                "freshness": "mixed",
+                "freshCopies": 6,
+                "staleCopies": 2,
+                "unknownFreshnessCopies": 1,
+                "upstreamFreshness": "unknown",
+                "oldestFetchedAt": "2026-10-06T19:35:42.840Z",
+                "newestFetchedAt": "2026-10-08T19:35:42.840Z"
+              }
+            }
+          },
+          "truncated": false,
+          "sharedAt": "2026-10-08T19:35:43.239Z"
+        }
+      },
+      "fixture": {
+        "synthetic": true,
+        "queuedUnexecuted": 6
+      },
+      "externalFetchAttempts": 0
+    },
+    "ssr": {
+      "checks": [
+        {
+          "name": "actual-next-warm-SSR-no-private-noindex-no-store",
+          "passed": true
+        },
+        {
+          "name": "revoke-hot-api-and-SSR",
+          "passed": true
+        },
+        {
+          "name": "reactivate-actual-SSR",
+          "passed": true
+        },
+        {
+          "name": "expired-hot-cache-vigency-first-API-SSR-bot",
+          "passed": true
+        },
+        {
+          "name": "expired-cache-was-still-hot",
+          "passed": true
+        },
+        {
+          "name": "runtime-own-jobs-not-executed",
+          "passed": true
+        },
+        {
+          "name": "no-external-fetch-attempts",
+          "passed": true
+        }
+      ],
+      "ownJobs": 6,
+      "executedJobs": 0,
+      "externalFetchAttempts": 0,
+      "availableSSRBytes": 67948,
+      "expiredSSRBytes": 25685
+    },
+    "browser": {
+      "engine": "CUA Codex in-app browser",
+      "realRoutes": true,
+      "mockHarness": false,
+      "nextBuild": "current source webpack production alternative",
+      "viewports": [
+        {
+          "width": 390,
+          "height": 844,
+          "themes": [
+            "light",
+            "dark"
+          ],
+          "horizontalOverflow": false
+        },
+        {
+          "width": 1280,
+          "height": 844,
+          "themes": [
+            "light",
+            "dark"
+          ],
+          "horizontalOverflow": false
+        }
+      ],
+      "privateCurrency": "ARS using synthetic cache rate1000",
+      "publicCurrency": "USD, same private ARS account",
+      "screenshots": "emitted inline by CUA; no persisted PNG file",
+      "checks": [
+        "real synthetic login",
+        "canonical normal hero10USD/delta8USD and distinct reverse5USD",
+        "history Enter expands details without variant dialog",
+        "hero Enter opens variant dialog",
+        "Shift+Tab initial panel and Tab inside dialog; Escape returns hero",
+        "item reverseHolofoil/MP/qty1 initially5USD; variant change retires prior reference without save",
+        "mobile item footer visible",
+        "portfolio current49USD/11pricedof15copies and old snapshot9USD/2pricedof3copies",
+        "main summary49USD/9pricedof11; fresh6/stale2/unknown1",
+        "zero2/2, absent0/2 and empty0/0 visible on collections route",
+        "public fullscope49USD/9of11 and UTC timestamps",
+        "expired refreshed route generic without previous names",
+        "no captured browser warn/error logs during sampled routes"
+      ],
+      "cleanup": {
+        "ownSessionLoggedOut": true,
+        "themeDarkRestored": true,
+        "viewportReset": true,
+        "tabClosed": true
+      },
+      "limits": [
+        "No physical phone/PWA install/screen reader/virtual keyboard/contrast measurement/forced colors/offline/motion test/participants",
+        "Desktop dark first immediate screenshot showed transient pre-auth USD; subsequent hydrated screenshot confirmed ARS"
+      ]
+    },
+    "checksAPIAndSSR": 22,
+    "upstreamMetadata": "null/unknown preserved; no upstream timestamp invented",
+    "scope500": "covered by existing global SQL suites; no fresh runtime500fixture claim"
+  },
+  "isolation": {
+    "source": "clone of pokemon_cards_test",
+    "sourceInventory": {
+      "pokemon_cards": "{\"cards\" : 20670, \"migrations\" : 11, \"gin\" : 5, \"users\" : 22, \"items\" : 69}",
+      "pokemon_cards_test": "{\"cards\" : 20670, \"migrations\" : 11, \"gin\" : 5, \"users\" : 2, \"items\" : 2}"
+    },
+    "database": "valores_gate_sol_20261008_test",
+    "ownershipMarkerCreatedBeforeResources": true,
+    "databaseCommentVerifiedBeforeDrop": true,
+    "redis": "own labelled instance loopback56379 DB0, distinct from dev instance",
+    "fixturesSynthetic": true,
+    "providerRuntimeFetchGuard": true,
+    "externalFetchAttempts": 0,
+    "workerAndCronsDisabledRuntime": true,
+    "executedOwnJobs": 0,
+    "ownJobsQueuedPending": 6,
+    "preservationProof": "Source/dev aggregate counts cards/migrations/GIN/users/items unchanged, not full row snapshot"
+  },
+  "attempts": [
+    {
+      "name": "global1",
+      "result": "8 failed/381 passed; runner flags false changed unit default expectations; fixed temporary runner only"
+    },
+    {
+      "name": "global2",
+      "result": "894 passed/0skips; standardNext EPERM"
+    },
+    {
+      "name": "API1",
+      "result": "wrong harness q parameter; corrected to DTO search; failure log preserved"
+    },
+    {
+      "name": "API2",
+      "result": "wrong harness expected historical day to end Z; corrected YYYY-MM-DD UTC-day contract; failure log+partial JSON preserved"
+    },
+    {
+      "name": "API3",
+      "result": "Next temporary runner inherited PORT3001 and bound IPv4 beside Nest IPv6; own process stopped; fixed explicit Next port3000; failure log preserved"
+    },
+    {
+      "name": "API4+SSR",
+      "result": "22 passed"
+    }
+  ],
+  "cleanup": {
+    "ownFixturesRemaining": 0,
+    "cloneDropped": true,
+    "redisRemoved": true,
+    "ports3000and3001Free": true,
+    "sourceDevTestInventoryCountsUnchanged": true,
+    "inventoryComparisonOnlyNotFullDataSnapshot": true,
+    "browserTabClosed": true,
+    "browserSyntheticLogout": true,
+    "originalThemeDarkRestored": true,
+    "viewportReset": true,
+    "runtimeStateCredentialFileRemoved": true,
+    "sourceDevContainersStillHealthy": true
+  },
+  "finalCleanup": true,
+  "reservationsReleased": true,
+  "rootOnlyPlanRegistrationClosure": true,
+  "remainingRequired": "Next standard build and hence pnpm run check full green; no product changes/gate closure/next lot started",
+  "artifacts": [
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/LOTE-VALORES-check-standard.log",
+      "sha256": "90356d9be6b0654e88751d7d13889fa18b94ddca4f670f9ae57ce7442a816bd7"
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/LOTE-VALORES-check-standard-2.log",
+      "sha256": "ec5e6425659953d4d4b5bb4e39a8511502cea7de427dda12d8f5a925e3a6dfa5"
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/LOTE-VALORES-next-standard-panic.log",
+      "sha256": "da73ef9f55d2c4dfd7bd00bd3cdbcda65be85dd56a1d6245474ac260431d624f"
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/LOTE-VALORES-build-webpack-current.log",
+      "sha256": "ddb15d3498346a2ba6bb0f605682f43ea1c20adcf0b881274de8a468f4b4cb00"
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/LOTE-VALORES-runtime-flow.log",
+      "sha256": "67a59f1598d6e8787ed20d61e83f86132291a53ac5f1021ab15db00b623f0f7f"
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/LOTE-VALORES-runtime-flow-2.log",
+      "sha256": "4d7f9831044e351878a9fbfcc8879892f669aeba31727ca124e8c030defa5842"
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/LOTE-VALORES-runtime-flow-3.log",
+      "sha256": "97fcc70a8e6ccb696dcc22cb046f8e10d2b20de781c0ff1ce6e45df44a16a6c4"
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/LOTE-VALORES-runtime-flow-4.log",
+      "sha256": "c7e5a0b461e111560aff0166ff068ee23ad3efd7b6f79d8c8fa3db8e622d848e"
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/LOTE-VALORES-runtime-ssr.log",
+      "sha256": "65e0e4fc10c201f5b81654dd1634270febb5119bd2d343fd73603244f449dc86"
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/LOTE-VALORES-runtime-api.json",
+      "sha256": "d9c5f3f44a27641c7e970dfb90ff992e8190ac281e5115ec8769ea1e536c4f98"
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/LOTE-VALORES-runtime-api-intento-2.json",
+      "sha256": "d584974bedfa6e2e1fb9f583a29bd84fd2d042fdedbb642570ee25cdd12cc311"
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/LOTE-VALORES-runtime-ssr.json",
+      "sha256": "411b70b952e16e85b9c9a8708c5cbd03bfd9e87018094b70f111fceadda2f85f"
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/LOTE-VALORES-cleanup.json",
+      "sha256": "261173104f0ef7eb159fa7c570bcb8694c5b705cfee267fb08f3728580165f0b"
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/LOTE-VALORES-final-source-sha256.json",
+      "sha256": "9da3e730d2af97fee2f2ed5e4ec7e12c95ec9f4e603cb2cc80c7f80fe7833a19"
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/LOTE-VALORES-runtime-built-sha256.json",
+      "sha256": "1b9c12182cb564d5ca99dbf95d058919e38d449d4c10a314eb79dea068e058b3"
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/LOTE-VALORES-received-sha256.json",
+      "sha256": "16b8325f5a68ae656d1289f792582828ff2403289ce0d0604d252a240e604e71"
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/LOTE-VALORES-own-code.diff",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ]
+}

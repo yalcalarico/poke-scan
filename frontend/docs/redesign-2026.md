@@ -1,3 +1,10 @@
+> **ARCHIVO HISTÓRICO — 20/10/2026.** Este diseño/plan fue sustituido o su ejecución
+> terminó. Se conserva en su ruta original para mantener enlaces y anchors.
+> Las instrucciones, checkboxes, conteos y afirmaciones del cuerpo describen su
+> momento; no son órdenes ni capacidades actuales. Referencia vigente:
+> [guía de reemplazo](routes.md) y [estado del proyecto](../../docs/estado-actual.md).
+> Los pendientes válidos se mantienen en el registro actual o el roadmap del escáner.
+
 > Actualización del escáner (2026-10-03): los pasajes sobre el motor anterior, sus candidatos y caché corresponden al diseño histórico. El flujo vigente es DINOv2 con selección automática del #1; ver [scanner.md](scanner.md).
 
 # Plan de rediseño UI/UX 2026

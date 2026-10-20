@@ -1,0 +1,47 @@
+{
+  "checkedAtUtc": "2026-10-10T02:23:49.091248+00:00",
+  "frontendInventory": {
+    "received": 321,
+    "unchanged": 308,
+    "changedAllowed": [
+      "frontend/lib/api/auth.ts",
+      "frontend/lib/api/session-generation.test.ts",
+      "frontend/lib/api/recovery-api.test.ts",
+      "frontend/lib/api/api-client.ts",
+      "frontend/lib/recovery/recovery-view.ts",
+      "frontend/lib/recovery/recovery-capture-script.ts",
+      "frontend/lib/recovery/recovery-capture-script.test.ts",
+      "frontend/hooks/use-auth.tsx",
+      "frontend/docs/testing.md",
+      "frontend/docs/api-client.md",
+      "frontend/docs/routes.md",
+      "frontend/components/auth/recovery-experience.tsx",
+      "frontend/components/auth/recovery-experience.test.tsx"
+    ],
+    "newAllowed": [
+      "frontend/lib/api/session-mutations.ts",
+      "frontend/hooks/use-auth.test.tsx"
+    ],
+    "outsideReservationChanged": [],
+    "note": "tsconfig.tsbuildinfo excluded as generated check cache; inventory covers frontend, not a whole-repository snapshot"
+  },
+  "preservation": {
+    "copiedFilesVerified": 27,
+    "producerBaselinesVerified": 7,
+    "producerReceiptUnchanged": [
+      "docs/plans/lanzamiento-2026-10-07/RESULTADOS/FE-04-implementacion-anexos/validacion.txt",
+      "docs/plans/lanzamiento-2026-10-07/RESULTADOS/FE-04-implementacion-evidencia.json",
+      "docs/plans/lanzamiento-2026-10-07/RESULTADOS/FE-04-implementacion.md"
+    ],
+    "baselineKind": "Root review receipt before review edits. Producer baselines staged; not one before-first-edit snapshot."
+  },
+  "liveResources": [],
+  "runtimeRun": false,
+  "globalRun": false,
+  "browserRun": false,
+  "localLinks": {
+    "count": 19,
+    "missing": [],
+    "kind": "existence only, separate from semantic review and runtime evidence"
+  }
+}

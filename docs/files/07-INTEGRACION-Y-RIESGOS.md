@@ -1,3 +1,10 @@
+> **ARCHIVO HISTÓRICO — 20/10/2026.** Este diseño/plan fue sustituido o su ejecución
+> terminó. Se conserva en su ruta original para mantener enlaces y anchors.
+> Las instrucciones, checkboxes, conteos y afirmaciones del cuerpo describen su
+> momento; no son órdenes ni capacidades actuales. Referencia vigente:
+> [guía de reemplazo](../architecture.md) y [estado del proyecto](../estado-actual.md).
+> Los pendientes válidos se mantienen en el registro actual o el roadmap del escáner.
+
 # 07: Integración, riesgos y límites
 
 Para el coordinador. El orden de las cosas y lo que hay que vigilar.

@@ -1,0 +1,14 @@
+{
+  "command": [
+    "pnpm",
+    "exec",
+    "vitest",
+    "run",
+    "src/common/guards/jwt-auth.guard.spec.ts",
+    "src/modules/auth/auth.service.spec.ts",
+    "src/modules/auth/password-recovery.service.spec.ts"
+  ],
+  "exitCode": 1,
+  "finishedAtUtc": "2026-10-10T01:32:41.767719+00:00",
+  "ownDatabase": "be05_review_2af1fb6f7757_test"
+}

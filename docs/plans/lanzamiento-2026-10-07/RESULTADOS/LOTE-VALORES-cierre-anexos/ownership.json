@@ -1,0 +1,112 @@
+{
+  "owner": "/root/build_gate_causal_sol",
+  "run": "valores-cierre-sol-20261009",
+  "createdAt": "2026-10-09T00:55:58.846095+00:00",
+  "tmp": "/private/tmp/valores-cierre-sol-20261009",
+  "database": "valores_cierre_sol_20261009_test",
+  "databaseComment": "valores-cierre-sol-20261009-owned",
+  "redis": "valores-cierre-sol-20261009-redis",
+  "redisLabel": "valores-cierre-sol-20261009",
+  "redisPort": 56379,
+  "resources": [
+    {
+      "role": "database",
+      "name": "valores_cierre_sol_20261009_test",
+      "pgContainer": "18aa2f6937521ae010930ae98cbee45f2fa435b554c65cf90daaffba0c641ba8",
+      "comment": "valores-cierre-sol-20261009-owned"
+    },
+    {
+      "role": "redis",
+      "name": "valores-cierre-sol-20261009-redis",
+      "id": "679c0464060fd71f41df67e7a13cf34acdfff6d4fb110e51a7b749940006b731",
+      "label": "valores-cierre-sol-20261009",
+      "bind": "127.0.0.1:56379",
+      "tmpfs": true
+    }
+  ],
+  "sourceHashes": 430,
+  "liveResources": [],
+  "runtimeStarted": false,
+  "plannedResources": [
+    {
+      "role": "database",
+      "name": "valores_cierre_sol_20261009_test",
+      "comment": "valores-cierre-sol-20261009-owned"
+    },
+    {
+      "role": "redis",
+      "name": "valores-cierre-sol-20261009-redis",
+      "label": "valores-cierre-sol-20261009",
+      "bind": "127.0.0.1:56379"
+    }
+  ],
+  "checkSession": 44067,
+  "checkRunning": false,
+  "checkExitCode": 0,
+  "checkLogSha256": "d5beca52fc12fd5bc2da419bf2bbe0bf0191ea638a4f7d91872d4e14604b5851",
+  "apiSession": 16753,
+  "webSession": 53981,
+  "processes": [
+    {
+      "role": "api",
+      "pid": 6235,
+      "port": 3001,
+      "expectedCommand": "backend/dist/main.js",
+      "ownershipCommandVerified": true,
+      "parentPID": 6234
+    },
+    {
+      "role": "web",
+      "pid": 6247,
+      "port": 3000,
+      "expectedCommand": "next start",
+      "ownershipCommandVerified": true,
+      "parentPID": 6244
+    }
+  ],
+  "plannedFixture": {
+    "set": "valclose-set",
+    "cardsPrefix": "valclose-card",
+    "synthetic": true,
+    "syntheticUsersPlanned": 2
+  },
+  "runtimeAPIExit": 0,
+  "runtimeAPIUniqueChecks": 15,
+  "runtimeSSRExit": 0,
+  "runtimeSSRUniqueChecks": 7,
+  "focusedPrivacyExit": 0,
+  "globalTests": 894,
+  "globalSkips": 0,
+  "processesStopped": [
+    6235,
+    6247
+  ],
+  "databaseCommentVerifiedBeforeDrop": true,
+  "databaseConnectionsBeforeDrop": 0,
+  "cloneDropped": true,
+  "redisRemoved": true,
+  "sourceCountsUnchanged": true,
+  "sourceInfraIDsUnchangedHealthy": true,
+  "cleanupAt": "2026-10-09T01:09:54.296866+00:00",
+  "runtimeStateCredentialFileRemoved": true,
+  "finalSourceMatches": 430,
+  "portsFree": [
+    3000,
+    3001,
+    3002,
+    3313,
+    56379
+  ],
+  "browserEvidenceProducer": "root",
+  "browserEvidenceSha256": "787bc9133dedf77b696dbd9d21e3fda29a4850f21ce1526c79f8e5a285d32f77",
+  "buildAndRuntimeSessionsComplete": true,
+  "apiTerminationSessionExit": 241,
+  "webTerminationSessionExit": 143,
+  "terminationExpectedSIGTERM": true,
+  "ownReservationsReleased": true,
+  "finalAt": "2026-10-09T01:10:16.726442+00:00",
+  "finalOwnProcessMatches": 0,
+  "finalProcessCheckPermission": "require_escalated accepted",
+  "finalProcessCheckExit": 1,
+  "protectedStateValuesOmittedFromRepositoryReceipt": true
+}

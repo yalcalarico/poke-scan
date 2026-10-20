@@ -1,0 +1,44 @@
+.stage {
+  width: 100%;
+  perspective: 900px;
+}
+
+.stage[data-card-tilt='detail'] {
+  touch-action: pan-y pinch-zoom;
+}
+
+.surface {
+  position: relative;
+  border-radius: var(--radius-surface);
+  transform: rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg));
+  transition: transform var(--duration-base) var(--ease-emphasis), box-shadow var(--duration-base) var(--ease-standard);
+}
+
+.stage[data-active] .surface {
+  box-shadow: var(--shadow-xl);
+  transition-duration: var(--duration-instant);
+  will-change: transform;
+}
+
+.stage[data-card-tilt='catalog'][data-active] .surface {
+  box-shadow: var(--shadow-md);
+}
+
+.surface::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(ellipse at var(--glare-x, 50%) 15%, color-mix(in srgb, var(--focus-ring-on-media) 12%, transparent), transparent 70%);
+  transition: opacity var(--duration-base) var(--ease-standard);
+}
+
+.stage[data-active] .surface::after { opacity: 1; }
+.stage[data-card-tilt='catalog'] .surface::after { display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .surface { transform: none; transition: none; }
+  .surface::after { display: none; }
+}

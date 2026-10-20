@@ -1,0 +1,88 @@
+--- /Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-07-review-evidencia/redis.service.ts.received	2026-10-09 09:31:57
++++ /Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/backend/src/redis/redis.service.ts	2026-10-09 09:39:33
+@@ -35,7 +35,7 @@
+   /** Hay `REDIS_URL` configurado. Distingue "no configurado" de "caído". */
+   configured: boolean;
+   available: boolean;
+-  /** Desde cuándo está caído. `null` si está sano o si nunca estuvo arriba. */
++  /** Desde cuándo se quiso usar la caché sin conexión. `null` si está sana o no configurada. */
+   degradedSince: string | null;
+   lastErrorAt: string | null;
+ }
+@@ -73,8 +73,12 @@
+         lazyConnect: true,
+         enableOfflineQueue: false,
+         maxRetriesPerRequest: 1,
++        // La cola offline no cubre comandos enviados cuya respuesta se perdió.
++        // No repetir escrituras inciertas, y limitar la espera de su respuesta.
++        autoResendUnfulfilledCommands: false,
++        commandTimeout: 3000,
+         connectTimeout: 3000,
+-        // Redis es una caché opcional: mantener los reintentos acotados permite
++        // Redis es una caché opcional: acotar la espera entre reintentos permite
+         // recuperarla sin reiniciar la API, incluso tras una caída larga.
+         retryStrategy: (times: number) => Math.min(500 * 2 ** Math.min(times - 1, 5), 15_000),
+       });
+@@ -82,7 +86,6 @@
+       client.on('error', () => {
+         if (this.shuttingDown) return;
+         this.warnThrottled('conexión', 'Error de conexión con Redis; se continúa sin caché');
+-        this.noteError();
+         this.setAvailable(false);
+       });
+       client.on('ready', () => {
+@@ -102,21 +105,17 @@
+         this.setAvailable(false);
+       });
+ 
++      this.client = client;
+       client
+         .connect()
+         .then(() => {
+-          if (this.shuttingDown) return;
++          if (this.shuttingDown || client.status !== 'ready') return;
+           this.logger.log('Conectado a Redis');
+-          this.setAvailable(true);
+         })
+         .catch(() => {
+-          if (this.shuttingDown) return;
++          if (this.shuttingDown || client.status === 'ready') return;
+           this.warnThrottled('conexión', 'No se pudo conectar a Redis; se continúa sin caché');
+-          this.noteError();
+-          this.setAvailable(false);
+         });
+-
+-      this.client = client;
+     } catch {
+       this.noteError();
+       this.warnThrottled('conexión', 'Redis no disponible; se continúa sin caché');
+@@ -130,9 +129,9 @@
+     this.setAvailable(false);
+     const client = this.client;
+     this.client = null;
+-    // disconnect() cancela el timer interno de reconexión y no espera a Redis.
+-    // Quitar los listeners evita callbacks tardíos durante el cierre del módulo.
+-    client.removeAllListeners();
++    // ioredis posee listeners ready/close que resuelven connect(): no quitarlos.
++    // Los nuestros ignoran eventos tardíos y conservan el handler de error.
++    // disconnect() cancela el timer de reconexión sin esperar una respuesta.
+     client.disconnect();
+   }
+ 
+@@ -188,6 +187,8 @@
+    * el log crezca 47 veces.
+    */
+   private warnThrottled(kind: string, message: string): void {
++    if (this.shuttingDown) return;
++    this.noteError();
+     const now = Date.now();
+     const previous = this.warnedAt.get(kind);
+     if (previous && now - previous.at < DEGRADED_LOG_INTERVAL_MS) {
+@@ -196,7 +197,6 @@
+     }
+     const suppressed = previous?.suppressed ?? 0;
+     this.warnedAt.set(kind, { at: now, suppressed: 0 });
+-    this.noteError();
+     this.logger.warn(
+       suppressed > 0 ? `${message} (+${suppressed} avisos suprimidos)` : message,
+     );

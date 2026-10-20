@@ -1,0 +1,78 @@
+{
+  "passed": true,
+  "seeded": {
+    "sets": 11,
+    "cards": 1801
+  },
+  "collectionSetRegisteredOnce": true,
+  "browsingDidNotRegister": true,
+  "twoUtcDays": [
+    {
+      "day": "2026-10-19",
+      "tcgdexCalls": 1,
+      "csvCalls": 7
+    },
+    {
+      "day": "2026-10-20",
+      "tcgdexCalls": 2,
+      "csvCalls": 11
+    }
+  ],
+  "historyPoints": 2,
+  "registrySets": 19,
+  "registryCards": 2832,
+  "csvOnlySelectedGroupRequested": true,
+  "externalRequests": 0,
+  "cronjobs": [
+    {
+      "expression": "0 21 * * *",
+      "zone": "UTC"
+    },
+    {
+      "expression": "*/15 * * * *",
+      "zone": "UTC"
+    },
+    {
+      "expression": "15 3 * * *",
+      "zone": "UTC"
+    },
+    {
+      "expression": "*/15 * * * *",
+      "zone": "UTC"
+    }
+  ],
+  "standardCheck": {
+    "passed": true,
+    "backendTests": 594,
+    "apiTests": 6,
+    "frontendTests": 618,
+    "additionalNodeScripts": true,
+    "log": "h4-check-performance-fix.log"
+  },
+  "sqlBootstrap": {
+    "pendingTargets": 2832,
+    "beforeMs": 14055.749,
+    "afterMs": 6.869,
+    "aggregateExecutionsBefore": 2832,
+    "aggregateExecutionsAfter": 1,
+    "transactionTimeoutUnchanged": true
+  },
+  "activation": {
+    "databaseMigrated": true,
+    "ginIndexes": 5,
+    "privateCountsPreserved": true,
+    "registrySets": 18,
+    "registryCards": 2769,
+    "apiHttp": 200,
+    "webHttp": 200,
+    "cronjobsEnabled": true,
+    "liveChecks": {
+      "activeLegacy": 0,
+      "outsideDailyScope": 0,
+      "todayChecks": 76,
+      "todayQuoted": 0,
+      "todayNoQuote": 76
+    },
+    "temporaryResourcesCleaned": true
+  }
+}

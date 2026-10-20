@@ -1,0 +1,37 @@
+{
+  "task": "BE-07",
+  "createdAt": "2026-10-09T12:25Z",
+  "resource": {
+    "type": "docker-container",
+    "id": "52712641e5de50bcfe13ce2d0d2be42a8ece9363ede523845be01d48190cae18",
+    "name": "be07-redis-20261009",
+    "image": "redis:7-alpine",
+    "imageId": "ec4f171e9ff0",
+    "labels": {
+      "codex.owner": "be07-20261009",
+      "codex.task": "BE-07"
+    },
+    "publishedPort": "127.0.0.1:56381",
+    "dataStorage": "tmpfs:/data; appendonly disabled; snapshots disabled",
+    "beforeCreate": "No listener found on TCP 56381; only shared pokemon-scanner-db and pokemon-scanner-redis were present.",
+    "afterUse": "Container removed by full ID; label query returned no containers; no listener on TCP 56381."
+  },
+  "processes": [
+    {
+      "pid": 9528,
+      "command": "node /private/tmp/be07-recovery-harness.mjs",
+      "shutdown": "SIGTERM; harness reported RedisService shutdown; process exited; final process query had no match."
+    }
+  ],
+  "verification": {
+    "stopBeforeTests": true,
+    "focusedTests": "16 passed, 0 skipped",
+    "backendLint": "passed",
+    "backendBuild": "passed",
+    "globalCheck": "not run by task scope",
+    "databaseMutations": 0,
+    "sharedRedisMutations": 0,
+    "flushdb": false,
+    "externalProviderRequests": 0
+  }
+}

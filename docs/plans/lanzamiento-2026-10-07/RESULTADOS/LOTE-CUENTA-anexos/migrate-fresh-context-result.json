@@ -1,0 +1,16 @@
+{
+  "command": [
+    "pnpm",
+    "--dir",
+    "backend",
+    "exec",
+    "prisma",
+    "migrate",
+    "deploy"
+  ],
+  "exitCode": 0,
+  "startedAtUtc": "2026-10-10T14:06:05.746202+00:00",
+  "finishedAtUtc": "2026-10-10T14:06:06.809517+00:00",
+  "logRedactedAtSource": true,
+  "environmentScope": "owned DB for DATABASE_URL and DATABASE_URL_TEST, owned loopback Redis; public API loopback build value; global defaults intact"
+}

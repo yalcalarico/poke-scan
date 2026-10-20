@@ -1,0 +1,7 @@
+{
+  "status": 403,
+  "body": "The price archive has been temporarily removed due to rising server costs and its growing moderation burden. Prices are still being archived behind-the-scenes. My goal is to share the price archive once I can get further clarification from TCGplayer, and standup a reliable way to cover my operating costs.\n\nIf you were previously relying on the price archive to pull daily pricing, please instead process categories, groups, and prices by making multiple requests. This will primarily help by reducing overall bandwidth. Separately, avoid requesting the same price file more than once in a 24 hour period.\n\nI am very sorry for the inconvenience. There are no workarounds or ways to appeal this decision at this time.\n-Toaster-",
+  "url": "https://tcgcsv.com/archive/tcgplayer/prices-2024-02-08.ppmd.7z",
+  "atUtc": "2026-10-13T23:33:58.126191+00:00",
+  "purpose": "Exact official FAQ archive link; bounded GET, no retries"
+}

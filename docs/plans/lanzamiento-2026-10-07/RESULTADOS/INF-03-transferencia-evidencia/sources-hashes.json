@@ -1,0 +1,7 @@
+{
+  "scripts/inf03-transfer-common.mjs": "71122430369885d17801af557f7602dbcb9162fc6b5b638f7b4f4dd95034e1ca",
+  "scripts/inf03-transfer.mjs": "516b75037b1a66fb5ad693f69f31539ef756d160b4aac10dcf8926c8f6343268",
+  "scripts/inf03-transfer.test.mjs": "cbdc459a662e0b51ef49de46fada6eb878d05a56e8ab05e2bb53c84cb38c060a",
+  "infra/inf03/TRANSFER-LOCAL.md": "d45294c8fca97e52b49859c736a9298bf9459d2aa8f03679819636f9c1261e59",
+  "package.json": "961f76a255fdf87176247a649b5b047529d4d07641aff1295ea726a14ddacc24"
+}

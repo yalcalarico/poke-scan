@@ -1,0 +1,23 @@
+{
+  "dateLocal": "2026-10-12",
+  "timezone": "America/Buenos_Aires",
+  "status": "human planning decision recorded",
+  "provider": "Backblaze B2",
+  "privateAgeKeyCustodian": "project owner",
+  "evidence": [
+    "Backblaze B2 (recomendado)",
+    "Yo seré el custodio (recomendado)"
+  ],
+  "accountsOrKeysCreated": false,
+  "externalUploads": false,
+  "productChanges": false,
+  "testsRun": false,
+  "instanceChanged": false,
+  "nextStepAuthorized": false,
+  "nextStep": "Local simulated transfer adapter and upload/download/integrity exercise; ask first",
+  "localReportLinksVerified": 3,
+  "decisionDocumentSha256": "ce7dfe18d15da378a75dcf90fbc1eed9743c47a9d5e031ce768f888cee22f6d0",
+  "completedIDs": 20,
+  "pendingIDs": 18,
+  "automation": "PAUSED / two hours unchanged"
+}

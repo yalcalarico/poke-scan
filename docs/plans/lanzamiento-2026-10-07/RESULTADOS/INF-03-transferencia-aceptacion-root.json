@@ -1,0 +1,45 @@
+{
+  "status": "accepted locally by root",
+  "atUtc": "2026-10-12T04:19:29.848631+00:00",
+  "step": "Filesystem simulated backup transfer, actual encrypted backup/downloaded-byte restore consumer",
+  "standardCheck": {
+    "command": "pnpm run stop then pnpm run check",
+    "runs": 1,
+    "passed": 1087,
+    "skipped": 0,
+    "counts": [
+      466,
+      6,
+      562,
+      13,
+      15,
+      25
+    ],
+    "lintTypesNestNextTurbopack": true
+  },
+  "focusedTests": 12,
+  "focusedOverlapGlobal": true,
+  "integratedDistinctControls": 55,
+  "screenshots": 2,
+  "sourcesAndOutputsIntactDuringRuntime": 1466,
+  "delegations": 2,
+  "B2AccountCreated": false,
+  "B2IntegrationAccredited": false,
+  "networkBackblazeCalls": false,
+  "hostLossRecoveryAccredited": false,
+  "physical30DayWait": false,
+  "ownQAResourcesCleaned": true,
+  "instanceIntentionallyAlive": "http://localhost:3000",
+  "state": {
+    "complete": 20,
+    "pending": 18,
+    "newIDsClosed": 0
+  },
+  "nextStep": "Propose independent-custody/host-loss recovery simulation; wait for user",
+  "rootFinalVerification": {
+    "artifactHashesVerified": 30,
+    "sourceCopiesStillCurrent": 5,
+    "reportLocalLinksVerified": 21,
+    "agentsCompleted": true
+  }
+}

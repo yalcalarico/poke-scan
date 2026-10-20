@@ -1,0 +1,190 @@
+[
+  {
+    "id": "default-factory-disabled",
+    "pass": true
+  },
+  {
+    "id": "owned-database-marker",
+    "pass": true
+  },
+  {
+    "id": "compiled-register",
+    "pass": true
+  },
+  {
+    "id": "compiled-request-202-no-store",
+    "pass": true
+  },
+  {
+    "id": "simulator-native-http-received",
+    "pass": true
+  },
+  {
+    "id": "payload-allowlist-no-userid",
+    "pass": true
+  },
+  {
+    "id": "link-fragment-only",
+    "pass": true
+  },
+  {
+    "id": "pg-hash-only-valid-token",
+    "pass": true
+  },
+  {
+    "id": "next-captures-simulated-mail-token",
+    "pass": true
+  },
+  {
+    "id": "real-ui-password-changed",
+    "pass": true
+  },
+  {
+    "id": "replay-rejected",
+    "pass": true
+  },
+  {
+    "id": "old-password-rejected-new-accepted",
+    "pass": true
+  },
+  {
+    "id": "pre-reset-refresh-revoked",
+    "pass": true
+  },
+  {
+    "id": "owned-database-before-fixture-reset-13",
+    "pass": true
+  },
+  {
+    "id": "generic-202-429",
+    "pass": true
+  },
+  {
+    "id": "one-handoff-no-replay-429",
+    "pass": true
+  },
+  {
+    "id": "uncertain-token-not-invalidated-429",
+    "pass": true
+  },
+  {
+    "id": "owned-database-before-fixture-reset-17",
+    "pass": true
+  },
+  {
+    "id": "generic-202-500",
+    "pass": true
+  },
+  {
+    "id": "one-handoff-no-replay-500",
+    "pass": true
+  },
+  {
+    "id": "uncertain-token-not-invalidated-500",
+    "pass": true
+  },
+  {
+    "id": "owned-database-before-fixture-reset-21",
+    "pass": true
+  },
+  {
+    "id": "generic-202-redirect",
+    "pass": true
+  },
+  {
+    "id": "one-handoff-no-replay-redirect",
+    "pass": true
+  },
+  {
+    "id": "uncertain-token-not-invalidated-redirect",
+    "pass": true
+  },
+  {
+    "id": "owned-database-before-fixture-reset-25",
+    "pass": true
+  },
+  {
+    "id": "generic-202-badjson",
+    "pass": true
+  },
+  {
+    "id": "one-handoff-no-replay-badjson",
+    "pass": true
+  },
+  {
+    "id": "uncertain-token-not-invalidated-badjson",
+    "pass": true
+  },
+  {
+    "id": "owned-database-before-fixture-reset-29",
+    "pass": true
+  },
+  {
+    "id": "generic-202-oversize",
+    "pass": true
+  },
+  {
+    "id": "one-handoff-no-replay-oversize",
+    "pass": true
+  },
+  {
+    "id": "uncertain-token-not-invalidated-oversize",
+    "pass": true
+  },
+  {
+    "id": "owned-database-before-fixture-reset-33",
+    "pass": true
+  },
+  {
+    "id": "generic-202-lost",
+    "pass": true
+  },
+  {
+    "id": "one-handoff-no-replay-lost",
+    "pass": true
+  },
+  {
+    "id": "uncertain-token-not-invalidated-lost",
+    "pass": true
+  },
+  {
+    "id": "owned-database-before-fixture-reset-37",
+    "pass": true
+  },
+  {
+    "id": "lost-response-token-still-consumable",
+    "pass": true
+  },
+  {
+    "id": "owned-database-before-fixture-reset-39",
+    "pass": true
+  },
+  {
+    "id": "generic-202-hang",
+    "pass": true
+  },
+  {
+    "id": "one-handoff-no-replay-hang",
+    "pass": true
+  },
+  {
+    "id": "uncertain-token-not-invalidated-hang",
+    "pass": true
+  },
+  {
+    "id": "redirect-never-followed",
+    "pass": true
+  },
+  {
+    "id": "external-network-never-used",
+    "pass": true
+  },
+  {
+    "id": "http-connections-closed",
+    "pass": true
+  },
+  {
+    "id": "recovery-drained",
+    "pass": true
+  }
+]

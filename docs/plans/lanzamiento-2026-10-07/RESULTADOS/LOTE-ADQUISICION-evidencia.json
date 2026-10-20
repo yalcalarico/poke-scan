@@ -1,0 +1,361 @@
+{
+  "task": "LOTE ADQUISICI\u00d3N FE-07 + SEO-03, gate est\u00e1ndar",
+  "owner": "/root/adquisicion_review_sol",
+  "date": "2026-10-10",
+  "status": "failed_gate_no_runtime",
+  "productFrozen": true,
+  "productChangesDuringGate": [],
+  "globalRuns": [
+    {
+      "runId": "adquisicion-gate-8e4fa11b7ccb",
+      "command": [
+        "pnpm",
+        "run",
+        "check"
+      ],
+      "exitCode": 1,
+      "backend": {
+        "passed": 414,
+        "failed": 0
+      },
+      "scripts": {
+        "passed": 13,
+        "failed": 0
+      },
+      "e2e": {
+        "passed": 6,
+        "failed": 0
+      },
+      "frontend": {
+        "passed": 548,
+        "failed": 1,
+        "total": 549
+      },
+      "total": {
+        "passed": 981,
+        "failed": 1,
+        "cases": 982,
+        "skipped": 0
+      },
+      "buildReached": false,
+      "failure": "API_INTERNAL_URL override del helper para build heredado por test que configura URL p\u00fablica; recibido exacto loopback1",
+      "log": "LOTE-ADQUISICION-anexos/check-standard.log"
+    },
+    {
+      "runId": "adquisicion-gate-19c2741bba85",
+      "command": [
+        "pnpm",
+        "run",
+        "check"
+      ],
+      "exitCode": 1,
+      "backend": {
+        "passed": 413,
+        "failed": 1,
+        "total": 414,
+        "skipped": 0
+      },
+      "scriptsRun": false,
+      "e2eRun": false,
+      "frontendRun": false,
+      "buildReached": false,
+      "failure": "src/jobs/price-backfill.service.spec.ts:184 respeta el l\u00edmite de la corrida, timeout5000ms",
+      "causeLocalized": false,
+      "log": "LOTE-ADQUISICION-anexos/context-corrected/check-standard-context-corrected.log"
+    }
+  ],
+  "contextCorrection": {
+    "rootAuthorized": true,
+    "originalRunnerPreserved": true,
+    "onlyRemoved": "API_INTERNAL_URL override del helper de gate",
+    "NEXT_PUBLIC_API_URL": "http://127.0.0.1:3001/api",
+    "NEXT_PUBLIC_SITE_URL": "http://127.0.0.1:3000",
+    "fullFileDiagnostic": {
+      "command": [
+        "pnpm",
+        "--dir",
+        "frontend",
+        "exec",
+        "vitest",
+        "run",
+        "lib/api/api-client.test.ts"
+      ],
+      "passed": 10,
+      "failed": 0,
+      "exitCode": 0,
+      "newCases": false,
+      "log": "LOTE-ADQUISICION-anexos/contextual-api-client-fullfile.log"
+    },
+    "productTestsFlagsGlobalCommandChanged": false,
+    "secondRunFreshOwnedInfra": true,
+    "log": "LOTE-ADQUISICION-anexos/runner-context-cause.json"
+  },
+  "runsWithCompleteLogsAndReceipts": [
+    {
+      "path": "LOTE-ADQUISICION-anexos/migrate-own-result.json",
+      "command": [
+        "pnpm",
+        "--dir",
+        "backend",
+        "exec",
+        "prisma",
+        "migrate",
+        "deploy"
+      ],
+      "exitCode": 0,
+      "startedAtUtc": "2026-10-10T14:39:45.207004+00:00",
+      "finishedAtUtc": "2026-10-10T14:39:46.293331+00:00",
+      "logRedactedAtSource": true,
+      "environmentScope": "owned DB for DATABASE_URL and DATABASE_URL_TEST, owned loopback Redis; public API loopback build value; global defaults intact"
+    },
+    {
+      "path": "LOTE-ADQUISICION-anexos/check-standard-result.json",
+      "command": [
+        "pnpm",
+        "run",
+        "check"
+      ],
+      "exitCode": 1,
+      "startedAtUtc": "2026-10-10T14:40:26.953212+00:00",
+      "finishedAtUtc": "2026-10-10T14:41:34.291304+00:00",
+      "logRedactedAtSource": true,
+      "environmentScope": "owned DB for DATABASE_URL and DATABASE_URL_TEST, owned loopback Redis; public API loopback build value; global defaults intact"
+    },
+    {
+      "path": "LOTE-ADQUISICION-anexos/contextual-api-client-fullfile-result.json",
+      "command": [
+        "pnpm",
+        "--dir",
+        "frontend",
+        "exec",
+        "vitest",
+        "run",
+        "lib/api/api-client.test.ts"
+      ],
+      "exitCode": 0,
+      "startedAtUtc": "2026-10-10T14:42:55.652409+00:00",
+      "finishedAtUtc": "2026-10-10T14:42:56.236843+00:00",
+      "logRedactedAtSource": true,
+      "environmentScope": "owned DB for DATABASE_URL and DATABASE_URL_TEST, owned loopback Redis; public API loopback build value; global defaults intact"
+    },
+    {
+      "path": "LOTE-ADQUISICION-anexos/stop-before-check-result.json",
+      "command": [
+        "pnpm",
+        "run",
+        "stop"
+      ],
+      "exitCode": 0,
+      "startedAtUtc": "2026-10-10T14:39:52.536450+00:00",
+      "finishedAtUtc": "2026-10-10T14:39:52.791501+00:00",
+      "logRedactedAtSource": true,
+      "environmentScope": "owned DB for DATABASE_URL and DATABASE_URL_TEST, owned loopback Redis; public API loopback build value; global defaults intact"
+    },
+    {
+      "path": "LOTE-ADQUISICION-anexos/context-corrected/migrate-own-result.json",
+      "command": [
+        "pnpm",
+        "--dir",
+        "backend",
+        "exec",
+        "prisma",
+        "migrate",
+        "deploy"
+      ],
+      "exitCode": 0,
+      "startedAtUtc": "2026-10-10T14:43:38.598786+00:00",
+      "finishedAtUtc": "2026-10-10T14:43:39.462122+00:00",
+      "logRedactedAtSource": true,
+      "environmentScope": "owned DB for DATABASE_URL and DATABASE_URL_TEST, owned loopback Redis; public API loopback build value; global defaults intact"
+    },
+    {
+      "path": "LOTE-ADQUISICION-anexos/context-corrected/check-standard-context-corrected-result.json",
+      "command": [
+        "pnpm",
+        "run",
+        "check"
+      ],
+      "exitCode": 1,
+      "startedAtUtc": "2026-10-10T14:43:57.580232+00:00",
+      "finishedAtUtc": "2026-10-10T14:45:00.342643+00:00",
+      "logRedactedAtSource": true,
+      "environmentScope": "owned DB for DATABASE_URL and DATABASE_URL_TEST, owned loopback Redis; public API loopback build value; global defaults intact"
+    },
+    {
+      "path": "LOTE-ADQUISICION-anexos/context-corrected/stop-before-check-result.json",
+      "command": [
+        "pnpm",
+        "run",
+        "stop"
+      ],
+      "exitCode": 0,
+      "startedAtUtc": "2026-10-10T14:43:49.117226+00:00",
+      "finishedAtUtc": "2026-10-10T14:43:49.379692+00:00",
+      "logRedactedAtSource": true,
+      "environmentScope": "owned DB for DATABASE_URL and DATABASE_URL_TEST, owned loopback Redis; public API loopback build value; global defaults intact"
+    }
+  ],
+  "infra": {
+    "source": "pokemon_cards_test plantilla s\u00f3lo lectura, cero conexiones al clonar",
+    "ownDatabaseMigrationCount": 13,
+    "ownDatabaseGin": 5,
+    "redisPort": 56396,
+    "loopbackOnly": true,
+    "redisTmpfsNoVolume": true,
+    "registryPull": false,
+    "ownership": [
+      {
+        "runId": "adquisicion-gate-8e4fa11b7ccb",
+        "owner": "/root/adquisicion_review_sol",
+        "createdAtUtc": "2026-10-10T14:39:10.635785+00:00",
+        "root": "/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app",
+        "annex": "/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/docs/plans/lanzamiento-2026-10-07/RESULTADOS/LOTE-ADQUISICION-anexos",
+        "database": "adq_8e4fa11b7ccb_test",
+        "databaseComment": "adquisicion-gate-8e4fa11b7ccb|owner=/root/adquisicion_review_sol",
+        "redis": "adquisicion-gate-8e4fa11b7ccb-redis",
+        "redisLabel": "adquisicion-gate-8e4fa11b7ccb|owner=/root/adquisicion_review_sol",
+        "redisPort": 56396,
+        "resources": [
+          {
+            "role": "database",
+            "name": "adq_8e4fa11b7ccb_test",
+            "pgContainer": "18aa2f6937521ae010930ae98cbee45f2fa435b554c65cf90daaffba0c641ba8",
+            "comment": "adquisicion-gate-8e4fa11b7ccb|owner=/root/adquisicion_review_sol"
+          },
+          {
+            "role": "redis",
+            "name": "adquisicion-gate-8e4fa11b7ccb-redis",
+            "id": "df3730e10a4df770b4e93b4416aade62d91e665f50815550ab4d8ef4b00cabd9",
+            "label": "adquisicion-gate-8e4fa11b7ccb|owner=/root/adquisicion_review_sol",
+            "bind": "127.0.0.1:56396",
+            "tmpfs": true
+          }
+        ],
+        "liveResources": [],
+        "plannedResources": [
+          {
+            "role": "database",
+            "name": "adq_8e4fa11b7ccb_test",
+            "comment": "adquisicion-gate-8e4fa11b7ccb|owner=/root/adquisicion_review_sol"
+          },
+          {
+            "role": "redis",
+            "name": "adquisicion-gate-8e4fa11b7ccb-redis",
+            "label": "adquisicion-gate-8e4fa11b7ccb|owner=/root/adquisicion_review_sol",
+            "bind": "127.0.0.1:56396"
+          }
+        ],
+        "databaseCommentVerifiedBeforeDrop": true,
+        "databaseConnectionsBeforeDrop": 0,
+        "cloneDropped": true,
+        "redisRemoved": true,
+        "sourceCountsUnchanged": true,
+        "sourceInfraIDsUnchangedHealthy": true,
+        "cleanupAt": "2026-10-10T14:42:15.910700+00:00"
+      },
+      {
+        "runId": "adquisicion-gate-19c2741bba85",
+        "owner": "/root/adquisicion_review_sol",
+        "createdAtUtc": "2026-10-10T14:43:18.403522+00:00",
+        "root": "/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app",
+        "annex": "/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/docs/plans/lanzamiento-2026-10-07/RESULTADOS/LOTE-ADQUISICION-anexos/context-corrected",
+        "database": "adq_19c2741bba85_test",
+        "databaseComment": "adquisicion-gate-19c2741bba85|owner=/root/adquisicion_review_sol",
+        "redis": "adquisicion-gate-19c2741bba85-redis",
+        "redisLabel": "adquisicion-gate-19c2741bba85|owner=/root/adquisicion_review_sol",
+        "redisPort": 56396,
+        "resources": [
+          {
+            "role": "database",
+            "name": "adq_19c2741bba85_test",
+            "pgContainer": "18aa2f6937521ae010930ae98cbee45f2fa435b554c65cf90daaffba0c641ba8",
+            "comment": "adquisicion-gate-19c2741bba85|owner=/root/adquisicion_review_sol"
+          },
+          {
+            "role": "redis",
+            "name": "adquisicion-gate-19c2741bba85-redis",
+            "id": "9bbb47cd7c071822f4b364f45d26d29dd16fc74eb723f95df7e40557bbdc6871",
+            "label": "adquisicion-gate-19c2741bba85|owner=/root/adquisicion_review_sol",
+            "bind": "127.0.0.1:56396",
+            "tmpfs": true
+          }
+        ],
+        "liveResources": [],
+        "contextCorrection": "API_INTERNAL_URL override removed; no product/test/global command change",
+        "previousRun": "adquisicion-gate-8e4fa11b7ccb",
+        "plannedResources": [
+          {
+            "role": "database",
+            "name": "adq_19c2741bba85_test",
+            "comment": "adquisicion-gate-19c2741bba85|owner=/root/adquisicion_review_sol"
+          },
+          {
+            "role": "redis",
+            "name": "adquisicion-gate-19c2741bba85-redis",
+            "label": "adquisicion-gate-19c2741bba85|owner=/root/adquisicion_review_sol",
+            "bind": "127.0.0.1:56396"
+          }
+        ],
+        "databaseCommentVerifiedBeforeDrop": true,
+        "databaseConnectionsBeforeDrop": 0,
+        "cloneDropped": true,
+        "redisRemoved": true,
+        "sourceCountsUnchanged": true,
+        "sourceInfraIDsUnchangedHealthy": true,
+        "cleanupAt": "2026-10-10T14:46:52.808237+00:00"
+      }
+    ],
+    "cleanup": "Ambos clones DROP tras SQL0/comentario/marker/owner/full PGID; ambos Redis retirados por fullID/label/name/bind",
+    "boundedSharedCountsUnchanged": true,
+    "sharedGinOidsDefinitionsUnchanged": true,
+    "sharedInfraIdsUnchangedHealthy": true,
+    "sharedFullRowsComparison": false,
+    "rootIndependentCleanup": {
+      "source": "/private/tmp/adquisicion-root-cleanup-observation.json",
+      "immutableSourceSha256": "38070e76b05a87ad66d8cd0c8175c39b326fe2292be0c479dd10fe95a8d9d7fa",
+      "copiedAs": "LOTE-ADQUISICION-anexos/root-cleanup-observation.json",
+      "scope": "Observaci\u00f3n read-only de coordinaci\u00f3n, no ejecuci\u00f3n de este agente"
+    }
+  },
+  "preservation": {
+    "sourceAndReceiptHashes": 623,
+    "currentProductSourceFiles": 510,
+    "changed": [],
+    "priorCuentaSources": 507,
+    "acquisitionNewSources": 3,
+    "producerAndReviewReceiptsPreserved": true,
+    "currentPortsFree": [
+      3000,
+      3001,
+      56396
+    ],
+    "outputsComparison": "LOTE-ADQUISICION-anexos/outputs-vs-prior-cuenta.json",
+    "priorCuentaOutputsUnchanged": {
+      "backend": 298,
+      "next": 2085
+    },
+    "outputsBaselineLimitation": "Comparaci\u00f3n contra \u00faltimo CUENTA aceptado; no captura nueva anterior al gate. No runtime adquisici\u00f3n ni builds nuevos."
+  },
+  "preparedNotExecuted": [
+    "runtime.mjs: Next guard + browser guard/imageproxy y matriz head/PNG/QA",
+    "outputs.py: snapshot pre-runtime/final; no ejecuci\u00f3n"
+  ],
+  "notAccredited": [
+    "pnpm run check verde",
+    "build Nest/Next para fuentes actuales adquisici\u00f3n",
+    "imagen servida/PNG real/previews",
+    "HTML/tag por rutas/UA",
+    "navegador/screenshots3901280ambos temas/teclado/zoom/reducedmotion",
+    "dominio/producci\u00f3n/HTTPS/unfurl remoto",
+    "soluci\u00f3n de timeout backfill hist\u00f3rico o socket hang up"
+  ],
+  "reservation": {
+    "status": "released_on_delivery",
+    "ownedRuntimeResources": []
+  },
+  "IDsClosed": [],
+  "centralCountUnchanged": {
+    "complete": 17,
+    "pending": 21
+  }
+}

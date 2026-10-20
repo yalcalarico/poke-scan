@@ -1,0 +1,12 @@
+{
+  "baselineFiles": 501,
+  "unchanged": 500,
+  "changedWithinRootAuthorizedExtension": {
+    "frontend/components/scanner/__tests__/organize-sheet.test.tsx": {
+      "before": "d27c46ec06a9dafeee0d45c5e2a565aa963dbcbe96f7cc8a8fc7f157d4398893",
+      "after": "e4a6807e587d9ba3d4f4095886c74becdaa4bfb77ed183cf894c45e75e93fcf4"
+    }
+  },
+  "productionEditsDuringGate": false,
+  "redisPhaseFilesUnchanged": true
+}

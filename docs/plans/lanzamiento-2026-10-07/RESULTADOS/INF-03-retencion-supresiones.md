@@ -1,0 +1,22 @@
+# INF-03 / BE-05 — Retención y protección al restaurar
+
+Fecha: 11/10/2026. Responsable de decisión: dueño del proyecto. Evidencia: respuesta humana **«30 días (recomendado)»** a la consulta que proponía backups cifrados y registro de eliminaciones separado. Estado: **política técnica elegida; implementación y operación pendientes**.
+
+## Decisión
+
+1. **Cada backup cifrado se conserva como máximo 30 días desde su creación registrada en UTC.** Copiarlo, descargarlo, moverlo o restaurarlo no reinicia ese plazo. La automatización futura debe verificar vencimiento y eliminación de todas las copias operativas bajo control del proyecto; elegir el plazo no demuestra que esa tarea esté instalada o funcionando. No define frecuencia de backup, RPO/RTO, costo, proveedor ni destino externo.
+2. **Registro mínimo de cuentas eliminadas, separado del ciclo de snapshots restaurados.** No alcanza un registro sólo dentro del mismo dump histórico. Debe mantenerse durable y recuperable independientemente de la base que se restaura, con acceso restringido e integridad/frescura comprobables. Contendrá únicamente los identificadores internos/fechas/marcas de operación indispensables; sin email, contraseña, token, enlaces ni contenido de colecciones. El diseño de atomicidad entre eliminación y registro es trabajo técnico de implementación, aún no acreditado.
+3. **Restaurar con tráfico bloqueado.** Verificar la copia y el registro vigente; aplicar las supresiones posteriores y comprobar ausencia de cuentas, datos personales relacionados, sesiones y enlaces que pudieran reactivarse. No habilitar la app si el registro falta, no puede verificarse o no se puede acreditar cobertura suficiente del período restaurado. Las comprobaciones deben cubrir fallos e interrupciones, además del caso positivo.
+4. **Retener registros de supresión hasta demostrar que no quedan copias restaurables que puedan contener esas cuentas.** No borrarlos automáticamente al cumplir 30 días desde la baja: primero cotejar el inventario real de copias y su retiro, incluyendo réplicas/retenciones del destino elegido. Si quedan copias o se desconoce su estado, conservar la protección y bloquear cualquier restore sin cobertura. No se propone una conservación indefinida por defecto; su limpieza depende de esa comprobación.
+
+El canal de baja sigue siendo [autoservicio desde Ajustes](BE-05-eliminacion-canal.md), con contraseña actual y confirmación explícita. La eliminación del origen activo y la expiración de copias son estados distintos. CSVs/capturas ya descargados por usuarios/terceros quedan fuera del control del servicio; no prometer su retractación. La retención de Resend y otros servicios no cambia por esta elección.
+
+## Base y alcance
+
+[PostgreSQL 16](https://www.postgresql.org/docs/16/backup-dump.html) documenta que un dump reproduce el estado del momento de su snapshot. De ahí la inferencia técnica del proyecto: un backup anterior a una baja necesita aplicar el registro posterior antes del tráfico. El criterio de minimizar información almacenada se alinea con [OWASP](https://cheatsheetseries.owasp.org/cheatsheets/Cryptographic_Storage_Cheat_Sheet.html#minimize-the-storage-of-sensitive-information). Fuentes primarias consultadas el 11/10; **30 días es la elección del dueño, no un plazo impuesto por estas fuentes ni una declaración de cumplimiento legal**.
+
+Se reutilizan [contrato BE-05](BE-05-contrato-borrador.md), [requisitos NEG-03](NEG-03-cuenta-requisitos.md) y [restore local aceptado](INF-03-local-review.md). Ese restore histórico no probó una cuenta eliminada después del snapshot; no se vuelve a ejecutar ni se presenta como evidencia de la nueva protección. Implementar y ensayar lo nuevo debe usar únicamente recursos/cuentas sintéticos propios, con check estándar y consumidor real aislado al cerrar los cambios pertinentes.
+
+La elección resuelve retención y condición de reapertura. Destino off-host, responsable operativo, frecuencia, custodia/recuperación de claves e inventario real de copias siguen pendientes de la operación final. Mini PC todavía no adquirida; cuenta/dominio/envíos reales de Resend diferidos. No compras, despliegue, eliminación real, nuevas suites, DB/Redis o cambios de instancia en este paso. Automatización PAUSED/dos horas. **19/38 completos,19 pendientes**; los IDs no cierran por esta decisión documental.
+
+Próximo paso propuesto: implementar eliminación desde Ajustes y ensayar la protección de restore con cuentas de prueba propias. Preguntar y esperar respuesta antes de iniciar.

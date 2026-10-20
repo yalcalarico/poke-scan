@@ -1,0 +1,51 @@
+{
+  "checkedAtUtc": "2026-10-09T19:30:32.284960+00:00",
+  "scope": "Artefactos documentales propios reales; excluye autorreferencia",
+  "artifacts": [
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-01-correo-sandbox.md",
+      "sha256": "a9deea1a9883d81caf5b761bf4a93706fb1551773376117157f5e3917b4ebad7",
+      "bytes": 15416
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-01-correo-sandbox-review.md",
+      "sha256": "eb33249368f60900985059e7c68a302f26d73e3e5a3e7c86b32b2f77fa4eaf8a",
+      "bytes": 4963
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/evidencia-inf01-correo-sandbox-review/INF-01-correo-sandbox-recibido.md",
+      "sha256": "c4e4294c5449884e720a0049d01c740f0c5d7f6e7f0b83658c0261f242266d06",
+      "bytes": 11389
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/evidencia-inf01-correo-sandbox-review/baseline-recibido.json",
+      "sha256": "9238b841516492326242591ad65c1ace60cbe4e22e1117e9900e03597ec193b3",
+      "bytes": 1270
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/evidencia-inf01-correo-sandbox-review/baseline-review.json",
+      "sha256": "0e2fd7bb3daedeaeab2feefc8c212b85dabc251f257db700090b529e85e9dcfa",
+      "bytes": 3359
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/evidencia-inf01-correo-sandbox-review/correcciones.diff",
+      "sha256": "266d4175b32cc0dda03af695b4a4f43322db0dc7dbb7145dc36086cd93071dbd",
+      "bytes": 22537
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/evidencia-inf01-correo-sandbox-review/verificacion-recibida.json",
+      "sha256": "fd68fd19680ef80cc2a05700e8d6d8769dd1a52973c4387d5716b88ece874f1f",
+      "bytes": 1879
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/evidencia-inf01-correo-sandbox-review/verificacion.json",
+      "sha256": "f3a01533080b67b87c04dfb3b4dd800a288717658ac039a4d6824b1e592e2dc7",
+      "bytes": 13653
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/evidencia-inf01-correo-sandbox-review/verificar-documentos.py",
+      "sha256": "c55746fb742cca7cac7ccd915beed5fd4bc974a5b6c8b349b1526fc9687e3f08",
+      "bytes": 8008
+    }
+  ]
+}

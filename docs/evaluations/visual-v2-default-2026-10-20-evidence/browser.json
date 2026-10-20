@@ -1,0 +1,44 @@
+{
+  "testedThrough": "cua_repl;IAB;real local app;no screenshots",
+  "viewports": [
+    {
+      "width": 390,
+      "height": 844
+    },
+    {
+      "width": 1440,
+      "height": 900
+    }
+  ],
+  "defaultBuscarWithoutVisualQuery": {
+    "url": "/buscar?q=pikachu",
+    "active": "v2",
+    "selected": "Actual",
+    "navigationItems": 5,
+    "horizontalOverflow": false
+  },
+  "explicitClassic": {
+    "url": "/buscar?q=pikachu&visual=classic",
+    "active": false,
+    "selected": "Cl\u00e1sica",
+    "searchPreserved": "pikachu"
+  },
+  "keyboardReturn": {
+    "key": "Enter",
+    "url": "/buscar-v2?q=pikachu",
+    "active": "v2",
+    "selected": "Actual"
+  },
+  "defaultInicioWithoutQuery": {
+    "url": "/inicio",
+    "active": "v2",
+    "navigationItems": 5,
+    "horizontalOverflow": false
+  },
+  "pageErrors": [],
+  "settingsUnauthenticated": "redirected to login; no registration or data writes",
+  "temporaryViewportReset": true,
+  "temporaryTabClosed": true,
+  "themeCoverage": "existing browser theme only; no new runtime validation of both themes",
+  "screenshotsTaken": false
+}

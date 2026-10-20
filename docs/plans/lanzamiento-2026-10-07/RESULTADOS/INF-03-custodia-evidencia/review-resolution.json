@@ -1,0 +1,30 @@
+{
+  "producer": "/root/backup_custody_recovery_sol",
+  "producerModel": "gpt-6.1-sol",
+  "effort": "high",
+  "reason": "Recovery preserves trusted historical suppression authority and must not resurrect deleted users",
+  "reviewer": "/root/custody_recovery_review_sol",
+  "readOnly": true,
+  "actionableCriticalOrP2Findings": [],
+  "reviewNoTestsOrRuntime": true,
+  "delegationsUsed": 2,
+  "maximum": 4,
+  "subdelegation": false,
+  "rootCorrections": [
+    "Test clock set after asynchronous initialization; no product code or timeout changed"
+  ],
+  "initialFocal": {
+    "passed": 2,
+    "failed": 12
+  },
+  "finalFocal": {
+    "passed": 14,
+    "failed": 0
+  },
+  "rootGenuineJournalRuntime": true,
+  "limits": [
+    "No live HTTP deletion to external durable publication acknowledgment",
+    "No physical off-host or power-loss accreditation",
+    "No detection of joint trusted-custodian rollback"
+  ]
+}

@@ -1,0 +1,528 @@
+--- /Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-07-review-evidencia/redis.recovery.spec.ts.received	2026-10-09 09:31:57
++++ /Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/backend/src/redis/redis.recovery.spec.ts	2026-10-09 09:39:54
+@@ -1,15 +1,33 @@
++import { createServer, type Server, type Socket } from 'node:net';
+ import { ConfigService } from '@nestjs/config';
+ import { RedisService } from './redis.service.js';
+ 
+-const harness = vi.hoisted(() => ({ client: null as unknown, options: null as unknown }));
++const harness = vi.hoisted(() => ({
++  client: null as unknown,
++  options: null as unknown,
++  real: false,
++  connectPromise: null as Promise<void> | null,
++}));
+ 
+ vi.mock('ioredis', async () => {
+   const { EventEmitter } = await import('node:events');
+-  return {
+-    Redis: class FakeRedis extends EventEmitter {
++  const actual = await vi.importActual<typeof import('ioredis')>('ioredis');
++  class RealRedis extends actual.Redis {
++    override connect(): Promise<void> {
++      const promise = super.connect();
++      harness.connectPromise = promise;
++      return promise;
++    }
++    constructor(url: string, options: Record<string, unknown>) {
++      super(url, options);
++      harness.client = this;
++    }
++  }
++  class FakeRedis extends EventEmitter {
+     status = 'wait';
+     readonly commands: string[] = [];
+-
++    resolveConnect!: () => void;
++    rejectConnect!: (error: Error) => void;
+     constructor(
+       readonly url: string,
+       options: Record<string, unknown>,
+@@ -18,21 +36,40 @@
+       harness.client = this;
+       harness.options = options;
+     }
+-
+     connect(): Promise<void> {
+       this.status = 'connecting';
+-      return Promise.reject(new Error(this.url));
++      return new Promise((resolve, reject) => {
++        this.resolveConnect = resolve;
++        this.rejectConnect = reject;
++      });
+     }
+-
+     disconnect(): void {
+       this.status = 'end';
++      this.emit('close');
+       this.emit('end');
++      this.rejectConnect(new Error(this.url));
+     }
+-
+     async get(key: string): Promise<null> {
+       this.commands.push(`GET ${key}`);
+-      return null;
++      throw new Error(`${key} private:payload`);
+     }
++    async set(key: string): Promise<void> {
++      this.commands.push(`SET ${key}`);
++    }
++    async del(key: string): Promise<void> {
++      this.commands.push(`DEL ${key}`);
++    }
++    async eval(_script: string, _count: number, key: string): Promise<void> {
++      this.commands.push(`EVAL ${key}`);
++    }
++  }
++  return {
++    Redis: class {
++      constructor(url: string, options: Record<string, unknown>) {
++        return harness.real
++          ? new RealRedis(url, options)
++          : new FakeRedis(url, options);
++      }
+     },
+   };
+ });
+@@ -42,90 +79,398 @@
+   commands: string[];
+   emit(event: string, ...args: unknown[]): boolean;
+   listenerCount(event: string): number;
+-  disconnect(): void;
++  resolveConnect(): void;
++  rejectConnect(error: Error): void;
+ }
+-
+ interface RedisOptionsHarness {
+   enableOfflineQueue: boolean;
+   maxRetriesPerRequest: number;
+   retryStrategy(times: number): number | null;
+ }
+ 
++function observe(service: RedisService) {
++  const logger = (
++    service as unknown as {
++      logger: { warn(message: string): void; log(message: string): void };
++    }
++  ).logger;
++  return {
++    warn: vi.spyOn(logger, 'warn').mockImplementation(() => {}),
++    log: vi.spyOn(logger, 'log').mockImplementation(() => {}),
++  };
++}
++
+ describe('RedisService — recuperación', () => {
+   const secretUrl = 'redis://user:secret@127.0.0.1:56381/15';
+   let service: RedisService;
+   let client: RedisHarness;
+   let options: RedisOptionsHarness;
+-  let warn: ReturnType<typeof vi.spyOn>;
+-
+-  beforeEach(async () => {
+-    harness.client = null;
+-    harness.options = null;
+-    service = new RedisService({ get: () => secretUrl } as unknown as ConfigService);
+-    const logger = (service as unknown as { logger: { warn: (message: string) => void } }).logger;
+-    warn = vi.spyOn(logger, 'warn');
++  let logs: ReturnType<typeof observe>;
++  beforeEach(() => {
++    vi.useFakeTimers();
++    vi.setSystemTime(new Date('2026-10-09T13:00:00Z'));
++    harness.real = false;
++    service = new RedisService({
++      get: () => secretUrl,
++    } as unknown as ConfigService);
++    logs = observe(service);
+     service.onModuleInit();
+     client = harness.client as RedisHarness;
+     options = harness.options as RedisOptionsHarness;
+-    await Promise.resolve();
+   });
+-
+   afterEach(async () => {
+     await service.onModuleDestroy();
++    vi.useRealTimers();
+     vi.restoreAllMocks();
+   });
+ 
+-  it('sigue reintentando tras más de tres fallos con backoff acotado y sin cola offline', async () => {
+-    expect(service.status()).toMatchObject({ configured: true, available: false });
+-    expect(service.status().degradedSince).not.toBeNull();
++  it('no abandona tras tres fallos ni desborda el backoff en una caída prolongada', () => {
++    expect(service.status()).toMatchObject({
++      configured: true,
++      available: false,
++      degradedSince: '2026-10-09T13:00:00.000Z',
++    });
+     expect(options.enableOfflineQueue).toBe(false);
+     expect(options.maxRetriesPerRequest).toBe(1);
+-    expect(options.retryStrategy(4)).toBeGreaterThan(0);
+-    expect(options.retryStrategy(100)).toBeLessThanOrEqual(15_000);
+-    expect(options.retryStrategy(100)).toBeGreaterThan(0);
+-    expect(options.retryStrategy(100)).not.toBeNull();
++    expect(
++      [1, 2, 3, 4, 5, 6, 100, Number.MAX_SAFE_INTEGER].map(
++        (times) => options.retryStrategy(times),
++      ),
++    ).toEqual([500, 1000, 2000, 4000, 8000, 15000, 15000, 15000]);
+   });
+ 
+-  it('marca cada estado del corte y recupera readiness cuando vuelve Redis', async () => {
++  it.each(['close', 'reconnecting', 'end'])(
++    '%s conserva el comienzo del corte y ready lo limpia',
++    (event) => {
++      client.status = 'ready';
++      client.emit('ready');
++      expect(service.status()).toMatchObject({
++        available: true,
++        degradedSince: null,
++      });
++      vi.advanceTimersByTime(1000);
++      client.status = event;
++      client.emit(event);
++      expect(service.status()).toMatchObject({
++        available: false,
++        degradedSince: '2026-10-09T13:00:01.000Z',
++      });
++      vi.advanceTimersByTime(1000);
++      client.emit(event);
++      expect(service.status().degradedSince).toBe('2026-10-09T13:00:01.000Z');
++      client.status = 'ready';
++      client.emit('ready');
++      expect(service.status()).toMatchObject({
++        available: true,
++        degradedSince: null,
++      });
++    },
++  );
++
++  it('ready seguido de close no se revierte por el callback anterior de connect', async () => {
+     client.status = 'ready';
+     client.emit('ready');
+-    expect(service.status()).toMatchObject({ available: true, degradedSince: null });
++    client.resolveConnect();
++    client.status = 'close';
++    client.emit('close');
++    await Promise.resolve();
++    await Promise.resolve();
++    expect(service.status()).toMatchObject({
++      available: false,
++      degradedSince: '2026-10-09T13:00:00.000Z',
++    });
++  });
+ 
+-    client.status = 'reconnecting';
+-    client.emit('reconnecting', 1000);
+-    expect(service.status()).toMatchObject({ available: false });
+-    expect(service.status().degradedSince).not.toBeNull();
+-
++  it('el rechazo anterior de connect no degrada una conexión ya recuperada', async () => {
++    client.rejectConnect(new Error(secretUrl));
+     client.status = 'ready';
+     client.emit('ready');
+-    expect(service.status()).toMatchObject({ available: true, degradedSince: null });
++    await Promise.resolve();
++    await Promise.resolve();
++    expect(service.status()).toMatchObject({
++      available: true,
++      degradedSince: null,
++    });
+   });
+ 
+-  it('mientras no está listo devuelve cache miss sin mandar comandos pendientes', async () => {
++  it('en caída todas las operaciones terminan sin enviar comandos para replay', async () => {
+     expect(await service.get('private:key')).toBeNull();
++    expect(await service.getJson('private:key')).toBeNull();
++    expect(await service.getNumber('private:key')).toBeNull();
++    await service.set('private:key', 'private:payload');
++    await service.setJson('private:key', { secret: true });
++    await service.del('private:key');
++    expect(await service.acquireLock('private:key', 'private:token', 30)).toBe(
++      false,
++    );
++    expect(await service.releaseLock('private:key', 'private:token')).toBe(
++      false,
++    );
++    expect(await service.extendLock('private:key', 'private:token', 30)).toBe(
++      false,
++    );
+     expect(client.commands).toEqual([]);
+   });
+ 
+-  it('cierra sin esperar a Redis, cancela los listeners y no imprime credenciales', async () => {
+-    const listenerCount = client.listenerCount('ready');
+-    expect(listenerCount).toBeGreaterThan(0);
+-    expect(warn.mock.calls.flat().join(' ')).not.toContain('secret');
+-
+-    await expect(service.onModuleDestroy()).resolves.toBeUndefined();
+-    expect(client.listenerCount('ready')).toBe(0);
+-    expect(client.status).toBe('end');
++  it('cada fallo actualiza lastErrorAt aunque el aviso se suprima y no filtra secretos', async () => {
++    client.status = 'ready';
+     client.emit('ready');
+-    expect(service.status().available).toBe(false);
+-    expect(warn.mock.calls.flat().join(' ')).not.toContain(secretUrl);
++    await service.get('private:key');
++    vi.advanceTimersByTime(1000);
++    await service.get('private:key');
++    expect(service.status().lastErrorAt).toBe('2026-10-09T13:00:01.000Z');
++    expect(logs.warn).toHaveBeenCalledTimes(1);
++    vi.advanceTimersByTime(60000);
++    await service.get('private:key');
++    expect(logs.warn).toHaveBeenCalledTimes(2);
++    expect(logs.warn.mock.calls[1]?.[0]).toContain('+1 avisos suprimidos');
++    const output = logs.warn.mock.calls.flat().join(' ');
++    for (const secret of [
++      'secret',
++      secretUrl,
++      'private:key',
++      'private:payload',
++    ])
++      expect(output).not.toContain(secret);
+   });
+ 
+-  it('close y end mantienen el estado degradado', async () => {
+-    client.status = 'ready';
++  it('errores de conexión también tienen timestamp por fallo y un aviso por ventana', () => {
++    client.emit('error', new Error(secretUrl));
++    vi.advanceTimersByTime(1000);
++    client.emit('error', new Error(secretUrl));
++    expect(service.status().lastErrorAt).toBe('2026-10-09T13:00:01.000Z');
++    expect(logs.warn).toHaveBeenCalledTimes(1);
++    expect(logs.warn.mock.calls.flat().join(' ')).not.toContain(secretUrl);
++  });
++
++  it('shutdown descarta callbacks tardíos sin quitar listeners internos de ioredis', async () => {
++    const libraryClose = vi.fn();
+     client.emit('ready');
+-    client.status = 'reconnecting';
+-    client.emit('close');
++    // ioredis registra once(close) para rechazar connect(); el módulo no lo posee.
++    const emitter = client as RedisHarness & {
++      once(event: string, handler: () => void): void;
++    };
++    emitter.once('close', libraryClose);
++    await service.onModuleDestroy();
++    expect(libraryClose).toHaveBeenCalledOnce();
++    client.status = 'ready';
++    client.emit('ready');
++    client.emit('error', new Error(secretUrl));
++    await Promise.resolve();
++    await Promise.resolve();
+     expect(service.status().available).toBe(false);
+-    client.emit('end');
++    expect(logs.warn).not.toHaveBeenCalled();
++    expect(logs.log).not.toHaveBeenCalled();
++    await expect(service.onModuleDestroy()).resolves.toBeUndefined();
++  });
++});
++
++// Servidor RESP mínimo: el cliente y el parser son ioredis reales. El servidor
++// retiene una respuesta de SET y corta el socket, sin Redis/DB compartidos.
++function readCommands(data: string): {
++  commands: string[][];
++  remaining: string;
++} {
++  const commands: string[][] = [];
++  let offset = 0;
++  while (offset < data.length) {
++    const start = offset;
++    const end = data.indexOf('\r\n', offset);
++    if (end < 0) break;
++    const count = Number(data.slice(offset + 1, end));
++    if (data[offset] !== '*' || !Number.isInteger(count) || count < 1)
++      throw new Error('RESP inesperado');
++    offset = end + 2;
++    const args: string[] = [];
++    for (let i = 0; i < count; i += 1) {
++      const lengthEnd = data.indexOf('\r\n', offset);
++      if (lengthEnd < 0) break;
++      const size = Number(data.slice(offset + 1, lengthEnd));
++      if (data[offset] !== '$' || !Number.isInteger(size) || size < 0)
++        throw new Error('Bulk RESP inesperado');
++      if (data.length < lengthEnd + 2 + size + 2) break;
++      args.push(data.slice(lengthEnd + 2, lengthEnd + 2 + size));
++      offset = lengthEnd + 2 + size + 2;
++    }
++    if (args.length !== count) {
++      offset = start;
++      break;
++    }
++    commands.push(args);
++  }
++  return { commands, remaining: data.slice(offset) };
++}
++
++async function eventually(
++  predicate: () => boolean,
++  timeout = 5000,
++): Promise<void> {
++  const deadline = Date.now() + timeout;
++  while (!predicate()) {
++    if (Date.now() > deadline)
++      throw new Error('No llegó la transición esperada');
++    await new Promise((resolve) => setTimeout(resolve, 10));
++  }
++}
++
++describe('RedisService — ioredis real con corte de socket propio', () => {
++  let server: Server;
++  let service: RedisService;
++  let sockets: Set<Socket>;
++  let writes: number;
++  let mode: 'replay' | 'connecting' | 'blackhole';
++  let logs: ReturnType<typeof observe>;
++  beforeEach(async () => {
++    harness.real = true;
++    sockets = new Set();
++    writes = 0;
++    mode = 'replay';
++    server = createServer((socket) => {
++      sockets.add(socket);
++      socket.on('error', () => {});
++      socket.on('close', () => sockets.delete(socket));
++      let pending = '';
++      socket.on('data', (chunk) => {
++        pending += chunk.toString();
++        const result = readCommands(pending);
++        pending = result.remaining;
++        for (const args of result.commands) {
++          if (
++            mode === 'connecting' ||
++            (mode === 'blackhole' && args[0]?.toLowerCase() === 'get')
++          )
++            continue;
++          if (args[0]?.toLowerCase() === 'set') {
++            writes += 1;
++            if (writes === 1) {
++              socket.destroy();
++              continue;
++            }
++          }
++          if (args[0]?.toLowerCase() === 'info') {
++            const info = 'loading:0\r\n';
++            socket.write(`$${info.length}\r\n${info}\r\n`);
++          } else socket.write('+OK\r\n');
++        }
++      });
++    });
++    await new Promise<void>((resolve, reject) => {
++      server.once('error', reject);
++      server.listen(0, '127.0.0.1', resolve);
++    });
++    const address = server.address();
++    if (!address || typeof address === 'string')
++      throw new Error('No hay puerto TCP propio');
++    service = new RedisService({
++      get: () => `redis://127.0.0.1:${address.port}/15`,
++    } as unknown as ConfigService);
++    logs = observe(service);
++    service.onModuleInit();
++  });
++  afterEach(async () => {
++    await service?.onModuleDestroy();
++    for (const socket of sockets) socket.destroy();
++    if (server.listening)
++      await new Promise<void>((resolve) => server.close(() => resolve()));
++    harness.real = false;
++    vi.restoreAllMocks();
++  });
++
++  it('un SET enviado antes del corte no se repite tras ready y su promesa termina', async () => {
++    await eventually(() => service.isAvailable());
++    const write = service.set('own:test:key', 'own:test:value');
++    await eventually(() => writes === 1);
+     expect(service.status().available).toBe(false);
++    await eventually(() => service.isAvailable());
++    let timeout: ReturnType<typeof setTimeout> | undefined;
++    try {
++      await Promise.race([
++        write,
++        new Promise((_, reject) => {
++          timeout = setTimeout(
++            () => reject(new Error('Comando sin límite')),
++            4000,
++          );
++        }),
++      ]);
++    } finally {
++      clearTimeout(timeout);
++    }
++    expect(writes).toBe(1);
++    expect(logs.warn).toHaveBeenCalled();
+   });
++
++  it('un socket conectado que no responde tiene una espera acotada por comando', async () => {
++    await eventually(() => service.isAvailable());
++    mode = 'blackhole';
++    const started = Date.now();
++    expect(await service.get('own:test:key')).toBeNull();
++    const elapsed = Date.now() - started;
++    expect(elapsed).toBeGreaterThanOrEqual(2500);
++    expect(elapsed).toBeLessThan(4000);
++    expect(service.status()).toMatchObject({
++      available: true,
++      degradedSince: null,
++    });
++    expect(logs.warn).toHaveBeenCalledTimes(1);
++    expect(logs.warn.mock.calls.flat().join(' ')).not.toContain('own:test:key');
++  });
++
++  it('shutdown rechaza el comando en vuelo sin avisos de error tardíos', async () => {
++    await eventually(() => service.isAvailable());
++    mode = 'blackhole';
++    const read = service.get('own:test:key');
++    const client = harness.client as { commandQueue: { length: number } };
++    await eventually(() => client.commandQueue.length === 1);
++    const errorAt = service.status().lastErrorAt;
++    await service.onModuleDestroy();
++    expect(await read).toBeNull();
++    expect(logs.warn).not.toHaveBeenCalled();
++    expect(service.status().lastErrorAt).toBe(errorAt);
++  });
++
++  it.each(['connecting', 'reconnecting', 'ready'])(
++    'shutdown en %s resuelve connect y termina el socket sin retry',
++    async (phase) => {
++      if (phase === 'connecting') {
++        mode = 'connecting';
++        await eventually(
++          () =>
++            sockets.size === 1 &&
++            (harness.client as { status: string }).status === 'connect',
++        );
++      } else {
++        await eventually(() => service.isAvailable());
++        if (phase === 'reconnecting') {
++          mode = 'connecting';
++          for (const socket of sockets) socket.destroy();
++          await eventually(
++            () =>
++              (harness.client as { status: string }).status === 'reconnecting',
++          );
++        }
++      }
++      let settled = false;
++      void harness.connectPromise?.then(
++        () => {
++          settled = true;
++        },
++        () => {
++          settled = true;
++        },
++      );
++      await service.onModuleDestroy();
++      await eventually(() => settled && sockets.size === 0, 3000);
++      const client = harness.client as {
++        status: string;
++        reconnectTimeout: unknown;
++      };
++      if (phase !== 'reconnecting') expect(client.status).toBe('end');
++      expect(client.reconnectTimeout).toBeNull();
++      const lastErrorAt = service.status().lastErrorAt;
++      await new Promise((resolve) => setTimeout(resolve, 600));
++      expect(sockets.size).toBe(0);
++      expect(service.status()).toMatchObject({ available: false, lastErrorAt });
++    },
++  );
+ });

@@ -1,0 +1,9 @@
+{
+  "command": [
+    "pnpm",
+    "run",
+    "stop"
+  ],
+  "exitCode": 0,
+  "finishedAtUtc": "2026-10-10T02:10:46.294451+00:00"
+}

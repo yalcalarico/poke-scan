@@ -1,5 +1,7 @@
 # Design system — PokéScan v2
 
+**Apariencia predeterminada,20/10/2026:** el usuario eligió V2 tras probarla con el público. Las rutas normales de la app activan sus efectos sin parámetro; `visual=v2` y `/buscar-v2` siguen funcionando. La alternativa anterior se elige explícitamente con `visual=classic`, mediante el selector Clásica/Actual. Se retiró el menú duplicado V2: la navegación principal vuelve a sus cinco destinos. Contexto de búsqueda y datos compartidos se conservan; esta decisión reemplaza el carácter optativo de los checkpoints16/10 siguientes.
+
 > **Este documento reemplaza la v1** (la que vivía como convenciones Tailwind sobre
 > `slate-950`). Todo lo que estaba en v1 y sigue siendo válido — Accesibilidad,
 > Moneda, Fechas y números, `public/sw.js` — se conserva textualmente abajo, en las
@@ -12,6 +14,27 @@
 ---
 
 ## 0. Principios
+
+### Comparación visual V2 — 16/10/2026
+
+Por pedido explícito del usuario se incorpora una vista experimental V2 inspirada
+en los recursos visuales de `elrincondeldev/pokecard-reader`: aurora, retícula,
+reflejos, inclinación y movimiento de cartas, revelado, partículas
+y cifras animadas. Es una comparación optativa; no reemplaza la apariencia actual.
+Los acabados de esta vista son decorativos y no certifican la variante física.
+Por decisión posterior del usuario, V2 conserva la paleta original: fondos,
+superficies, textos y bordes usan los mismos tokens; brillos y partículas se
+apoyan en el rojo de marca. No introduce acentos violetas, rosas ni cian.
+
+`/buscar-v2` reutiliza el catálogo. Las otras pantallas activan la vista mediante
+`visual=v2`, con selector Actual/V2 y menú de acceso. Los filtros, entidades,
+precios, autenticación, reconocimiento y providers de aplicación son los mismos.
+No se crea otra aplicación, backend ni catálogo. Los efectos se encapsulan en
+`components/visual-preview/`, con estilos propios para claro/oscuro y movimiento
+reducido. Ningún token experimental cambia la vista actual al desactivarlo.
+
+Esta excepción visual autorizada no restaura la arquitectura retirada durante
+el rediseño de septiembre ni duplica sus shells/proveedores.
 
 Cinco reglas que resuelven el 90 % de las decisiones. En orden de prioridad.
 
@@ -605,6 +628,24 @@ sale de los tokens `--duration-*` y `--ease-*`, y de 4 keyframes.
 **Regla de salida:** toda salida dura `--duration-fast` con `--ease-exit`. Una
 animación de entrada de 240 ms con una salida de 240 ms se siente lenta; 240/160 se
 siente bien.
+
+### 5.1.1 Profundidad de las cartas
+
+`components/cards/card-tilt.tsx` encapsula la interacción decorativa; la imagen
+puede seguir siendo contenido renderizado por el servidor. El detalle permite
+hasta 8° de inclinación y el catálogo hasta 3°, únicamente sobre la carta
+señalada. La perspectiva y el reflejo neutro viven en su CSS module, usando las
+sombras, radios, colores y duraciones del sistema. No se usa una librería 3D.
+
+En móvil, solo el detalle responde a un arrastre horizontal; el gesto vertical
+y el zoom siguen perteneciendo al navegador. Al salir, soltar o cancelar se
+restablece la posición. No hay animación permanente ni acceso a sensores.
+`prefers-reduced-motion` desactiva tanto los handlers como la transformación;
+la imagen sigue disponible sin JavaScript. El efecto no agrega tabuladores ni
+reemplaza el indicador de foco del control que contiene la carta.
+
+El reflejo no representa el acabado físico. No se infiere holografía por rareza:
+una representación de ese acabado requiere una variante confirmada.
 
 ### 5.2 Keyframes
 

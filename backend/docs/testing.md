@@ -11,19 +11,23 @@
 | Runner | Vitest 4.1 (`vitest run`) |
 | Config | `vitest.config.ts` (`**/*.spec.ts`) y `vitest.config.e2e.ts` (`**/*.e2e-spec.ts`) |
 | Globals | `globals: true` + `types: ["vitest/globals", "node"]` en `tsconfig.json`: `describe`/`it`/`expect`/`vi` no se importan |
-| Archivos | 19 `.spec.ts` · 1 `.e2e-spec.ts` |
-| Tests | 320, ~45 s |
+| Archivos | 20 `.spec.ts` · 1 `.e2e-spec.ts` |
+| Tests | 325, ~45 s |
 | Lint | oxlint type-aware corre sobre `src/` y `test/` |
 
 | Spec | Qué cubre |
 |---|---|
-| `app.controller.spec.ts` | `GET /health`: sano, degradado, sin Redis configurado |
+| `app.controller.spec.ts` | `GET /health`: sano, degradado, sin Redis configurado; `GET /ready`: estados DB/scanner/Redis y códigos HTTP |
+| `readiness.http.spec.ts` | Nest + Supertest in-process: 200/503, `no-store`, throttler excluido, busy informativo y liveness conservada |
+| `readiness.service.spec.ts` | URL dedicada limitada, single-flight/deadline compartido, caché, shutdown, éxito tardío descartado y TCP blackhole sin DB |
+| `visual-identify.lifecycle.spec.ts` | warmup IPC, generaciones/backoff, idle death, timeout, cancelación, envíos fallidos, eventos tardíos, listeners estables y shutdown; branch real del worker con ONNX/índice simulados, sin embedding |
 | `auth.service.spec.ts` | registro, login, hash del refresh, rotación, reuso, expiración, logout |
 | `cards.service.spec.ts` | búsqueda con trigram, `getById` 404, `getCardWithPrices` con rate cacheado, `sort=price` global |
-| `collections.service.spec.ts` | increment de `quantity`, ownership, stats, 409, cascadas, filtros, marca de intercambio del alta |
-| `share.service.spec.ts` | slug, caché, 404 de enlace vencido, `truncated` |
+| `collections.service.spec.ts` | increment de `quantity`, replay con clave idempotente, concurrencia, vencimiento, ownership, stats, 409, cascadas, filtros, marca de intercambio del alta |
+| `share.service.spec.ts` | 21 casos: allowlist pública, 500 visibles con valor/cobertura de 522/523 grupos, market cero, grupos iguales entre colecciones, Redis en memoria con legacy/`DEL` fallido/`SET` tardío, TTL y vencimiento con reloj controlado, HTTP real `no-store` en 200/404 |
 | `friends.service.spec.ts` | búsqueda, solicitudes, responder, 403/404, baja, bloqueo |
 | `currency.service.spec.ts` | feature flag, caché 1 h, `stale` >48 h, DolarApi caído, valores saneados |
+| `redis.recovery.spec.ts` | retries permanentes con backoff acotado, estados de recuperación, fallback sin cola, logs sin URL y cierre de listeners |
 | `tcgdex.provider.spec.ts` | mapeo de las 7 variantes, 404 con fallback de padding, retry de 503, parsing defensivo |
 | `tcgdex-set-mapping.service.spec.ts` | matcheo por nombre / por ID, validación, miss marker, error de red sin marcar miss |
 | `sync-prices.service.spec.ts` | refresh en vivo, TTL negativa, no borra previos ante fallo, frescura de 24 h, ritmo global |
@@ -323,6 +327,33 @@ ni cuando testea el camino de éxito.
 Eso fuerza el camino sin caché y verifica que **el service funciona igual**,
 que es la propiedad que importa cuando Redis no está en producción.
 
+#### Recuperación después de un corte
+
+`redis.recovery.spec.ts` prueba el backoff permanente, las transiciones
+`close`/`reconnecting`/`ready`/`end`, las carreras con la promesa inicial de
+`connect()`, los cache misses sin comandos, los timestamps y los avisos acotados.
+Usa un doble determinista para controlar el orden de callbacks, y **ioredis real
+con un servidor RESP propio en un puerto loopback efímero** para observar replay
+de un `SET` cuya respuesta se perdió, un socket que no responde y shutdown con
+handshake/comando pendientes, reconexión y conexión sana. No omite esos casos si
+el socket no puede abrirse: una restricción del entorno debe registrarse como
+fallo de ejecución, sin acreditar la prueba. El servidor destruye sus sockets y
+cierra su listener en `afterEach`; no necesita Redis ni PostgreSQL compartidos.
+
+La cola offline y los comandos en vuelo son dos caminos distintos: probar un
+cache miss sin comandos no verifica `autoResendUnfulfilledCommands`. El límite de
+3 s por comando permite que una respuesta perdida termine incluso al recuperar
+la conexión con replay desactivado. Los tests no afirman que un comando enviado
+no se haya aplicado antes del corte, ni acreditan el fallback PostgreSQL.
+
+Para acreditar el corte/restitución sostenidos y el fallback real del consumidor,
+el ensayo integrado de BE-07 usa un contenedor Redis con puerto loopback y labels
+propios y mantiene vivo el mismo proceso de API; nunca apunta al Redis compartido
+ni usa `FLUSHDB`. Registrá el ID completo del contenedor, el puerto, el ownership
+del proceso y el cleanup. `redis.service.spec.ts` conserva la prueba de locks y
+WRONGTYPE contra Redis real: para la revisión/gate apuntalo al Redis propio y
+exigí cero omisiones.
+
 ### Mockear dependencias de infraestructura
 
 Cuando lo que se testea no necesita la dependencia, se reemplaza por un valor
@@ -389,10 +420,59 @@ es la única forma de prenderlo y apagarlo.
 
 ## E2E
 
+### Harness privado BE-05
+
+`test/password-recovery-harness.ts` se ejecuta sólo mediante
+`vitest.config.recovery-harness.ts`; queda fuera del glob normal para que la
+suite global no requiera un marcador ni una base vacía. El harness exige una
+base PostgreSQL loopback en puerto 55432 con nombre `pokemon_cards_be05_test_*`
+o `be05_review_<hex>_test`, siempre coincidente con el nombre exacto esperado,
+un marcador de ownership preexistente y cero usuarios antes de iniciar. No crea
+el marcador ni altera bases compartidas. La factory privada reutilizable
+`test/password-recovery-mail-harness.ts` verifica URL, rol/owner, comentario y
+fila única del marcador, cero usuarios y allowlist exacta id/email. La instancia
+queda inerte hasta acreditar un listener `127.0.0.1`; no exporta un constructor
+habilitado. Conserva hasta 32 mensajes con leases de 120 s; teardown aborta
+entregas, gates cooperativos y esperas. El caso negativo tardío tiene una copia
+adicional opt-in con lease de 2 s; no forma parte de una entrega normal.
+
+El ensayo completo usa un clon aislado del TEST y tarda más de un minuto porque
+espera 60,1 s reales antes de una nueva admisión del mismo identificador. Las
+cuotas no se vacían para simular el paso del tiempo. Correrlo requiere configurar
+`DATABASE_URL_TEST`, `RECOVERY_IDENTIFIER_HMAC_KEY` sólo en el entorno del
+proceso y `BE05_OWNER_MARKER_PATH` apuntando al archivo marcador creado por el
+operador del clon; `BE05_EXPECTED_DATABASE` debe coincidir exactamente con el
+nombre de base. El guard confirma rol `pokemon`, cero usuarios preexistentes,
+marcador único y servidor HTTP enlazado sólo a `127.0.0.1`. No guardar esos
+valores en scripts, logs ni fixtures.
+
+```bash
+pnpm exec vitest run --config vitest.config.recovery-harness.ts
+```
+
+El harness valida respuestas/no-cache, errores de DTO y JSON malformado,
+cookies tras commit, hash-only y concurrencia, cuota IP, entrega sostenida hasta
+después de un reset, y que el token tardío falle consultando PostgreSQL. Para
+limpieza, verificar el marcador exacto antes de eliminar exclusivamente el
+clon propio.
+El reset no cambia `caseGeneration`: ésta pertenece sólo al teardown del
+harness. El caso tardío usa un primer enlace válido preparado antes del ticket
+pendiente y espera realmente 60,1 s para otra emisión. Fixtures SQL declaradas
+preparan carreras de vencimiento y capacidad sin acreditar por ello emisión.
+Barreras de locks PostgreSQL prueban consumo concurrente, login/refresh/emisión
+durante reset, vencimiento tras espera y rollback por trigger propio. No usar
+asserts que impriman tokens, cookies, contraseñas, emails o digests.
+
+`drainStatus()` es control privado para el runner, sin ruta HTTP. Shutdown
+aborta tickets y espera hasta 2100 ms; si quedan jobs, señala cuarentena y
+deadline excedido. No equivale a cancelar el driver. El cleanup exige settle
+real, receptor vacío, Prisma desconectado y cero conexiones al clon. Un doble
+detenido prueba esa distinción; el ensayo SQL real prueba el timeout local.
+
 `vitest.config.e2e.ts` corre `**/*.e2e-spec.ts` (no tiene
 `fileParallelism: false` porque hoy hay un solo archivo).
 
-Hoy existe **uno**: `test/app.e2e-spec.ts`, que levanta el `AppModule` completo
+`test/app.e2e-spec.ts` levanta el `AppModule` completo
 con supertest y checkea `GET /api/health`:
 
 ```ts
@@ -427,3 +507,28 @@ Dos cosas a saber si agregás un e2e:
 
 - [database.md](database.md) — los modelos que los specs siembran
 - [gotchas.md](gotchas.md) — por qué `fileParallelism: false` no se toca
+
+### Bajas con confirmación de custodia local simulada
+
+Las focales nuevas de `modules/account-deletion` cubren:
+
+- `account-suppression-custody.spec.ts`: orden de aceptación/publicación/replay,
+  startup cerrado, ack perdido y restart, fallo PG, turnos concurrentes,
+  cancelación antes de abrir transacción y shutdown con drain, incluido reloj
+  monotónico vencido con callback del timer aún pendiente.
+- `suppression-custody.spec.ts`: borrower sin ownership, anchor publicado
+  obligatorio, orden publish/verify/close y fallo de cierre.
+- `suppression-custody-process.spec.ts`: ack sólo tras close0, stdin privado,
+  entorno vacío, deadline con kill/drain y resultados inciertos. Usa timers
+  falsos sólo para el deadline del proceso; incluye close0 con reloj vencido
+  antes de despachar el timer. No cambia reloj productivo ni TTL.
+- `suppression-custody-authority.spec.ts`: biblioteca INF-03 real con
+  `LocalSuppressionJournal` genuino, MAC/cadena, locks conservados, rollback
+  firmado rechazado por anchor y recovery con los mismos bytes. Usa sólo
+  directorios temporales propios; ninguna DB, red ni dato del usuario.
+
+Aplican stop antes de tests y check completo al cerrar el lote. El consumidor
+real aislado debe además validar HTTP, fallos PG/custodia, ack perdido sin
+replay automático, restart antes de tráfico y recuperación/restauración de un
+dump previo con cuentas suprimidas inaccesibles. Mocks y metadata recovery
+por sí solos no acreditan ese flujo ni custodia off-host.

@@ -1,0 +1,12 @@
+{
+  "command": [
+    "pnpm",
+    "exec",
+    "vitest",
+    "run",
+    "src/modules/auth/password-recovery.service.spec.ts"
+  ],
+  "exitCode": 0,
+  "finishedAtUtc": "2026-10-10T01:33:28.911883+00:00",
+  "ownDatabase": "be05_review_2af1fb6f7757_test"
+}

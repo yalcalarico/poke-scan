@@ -1,0 +1,27 @@
+{
+  "purpose": "BE-06 operational metrics new product validation",
+  "records": [
+    {
+      "phase": "stop",
+      "command": [
+        "pnpm",
+        "run",
+        "stop"
+      ],
+      "exitCode": 0,
+      "startedAtUtc": "2026-10-11T15:42:30.544955+00:00",
+      "finishedAtUtc": "2026-10-11T15:42:30.811861+00:00"
+    },
+    {
+      "phase": "check",
+      "command": [
+        "pnpm",
+        "run",
+        "check"
+      ],
+      "exitCode": 1,
+      "startedAtUtc": "2026-10-11T15:42:30.812426+00:00",
+      "finishedAtUtc": "2026-10-11T15:43:52.029856+00:00"
+    }
+  ]
+}

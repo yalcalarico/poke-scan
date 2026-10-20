@@ -1,0 +1,61 @@
+{
+  "verified": 8,
+  "rows": [
+    {
+      "path": "frontend/components/marketing/landing-page.tsx",
+      "receivedSha256": "5bba09ef9ef828ff404a67bdb063c6d54d6a0faab346dddb05f3132b88ed4f2d",
+      "declaredProducerSha256": "5bba09ef9ef828ff404a67bdb063c6d54d6a0faab346dddb05f3132b88ed4f2d",
+      "producerCopySha256": "5bba09ef9ef828ff404a67bdb063c6d54d6a0faab346dddb05f3132b88ed4f2d",
+      "matches": true
+    },
+    {
+      "path": "frontend/components/marketing/faq-section.tsx",
+      "receivedSha256": "6de1178c68081d68db86f70866e4e549745393eabd98e261b6d0bf5ebd09d571",
+      "declaredProducerSha256": "6de1178c68081d68db86f70866e4e549745393eabd98e261b6d0bf5ebd09d571",
+      "producerCopySha256": "6de1178c68081d68db86f70866e4e549745393eabd98e261b6d0bf5ebd09d571",
+      "matches": true
+    },
+    {
+      "path": "frontend/components/marketing/__tests__/faq-section.test.tsx",
+      "receivedSha256": "5b00f659cc446981f2b9e49e69e37590dd4bdc194a35059c11a8b25272eb391a",
+      "declaredProducerSha256": "5b00f659cc446981f2b9e49e69e37590dd4bdc194a35059c11a8b25272eb391a",
+      "producerCopySha256": "5b00f659cc446981f2b9e49e69e37590dd4bdc194a35059c11a8b25272eb391a",
+      "matches": true
+    },
+    {
+      "path": "frontend/app/(marketing)/page.tsx",
+      "receivedSha256": "a186669ea2efa2520de951273eb7e22a92a8086413fec2a74f204919a1d9b240",
+      "declaredProducerSha256": "a186669ea2efa2520de951273eb7e22a92a8086413fec2a74f204919a1d9b240",
+      "producerCopySha256": "a186669ea2efa2520de951273eb7e22a92a8086413fec2a74f204919a1d9b240",
+      "matches": true
+    },
+    {
+      "path": "frontend/app/(marketing)/faq/page.tsx",
+      "receivedSha256": "cdcf2d98a07957426587a86f851a7659fec00e5db659f5593d7ec528d85e5c34",
+      "declaredProducerSha256": "cdcf2d98a07957426587a86f851a7659fec00e5db659f5593d7ec528d85e5c34",
+      "producerCopySha256": "cdcf2d98a07957426587a86f851a7659fec00e5db659f5593d7ec528d85e5c34",
+      "matches": true
+    },
+    {
+      "path": "frontend/app/(marketing)/opengraph-image.tsx",
+      "receivedSha256": "4b824c7800dadcfc48f54e5f572fee00aea6f16adec1b5a5cb46386882605f81",
+      "declaredProducerSha256": "4b824c7800dadcfc48f54e5f572fee00aea6f16adec1b5a5cb46386882605f81",
+      "producerCopySha256": "4b824c7800dadcfc48f54e5f572fee00aea6f16adec1b5a5cb46386882605f81",
+      "matches": true
+    },
+    {
+      "path": "frontend/lib/marketing/acquisition-metadata.ts",
+      "receivedSha256": "74c64b4e00ef5d17893338e5d18afef8136ac56d1c57d884bde4603449294144",
+      "declaredProducerSha256": "74c64b4e00ef5d17893338e5d18afef8136ac56d1c57d884bde4603449294144",
+      "producerCopySha256": "74c64b4e00ef5d17893338e5d18afef8136ac56d1c57d884bde4603449294144",
+      "matches": true
+    },
+    {
+      "path": "frontend/lib/marketing/__tests__/acquisition-metadata.test.ts",
+      "receivedSha256": "56f1dc9fa026afd26cdc9767eec19908483a093cdd1a49e9401fecdb93ec4465",
+      "declaredProducerSha256": "56f1dc9fa026afd26cdc9767eec19908483a093cdd1a49e9401fecdb93ec4465",
+      "producerCopySha256": "56f1dc9fa026afd26cdc9767eec19908483a093cdd1a49e9401fecdb93ec4465",
+      "matches": true
+    }
+  ]
+}

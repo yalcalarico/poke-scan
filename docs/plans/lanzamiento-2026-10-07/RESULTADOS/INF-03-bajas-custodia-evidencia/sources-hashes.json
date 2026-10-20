@@ -1,0 +1,14 @@
+{
+  "backend/src/modules/account-deletion/account-deletion.module.ts": "4799243455ca813032244045cb5ad0601919d16650f34b61f69e0697078eb96b",
+  "backend/src/modules/account-deletion/account-deletion.service.ts": "16e5b1911c37c34e5f20fc74d51edeb7f12e8f686e84ecd6ff79608f626a5b4c",
+  "backend/src/modules/account-deletion/account-suppression.service.ts": "3deab2bd323bfac6929877ba8b1e213557c69436fb7fa1c34599c695880a0a02",
+  "backend/src/modules/account-deletion/suppression-custody.ts": "bf639a82500faffbd861211c8cbd56b3b9bfd48bd4b7d1453c267dab5096c8af",
+  "backend/src/modules/account-deletion/suppression-custody-worker.ts": "9440273aa6dd6a86eb0e44bbd7219b33cf4b7561b99b2c9b0238fd15a34ca301",
+  "backend/src/modules/account-deletion/account-suppression-custody.spec.ts": "2ace3f3a2c8c047b92c2c92bbd90558b31571773ca25fdbc38c22558f399bd4f",
+  "backend/src/modules/account-deletion/suppression-custody.spec.ts": "7c862f9c5635907bbee0c60dc1250d391643d18c1a1442d67ae9521a88b56d5b",
+  "backend/src/modules/account-deletion/suppression-custody-process.spec.ts": "cfde6ffe83f4f0ac235243327115de17ac4a9e8fda02c18083850c5e519808a0",
+  "backend/src/modules/account-deletion/suppression-custody-authority.spec.ts": "d37274ec1b136260c8a2cc2292b7370347216d7e0bd3940d3cec99fd701af4a1",
+  "infra/inf03/CUSTODIA-RECUPERACION-LOCAL.md": "d9dbffbbe58389f7de7fed731b2698335866fbe0bc597862c3a85d102d7a464d",
+  "backend/docs/testing.md": "e2a1c1df9616763b4c0e8bba69f2cbfff13bd18e9f3cfa822e417180d3738155",
+  "docs/infra/account-deletion.md": "c97258af1834c498847186667f8a9e5fe1873c28a256ca393aeeab16e291863b"
+}

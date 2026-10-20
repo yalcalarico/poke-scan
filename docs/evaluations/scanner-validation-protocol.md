@@ -1,117 +1,125 @@
-# Validación siguiente del escáner — 3 de octubre de 2026
+# Evaluación del escáner — protocolo vigente, 6 de octubre de 2026
 
-Estado actualizado el **4 de octubre de 2026**. Este archivo es el protocolo;
-los resultados están en [el informe inicial](visual-current-2026-10-03.md) y
-[la verificación de galería](scanner-gallery-current.md).
+DINOv2 solo, coseno top-8, sin ORB/OCR ni rechazo calibrado. La UI suma el
+primer candidato a sesión; el guardado en colección requiere acción explícita.
+La revisión permite elegir otro candidato y reemplaza la lectura existente.
 
-## Estado verificado y próximo bloque
+## Corpus y etiquetas
 
-- **Hecho:** check completo verde; IMG_4987 por galería identifica Umbreon ex
-  `me55-92` (DINOv2 2 → ORB 1); identidad conservada sin precio.
-- **Hecho en casos puntuales:** sesión restaurada al recargar, cierre de
-  Organizar sin guardar, guardado explícito de dos copias en la colección
-  «Prueba escáner · 4 octubre», y render de un enlace existente sin sesión.
-- **Parcial:** selección de orden por precio e IDs entre páginas; falta comprobar
-  valores numéricos y cartas sin precio. No se probó precio lento en UI ni el
-  límite de 30 entradas mediante sesión real.
-- **Pendiente:** cámara física, PWA/segundo plano, offline/reconexión y
-  cancelación durante una consulta real. La hoja Organizar no ofrece variante.
+Objetivo: **50–100 fotos reales**, diferentes cartas, dispositivos y condiciones.
+No ampliar el conteo mediante imágenes sintéticas, repeticiones o variantes de
+una misma foto. Registrar cuántos IDs distintos y bytes distintos se evaluaron.
 
-El próximo paso es subir por «Subir una foto» en la web las otras cuatro fotos
-(IMG_4985, IMG_4986, IMG_4988 e IMG_4989) y registrar el ID reconocido y los
-tiempos de cada intento. IMG_4987 ya se probó por ese flujo y reconoció Umbreon
-correctamente. La web ya ajusta el tamaño, detecta, recorta y orienta la carta
-antes de enviarla al motor; no hay que implementar otra preparación.
-No guardar fotos de consulta. El runner directo saltea esos pasos de la web:
-sirve para diagnosticar el motor, pero sus resultados no miden por sí solos
-la precisión de la app. Después, completá cancelación/reconexión y la
-comprobación numérica del orden por precio.
+- Positivo: ID exacto confirmado por set y número; acabado normal/holo/reverse
+  se anota aparte. La predicción del modelo no sirve como etiqueta.
+- Negativo: confirmado que ningún ID del índice debe aceptarse (dorso, fondo,
+  otra clase de carta, carta ausente del catálogo).
+- Sin etiqueta: `labelStatus: "unlabelled"` y `cardId: null`. Se ejecuta como
+  diagnóstico pero no entra en precisión ni falsas aceptaciones.
+- Origen: `original`, `gallery-crop` o `camera-crop`. No mezclar su precisión:
+  el runner no implementa la preparación del frontend.
+- Partición: `development` para casos usados al investigar; `holdout` para
+  cartas reservadas y no utilizadas al elegir mejoras. Todas las tomas de la
+  misma carta/reimpresiones relacionadas deben permanecer en una partición.
 
-En paralelo, el usuario puede probar cámara/PWA en un teléfono por HTTPS/LAN
-y reunir fotos nuevas etiquetadas. Con ese corpus se evalúan negativos,
-reimpresiones y rechazo/confirmación. Sin él no se calibran umbrales ni se
-afirma precisión general. SIGINT/reanudación y fallos/reinicio del worker
-pueden avanzarse sin esperar las fotos; optimizaciones y runtime alternativo
-quedan después de medir los cuellos de botella.
+Distribución orientativa de 60 fotos: 40 positivas de al menos 20 IDs (claras y
+con condiciones difíciles), 10 reimpresiones/full-art y 10 negativos confirmados.
+Las categorías pueden solaparse: no son tamaños de muestra independientes.
+Reservar aproximadamente un tercio de las identidades como holdout antes de
+ajustar el método. Si el corpus real no permite esta distribución, registrar el
+alcance y no inventar muestras para cumplir cuotas.
 
-## Orden de ejecución
+Etiquetas de condición sugeridas: `funda`, `reflejo`, `desenfoque`, `perspectiva`,
+`full-art`, `reimpresion`, `dorso`, `sin-carta`. Registrar dispositivo, navegador,
+pestaña/PWA y luz en la ficha de captura. Las condiciones del manifiesto pueden
+incluir esas etiquetas; el reporte presenta grupos solapados por condición.
 
-1. Detené el stack con `pnpm run stop` y ejecutá `pnpm run check`. No confundas fallos de acceso a PostgreSQL/Redis con regresiones. No ejecutes tests DB mientras la API esté arriba.
-2. Con los checks terminados, levantá `pnpm run dev` para galería y flujo de colección. Para cámara física usá [la guía HTTPS/LAN](../local-network.md): `pnpm run lan:cert`, instalá/confiá sólo el certificado público en el teléfono y ejecutá `pnpm run dev:lan`. No generes otra CA si ya tenés una vigente.
-3. Registrá flujo UI y fotos nuevas. Luego medí el corpus visual con el runner actual. Recién con resultados separados de negativos y reimpresiones evaluá reglas de confirmar/rechazar.
-4. Después: SIGINT/reanudación del indexador en un directorio de prueba, reinicio/cancelación/timeout del worker y carga concurrente. No reindexes el catálogo completo para estas pruebas.
+## Estado del material disponible
 
-## Qué necesitamos del usuario
-
-Prueba en al menos un iPhone con Safari y un Android con Chrome, indicando modelo, OS, navegador, modo pestaña/PWA y conexión. Si sólo hay uno disponible, registrá ese alcance.
-
-Aportá 50–100 fotos reales, con permiso de usarlas en evaluación local y sin datos personales en el fondo. Para cada foto positiva, confirmá ID exacto del catálogo mediante set y número; anotá acabado normal/holo/reverse aparte porque el ID no distingue necesariamente la variante. Incluí cartas distintas y condiciones variadas: funda, reflejo, desenfoque, perspectiva, full-art y pares de reimpresiones con el mismo dibujo. Una toma frontal clara y tomas difíciles de la misma carta permiten comparar sin inventar etiquetas. Reservá parte de las cartas para validación posterior; varias tomas de una carta no son muestras independientes de identidad.
-
-Incluí negativos confirmados: fondo sin carta, dorso, otra clase de carta y cartas ausentes del catálogo. Usá `cardId: null` únicamente cuando se verificó que no corresponde aceptar ningún ID del índice; un ID desconocido pendiente de etiquetar no es un negativo. No fabriques imágenes ni ground truth para completar la cantidad.
-
-Las fotos existentes son cinco casos de regresión. No permiten estimar precisión general, calibrar umbrales ni demostrar robustez de una categoría.
-
-## Checklist UI — registrar observado, falló o pendiente
-
-| Prueba | Resultado esperado | Evidencia a registrar |
+| Material | Etiqueta | Uso |
 |---|---|---|
-| Galería, orientación vertical/apaisada | Recorte/orientación; #1 con nombre, set y número | Foto/ID confirmado, ID mostrado, diagnóstico |
-| Precio ausente/lento | Conserva la identidad y muestra ausencia de precio | ID antes/después y petición sólo de ese ID |
-| Restaurar sesión | Recargar la misma pestaña conserva entradas; máximo 30 | Cantidad antes/después; no confundir cerrar pestaña |
-| Organizar | Elegir colección y cantidad; guardar explícitamente | Cantidades en colección antes/después; cancelar no guarda; la hoja actual no ofrece variante |
-| Compartir | Abrir el link público sin sesión muestra cartas y cantidades | URL de prueba, pantalla, sin datos privados |
-| Orden por precio | Recorrer más de una página y comparar orden global | Moneda, sentido, IDs/precios; ubicación de cartas sin precio |
-| Cámara física | Permiso, cámara trasera, marco rojo→verde y captura estable | Dispositivo, luz/funda, retraso observado, ID real |
-| Escena quieta | No repite automáticamente; retirar/cambiar permite otra captura | Conteo en sesión durante 10 s quietos y al cambiar |
-| Cancelación/segundo intento | Respuesta anterior no reemplaza la captura nueva | Orden de acciones y entrada final |
-| PWA segundo plano | Volver no pierde sesión ni deja cámara bloqueada | Pestaña/PWA, tiempo en segundo plano |
-| Offline y reconexión | Reconocer requiere API; error recuperable y nuevo intento al volver | Estado de red y sesión; no afirmar reconocimiento offline |
+| IMG_4985–IMG_4989, originales en `/tmp/cards-full` | Cinco IDs confirmados | Regresión development; no mide preparación cliente |
+| Exportado de Carkol del 4/10 | `me2pt5-119` confirmado | Cámara, fallo conocido; faltan bytes accesibles en esta sesión |
+| Exportado de N’s Darmanitan del 4/10 | Edición pendiente | Diagnóstico sin etiqueta; no es negativo; faltan bytes accesibles |
+| Foto IMG_4987 por galería del 6/10 | `me55-92` | Observación real: Luxray primero, Umbreon segundo, corregible |
+| Fotos nuevas/negativos/holdout | Pendientes de aportar | No hay evaluación amplia terminada |
 
-Cámara verde significa encuadre estable. Sumar #1 a sesión no confirma edición o acabado. Persistir en colección sigue siendo explícito.
+Los informes previos de los pares de cámara conservan hashes y resultados;
+no se convierten en nuevas ejecuciones si los JPG originales no están presentes.
+Los originales temporales tampoco están incluidos en Git. El manifiesto del
+baseline conserva las rutas de las cinco fotos existentes.
 
-## Runner del método vigente
+## Runner reproducible
 
-Desde la raíz, con API detenida o arriba (no usa DB ni precio):
+Desde la raíz (no usa DB ni precio; puede ejecutarse con stack arriba):
 
 ```sh
-pnpm --dir backend exec node --env-file-if-exists=.env scripts/scanner-evaluate-current.mjs ../docs/evaluations/manifest.json /tmp/visual-current-report.json 2
+pnpm --dir backend run scanner:evaluate:current ../docs/evaluations/manifest-dinov2-development.json /tmp/dinov2-baseline.json 2
 ```
 
-No descarga, reindexa ni almacena fotos de consulta. Lee archivos locales provistos voluntariamente y crea un reporte nuevo con hashes de fotos/manifiesto, metadata del modelo y versión del índice. No sobrescribe reportes existentes. Las rutas relativas de fotos se resuelven desde el manifiesto. Formato compatible con las cinco etiquetas existentes:
+Formato de manifiesto; rutas relativas se resuelven desde ese archivo:
 
 ```json
 [
-  { "path": "/ruta/foto-preparada.jpg", "cardId": "ID-confirmado", "conditions": ["funda", "perspectiva"] },
-  { "path": "/ruta/negativo-confirmado.jpg", "cardId": null, "conditions": ["dorso"] }
+  { "path": "capturas/carta.jpg", "cardId": "me55-92", "labelStatus": "positive", "origin": "gallery-crop", "split": "development", "conditions": ["funda"] },
+  { "path": "capturas/dorso.jpg", "cardId": null, "labelStatus": "negative", "origin": "camera-crop", "split": "holdout", "conditions": ["dorso"] },
+  { "path": "capturas/edicion-pendiente.jpg", "cardId": null, "labelStatus": "unlabelled", "origin": "camera-crop", "conditions": [] }
 ]
 ```
 
-El runner reutiliza embedding, carga consistente del índice y reranking ORB del código actual en un proceso hijo. Evalúa DINOv2 contra todas las referencias antes de la recuperación adaptativa (64 inicialmente, hasta 512 si falta geometría corroborada), informa referencias ausentes y fallos de recuperación por separado, y conserva los ocho candidatos visibles con geometría. Usa el mismo fallback si ORB falla. El cliente actual rechaza la suma a sesión si el verificador no está disponible o el primero no está corroborado; el reporte distingue candidatos de aceptaciones de negativos. No es una validación del endpoint ni reproduce el recorte/orientación del frontend: proveé recortes preparados y documentá su origen. Pasar originales mide otro alcance.
+Son ejemplos de estructura, no archivos ni etiquetas del corpus evaluado.
+Para compatibilidad, el manifiesto antiguo interpreta ID como positivo y null
+como negativo; los casos pendientes deben declarar `unlabelled` explícitamente.
+Una ruta repetida se rechaza. Bytes duplicados se informan para auditar el corpus.
 
-Las métricas de identidad cuentan una vez cada foto (primera pasada); las repeticiones sólo amplían tiempos. `falseSessionAcceptances` cuenta negativos con candidato bajo la política actual de sumar #1, no escrituras en una colección ni una probabilidad calibrada. La falta de negativos se informa como cero muestras, nunca como tasa de falsos positivos cero.
+El runner reutiliza el embedding y lector de índice vigentes en un proceso hijo.
+No descarga, reindexa, modifica modelo ni guarda fotos. Crea un reporte nuevo
+sin sobrescribir, con hashes, versión del índice/modelo y candidatos top-8.
 
-Separa consulta fría inicial y consultas calientes y presenta n/p50/p95/p99 por fase y total local/coordinador. Una sola consulta fría no describe una distribución: reiniciá el runner y rotá el orden del corpus para medir arranques distintos. Caché ORB de 128 descriptores hace depender el tiempo de la secuencia. Con cinco fotos, p95/p99 se acercan al máximo observado y no son una garantía.
+Métricas por primera pasada: top-1/top-8, falsas predicciones, referencia ausente,
+fallos top-8, negativos con candidato y falsas sumas a sesión **estimadas según
+la política UI**, sin simular ni observar escrituras en una colección.
+Sin positivos/negativos, su tasa correspondiente es `null`, no cero.
+Se presentan por origen, partición y condición, con sus denominadores.
+Las repeticiones sólo amplían los tiempos y no multiplican la muestra.
 
-Para extremo a extremo, medí en navegador/dispositivo desde captura o selección hasta entrada en sesión, incluyendo preparación, HTTP y precio; guardá aparte los tiempos backend del diagnóstico. No sumes percentiles de fases para inventar un percentil total. Registrá concurrencia, fallos, memoria y cambios de dispositivo antes de optimizar.
+Carga/modelo/inferencia/ranking/total/coordinador: n/p50/p95/p99 separados en
+frío y caliente. Sólo la primera consulta arranca el modelo; para estudiar
+arranques distintos, repetir el proceso con un reporte nuevo y rotar el orden.
+Con muestras pequeñas, p95/p99 se aproximan al máximo y no certifican producción.
+No sumar percentiles de fases para inventar un percentil total.
 
-## Registrar errores de cámara o galería bajo demanda
+## Medición del flujo real
 
-Después de reconocer, abrí «¿No coincidió? Guardá el recorte» y elegí «Descargar recorte» y «Descargar diagnóstico». El recorte contiene los bytes exactos enviados, sin otra compresión. El JSON comparte nombre base y deja `expectedCardId: null`: indicá el ID correcto confirmado al reportarlo. Para negativos confirmados mantenelo en null y anotá la condición.
+Pasar una foto por galería/cámara, abrir Revisar y descargar voluntariamente
+recorte exacto y diagnóstico. Guardarlos localmente para evaluación con permiso
+del usuario; no agregar persistencia automática de consulta al producto.
+El JSON descargado deja la etiqueta vacía: confirmarla después.
 
-No hay almacenamiento automático de fotos. La revisión sólo conserva la última captura en memoria hasta la siguiente lectura, descarte, recarga o salida de la pantalla. En cámara, abrirla pausa las capturas automáticas hasta cerrarla. No hace falta descargar cada intento: hacelo sólo cuando detectes un error o quieras aportar un caso al corpus. Ninguna descarga cambia una colección.
+Cada ficha debe separar: ID esperado, primera predicción, presencia en top-8,
+selección corregida, versión del índice/modelo, preparación cliente, HTTP y
+backend; tiempo de captura/selección hasta resultado visible, precio aparte,
+error/cancelación y dispositivo. El runner local no mide HTTP ni extremo a extremo.
+La revisión mantiene fotos sólo en memoria mientras está montada; recargar las
+pierde. La sesión restaurable conserva cartas, no fotos.
 
-## Recuperación adaptativa vigente desde el 5 de octubre
+## Prueba física y funcional pendiente
 
-Ver [evidencia del fix](camera-recovery-2026-10-05.md): dos recortes de teléfono
-reproducidos por worker y endpoint HTTPS, más cinco entradas de regresión directa.
-Registrar `retrievalLimit` junto con los tiempos: las consultas difíciles pueden
-ampliar de 64 a 512 por tandas y tardar 10–28 segundos. No convertir dibujo
-corroborado en edición/acabado confirmado. Este cambio no calibra precisión ni
-rechazo general y no sustituye las pruebas físicas pendientes del protocolo.
+| Prueba | Criterio |
+|---|---|
+| iPhone/Safari y Android/Chrome | Permiso, cámara trasera, foco, guía y captura; anotar entorno disponible |
+| Escena quieta/cambio de carta | No duplicar al quedarse quieta; permitir nueva captura al cambiar |
+| Corrección | Reemplazar una lectura sin duplicarla; revisar captura/referencia |
+| Organización | Agrupar cantidades, guardar explícitamente y retirar sólo éxitos |
+| Precio ausente/lento | Identidad conservada; no pedir precios de todas las alternativas |
+| Cancelación/consulta nueva | Respuesta anterior no reemplaza la captura nueva |
+| PWA/segundo plano/offline | Sesión conservada, error recuperable, nuevo intento al reconectar |
+| Compartir/orden precio | Render sin sesión; orden numérico global con casos sin precio |
 
-## Vigencia: DINOv2 puro — 5 de octubre
+Usar [HTTPS/LAN](../local-network.md) para teléfono; no regenerar una CA vigente.
+Cámara verde indica encuadre estable, no certeza de identidad o acabado.
 
-Por decisión del usuario se retiró ORB, la ampliación hasta 512 y el rechazo
-geométrico. Los bloques previos documentan la evaluación histórica. El runner
-vigente devuelve top-8 DINOv2 sin acceder a imágenes de referencia; la UI vuelve
-a sumar el primero, sin rechazo calibrado. Se conserva la descarga voluntaria.
+Antes de pruebas DB: `pnpm run stop`; después `pnpm run check` y restaurar
+`pnpm run dev`. Para este paso no se cambia reconocimiento, aceptación ni UI.
+El siguiente GO autoriza analizar mejoras con los datos; faltan nuevas fotos
+para cerrar evaluación amplia y calibración.

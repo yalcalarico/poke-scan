@@ -1,13 +1,14 @@
 'use client';
 
+import { Fragment } from 'react';
 import { useCurrency } from '@/hooks/use-currency';
-import { formatPrice, formatRelativeTime } from '@/lib/format';
+import { formatDate, formatPrice } from '@/lib/format';
 import { VARIANT_OPTIONS, variantLabel } from '@/lib/variants';
 import type { PriceDto } from '@/types/api';
 import { Money } from '@/components/cards/money';
 import { EmptyState, StatRow } from '@/components/ui';
 
-import { freshestFetchedAt } from './price-delta';
+import { PriceReferenceDetails } from './price-evidence';
 
 /** Orden de lectura de las variantes: el de `lib/variants`, que es el canónico (§9.5). */
 const VARIANT_ORDER = new Map<string, number>(
@@ -89,12 +90,9 @@ export interface PriceTableProps {
  * una tabla sin esos atributos es una grilla de números para un lector de pantalla.
  */
 export function PriceTable({ prices, className }: PriceTableProps) {
-  const { currency, activeRate, isStale } = useCurrency();
+  const { currency, activeRate, fetchedAt, isStale } = useCurrency();
   const inArs = currency === 'ARS';
   const rows = sortPricesByVariant(prices);
-  // El más reciente de todos, no el de la primera variante: la tabla está
-  // ordenada por variante y la primera fila no dice nada sobre la frescura.
-  const updatedAt = freshestFetchedAt(prices);
 
   if (rows.length === 0) {
     return (
@@ -109,17 +107,17 @@ export function PriceTable({ prices, className }: PriceTableProps) {
 
   const footer = (
     <p className="mt-3 text-caption text-tertiary">
-      Actualizado {formatRelativeTime(updatedAt)} ·{' '}
-      {inArs && activeRate ? (
+      Referencia internacional ·{' '}
+      {inArs ? activeRate ? (
         <>
           <span className="text-secondary">
-            1 USD = {formatPrice(activeRate.rate, 'ARS')} ({activeRate.rateType})
+            1 USD = {formatPrice(activeRate.rate, 'ARS')} ({activeRate.rateType}){fetchedAt ? ` · cotización del ${formatDate(fetchedAt)}` : ''}
           </span>
           {isStale ? <span className="text-warning"> · cotización desactualizada</span> : null}
         </>
       ) : (
-        'Moneda USD'
-      )}
+        'Cotización cambiaria actual no disponible'
+      ) : 'Cada fila conserva su moneda original'}
     </p>
   );
 
@@ -151,12 +149,11 @@ export function PriceTable({ prices, className }: PriceTableProps) {
           </thead>
           <tbody>
             {rows.map((price) => (
+              <Fragment key={`${price.provider ?? 'legacy'}-${price.variant}-${price.source}-${price.fetchedAt}`}>
               <tr key={`${price.provider ?? 'legacy'}-${price.variant}-${price.source}-${price.fetchedAt}`} className="border-b border-line-subtle last:border-0">
                 <th scope="row" className="py-2.5 pr-3 text-left text-body-strong text-primary">
                   {variantLabel(price.variant)}
-                  <span className="block text-caption font-normal text-tertiary">
-                    {price.source} · {price.provider ?? 'origen no identificado'}
-                  </span>
+                  <span className="block text-caption font-normal text-tertiary">Moneda original: {price.currency}</span>
                 </th>
                 <td className="py-2.5 pr-3 text-right text-body text-secondary">
                   <PriceCell usd={price.low} />
@@ -171,6 +168,10 @@ export function PriceTable({ prices, className }: PriceTableProps) {
                   <PriceCell usd={price.market} market />
                 </td>
               </tr>
+              <tr key={`${price.provider ?? 'legacy'}-${price.variant}-${price.source}-${price.fetchedAt}-metadata`}>
+                <td colSpan={5} className="pb-3 text-left"><PriceReferenceDetails reference={price} />{price.market === null ? <p className="text-caption text-warning">Esta variante no tiene referencia de mercado.</p> : null}</td>
+              </tr>
+              </Fragment>
             ))}
           </tbody>
         </table>
@@ -184,15 +185,14 @@ export function PriceTable({ prices, className }: PriceTableProps) {
             className="rounded-control border border-line bg-surface-2 p-1"
           >
             <h3 className="px-2 pt-1.5 text-body-strong text-primary">{variantLabel(price.variant)}</h3>
-            <p className="px-2 text-caption text-secondary">
-              {price.source} · {price.provider ?? 'origen no identificado'}
-            </p>
+            <p className="px-2 text-caption text-secondary">Moneda original: {price.currency}</p>
             <dl className="mt-1">
               <StatRow title="Bajo" value={<PriceCell usd={price.low} />} />
               <StatRow title="Medio" value={<PriceCell usd={price.mid} />} />
               <StatRow title="Alto" value={<PriceCell usd={price.high} />} />
               <StatRow title="Mercado" value={<PriceCell usd={price.market} market />} />
             </dl>
+            <div className="px-2 pb-2"><PriceReferenceDetails reference={price} />{price.market === null ? <p className="text-caption text-warning">Esta variante no tiene referencia de mercado.</p> : null}</div>
           </section>
         ))}
         {footer}
@@ -201,9 +201,9 @@ export function PriceTable({ prices, className }: PriceTableProps) {
   );
 }
 
-/** Cuántas variantes no tienen un solo número: el aviso de "contenido parcial" (§9.1). */
+/** Cuántas variantes no tienen market: el aviso de "contenido parcial" (§9.1). */
 export function countPricelessVariants(prices: readonly PriceDto[]): number {
-  return prices.filter(isEmptyRow).length;
+  return prices.filter((price) => price.market === null || !Number.isFinite(price.market)).length;
 }
 
 export { isEmptyRow as isPricelessVariant };

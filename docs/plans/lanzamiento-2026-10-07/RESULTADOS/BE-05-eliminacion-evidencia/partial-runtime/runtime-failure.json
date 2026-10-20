@@ -1,0 +1,7 @@
+{
+  "phase": "confirmed-delete",
+  "checksCompleted": 39,
+  "reason": "FAILED_next-share-404-after-deletion",
+  "errorKind": "Error",
+  "firstLine": "FAILED_next-share-404-after-deletion"
+}

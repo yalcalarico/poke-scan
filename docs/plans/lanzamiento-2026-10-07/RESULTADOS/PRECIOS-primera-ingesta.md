@@ -1,0 +1,11 @@
+# Primera ingesta real — llamada de comprobación y horario adelantado
+
+**Estado posterior13/10:** [importación real ejecutada por nuevo pedido puntual](PRECIOS-ingesta-real-30th.md). El horario11:22 siguiente quedó superado:156precios publicados y siguiente descarga no antes14/10 20:19Argentina. Se conserva abajo el recibo de la fase anterior.
+
+13/10/2026. Usuario solicita recuperar ahora el set30th para verlo. Se efectuó un GET acotado de `last-updated.txt`,200, que informa build13/10 20:06:44UTC, nuevo respecto del build12/10 observado en la investigación. Todavía no se descargaron nuevamente productos/precios ni se publicó un lote real; esa parte del pedido sigue pendiente del presupuesto24h.
+
+TCGCSV [indica limitar las descargas a una cada24horas](https://tcgcsv.com/docs). La investigación ya descargó productos/precios del grupo24722 el13/10 14:22:14.533UTC. Se conservó ese timestamp y se adelantó exclusivamente availableAt de ese grupo a14/10 14:22:14.533UTC, **11:22Argentina**, primer momento permitido. Classic24837 conserva14/10 20:30UTC/17:30Argentina. Sin reset de presupuesto ni precios de muestra/ficticios insertados.
+
+Guard de arranque API actualizado porgrupo y comprobado con seis controles sin red: rechazo antes del instante exacto, admisión al cumplirse24h, Classic todavía bloqueada y rechazo de otro proveedor, POST y credenciales. API propia reiniciada PID20554/pnpm20543/padre20542; Next20262 intacta, ambas vivas. Ocho comprobaciones locales y parentesco correctos; endpoint comparación devuelve pending y nextAttemptAt exacto. Sin cambios de código/build, sin repetir checkglobal, sin capturas. TCGdex conserva política activa; snapshot diario y límites anteriores intactos. Automatización PAUSED/doshoras intacta; no se creó seguimiento adicional. El servidor debe permanecer encendido para que el worker ejecute la importación.
+
+[Evidencia de llamada](PRECIOS-primera-ingesta-evidencia/manual-build-probe.json), [cola](PRECIOS-primera-ingesta-evidencia/manual-earliest-schedule.json), [instancia vigente](PRECIOS-primera-ingesta-evidencia/earliest-final-instance.json) y [hashes](PRECIOS-primera-ingesta-evidencia/sha256.json). Primera publicación/cobertura todavía no acreditadas; estado20/38 sin nuevo cierre.

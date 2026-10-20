@@ -1,0 +1,59 @@
+{
+  "checkedAtUtc": "2026-10-09T19:36:49.490669+00:00",
+  "reason": "Corrección de alcance del registro; UX-04 sólo especifica y no espera implementación, por plan03. Revisión y aceptación root ya existen.",
+  "beforeComplete": 14,
+  "afterComplete": 15,
+  "pending": 23,
+  "completeIds": [
+    "FE-01",
+    "FE-02",
+    "FE-03",
+    "FE-08",
+    "BE-01",
+    "BE-02",
+    "BE-03",
+    "BE-04",
+    "UX-01",
+    "UX-02",
+    "UX-04",
+    "RES-04",
+    "INF-02",
+    "MKT-01",
+    "MKT-02"
+  ],
+  "newFunctionalImplementations": 0,
+  "testsRuntimeExecuted": false,
+  "priority": "BE-07 dentro del alcance diagnóstico focal; no otra preparación como sustituto de implementación.",
+  "changedCentralDocuments": [
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/REGISTRO-TAREAS.md",
+      "beforeSha256": "38ea0c76412afd4f736c7d66a788ba6705b619abfeb4271d85fd6392dbad7611",
+      "afterSha256": "c8dc6483d1569b431dbd6e19e575868ff41de4a508816e340b6a886438f65be9"
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/03-ui-ux.md",
+      "beforeSha256": "b7355dfc0ef3034252cc447ab1f221e3ea6e9665c5bed0391744c0d06bc84733",
+      "afterSha256": "79828c84f8f9721c7eeb7c7e927a140d323b702de3d246d910e76cb20e5b1a3f"
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/STATUS-CHECKLIST.md",
+      "beforeSha256": "e4e8943b19fbf7505244372d69e4dc36698af8aa4c9fc9d4f2cf7b2d5f4b5693",
+      "afterSha256": "c51946946a8451d47d412734bf9a4fb9d7f293067e1d533dfaed636e800c2987"
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/ORQUESTACION-ESTADO.md",
+      "beforeSha256": "48ab2007227b4d60cca25323cde113a753e30db035eb5ae6642372515e3dcb0f",
+      "afterSha256": "44f47fdd98d1cfbbdbbcf4608583116c4afa6d22354d88dba26a094f241112e1"
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/11-orquestacion.md",
+      "beforeSha256": "a7b8cd41f398e9811798a104fdbd720d29b014ca432ffb92e7010fd37110b125",
+      "afterSha256": "693ed33fa08c4241639ded2fb38de3c9d3d976895aa471285e079a3749948492"
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/CONTEXTO-PART2.md",
+      "beforeSha256": "903b3a40a750fb8786998f17ec271d5a89a8ac5b39c009d44b9267fa34290157",
+      "afterSha256": "f08a64217eb031ab5b998452b6de2ee2b690f706101e36c752f33dfae4e213d3"
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "acceptedAtUtc": "2026-10-13T21:08:07.652164+00:00",
+  "scope": "Local implementation, graphs and scheduled comparative ingestion",
+  "standardFinalTests": 1202,
+  "skips": 0,
+  "backendFocused": 36,
+  "frontendFocused": 18,
+  "integratedDistinctControlsByPhases": 71,
+  "sourcesOutputsIntact": 3614,
+  "dirtyTreePreserved": true,
+  "noScreenshots": true,
+  "ownQAResourcesGone": true,
+  "realTCGCSVFirstImportPending": true,
+  "firstScheduledAtUtc": "2026-10-14T20:30:00Z",
+  "existingActiveProvider": "tcgdex",
+  "dailyLocalSnapshotsEnabled": true,
+  "existingDataAndGINPreserved": true,
+  "centralCounts": {
+    "complete": 20,
+    "pending": 18
+  },
+  "automation": "PAUSED/2hours",
+  "report": "PRECIOS-comparacion-validacion.md"
+}

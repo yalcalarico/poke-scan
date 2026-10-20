@@ -1,0 +1,39 @@
+[
+  {
+    "phase": "migrate",
+    "command": [
+      "pnpm",
+      "--dir",
+      "backend",
+      "exec",
+      "prisma",
+      "migrate",
+      "deploy"
+    ],
+    "exitCode": 0
+  },
+  {
+    "phase": "focused",
+    "command": [
+      "pnpm",
+      "--dir",
+      "frontend",
+      "exec",
+      "vitest",
+      "run",
+      "components/visual-preview",
+      "components/scanner/__tests__/visual-result.test.tsx",
+      "lib/__tests__/catalog-navigation.test.ts"
+    ],
+    "exitCode": 0
+  },
+  {
+    "phase": "check",
+    "command": [
+      "pnpm",
+      "run",
+      "check"
+    ],
+    "exitCode": 1
+  }
+]

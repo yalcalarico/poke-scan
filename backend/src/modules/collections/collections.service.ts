@@ -1,14 +1,21 @@
+import { CollectionComparisonService } from '../../jobs/collection-comparison.service.js';
+import { CollectionPriceRefreshService } from './collection-price-refresh.service.js';
 import {
   ConflictException,
+  GoneException,
   Inject,
   Injectable,
+  Logger,
   NotFoundException,
   Optional,
 } from '@nestjs/common';
+import { createHash, randomUUID } from 'node:crypto';
 import { Prisma } from '@prisma/client';
 import { latestMarketPriceJoin } from '../../common/sql/latest-price.js';
+import { priceMetadata, valuationFromCounts, type PriceMetadataDto, type ValueAggregateDto } from '../../common/price-metadata.js';
 import { NUMERIC_CARD_NUMBER } from '../../common/sql/numeric-number.js';
 import { SyncPricesService } from '../../jobs/sync-prices.service.js';
+import { PriceSyncRegistryService } from '../../jobs/price-sync-registry.service.js';
 import { PrismaService } from '../../prisma/index.js';
 import { PRICE_PROVIDER, type PriceProvider } from '../providers/card-provider.interface.js';
 import { type CardSortField } from '../cards/dto/search-cards.dto.js';
@@ -21,6 +28,7 @@ import { UpdateItemDto } from './dto/update-item.dto.js';
 const DEFAULT_COLLECTION_NAME = 'Mi colección';
 const DEFAULT_PAGE = 1;
 const DEFAULT_PAGE_SIZE = 50;
+const ADD_OPERATION_REPLAY_WINDOW_MS = 30 * 24 * 60 * 60 * 1000;
 
 /**
  * Cuántas cartas entran en el mosaic de portada. 4 porque el collage del
@@ -114,6 +122,10 @@ export interface PriceDto {
   currency: string;
   source: string;
   fetchedAt: string;
+  evaluatedAt?: string;
+  freshness?: PriceMetadataDto['freshness'];
+  upstreamUpdatedAt?: string | null;
+  upstreamFreshness?: PriceMetadataDto['upstreamFreshness'];
 }
 
 /** Una miniatura del mosaic de portada de `CollectionDto`. */
@@ -131,6 +143,7 @@ export interface CollectionDto {
   uniqueCount: number;
   duplicateCount: number;
   totalValueUsd: number;
+  valuation: ValueAggregateDto;
   totalValueArs: number | null;
   /**
    * Hasta `COVER_SIZE` cartas para el collage de portada. **Nunca `undefined`**:
@@ -163,6 +176,7 @@ export interface CollectionStatsDto {
   totalValueUsd: number;
   totalValueArs: number | null;
   cardsMissingPrice: number;
+  valuation?: ValueAggregateDto;
 }
 
 /**
@@ -222,6 +236,13 @@ export interface CollectionAggregateRow {
   uniqueCount: number;
   duplicateCount: number;
   totalValueUsd: number;
+  pricedCopies: number;
+  freshCopies: number;
+  staleCopies: number;
+  unknownFreshnessCopies: number;
+  oldestFetchedAt: Date | null;
+  newestFetchedAt: Date | null;
+  evaluatedAt: Date;
 }
 
 interface StatsRow {
@@ -231,6 +252,13 @@ interface StatsRow {
   setsCount: number;
   totalValueUsd: number;
   cardsMissingPrice: number;
+  pricedCopies: number;
+  freshCopies: number;
+  staleCopies: number;
+  unknownFreshnessCopies: number;
+  oldestFetchedAt: Date | null;
+  newestFetchedAt: Date | null;
+  evaluatedAt: Date;
 }
 
 interface LatestPriceRow {
@@ -314,11 +342,16 @@ function escapeLike(value: string): string {
 
 @Injectable()
 export class CollectionsService {
+  private readonly logger = new Logger(CollectionsService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     @Inject(PRICE_PROVIDER) private readonly priceProvider: PriceProvider,
     /** Opcional: los tests unitarios lo construyen sin el job de precios. */
     @Optional() private readonly syncPrices?: SyncPricesService,
+    @Optional() private readonly comparisonSnapshots?: CollectionComparisonService,
+    @Optional() private readonly priceRefresh?: CollectionPriceRefreshService,
+    @Optional() private readonly priceSyncRegistry?: PriceSyncRegistryService,
   ) {}
 
   /** Verifica ownership y devuelve la colección, o 404. */
@@ -333,7 +366,7 @@ export class CollectionsService {
   // ─── Colecciones ───
 
   async create(userId: string, dto: CreateCollectionDto): Promise<CollectionDto> {
-    return this.prisma.$transaction(async (tx) => {
+    const result = await this.prisma.$transaction(async (tx) => {
       const existing = await tx.collection.count({ where: { userId } });
       const isFirst = existing === 0;
       // La primera colección del usuario siempre es la default.
@@ -363,10 +396,13 @@ export class CollectionsService {
         [],
       );
     });
+    await this.captureComparison(userId);
+    return result;
   }
 
   async list(userId: string): Promise<CollectionDto[]> {
     await this.ensureDefaultCollection(userId);
+    await this.priceRefresh?.enqueueOnRead(userId);
     const filter = Prisma.sql`WHERE col."userId" = ${userId}`;
     // Dos queries fijas (agregados + portada), no una por colección: el número
     // de consultas no depende de cuántas colecciones tenga el usuario.
@@ -385,6 +421,8 @@ export class CollectionsService {
     if (!existing) {
       throw new NotFoundException(`Colección no encontrada: ${id}`);
     }
+
+    await this.priceRefresh?.enqueueOnRead(userId, id);
 
     const filter = Prisma.sql`WHERE col."userId" = ${userId} AND col.id = ${id}`;
     const [rows, covers] = await Promise.all([
@@ -440,6 +478,7 @@ export class CollectionsService {
       throw new NotFoundException(`Colección no encontrada: ${id}`);
     }
     await this.prisma.collection.delete({ where: { id } });
+    await this.captureComparison(userId);
   }
 
   // ─── Items ───
@@ -476,143 +515,214 @@ export class CollectionsService {
     userId: string,
     collectionId: string,
     dto: AddItemDto,
+    idempotencyKey?: string,
+  ): Promise<CollectionItemDto> {
+    if (idempotencyKey !== undefined) {
+      return this.addItemIdempotently(
+        userId,
+        collectionId,
+        dto,
+        idempotencyKey.toLowerCase(),
+      );
+    }
+    const item = await this.prisma.$transaction(async (tx) => {
+      await this.assertAddTarget(tx, userId, collectionId, dto.cardId);
+      return this.incrementItem(tx, collectionId, dto);
+    });
+    await this.captureComparison(userId);
+    return this.confirmAddedItem(item);
+  }
+
+  private async assertAddTarget(
+    tx: Prisma.TransactionClient,
+    userId: string,
+    collectionId: string,
+    cardId: string,
+  ): Promise<void> {
+    const collection = await tx.collection.findFirst({
+      where: { id: collectionId, userId },
+      select: { id: true },
+    });
+    if (!collection)
+      throw new NotFoundException(`Colección no encontrada: ${collectionId}`);
+    const card = await tx.card.findUnique({
+      where: { id: cardId },
+      select: { id: true },
+    });
+    if (!card) throw new NotFoundException(`Carta no encontrada: ${cardId}`);
+  }
+
+  private async incrementItem(
+    tx: Prisma.TransactionClient,
+    collectionId: string,
+    dto: AddItemDto,
+  ): Promise<ItemWithCard> {
+    // Un P2002 aborta la transacción PostgreSQL. ON CONFLICT resuelve la carrera
+    // sin consultas posteriores a una transacción fallida ni incrementos perdidos.
+    const [saved] = await tx.$queryRaw<{ id: string }[]>`
+      INSERT INTO collection_items
+        (id, "collectionId", "cardId", variant, condition, quantity,
+         "isForTrade", notes, "addedAt", "updatedAt")
+      VALUES (${randomUUID()}, ${collectionId}, ${dto.cardId},
+              ${dto.variant ?? 'normal'}, ${dto.condition ?? 'NM'}, ${dto.quantity ?? 1},
+              ${dto.isForTrade ?? false}, ${dto.notes ?? null}, NOW(), NOW())
+      ON CONFLICT ("collectionId", "cardId", variant, condition)
+      DO UPDATE SET quantity = collection_items.quantity + EXCLUDED.quantity,
+                    "isForTrade" = collection_items."isForTrade" OR EXCLUDED."isForTrade",
+                    "updatedAt" = NOW()
+      RETURNING id
+    `;
+    return tx.collectionItem.findUniqueOrThrow({
+      where: { id: saved.id },
+      select: ITEM_SELECT,
+    });
+  }
+
+  private async confirmAddedItem(
+    item: ItemWithCard,
+  ): Promise<CollectionItemDto> {
+    try {
+      await this.priceSyncRegistry?.enableForCollection(item.card.setId);
+    } catch {
+      this.logger.warn('No se pudo registrar la demanda diaria del set; se recuperará en la reconciliación');
+    }
+    // La escritura ya está confirmada: un precio opcional no puede convertirla
+    // en error ni obligar al cliente antiguo a sumar otra vez para reintentarlo.
+    try {
+      this.syncPrices?.enqueueRefresh(item.cardId);
+    } catch {
+      this.logger.warn('No se pudo encolar el precio del ítem confirmado');
+    }
+    try {
+      const prices = await this.fetchLatestPrices(
+        this.prisma,
+        [item.cardId],
+        [item.variant],
+      );
+      return this.toItemDto(
+        item,
+        prices.get(priceKey(item.cardId, item.variant)) ?? null,
+      );
+    } catch {
+      this.logger.warn('No se pudo consultar el precio del ítem confirmado');
+      return this.toItemDto(item, null);
+    }
+  }
+
+  private async addItemIdempotently(
+    userId: string,
+    collectionId: string,
+    dto: AddItemDto,
+    key: string,
   ): Promise<CollectionItemDto> {
     const variant = dto.variant ?? 'normal';
     const condition = dto.condition ?? 'NM';
     const quantity = dto.quantity ?? 1;
-
-    const item = await this.prisma.$transaction(async (tx) => {
-      const collection = await tx.collection.findFirst({
-        where: { id: collectionId, userId },
-        select: { id: true },
-      });
-      if (!collection) {
-        throw new NotFoundException(`Colección no encontrada: ${collectionId}`);
-      }
-
-      const card = await tx.card.findUnique({
-        where: { id: dto.cardId },
-        select: { id: true },
-      });
-      if (!card) {
-        throw new NotFoundException(`Carta no encontrada: ${dto.cardId}`);
-      }
-
-      const uniqueWhere = {
-        collectionId_cardId_variant_condition: {
+    const payloadHash = createHash('sha256')
+      .update(
+        JSON.stringify({
           collectionId,
           cardId: dto.cardId,
           variant,
           condition,
+          quantity,
+          notes: dto.notes ?? null,
+          isForTrade: dto.isForTrade ?? null,
+        }),
+      )
+      .digest('hex');
+
+    const replay = async (): Promise<ItemWithCard> => {
+      const operation = await this.prisma.collectionItemAddOperation.findUnique(
+        {
+          where: { userId_key: { userId, key } },
         },
-      };
-
-      // Semántica: agregar N copias más de una combinación ya presente.
-      const existing = await tx.collectionItem.findUnique({
-        where: uniqueWhere,
-        select: { id: true },
-      });
-
-      if (existing) {
-        return tx.collectionItem.update({
-          where: { id: existing.id },
-          // La marca se "abre" sola: si la carta ya estaba y el usuario la
-          // vuelve a agregar marcándola para intercambio, tiene que quedar
-          // marcada. Si no, el checkbox del alta parecería no funcionar
-          // justamente en el caso de una carta repetida, que es cuando más
-          // fácil es que uno quiera marcarla.
-          data: {
-            quantity: { increment: quantity },
-            ...(dto.isForTrade === true ? { isForTrade: true } : {}),
-          },
-          select: ITEM_SELECT,
-        });
+      );
+      if (!operation)
+        throw new ConflictException(
+          'La operación está en curso; repetí la misma solicitud',
+        );
+      if (operation.payloadHash !== payloadHash) {
+        throw new ConflictException('La clave ya se usó con otros datos');
       }
-
-      try {
-        return await tx.collectionItem.create({
-          data: {
-            collectionId,
-            cardId: dto.cardId,
-            variant,
-            condition,
-            quantity,
-            ...(dto.isForTrade !== undefined ? { isForTrade: dto.isForTrade } : {}),
-            ...(dto.notes !== undefined ? { notes: dto.notes } : {}),
-          },
-          select: ITEM_SELECT,
+      if (operation.expiresAt <= new Date()) {
+        await this.prisma.collectionItemAddOperation.update({
+          where: { userId_key: { userId, key } },
+          data: { resultItemId: null },
         });
-      } catch (error) {
-        // Carrera entre dos requests idénticos: el unique ya lo creó el otro.
-        if (!isUniqueViolation(error)) throw error;
-        const winner = await tx.collectionItem.findUnique({
-          where: uniqueWhere,
+        throw new GoneException(
+          'Venció el período de reintento seguro; no se volvió a sumar la carta',
+        );
+      }
+      if (!operation.resultItemId) {
+        throw new ConflictException(
+          'La operación todavía no tiene una respuesta confirmada',
+        );
+      }
+      const item = await this.prisma.collectionItem.findFirst({
+        where: {
+          id: operation.resultItemId,
+          collection: { id: collectionId, userId },
+        },
+        select: ITEM_SELECT,
+      });
+      if (!item) {
+        throw new GoneException(
+          'La operación se confirmó, pero el ítem ya no está en la colección',
+        );
+      }
+      return item;
+    };
+
+    let item: ItemWithCard;
+    try {
+      item = await this.prisma.$transaction(async (tx) => {
+        const collection = await tx.collection.findFirst({
+          where: { id: collectionId, userId },
           select: { id: true },
         });
-        if (!winner) throw error;
-        return tx.collectionItem.update({
-          where: { id: winner.id },
+        if (!collection)
+          throw new NotFoundException(
+            `Colección no encontrada: ${collectionId}`,
+          );
+        await tx.collectionItemAddOperation.create({
           data: {
-            quantity: { increment: quantity },
-            ...(dto.isForTrade === true ? { isForTrade: true } : {}),
+            userId,
+            key,
+            payloadHash,
+            expiresAt: new Date(Date.now() + ADD_OPERATION_REPLAY_WINDOW_MS),
           },
-          select: ITEM_SELECT,
         });
-      }
-    });
-
-    // El precio se consulta bajo demanda, así que una carta recién agregada no
-    // lo tenía: el total de la colección valía $0 hasta que el usuario abría el
-    // detalle. Se pide en background (no bloquea la respuesta) y la cola
-    // respeta el rate limit de la API.
-    this.syncPrices?.enqueueRefresh(item.cardId);
-
-    return this.toItemDto(
-      item,
-      await this.fetchLatestPrices(
-        this.prisma,
-        [item.cardId],
-        [item.variant],
-      ).then((prices) => prices.get(priceKey(item.cardId, item.variant)) ?? null),
-    );
+        const card = await tx.card.findUnique({
+          where: { id: dto.cardId },
+          select: { id: true },
+        });
+        if (!card)
+          throw new NotFoundException(`Carta no encontrada: ${dto.cardId}`);
+        const saved = await this.incrementItem(tx, collectionId, dto);
+        await tx.collectionItemAddOperation.update({
+          where: { userId_key: { userId, key } },
+          data: { resultItemId: saved.id },
+        });
+        return saved;
+      });
+    } catch (error) {
+      // La colisión de clave se resuelve fuera de la transacción abortada.
+      if (!isUniqueViolation(error)) throw error;
+      await this.assertOwned(userId, collectionId);
+      item = await replay();
+    }
+    await this.captureComparison(userId);
+    return this.confirmAddedItem(item);
   }
 
   /**
-   * Encola el refresco de precio de todas las cartas de una colección, para las
-   * que aún no tengan precio guardado. Devuelve cuántas quedaron encoladas.
+   * Solicita referencias faltantes o vencidas de las variantes del inventario.
+   * Devuelve sólo los trabajos insertados o reactivados de forma durable.
    */
   async enqueueMissingPrices(userId: string, collectionId: string): Promise<number> {
     await this.assertOwned(userId, collectionId);
-    const items = await this.prisma.collectionItem.findMany({
-      where: { collection: { id: collectionId, userId } },
-      select: {
-        cardId: true,
-        card: {
-          select: {
-            prices: {
-              where: {
-                provider: this.priceProvider.id,
-                source: this.priceProvider.defaultSource,
-                currency: this.priceProvider.defaultCurrency,
-                market: { not: null },
-              },
-              select: { id: true },
-              take: 1,
-            },
-          },
-        },
-      },
-      distinct: ['cardId'],
-    });
-
-    let queued = 0;
-    for (const item of items) {
-      if (item.card.prices.length === 0) {
-        this.syncPrices?.enqueueRefresh(item.cardId);
-        queued += 1;
-      }
-    }
-    return queued;
+    return this.priceRefresh?.enqueue(userId, collectionId, true) ?? 0;
   }
 
   async updateItem(
@@ -666,6 +776,7 @@ export class CollectionsService {
       throw error;
     }
 
+    await this.captureComparison(userId);
     return this.toItemDto(
       item,
       await this.fetchLatestPrices(
@@ -679,6 +790,12 @@ export class CollectionsService {
   async removeItem(userId: string, itemId: string): Promise<void> {
     await this.findOwnedItem(userId, itemId);
     await this.prisma.collectionItem.delete({ where: { id: itemId } });
+    await this.captureComparison(userId);
+  }
+
+  private async captureComparison(userId: string): Promise<void> {
+    try { await this.comparisonSnapshots?.capture(userId); }
+    catch { this.logger.warn('No se pudo actualizar el punto provisional de comparación'); }
   }
 
   async getDuplicates(
@@ -710,6 +827,7 @@ export class CollectionsService {
     collectionId: string,
   ): Promise<CollectionStatsDto> {
     await this.assertCollectionOwnership(userId, collectionId);
+    const evaluatedAt = new Date();
 
     const rows = await this.prisma.$queryRaw<StatsRow[]>(Prisma.sql`
       SELECT
@@ -718,6 +836,12 @@ export class CollectionsService {
         COUNT(i.id) FILTER (WHERE i.quantity > 1)::int AS "duplicateCards",
         COUNT(DISTINCT c."setId")::int AS "setsCount",
         COALESCE(SUM(i.quantity * lp.market), 0)::float8 AS "totalValueUsd",
+        COALESCE(SUM(i.quantity) FILTER (WHERE lp.market IS NOT NULL), 0)::int AS "pricedCopies",
+        COALESCE(SUM(i.quantity) FILTER (WHERE lp.market IS NOT NULL AND lp.provider = ${this.priceProvider.id} AND lp."fetchedAt" <= ${evaluatedAt} AND lp."fetchedAt" > ${new Date(evaluatedAt.getTime() - 86400000)}), 0)::int AS "freshCopies",
+        COALESCE(SUM(i.quantity) FILTER (WHERE lp.market IS NOT NULL AND (lp.provider <> ${this.priceProvider.id} OR lp."fetchedAt" <= ${new Date(evaluatedAt.getTime() - 86400000)})), 0)::int AS "staleCopies",
+        MIN(lp."fetchedAt") FILTER (WHERE lp.market IS NOT NULL AND lp."fetchedAt" <= ${evaluatedAt}) AS "oldestFetchedAt",
+        MAX(lp."fetchedAt") FILTER (WHERE lp.market IS NOT NULL AND lp."fetchedAt" <= ${evaluatedAt}) AS "newestFetchedAt",
+        ${evaluatedAt}::timestamptz AS "evaluatedAt",
          COUNT(DISTINCT i."cardId") FILTER (WHERE lp.market IS NULL)::int AS "cardsMissingPrice"
       FROM collection_items i
       JOIN collections col ON col.id = i."collectionId"
@@ -727,6 +851,13 @@ export class CollectionsService {
     `);
 
     const row = rows[0];
+    const totalCards = row?.totalCards ?? 0;
+    const pricedCopies = row?.pricedCopies ?? 0;
+    const freshCopies = row?.freshCopies ?? 0;
+    const staleCopies = row?.staleCopies ?? 0;
+    const valuationDto = valuationFromCounts({ totalCopies: totalCards, pricedCopies, amount: row?.totalValueUsd ?? 0, evaluatedAt,
+      freshCopies, staleCopies, unknownFreshnessCopies: Math.max(0, pricedCopies - freshCopies - staleCopies),
+      oldestFetchedAt: row?.oldestFetchedAt ?? null, newestFetchedAt: row?.newestFetchedAt ?? null });
 
     return {
       totalCards: row?.totalCards ?? 0,
@@ -736,6 +867,7 @@ export class CollectionsService {
       totalValueUsd: round2(row?.totalValueUsd ?? 0),
       totalValueArs: null,
       cardsMissingPrice: row?.cardsMissingPrice ?? 0,
+      valuation: valuationDto,
     };
   }
 
@@ -1105,6 +1237,7 @@ export class CollectionsService {
   private async aggregateQuery(
     filter: Prisma.Sql,
   ): Promise<CollectionAggregateRow[]> {
+    const evaluatedAt = new Date();
     return this.prisma.$queryRaw<CollectionAggregateRow[]>(Prisma.sql`
       SELECT
         col.id,
@@ -1115,7 +1248,13 @@ export class CollectionsService {
         COALESCE(SUM(i.quantity), 0)::int AS "itemCount",
         COUNT(i.id)::int AS "uniqueCount",
         COUNT(i.id) FILTER (WHERE i.quantity > 1)::int AS "duplicateCount",
-        COALESCE(SUM(i.quantity * lp.market), 0)::float8 AS "totalValueUsd"
+        COALESCE(SUM(i.quantity * lp.market), 0)::float8 AS "totalValueUsd",
+        COALESCE(SUM(i.quantity) FILTER (WHERE lp.market IS NOT NULL), 0)::int AS "pricedCopies",
+        COALESCE(SUM(i.quantity) FILTER (WHERE lp.market IS NOT NULL AND lp.provider = ${this.priceProvider.id} AND lp."fetchedAt" <= ${evaluatedAt} AND lp."fetchedAt" > ${new Date(evaluatedAt.getTime() - 86400000)}), 0)::int AS "freshCopies",
+        COALESCE(SUM(i.quantity) FILTER (WHERE lp.market IS NOT NULL AND (lp.provider <> ${this.priceProvider.id} OR lp."fetchedAt" <= ${new Date(evaluatedAt.getTime() - 86400000)})), 0)::int AS "staleCopies",
+        MIN(lp."fetchedAt") FILTER (WHERE lp.market IS NOT NULL AND lp."fetchedAt" <= ${evaluatedAt}) AS "oldestFetchedAt",
+        MAX(lp."fetchedAt") FILTER (WHERE lp.market IS NOT NULL AND lp."fetchedAt" <= ${evaluatedAt}) AS "newestFetchedAt",
+        ${evaluatedAt}::timestamptz AS "evaluatedAt"
       FROM collections col
       LEFT JOIN collection_items i ON i."collectionId" = col.id
       ${this.latestPriceJoin()}
@@ -1229,6 +1368,7 @@ export class CollectionsService {
     `);
 
     const prices = new Map<string, PriceDto>();
+    const evaluatedAt = new Date();
     for (const row of rows) {
       if (variantSet.size > 0 && !variantSet.has(row.variant)) continue;
       prices.set(priceKey(row.cardId, row.variant), {
@@ -1242,6 +1382,7 @@ export class CollectionsService {
         currency: row.currency,
         source: row.source,
         fetchedAt: toIso(row.fetchedAt),
+        ...priceMetadata(row.fetchedAt, row.provider, this.priceProvider.id, evaluatedAt),
       });
     }
     return prices;
@@ -1254,9 +1395,22 @@ export class CollectionsService {
       uniqueCount: number;
       duplicateCount: number;
       totalValueUsd: number;
+      pricedCopies?: number;
+      freshCopies?: number;
+      staleCopies?: number;
+      oldestFetchedAt?: Date | null;
+      newestFetchedAt?: Date | null;
+      evaluatedAt?: Date;
     },
     cover: CollectionCoverItem[],
   ): CollectionDto {
+    const evaluatedAt = totals.evaluatedAt ?? new Date();
+    const pricedCopies = totals.pricedCopies ?? 0;
+    const freshCopies = totals.freshCopies ?? 0;
+    const staleCopies = totals.staleCopies ?? 0;
+    const valuationDto = valuationFromCounts({ totalCopies: Number(totals.itemCount), pricedCopies, amount: Number(totals.totalValueUsd), evaluatedAt,
+      freshCopies, staleCopies, unknownFreshnessCopies: Math.max(0, pricedCopies - freshCopies - staleCopies),
+      oldestFetchedAt: totals.oldestFetchedAt ?? null, newestFetchedAt: totals.newestFetchedAt ?? null });
     return {
       id: collection.id,
       userId: collection.userId,
@@ -1266,6 +1420,7 @@ export class CollectionsService {
       uniqueCount: Number(totals.uniqueCount),
       duplicateCount: Number(totals.duplicateCount),
       totalValueUsd: round2(Number(totals.totalValueUsd)),
+      valuation: valuationDto,
       totalValueArs: null,
       cover,
       createdAt: toIso(collection.createdAt),

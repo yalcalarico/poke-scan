@@ -1,0 +1,38 @@
+# INF-02 — empaquetado y runtime aislado
+
+Estado de implementación: preparado para revisión integrada. No se declara cerrado el gate ni el lote; queda pendiente la revisión Sol HIGH y el check global.
+
+## Arquitectura entregada
+
+- `backend/Dockerfile` compila con Node 22.20.0 / pnpm 10.17.1, genera Prisma Client antes del build Nest, conserva el árbol de producción y los tres módulos ESM del worker/índice, y ejecuta como UID 1001. `frontend/Dockerfile` crea el build Next con `NEXT_PUBLIC_API_URL=/api` y un destino interno de build inmediato y local; SSR usa `API_INTERNAL_URL` inyectado al runtime. El runtime no incluye hostname de backend en el bundle.
+- Alpine ARM64 no carga `onnxruntime-node`: el smoke nativo registró fallo del loader `ld-linux-aarch64.so.1` / `ERR_DLOPEN_FAILED`. El fallback fijado fue `node:22.20.0-bookworm-slim`, digest ARM64 `sha256:b21fe589dfbe5cc39365d0544b9be3f1f33f55f3c86c87a76ff65a02f8f5848e`. Se agregó OpenSSL al builder y runner por Prisma; el runtime Bookworm final importó ONNX, generó/verificó Argon2, procesó PNG sintético con Sharp, instanció Prisma y cerró correctamente como UID 1001. El smoke final no emitió warning de OpenSSL engine.
+- `infra/inf02/compose.yaml` crea DB y Redis sin puertos host, una red interna para DB/Redis/backend/frontend/gate y una red de entrada sólo para Caddy. El gateway publica HTTPS sólo en `127.0.0.1:35443`; Caddy usa su CA privada temporal con `skip_install_trust`. No se instaló confianza en el sistema y los smokes verificaron el certificado mediante CA explícita, sin `-k` ni bypass TLS. Los jobs de precios y crons están desactivados.
+- Cada stack lleva `COMPOSE_PROJECT_NAME` exclusivo, sin `container_name`, puertos de desarrollo ni volúmenes compartidos. Una DB vacía recibe `prisma migrate deploy` y luego una fixture sintética. El gate consulta `/api/ready` con plazo finito y sólo después se inician frontend y gateway. `inf02-recreate.mjs` vuelve a cerrar ingreso, recrear backend y reaplicar readiness antes de abrirlo.
+- El bundle se construye fuera del repositorio, queda de sólo lectura y no incluye fotos. A contiene el índice completo; B selecciona un vector fixture en JSONL propio. `inf02-bundle-verify.mjs` comprueba digest del manifest, archivos, árbol, conteo real y IDs duplicados. `inf02-cleanup.mjs` elimina exclusivamente recursos etiquetados del proyecto y sus volúmenes tras validarlos; conserva artefactos. `inf02-scratch-cleanup.mjs` sólo elimina un directorio directo de `/private/tmp/inf02-*` con marcador de ownership válido y sin symlinks.
+
+## Evidencia de validación
+
+Entorno observado: Docker 29.8.2, Linux ARM64; Node 22.20.0; pnpm 10.17.1.
+
+- Build frontend de producción: correcto en 14,7 s. Las rutas share y carta quedaron dinámicas para SSR. No apareció `backend:3001` ni el destino de build `127.0.0.1:1/api` en `.next/static`.
+- Build backend y migración de descarte: correctos; `prisma generate` precedió a Nest build y `pnpm prune --prod` conservó Prisma Client y módulos de runtime. Smoke nativo del runner no root: Sharp, Argon2, Prisma y ONNX importaron/ejecutaron.
+- Bundle A: modelo de 24.446.700 bytes; SHA-256 `c179f8f7f592449c4c1bca4cd124a7538021428c5ffb89afde9503935b197efb`; 175 colecciones y 20.670 JSONL válidos contados al parsear; 350 archivos de índice más manifest y modelo, 352 archivos totales. Árbol `fedc566773ffe3735fae3dd30e087f298cee797d9536aa0a590b40d9b8fa6dd4`; manifest `a476045a28c2a1b6c813ed7fee68a75123ab13a444730c742330db24023b3865`. El verifier del bundle pasó.
+- Warmup A fue real, completo y de sólo lectura dentro del runner ARM64 Bookworm: worker respondió `ready`, generación 1, intento 1, en 2,64 s. La readiness HTTP del stack A devolvió 200 con DB, scanner y Redis listos. Al detener sólo el Redis de A, `/api/ready` continuó 200 y `degraded=true`; al restaurarlo, volvió a 200/degraded=false.
+- Bundle B corregido: una colección, una referencia, una línea física JSONL, fixture `sv3pt5-1`; árbol `5a2f58fc7842725541dae438eb27ff142aaf39d0a9ddb79a10c5980d5127a98d`; manifest `19cad196dad882f4d78f949990d3e2f6d69834bcc81e07cb2cbc5456fc9e798c`. Verifier de manifest, hashes, conteo e IDs pasó.
+- Regresión encontrada y corregida: el primer modo `--single-reference` validaba/contaba la primera línea pero copiaba el JSONL original. El verifier falla sobre ese bundle previo por digest JSONL; el identify real devolvió 207 referencias pese al manifest de 1. Se cambió el empaquetador para escribir sólo la línea seleccionada. El rerun B corrigió la divergencia: `/api/cards/identify-visual` autenticado devolvió 200, `references=1` y candidate `sv3pt5-1`.
+- El staging del bundle usa nombre aleatorio exclusivo y se elimina en `finally`; el publicador nunca elimina el destino. Un smoke de colisión preexistente comprobó que el builder falla y preserva el `keep.txt` del destino.
+- Smokes B sobre HTTPS local: registro 201; refresh 200 con rotación; cookie host-only Secure/HttpOnly/SameSite=Lax/Path `/api/auth`; scanner sin Bearer 401 sin enviar cookie; scanner con Bearer 200. Imagen PNG sintética generada en memoria; no se afirmó precisión de cámara ni se guardó imagen. SSR share y carta 200, colección `noindex`, sin hostname privado en HTML.
+- Gate negativo real (no sólo worker directo): con artefacto sin JSONL, `GET /api/ready` devolvió 503, `scanner=unavailable`, DB ready; gate terminó con error tras el plazo reducido de 6 s y no existieron servicios frontend/gateway. Con metadata incompatible, devolvió 503 `scanner=incompatible`; el gate también agotó el plazo y no inició frontend/gateway.
+- Pruebas directas adicionales del worker A confirmaron estados `unavailable` e `incompatible`; no sustituyen los dos resultados HTTP anteriores. `inf02-recreate.mjs` se probó en A: backend reiniciado, migración y gate completados antes de reabrir gateway.
+- Cleanup ejecutado por separado para A, B previo, B corregido y proyectos negativos. Se comprobaron etiquetas y ausencia de contenedores, volúmenes y redes INF02; los únicos containers que quedaron fueron el Postgres y Redis compartidos `pokemon-scanner-db` / `pokemon-scanner-redis`. Se rechazó la eliminación de un directorio de prueba sin ownership y se comprobó que su `keep.txt` siguió intacto.
+
+## Alcance pendiente y límites
+
+- No se ejecutó `pnpm run check` global por instrucción de coordinación; tampoco se ejecutó Vitest porque la guía del repo requiere `pnpm run stop` y los servicios compartidos de desarrollo deben preservarse. Los builds Docker y los smokes de integración anteriores sí se ejecutaron.
+- La verificación fue en ARM64 local; no se probó una plataforma x64. B valida el cableado de una fixture, no calidad de reconocimiento real ni captura de cámara.
+- El residual `/private/tmp/inf02-incompatible` fue retirado posteriormente por el coordinador tras verificar árbol exacto, propietario, ausencia de symlinks y hashes: unlink de dos archivos y rmdir de directorios vacíos, sin fabricar marker. El rechazo inicial y el procedimiento de retiro quedan documentados en ORQUESTACION-ESTADO; ya no existe ese residual.
+- El cleanup no toca `.scanner-index`, `.scanner-models`, el bundle de operador indicado por `ARTIFACT_DIR`, capturas, DB dev/test ni el stack de desarrollo.
+
+## Revisión posterior
+
+La revisión/correcciones Sol HIGH se entregó el 8/10 en [INF-02-runtime-review.md](INF-02-runtime-review.md), con 43/43 regresiones y 2/2 adicionales enfocadas, smoke final real y limpieza comprobada. El runbook está en `infra/inf02/README.md`. Los digests del manifiesto cambiaron al distinguir buildHost de target Linux; usá la evidencia final de revisión, no los hashes históricos de esta entrega. El gate global operativo sigue pendiente.

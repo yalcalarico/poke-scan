@@ -3,63 +3,66 @@
 > De dónde salen las cartas, los precios y la cotización. Y qué pasa cuando
 > la fuente muera.
 
-## Resumen
+## Fuentes implementadas — revisión local 20/10/2026
 
-| Fuente | Qué da | Costo | Estado |
-|---|---|---|---|
-| **pokemontcg.io v2** | catálogo, sets, imágenes | Gratis | ⚠️ **Deprecada** (ya no da precios) |
-| **tcgdex.dev** | **precios** TCGPlayer (USD) + Cardmarket (EUR) | Gratis | ✅ Activa, sin key |
-| **DolarApi.com** | cotización USD→ARS | Gratis | ✅ Activa |
-| **Scrydex** | catálogo + precios + **Vision API** | Desde USD 29/mes | ✅ Activa, sucesora oficial |
-
-**Catálogo y precios vienen de fuentes distintas.** El catálogo sigue espejándose
-desde pokemontcg.io porque sus datos de cartas están vivos y son la base de la
-búsqueda y del escáner; los precios se piden a tcgdex porque el feed de precios
-de pokemontcg.io quedó **congelado** (ver abajo). Los dos están detrás de tokens
-de inyección separados (`CARD_DATA_PROVIDER` y `PRICE_PROVIDER`), así que
-cambiar cualquiera de los dos es cambiar una clase.
-
-## tcgdex.dev — la fuente de precios
-
-| | |
-|---|---|
-| Base | `https://api.tcgdex.net/v2/en` |
-| Auth | **ninguna**, no hay que registrarse |
-| Límite | **sin límite publicado** ("be considerate") |
-| Frescura | TCGPlayer ~cada 1 h, Cardmarket diario |
-| Extras | REST + GraphQL, 10+ idiomas, base de datos open source en GitHub |
-
-Se eligió sobre [pokewallet.io](https://pokewallet.io) comparando documentación
-y probando en vivo. Resumen de por qué:
-
-| Criterio | tcgdex | pokewallet |
+| Fuente | Uso en la app | Integración |
 |---|---|---|
-| Auth | ninguna | registro + API key |
-| Límite free | sin límite | 100/h · 1.000/día |
-| IDs de carta | deterministas (`{set}-{localId}`) | hashes opacos (`pk_…`) → 2 requests por lookup |
-| Precios | embebidos en la carta (verificado en vivo) | `pricing` en la carta, no verificable sin key |
-| Variantes | `normal`, `holofoil`, `reverse-holofoil`, `1st-edition*`, `unlimited*` | `Normal`, `Holofoil`, `Shadowless`, … |
-| Imágenes | URLs deterministas y hotlinkeables | endpoint **con auth** por carta |
-| Datos | estructurados, open source | strings aplanados (`hp: "200.0"`), 2 pipelines sin normalizar |
-| Proyecto | comunitario, años, 10M requests/mes | un dev, v1.x, sin SLA |
+| pokemontcg.io v2 | Catálogo, sets e imágenes de referencia | `CARD_DATA_PROVIDER`, catálogo espejado en PostgreSQL |
+| TCGdex | Precios bajo demanda y ciclo diario; referencia activa TCGplayer USD | `PRICE_PROVIDER` / `TcgdexProvider` |
+| TCGCSV | Comparación e histórico TCGplayer USD | Jobs separados, sin reemplazar el binding activo |
+| DolarApi | Conversión USD→ARS blue/oficial | Caché backend y fallback de último conocido |
+| Scrydex | Alternativa estudiada | Sin adaptador ni binding implementados |
 
-El plan era "migrar todo a una fuente", pero resultó que el problema no era la
-fuente sino **cuál fuente de qué**: con el split, migrar precios a Scrydex
-después es cambiar una clase y no mover ningún ID de carta.
+Este estado describe el código local. Condiciones comerciales, disponibilidad,
+licencias y límites publicados deben revisarse con fecha antes de una integración
+nueva o publicación; no se certifican de nuevo en esta limpieza documental.
 
-### Limitaciones conocidas de tcgdex
+Catálogo y precios tienen fuentes e identidades separadas. Cambiar el binding
+requiere implementar y verificar el adaptador y sus mappings: no basta renombrar
+un proveedor. Las PK canónicas de cartas deben conservarse porque son FK de las
+colecciones.
 
-- **Matching de precios con casos raros**: a veces dos printings distintos de la
-  misma carta quedan mapeados al mismo listing de TCGPlayer, y una carta regular
-  muestra el precio de su SAR. Lo están arreglando con `variants_detailed`
-  (IDs de marketplace explícitos por variante; ya asoma como `productId`).
-- **Cartas sin precio**: Full Arts de eras viejas (BW, HGSS),Cards que solo
-  existen en un mercado, y **lanzamientos recientes** sin listados todavía. Es lo
-  que hace que `me55` (30th Celebration, lanzado hace días) no muestre precio:
-  no es un bug nuestro, el precio aparece cuando el feed lo ingiere. El backend
-  reintenta cada 6 h solo (caché negativa).
-- **503 ocasionales**: el provider reintenta con backoff y, si sigue fallando,
-  degrada a lo último conocido en vez de romper el endpoint.
+## TCGdex — referencia activa de precios
+
+- Base utilizada: `https://api.tcgdex.net/v2/en`, sin API key.
+- Precio por carta y variante; el adaptador recibe datos TCGplayer USD y
+  Cardmarket EUR. La política activa de valuación no mezcla mercados/monedas.
+- Redis 1 h, persistencia PostgreSQL y cola con gate durable de 2,3 s entre
+  requests. Las respuestas sin precio y los errores tienen estados propios;
+  un reintento no garantiza que exista una cotización.
+- Ciclo diario 03:15 UTC, reanudación cada 15 min y al arrancar después del corte,
+  con `ENABLE_PRICE_BACKFILL_CRON` y `PRICE_QUEUE_ENABLED` habilitados.
+- El alcance sale de `price_sync_sets`: semilla curada y sets de colecciones,
+  con prioridad y habilitación explícitas. No es un barrido horario de todo el catálogo.
+
+Consultar [operación diaria](../backend/docs/pricing.md) y
+[mappings/procedencia](../backend/docs/providers.md). Fechas de consulta y upstream
+son distintas: una respuesta nueva puede seguir sin precio o tener datos antiguos.
+
+## TCGCSV — comparación e ingesta por grupo
+
+Los dos proveedores pueden informar **la misma referencia TCGplayer USD**; no son
+dos mercados independientes. TCGCSV guarda sus observaciones por separado, sin
+promediar ni cambiar la referencia activa.
+
+- Descubrimiento de grupos cada 10 min; la asociación exige identidad segura.
+- Ciclo de precios 21:00 UTC para los sets habilitados; reanudación cada 15 min.
+- `last-updated.txt` y el build señalan nuevas publicaciones. Se guardan fecha de
+  recepción, fecha del feed y estado de la descarga; el feed no demuestra la hora
+  real de la cotización.
+- Un mismo archivo de precios se reserva como máximo una vez por ventana de
+  24 h, incluso al pedir un ciclo manual. Los topes internos anteriores de
+  40 grupos/500 requests y lotes de diez fueron retirados.
+- Worker serial, leases persistentes, caché de respuestas recibidas y publicación
+  atómica; respetar 429/Retry-After y no resetear fechas para forzar descargas.
+- Los días no observados quedan como huecos. No se supone que exista archivo
+  histórico descargable ni se fabrican valores para completar una gráfica.
+
+Operación: `pnpm run prices:sync` solicita un ciclo y muestra avance;
+`pnpm run prices:status --watch` sólo observa; `pnpm run prices:sets` administra
+el alcance. Ctrl+C cierra la vista, no cancela los jobs del backend.
+Ver [jobs](../backend/docs/jobs.md), [comparación](../frontend/docs/comparison.md)
+y [cierre del plan diario](plans/precios-diarios-priorizados-2026-10-18-estado.md).
 
 ## pokemontcg.io — catálogo (y precios muertos)
 
@@ -71,9 +74,10 @@ después es cambiar una clase y no mover ningún ID de carta.
 
 La propia documentación de la API recomienda migrar a Scrydex.
 
-### El feed de precios está congelado
+### Hallazgo histórico: feed de precios congelado
 
-Este es el hallazgo que forzaron el split. El `rawJson` de cada carta trae
+Éste fue el hallazgo que motivó separar catálogo y precios; las mediciones
+siguientes corresponden a esa investigación, no a un nuevo sondeo actual. El `rawJson` de cada carta trae
 `tcgplayer`, pero con `updatedAt: "2023/03/27"` y sin claves `prices` en
 muchos casos. Medido sobre las 20.670 cartas del catálogo:
 
@@ -98,8 +102,8 @@ nada, solo reescribía el mismo dato viejo con un `fetchedAt` nuevo.
 | Requests por día | **1.000** |
 | Requests por minuto | **30** |
 
-Estos dos números explican casi todas las decisiones de arquitectura. **Es el
-restricción más importante del proyecto.**
+Estos límites rigen el sync de catálogo. No aplicarlos como cuotas globales de
+TCGdex/TCGCSV; cada flujo conserva su gate, caché y política de descarga.
 
 ### La API es lenta e inestable
 
@@ -112,8 +116,9 @@ Medido en pruebas reales:
 Por eso existen:
 - `fetchWithRetry` en el provider: 4 intentos, backoff 1→2→4→8 s con jitter
 - `withPageRetry` por página en el sync: 8 intentos, hasta 30 s de espera
-- El sync **reanudable**: guarda `sync:cards:lastPage` en Redis. Si una página
-  falla, no avanza el cursor, así que no pierde cartas.
+- El sync **reanudable**: guarda cursor y completitud por proveedor en PostgreSQL
+  (`sync_state`). Si una página falla no avanza el cursor. El lock de exclusión
+  del sync sigue en Redis con token y TTL renovable.
 
 ### Qué usamos de la respuesta
 
@@ -168,8 +173,8 @@ fuente lo tenga. Este bug existió y costó encontrarlo. Está documentado en
 - Tarda ~15-20 min por la latencia de la API
 - Es reanudable: se puede cortar y `pnpm run sync` sigue donde quedó
 
-Los precios **no** vienen con el sync. Se piden bajo demanda (ver
-`backend/docs/pricing.md`).
+El sync no actualiza las referencias de precios activas. Éstas se reciben
+bajo demanda o mediante los ciclos diarios (ver [precios](../backend/docs/pricing.md)).
 
 ## DolarApi.com — la cotización
 
@@ -197,33 +202,22 @@ También expone `blue` y `oficial`; **no existen** `mep` ni `ccl` en esta API.
 Se cachea 1 h en Redis. Si la API se cae, se devuelve el último valor conocido
 marcado como `stale`.
 
-## Migrar a Scrydex — el plan
+## Scrydex — alternativa futura, sin integración activa
 
-Scrydex es el sucesor oficial. Empieza en USD 29/mes (5.000 créditos) e incluye
-lo que pokemontcg.io no tenía: **Vision API** (`POST /vision/v1/cards/identify`),
-que identifica una carta desde una imagen con ~99 % de precisión y elimina por
-completo el pipeline de OCR. Además cubre los casos donde tcgdex se traba:
-IDs de marketplace explícitos por variante y Reportes de población.
+No hay adaptador ni binding Scrydex implementados. Cualquier decisión futura
+exige verificar condiciones actuales del proveedor, permisos, coste y mappings,
+con evidencia fechada. No se mantienen aquí cifras comerciales ni estimaciones de
+precisión como si fueran resultados de PokéScan.
 
-Por qué no migramos ya:
+El reconocimiento vigente es **DINOv2 local autenticado**, sin OCR ni un endpoint
+público alternativo. Una alternativa de catálogo/precios no autoriza reemplazar
+ese motor ni persistir fotos. Ver [escáner](../frontend/docs/scanner.md).
 
-1. Cuesta plata.
-2. El OCR actual acierta 7/8, que es usable con la UI de confirmación.
-3. tcgdex cubre gratis el problema que nos traía (precios congelados).
-
-Lo bueno del split catálogo/precios es que **la migración se puede hacer por
-partes**. Las dos opciones son baratas:
-
-| Migrar | Costo | Riesgo |
-|---|---|---|
-| **Solo precios** a Scrydex | ~1 día | Bajo: cambiar `PRICE_PROVIDER`, mapear sets y ejecutar el backfill de precios |
-| **Vision API** (OCR) | ~1 día | Medio: reemplaza `lib/scanner/`, se puede dejar el OCR como fallback |
-| **Catálogo** a Scrydex | ~1 semana | Alto: los IDs de carta son FK de las colecciones de los usuarios |
-
-El paso 1 de los tres es siempre el mismo y ya está hecho como ejemplo:
-**escribir la clase del provider y cambiar una línea del binding**. Ver
-`backend/docs/providers.md` para el caso de los precios y para las 3
-opciones de migración del catálogo.
+Una migración sólo de precios debe preservar IDs del catálogo, namespaces de
+caché, procedencia, cola, histórico y política de valuación. Una migración del
+catálogo necesita reconciliar además las FK de las colecciones. Ver las opciones
+en [providers](../backend/docs/providers.md); son trabajo futuro, no un cambio de
+configuración listo para activar.
 
 ### Lo que ya está listo para el día del swap
 
@@ -233,7 +227,7 @@ Migrar precios no es cambiar un string: es que dos fuentes convivan en
 - `card_prices.provider` + `card_external_ids` / `card_set_external_ids`: las
   escrituras de la fuente nueva no tocan las PK canónicas, así que colecciones,
   links y rutas siguen apuntando a lo mismo.
-- `card_prices.provider = NULL` en las 180 filas previas: no se les atribuye
+- `card_prices.provider = NULL` en las filas legacy sin procedencia probada: no se les atribuye
   procedencia que no se puede probar. `?provider=legacy` las consulta, y la app
   las muestra como último conocido con `isStale: true`.
 - Rankings, totales y links públicos leen **solo** el proveedor activo, por
@@ -244,12 +238,10 @@ Migrar precios no es cambiar un string: es que dos fuentes convivan en
 - Las claves de lectura de friend/share están namespaced por proveedor, porque
   sus snapshots son números de valuación y no solo listas de cartas.
 
-El mecanismo de backfill **ya está implementado**: corre cada hora, en lotes de
-300 y a través de la cola con el ritmo global de 26 requests/min. Va llenando el
-proveedor activo sin mezclar el histórico legacy. En la migración a Scrydex, lo
-que quedaría es cambiar el binding, mapear los sets y dejar que el backfill
-progrese; los totales de una fuente nueva empiezan en cero hasta que esa fuente
-escriba, y eso es correcto (ver `backend/docs/gotchas.md` §32).
+El mecanismo diario actual se limita a los sets habilitados y utiliza la cola
+persistente y el gate compartido. Una eventual fuente nueva necesita pruebas del
+adaptador y de sus consumidores; los totales no deben atribuirle precios antes
+de recibir observaciones válidas.
 
 ## Reglas para no romper el rate limit
 

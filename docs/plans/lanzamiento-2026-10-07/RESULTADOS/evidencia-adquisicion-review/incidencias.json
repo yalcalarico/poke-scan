@@ -1,0 +1,4 @@
+{
+  "staticMeasurementInitial": {"exitCode": 1, "error": "AttributeError: NoneType group", "cause": "Regex privada multilinea sin re.S", "productChanged": false},
+  "contrastCorrection": "Se retiró cambio temporal caption: documentación stale #82828c; CSS vigente #8a8a95 pasa AA. Clase final igual a entrada."
+}

@@ -1,0 +1,404 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Usuarios y sesiones ───
+
+model User {
+  id           String  @id @default(uuid())
+  email        String  @unique
+  username     String  @unique
+  passwordHash String
+  authVersion  Int     @default(0)
+  displayName  String
+  avatarUrl    String?
+
+  // Moneda preferida (fase 7: precios en ARS)
+  preferredCurrency String? @default("USD") // 'USD' | 'ARS'
+  preferredRateType String? @default("blue") // 'blue' | 'oficial'
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  refreshTokens RefreshToken[]
+  passwordRecoveryTokens PasswordRecoveryToken[]
+  collections   Collection[]
+  shareLinks    ShareLink[]
+  scanJobs      ScanJob[]
+  portfolioSnapshots PortfolioSnapshot[]
+  collectionItemAddOperations CollectionItemAddOperation[]
+
+  // Fase 8: sistema de amigos. Cada Friendship es un par (requester, addressee)
+  // con un único estado; las dos relaciones inversas permiten consultar
+  // "amigos" y "solicitudes recibidas" sin queries extra.
+  friendshipRequests Friendship[] @relation("FriendshipRequests")
+  friendshipReceives Friendship[] @relation("FriendshipReceives")
+
+  @@map("users")
+}
+
+model PasswordRecoveryToken {
+  id                 String    @id @default(uuid())
+  userId             String
+  tokenHash          String    @unique
+  issuedAuthVersion  Int
+  expiresAt          DateTime
+  usedAt             DateTime?
+  revokedAt          DateTime?
+  createdAt          DateTime  @default(now())
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([userId, expiresAt])
+  @@map("password_recovery_tokens")
+}
+
+model RecoveryRateLimitHit {
+  id          String   @id @default(uuid())
+  scope       String
+  keyHash     String
+  occurredAt  DateTime @default(now())
+  @@index([scope, keyHash, occurredAt])
+  @@map("recovery_rate_limit_hits")
+}
+
+model RefreshToken {
+  id         String    @id @default(uuid())
+  userId     String
+  tokenHash  String    @unique
+  deviceInfo String?
+  issuedAuthVersion Int @default(0)
+  expiresAt  DateTime
+  revokedAt  DateTime?
+  createdAt  DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("refresh_tokens")
+}
+
+// ─── Catálogo local de cartas (espejo de pokemontcg.io) ───
+
+model CardSet {
+  id           String    @id // p.ej. "swsh4"
+  name         String
+  series       String?
+  printedTotal Int?
+  total        Int?
+  releaseDate  DateTime?
+  logoUrl      String?
+  symbolUrl    String?
+  // Código de 3 caracteres impreso en la esquina inferior izquierda de la carta
+  // ("30C"). Es lo más barato que hay para saber de qué set es: texto contra
+  // vocabulario cerrado, sin comparar imágenes. Solo los sets modernos lo
+  // imprimen, y un par set/sub-producto lo comparte (me55 y me55c, "30C").
+  ptcgoCode    String?
+  rawJson      Json?
+  syncedAt     DateTime  @default(now())
+
+  // ID del set equivalente en tcgdex (la fuente de precios). Null = sin mapear:
+  // lo resuelve TcgdexSetMappingService la primera vez que se pide un precio.
+  tcgdexSetId String?
+
+  cards       Card[]
+  externalIds CardSetExternalId[]
+
+  @@index([name])
+  @@index([ptcgoCode])
+  @@map("card_sets")
+}
+
+model Card {
+  id             String   @id // p.ej. "swsh4-25"
+  name           String
+  supertype      String // Pokémon | Trainer | Energy
+  subtypes       String[]
+  hp             String?
+  types          String[]
+  number         String // p.ej. "25"
+  rarity         String?
+  artist         String?
+  setId          String
+  imageSmall     String
+  imageLarge     String
+  regulationMark String?
+  language       String?  @default("en")
+
+  // JSON original de la API: preserva ataques, habilidades, legalidades, etc.
+  rawJson  Json
+  syncedAt DateTime @default(now())
+
+  set         CardSet          @relation(fields: [setId], references: [id], onDelete: Cascade)
+  prices      CardPrice[]
+  items       CollectionItem[]
+  externalIds CardExternalId[]
+
+  @@index([name])
+  @@index([setId])
+  @@index([number])
+  @@map("cards")
+}
+
+// ─── Precios (histórico) ───
+
+model CardPrice {
+  id        String   @id @default(uuid())
+  cardId    String
+  variant   String // normal | holofoil | reverseHolofoil | firstEditionNormal | firstEditionHolofoil
+  low       Decimal? @db.Decimal(12, 2)
+  mid       Decimal? @db.Decimal(12, 2)
+  high      Decimal? @db.Decimal(12, 2)
+  market    Decimal? @db.Decimal(12, 2)
+  provider  String? // API que entregó el precio; null = fila histórica sin procedencia verificable
+  source    String   @default("tcgplayer") // mercado/listing, distinto del proveedor de API
+  currency  String   @default("USD")
+  fetchedAt DateTime @default(now())
+
+  card Card @relation(fields: [cardId], references: [id], onDelete: Cascade)
+
+  @@index([cardId, variant, fetchedAt])
+  @@index([cardId, provider, source, variant, fetchedAt])
+  @@map("card_prices")
+}
+
+// IDs externos separados de las PK canónicas que ya usan las colecciones.
+model CardExternalId {
+  provider   String
+  externalId String
+  cardId     String
+  createdAt  DateTime @default(now())
+
+  card Card @relation(fields: [cardId], references: [id], onDelete: Cascade)
+
+  @@id([provider, externalId])
+  @@index([cardId, provider])
+  @@map("card_external_ids")
+}
+
+model CardSetExternalId {
+  provider   String
+  externalId String
+  setId      String
+  createdAt  DateTime @default(now())
+
+  set CardSet @relation(fields: [setId], references: [id], onDelete: Cascade)
+
+  @@id([provider, externalId])
+  @@index([setId, provider])
+  @@map("card_set_external_ids")
+}
+
+// ─── Colecciones ───
+
+model Collection {
+  id        String   @id @default(uuid())
+  userId    String
+  name      String
+  isDefault Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user       User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items      CollectionItem[]
+  shareLinks ShareLink[]
+
+  @@index([userId])
+  @@map("collections")
+}
+
+model PortfolioSnapshot {
+  userId String
+  day DateTime @db.Date
+  valueUsd Float?
+  totalCards Int
+  unpricedCards Int
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, day])
+  @@map("portfolio_snapshots")
+}
+
+model CollectionItem {
+  id           String   @id @default(uuid())
+  collectionId String
+  cardId       String
+  variant      String   @default("normal")
+  condition    String   @default("NM") // NM | LP | MP | HP | DM
+  quantity     Int      @default(1) // > 1 = duplicada
+  isForTrade   Boolean  @default(false)
+  notes        String?
+  addedAt      DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  collection Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  card       Card       @relation(fields: [cardId], references: [id], onDelete: Cascade)
+
+  // Evita filas duplicadas: el mismo increment de cantidad se resuelve en el service
+  @@unique([collectionId, cardId, variant, condition])
+  @@index([collectionId])
+  @@index([cardId])
+  @@map("collection_items")
+}
+
+model CollectionItemAddOperation {
+  userId      String
+  key         String
+  payloadHash String
+  resultItemId String?
+  expiresAt   DateTime
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, key])
+  @@index([expiresAt])
+  @@map("collection_item_add_operations")
+}
+
+// ─── Compartir ───
+
+model ShareLink {
+  id           String    @id @default(uuid())
+  userId       String
+  collectionId String? // null = todas las colecciones del usuario
+  slug         String    @unique
+  isActive     Boolean   @default(true)
+  viewCount    Int       @default(0)
+  createdAt    DateTime  @default(now())
+  expiresAt    DateTime?
+
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  collection Collection? @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("share_links")
+}
+
+// ─── Tracking de jobs de sincronización ───
+model ScanJob {
+  id          String    @id @default(uuid())
+  userId      String
+  status      String    @default("pending") // pending | running | completed | failed
+  jobType     String    @default("sync-catalog") // sync-catalog | refresh-prices
+  processed   Int       @default(0)
+  total       Int?
+  lastError   String?
+  startedAt   DateTime?
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([status])
+  @@map("scan_jobs")
+}
+
+// ─── Cola de refresco de precios (Fase 4 de docs/plans/02-backend-production.md) ───
+
+/// Una fila por carta que espera refresco de precios.
+///
+/// Es la cola que antes vivía en un array del proceso (`SyncPricesService.queue`).
+/// La diferencia que importa no es "no perder la cola al reiniciar": es que
+/// **`lastProviderCallAt` también era del proceso**, así que con dos instancias
+/// el `MIN_GAP_MS` se contaba dos veces y el ritmo real hacia el proveedor se
+/// duplicaba. Con la fila en Postgres, el ritmo es global.
+///
+/// El `@@unique` de `cardId` es la deduplicación: no hay `deduplicationKey`
+/// porque el refresh no es por variante (un request trae todas), así que la
+/// carta es la única clave.
+///
+/// `availableAt` es el backoff y también el reloj del claim: una fila `pending`
+/// con `availableAt` en el futuro no se toca hasta que llegue. Un encolado
+/// **nunca adelanta** un backoff (`GREATEST` en el upsert): si no, una lectura
+/// stale-while-revalidate repetida se convertiría en un lazo de reintentos
+/// contra una carta que el proveedor no tiene.
+///
+/// `lockedBy`/`lockedAt` son el claim. `SKIP LOCKED` hace que dos instancias no
+/// puedan tomar la misma fila, y `lockedAt` es lo que permite recuperar en el
+/// arranque los `processing` que quedaron colgados.
+model PriceRefreshJob {
+  id          String    @id @default(uuid())
+  cardId      String    @unique
+  status      String    @default("pending") // pending | processing | completed | failed
+  attempts    Int       @default(0)
+  availableAt DateTime  @default(now())
+  lastError   String?
+  lockedBy    String?
+  lockedAt    DateTime?
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // El claim ordena por `availableAt` entre filas `pending`: sin este índice es
+  // un seq scan con `ORDER BY` + `LIMIT 1` sobre toda la tabla.
+  @@index([status, availableAt])
+  // La recuperación de `processing` colgados en el arranque filtr por edad.
+  @@index([status, lockedAt])
+  @@map("price_refresh_jobs")
+}
+
+/// El reloj global del ritmo hacia un proveedor de precios.
+///
+/// Una fila por proveedor, actualizada con un `UPDATE ... WHERE "lastCalledAt"
+/// <= now() - intervalo`. Si el `UPDATE` no matchea, el slot está tomado: el
+/// que espere calcula cuánto falta y duerme eso, en vez de hacer un `SELECT` en
+/// bucle.
+///
+/// Sin esta tabla el gap es un `Date.now()` en memoria, y un `Date.now()` en
+/// memoria es un gap por proceso. Es la diferencia entre "cortés" y "cumple la
+/// cuota" en cuanto haya dos instancias.
+model ProviderRateLimit {
+  providerId   String   @id
+  lastCalledAt DateTime
+  updatedAt    DateTime @updatedAt
+
+  @@map("provider_rate_limits")
+}
+
+/// Cursor de los syncs de catálogo, por job **y** por proveedor.
+///
+/// Antes eran dos claves Redis sin TTL (`sync:cards:lastPage`,
+/// `sync:cards:complete`) con granularidad global: un `flushall` reiniciaba el
+/// sync desde la página 1 y hacía re-traer las 83 páginas de un catálogo que ya
+/// estaba completo.
+///
+/// El id es composed (`<jobType>:<providerId>`) y no un `uuid`, porque la fila
+/// tiene que ser la misma para el próximo sync del mismo job y proveedor: es un
+/// checkpoint, no un registro. Cuando entre un segundo proveedor de catálogo, no
+/// comparte cursor con pokemontcg.io.
+model SyncState {
+  id         String   @id // "cards:pokemontcg.io"
+  lastPage   Int      @default(0)
+  totalPages Int?
+  isComplete Boolean  @default(false)
+  updatedAt  DateTime @updatedAt
+
+  @@map("sync_state")
+}
+
+// ─── Amigos (fase 8) ───
+
+/// Una fila por par (requester, addressee) orientado. El @@unique garantiza
+/// que no haya dos filas del mismo par en el mismo sentido, y el service
+/// busca siempre en ambos sentidos para que el par tenga un único estado.
+model Friendship {
+  id          String    @id @default(uuid())
+  requesterId String
+  addresseeId String
+  status      String    @default("pending") // pending | accepted | rejected | blocked
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  respondedAt DateTime?
+
+  requester User @relation("FriendshipRequests", fields: [requesterId], references: [id], onDelete: Cascade)
+  addressee User @relation("FriendshipReceives", fields: [addresseeId], references: [id], onDelete: Cascade)
+
+  @@unique([requesterId, addresseeId])
+  @@index([addresseeId, status])
+  @@index([requesterId, status])
+  @@map("friendships")
+}

@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { CardWithPricesDto } from '@/lib/api/cards';
 import type { PriceDto, PriceHistoryDto } from '@/types/api';
 
-import { CardPriceSection } from '../card-price-section';
+import { CardPriceSection, heroPriceUsd, priceWindowDelta } from '../card-price-section';
 
 /**
  * La regla que este archivo protege es de **rate limit**, no de estado.
@@ -21,11 +21,13 @@ import { CardPriceSection } from '../card-price-section';
  *    frescura, lo gasta de golpe.
  * 2. Un `AbortError` es una corrida vieja (el componente se desmontó al
  *    cambiar de carta), no un error de pantalla: si encendiera el estado de
- *    error, la ficha mostraría "No pudimos consultar el precio" por haber
+ *    error, la ficha mostraría "No pudimos cargar la referencia de precio" por haber
  *    cancelado.
  */
 const getCardPrices = vi.fn<() => Promise<CardWithPricesDto>>();
 const getCardPriceHistory = vi.fn<() => Promise<PriceHistoryDto>>();
+const getCardComparison = vi.fn();
+vi.mock('@/lib/api/comparison', () => ({ getCardComparison: (...args: unknown[]) => getCardComparison(...args) }));
 
 vi.mock('@/lib/api/cards', () => ({
   getCardPrices: (...args: unknown[]) => getCardPrices(...(args as [])),
@@ -100,11 +102,16 @@ function emptyHistory(): PriceHistoryDto {
 
 beforeEach(() => {
   getCardPrices.mockReset();
+  getCardComparison.mockReset();
   getCardPriceHistory.mockReset();
   getCardPriceHistory.mockResolvedValue(emptyHistory());
 });
 
 describe('CardPriceSection: cuándo se pide el precio', () => {
+  it('no rescata el precio de mercado nulo con el valor medio', () => {
+    expect(heroPriceUsd([price({ market: null, mid: 42 })])).toBeNull();
+  });
+
   it('con un precio fresco del servidor no vuelve a pedirlo', async () => {
     getCardPrices.mockResolvedValue(pricesPayload([price()]));
 
@@ -153,7 +160,7 @@ describe('CardPriceSection: cuándo se pide el precio', () => {
     await waitFor(() =>
       expect(screen.getByText('No tenemos precio de mercado para esta carta todavía.')).toBeInTheDocument(),
     );
-    expect(screen.queryByText('No pudimos consultar el precio')).not.toBeInTheDocument();
+    expect(screen.queryByText('No pudimos cargar la referencia de precio')).not.toBeInTheDocument();
   });
 });
 
@@ -165,7 +172,7 @@ describe('CardPriceSection: la cancelación no es un error', () => {
 
     await waitFor(() => expect(getCardPrices).toHaveBeenCalledTimes(1));
     // El hero sigue en su estado de carga: no hay nada que avisar.
-    expect(screen.queryByText('No pudimos consultar el precio')).not.toBeInTheDocument();
+    expect(screen.queryByText('No pudimos cargar la referencia de precio')).not.toBeInTheDocument();
   });
 
   it('un error de red sí se avisa, con su reintento', async () => {
@@ -174,7 +181,7 @@ describe('CardPriceSection: la cancelación no es un error', () => {
     render(<CardPriceSection cardId="xy4-117" />);
 
     await waitFor(() =>
-      expect(screen.getByText('No pudimos consultar el precio')).toBeInTheDocument(),
+      expect(screen.getByText('No pudimos cargar la referencia de precio')).toBeInTheDocument(),
     );
   });
 
@@ -206,4 +213,42 @@ describe('CardPriceSection: la cancelación no es un error', () => {
     expect(screen.queryByText('US$ 10.00')).not.toBeInTheDocument();
     await waitFor(() => expect(screen.getByText('US$ 99.00')).toBeInTheDocument());
   });
+});
+
+
+describe('CardPriceSection: coherencia e interacción de la referencia', () => {
+  it('el delta corresponde al primer market conocido, aunque otra variante tenga delta', () => {
+    const normal = price({ market: null, mid: 42, changeUsd: 50, changePercent: 10 });
+    const holo = price({ variant: 'holofoil', market: 5, changeUsd: 1, changePercent: 25 });
+    expect(heroPriceUsd([holo, normal])).toBe(5);
+    expect(priceWindowDelta([holo, normal])?.changeUsd).toBe(1);
+  });
+
+  it('abrir la procedencia histórica no abre el sheet de variantes', async () => {
+    render(<CardPriceSection cardId="xy4-117" initialPrices={[price()]} />);
+    const summary = await screen.findByText(/Ver procedencia de cada observación/);
+    expect(summary.closest('button')).toBeNull();
+    summary.click();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('cuenta market ausente aunque la variante conserve bajo, medio y alto', async () => {
+    render(<CardPriceSection cardId="xy4-117" initialPrices={[price({ market: null })]} />);
+    expect(await screen.findByText('1 variante todavía no tiene precio de mercado.')).toBeInTheDocument();
+  });
+});
+
+
+it('comparte las variantes ya cargadas con la comparación sin duplicar la consulta de precios', async () => {
+  getCardPrices.mockResolvedValue(pricesPayload([price({ variant: 'holofoil', market: 0 })]));
+  getCardComparison.mockResolvedValue({
+    cardId: 'xy4-117', variant: 'holofoil', currency: 'USD', windowDays: 30, activeProvider: 'tcgdex',
+    evaluatedAt: new Date().toISOString(), tcgcsv: { enabled: true, state: 'ready', groupId: 24722, nextAttemptAt: null },
+    series: ['tcgdex','tcgcsv'].map(provider => ({ provider,source:'tcgplayer',currency:'USD',current:null,points:[] })),
+  });
+  render(<CardPriceSection cardId="xy4-117" showComparison />);
+  await waitFor(() => expect(getCardComparison).toHaveBeenCalledTimes(1));
+  expect(getCardPrices).toHaveBeenCalledTimes(1);
+  expect(getCardComparison.mock.calls[0].slice(0,3)).toEqual(['xy4-117','holofoil',30]);
+  expect(screen.queryByRole('combobox',{name:'Variante de la carta para comparar'})).not.toBeInTheDocument();
 });

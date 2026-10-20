@@ -1,0 +1,384 @@
+{
+  "runId": "inf03-86e7fa46f908",
+  "startedAt": "2026-10-13T01:34:47.794Z",
+  "steps": {
+    "sourceBootstrapMs": 1747,
+    "backupMs": 1125
+  },
+  "tests": {
+    "controls": 59,
+    "negativeScenarios": 5
+  },
+  "ownedResources": [
+    {
+      "type": "network",
+      "name": "inf03-86e7fa46f908-source-net",
+      "runId": "inf03-86e7fa46f908",
+      "role": "source"
+    },
+    {
+      "type": "volume",
+      "name": "inf03-86e7fa46f908-source-pgdata",
+      "runId": "inf03-86e7fa46f908",
+      "role": "source"
+    },
+    {
+      "type": "container",
+      "name": "inf03-86e7fa46f908-source-pg",
+      "runId": "inf03-86e7fa46f908",
+      "role": "source"
+    },
+    {
+      "type": "network",
+      "name": "inf03-86e7fa46f908-destination-net",
+      "runId": "inf03-86e7fa46f908",
+      "role": "destination"
+    },
+    {
+      "type": "volume",
+      "name": "inf03-86e7fa46f908-destination-pgdata",
+      "runId": "inf03-86e7fa46f908",
+      "role": "destination"
+    },
+    {
+      "type": "container",
+      "name": "inf03-86e7fa46f908-destination-pg",
+      "runId": "inf03-86e7fa46f908",
+      "role": "destination"
+    }
+  ],
+  "cleanup": {
+    "attempted": true,
+    "complete": true,
+    "errors": [],
+    "hostTemporaryRemoved": true
+  },
+  "tooling": {
+    "node": "v22.20.0",
+    "pnpm": "10.17.1",
+    "platform": "darwin",
+    "arch": "arm64",
+    "age": "v1.2.1",
+    "ageRelease": "https://github.com/FiloSottile/age/releases/download/v1.2.1/age-v1.2.1-darwin-arm64.tar.gz",
+    "ageArchiveSha256": null,
+    "toolSource": "provided-local-no-download",
+    "ageBinarySha256": "d2b0d4211fd9e364ea8dd1cb150653a7f21dfc08e96632de444aa209db5fc0d0",
+    "postgresImage": "postgres@sha256:0ea6700a3b4f0ae6ce746519073558aed4d88a79d8d07622a9a644946c7319c4",
+    "postgresImageId": "sha256:4b5d4fd438e2c1ce13106e4996fc604f0a1cff39cde48b546fcac3cf1a233c3a",
+    "postgresRepoDigests": [
+      "postgres@sha256:0ea6700a3b4f0ae6ce746519073558aed4d88a79d8d07622a9a644946c7319c4"
+    ]
+  },
+  "sharedHealthBefore": [
+    {
+      "name": "pokemon-scanner-db",
+      "id": "18aa2f6937521ae010930ae98cbee45f2fa435b554c65cf90daaffba0c641ba8",
+      "health": "healthy"
+    },
+    {
+      "name": "pokemon-scanner-redis",
+      "id": "f2d2ca0ad580fe8ca3e94a59b4b6d5a53d761036ba1d14e45b8543a978bbb15f",
+      "health": "healthy"
+    }
+  ],
+  "startingContainerSnapshotRecorded": true,
+  "sharedContainersBefore": [
+    "custody_e40acc7042d5-redis e000640104ab",
+    "pokemon-scanner-db 18aa2f693752",
+    "pokemon-scanner-redis f2d2ca0ad580"
+  ],
+  "backup": {
+    "backupId": "57c9bb00-7a59-448d-9bec-8a61b1a2747b",
+    "ciphertextBytes": 351512,
+    "ciphertextSha256": "1e992d460bf444d695a4ebfe047e859daa3bba26368afe517a49fa6a4562b229",
+    "encryption": "age-v1.2.1",
+    "createdAt": "2026-10-13T01:34:54.636Z",
+    "durationMs": 975,
+    "migrations": 13,
+    "dumpBytes": 346611,
+    "dumpSha256": "9f7ee4d82a23c4c269e6464ba4faf417c72b8e73a196b7ab13d9122fc43ca7b4",
+    "receiptSha256": "d2185cd3998440e73b3ff03cd0740d189e9f80e0e8b7ed712d0a53d357db694d",
+    "fixtureStatementAt": "2026-10-13T01:34:53.304000Z",
+    "includedCommitObservedAfterSQL": "2026-10-13T01:34:53.480Z"
+  },
+  "multichunk": {
+    "ciphertextBytes": 351512,
+    "minimumChunks": 5
+  },
+  "checks": [
+    {
+      "id": "backup-registered-durable",
+      "pass": true
+    },
+    {
+      "id": "backup-staging-clean-before-success",
+      "pass": true
+    },
+    {
+      "id": "separate-objects-store-initialized",
+      "pass": true
+    },
+    {
+      "id": "actual-age-backup-stored-outside-lost-host",
+      "pass": true
+    },
+    {
+      "id": "external-simulated-object-hash-preserved",
+      "pass": true
+    },
+    {
+      "id": "explicit-metadata-and-head-custody-initialized",
+      "pass": true
+    },
+    {
+      "id": "first-current-custody-published-before-baja",
+      "pass": true
+    },
+    {
+      "id": "first-custody-carries-no-baja",
+      "pass": true
+    },
+    {
+      "id": "baja-after-backup-and-first-custody",
+      "pass": true
+    },
+    {
+      "id": "latest-custody-includes-authentic-baja",
+      "pass": true
+    },
+    {
+      "id": "current-journal-sequence-advanced",
+      "pass": true
+    },
+    {
+      "id": "independent-anchor-points-to-new-snapshot",
+      "pass": true
+    },
+    {
+      "id": "same-authority-publication-idempotent",
+      "pass": true
+    },
+    {
+      "id": "idempotency-does-not-advance-anchor",
+      "pass": true
+    },
+    {
+      "id": "valid-signed-old-journal-cannot-rollback-anchor",
+      "pass": true
+    },
+    {
+      "id": "source-verified-read-only-against-current-anchor",
+      "pass": true
+    },
+    {
+      "id": "verify-left-anchor-byte-identical",
+      "pass": true
+    },
+    {
+      "id": "all-origin-state-inside-owned-lost-host",
+      "pass": true
+    },
+    {
+      "id": "source-full-id-before-loss",
+      "pass": true
+    },
+    {
+      "id": "source-postgres-actually-lost",
+      "pass": true
+    },
+    {
+      "id": "all-origin-ciphertext-inventory-and-journal-lost",
+      "pass": true
+    },
+    {
+      "id": "normal-inventory-still-refuses-missing-origin",
+      "pass": true
+    },
+    {
+      "id": "missing-current-anchor-no-fallback",
+      "pass": true
+    },
+    {
+      "id": "missing-current-anchor-no-fallback-no-origin-materialized",
+      "pass": true
+    },
+    {
+      "id": "tampered-custody-journal-rejected-before-materialization",
+      "pass": true
+    },
+    {
+      "id": "tampered-custody-journal-rejected-before-materialization-no-origin-materialized",
+      "pass": true
+    },
+    {
+      "id": "signed-old-snapshot-cannot-override-current-anchor",
+      "pass": true
+    },
+    {
+      "id": "signed-old-snapshot-cannot-override-current-anchor-no-origin-materialized",
+      "pass": true
+    },
+    {
+      "id": "exact-30-day-fixture-refuses-host-recovery",
+      "pass": true
+    },
+    {
+      "id": "exact-30-day-fixture-refuses-host-recovery-no-origin-materialized",
+      "pass": true
+    },
+    {
+      "id": "no-pg-restore-before-custody-admission",
+      "pass": true
+    },
+    {
+      "id": "fresh-cli-reconstructed-host-from-separate-custody",
+      "pass": true
+    },
+    {
+      "id": "recovery-materialization-is-not-traffic-admission",
+      "pass": true
+    },
+    {
+      "id": "repository-marker-and-inventory-signatures-preserved",
+      "pass": true
+    },
+    {
+      "id": "original-baja-bytes-preserved",
+      "pass": true
+    },
+    {
+      "id": "all-reconstructed-directories-private",
+      "pass": true
+    },
+    {
+      "id": "normal-audit-admits-same-original-id-date-hash",
+      "pass": true
+    },
+    {
+      "id": "reconstructed-source-verified-immediately-before-restore",
+      "pass": true
+    },
+    {
+      "id": "custody-verified-after-replay-before-opening-traffic",
+      "pass": true
+    },
+    {
+      "id": "current-anchor-still-identical-before-traffic",
+      "pass": true
+    },
+    {
+      "id": "restore-only-success-after-suppressions",
+      "pass": true
+    },
+    {
+      "id": "single-actual-pg-restore",
+      "pass": true
+    },
+    {
+      "id": "deleted-account-and-all-fixture-relations-stay-gone",
+      "pass": true
+    },
+    {
+      "id": "other-account-and-collection-preserved",
+      "pass": true
+    },
+    {
+      "id": "catalog-preserved",
+      "pass": true
+    },
+    {
+      "id": "migration-and-five-gin-preserved",
+      "pass": true
+    },
+    {
+      "id": "restore-plaintext-staging-removed",
+      "pass": true
+    },
+    {
+      "id": "compiled-api-ready-after-replay",
+      "pass": true
+    },
+    {
+      "id": "old-account-login-denied",
+      "pass": true
+    },
+    {
+      "id": "other-account-login-works",
+      "pass": true
+    },
+    {
+      "id": "old-signed-access-denied",
+      "pass": true
+    },
+    {
+      "id": "deleted-share-api-404",
+      "pass": true
+    },
+    {
+      "id": "other-account-api-collection-works",
+      "pass": true
+    },
+    {
+      "id": "compiled-next-started",
+      "pass": true
+    },
+    {
+      "id": "real-browser-login-and-preserved-collection",
+      "pass": true
+    },
+    {
+      "id": "real-session-persists-after-reload",
+      "pass": true
+    },
+    {
+      "id": "restored-deleted-share-unavailable-real-browser",
+      "pass": true
+    },
+    {
+      "id": "no-external-provider-contact",
+      "pass": true
+    },
+    {
+      "id": "destination-exclusivity-reestablished",
+      "pass": true
+    }
+  ],
+  "restore": {
+    "restored": true,
+    "backupId": "57c9bb00-7a59-448d-9bec-8a61b1a2747b",
+    "migrations": 13,
+    "dumpBytes": 346611,
+    "schemaFingerprint": "1363b823a220be0f716bafbf3f90f63ccfc0a096839419ffc908da1c62876434",
+    "pgTrgm": "1.6",
+    "validTrigramIndexes": 5,
+    "validatedConstraints": 36,
+    "constraintScope": "public",
+    "ownership": true,
+    "suppressionsApplied": true
+  },
+  "verification": {
+    "migrations": 13,
+    "validTrigramIndexes": 5
+  },
+  "localRecoveryMs": 15888,
+  "timeSimulation": "Exact 30-day fixture Date confined to one CLI subprocess; no system clock/TTL change or physical 30-day wait",
+  "endedAt": "2026-10-13T01:35:03.682Z",
+  "testResult": "passed",
+  "sharedContainersAfter": [
+    "custody_e40acc7042d5-redis e000640104ab",
+    "pokemon-scanner-db 18aa2f693752",
+    "pokemon-scanner-redis f2d2ca0ad580"
+  ],
+  "sharedHealthAfter": [
+    {
+      "name": "pokemon-scanner-db",
+      "id": "18aa2f6937521ae010930ae98cbee45f2fa435b554c65cf90daaffba0c641ba8",
+      "health": "healthy"
+    },
+    {
+      "name": "pokemon-scanner-redis",
+      "id": "f2d2ca0ad580fe8ca3e94a59b4b6d5a53d761036ba1d14e45b8543a978bbb15f",
+      "health": "healthy"
+    }
+  ]
+}

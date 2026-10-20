@@ -1,0 +1,35 @@
+{
+  "runId": "custody_e40acc7042d5",
+  "owner": "/root",
+  "database": "custody_e40acc7042d5_test",
+  "marker": "owner=/root;run=custody_e40acc7042d5;source=CUSTODY-standard-fixture",
+  "pgFullID": "18aa2f6937521ae010930ae98cbee45f2fa435b554c65cf90daaffba0c641ba8",
+  "sourceCounts": {
+    "migrations": 13,
+    "users": 22,
+    "collections": 22,
+    "items": 69,
+    "shares": 13,
+    "cards": 20670,
+    "gin": 5
+  },
+  "standardTestBefore": {
+    "migrations": 11,
+    "users": 2,
+    "collections": 3,
+    "items": 2,
+    "shares": 1,
+    "cards": 20670,
+    "gin": 5,
+    "priced": 7
+  },
+  "createdAtUtc": "2026-10-13T01:17:02.794465+00:00",
+  "liveResources": [],
+  "redis": {
+    "name": "custody_e40acc7042d5-redis",
+    "id": "e000640104abe7e43f405191208b946440b2de2b1b116bdff34452b730316582",
+    "port": 56599,
+    "label": "owner=/root;run=custody_e40acc7042d5;source=CUSTODY-standard-fixture"
+  },
+  "cleanedAtUtc": "2026-10-13T01:35:33.952662+00:00"
+}

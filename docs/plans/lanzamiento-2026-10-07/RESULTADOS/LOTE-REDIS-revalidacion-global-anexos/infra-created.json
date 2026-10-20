@@ -1,0 +1,34 @@
+{
+  "clone": {
+    "cards": 20670,
+    "sets": 176,
+    "migrations": 11,
+    "users": 2,
+    "collections": 3,
+    "items": 2,
+    "shares": 1,
+    "prices": 188,
+    "jobs": 0,
+    "snapshots": 0,
+    "gin": 5
+  },
+  "redis": {
+    "id": "06e0661bf4edda67fc9e6207fb4d39719e27a382bf6e9b06887fc050336b5d31",
+    "name": "be07-global-469af22a0f8f-redis",
+    "image": "sha256:ec4f171e9ff071bb2a1c936057d3be00206069b028b6c0d61df2477e1dd02c42",
+    "state": "running",
+    "health": null,
+    "ports": {
+      "6379/tcp": [
+        {
+          "HostIp": "127.0.0.1",
+          "HostPort": "56391"
+        }
+      ]
+    },
+    "labels": {
+      "gate.owner": "be07-global-469af22a0f8f"
+    },
+    "mounts": []
+  }
+}

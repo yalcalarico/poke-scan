@@ -1,0 +1,26 @@
+{
+  "delegationsUsed": 2,
+  "maximum": 4,
+  "producer": "/root/deletion_custody_live_sol",
+  "reviewer": "/root/deletion_custody_live_review_sol",
+  "models": "gpt-6.1-sol high for concrete irreversible custody/transaction/deadline risk",
+  "readOnlyReview": true,
+  "finding": "P2 delayed timer could admit expired queued work or close0 confirmation",
+  "rootCorrection": "Compare performance.now elapsed at queue admission and child close, preserving timer kill/drain and existing timeouts",
+  "causalBaseline": {
+    "failed": 2,
+    "otherUnselected": 11
+  },
+  "initialFocal": {
+    "passed": 30
+  },
+  "correctedFocal": {
+    "passed": 32
+  },
+  "newCases": 23,
+  "focusedOverlapGlobal": true,
+  "correctionCyclesForFinding": 1,
+  "noSubdelegation": true,
+  "migrationHelperInvocation": "Initial missing clone argument exited before any migration; corrected argument, clone migrations13 accepted",
+  "existingDeletionCases": 9
+}

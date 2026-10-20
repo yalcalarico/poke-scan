@@ -1,0 +1,70 @@
+{
+  "evaluatedAt": "2026-10-06T14:18:54.269Z",
+  "photoHash": "697d693c9691f90c96e9e6698e18fa25a3516e224708a569793d048116309af6",
+  "scope": "Service compilado y worker DINOv2 reales, fallos provocados sólo en procesos propios. Sin HTTP/cámara/DB ni evaluación de precisión.",
+  "productionReady": false,
+  "results": [
+    {
+      "name": "arranque",
+      "ok": true,
+      "cold": true,
+      "references": 20670,
+      "indexVersion": "9d89a62b919f5a489428a92b965ec6bf98f982a7a0f36abd5d36c2611808ebca",
+      "totalMs": 1710.290958
+    },
+    {
+      "name": "SIGKILL en consulta",
+      "ok": true,
+      "totalMs": 13.024374999999964
+    },
+    {
+      "name": "SIGKILL en consulta: recuperación",
+      "ok": true,
+      "cold": true,
+      "references": 20670,
+      "indexVersion": "9d89a62b919f5a489428a92b965ec6bf98f982a7a0f36abd5d36c2611808ebca",
+      "totalMs": 1396.0714160000002
+    },
+    {
+      "name": "SIGKILL en reposo: recuperación",
+      "ok": true,
+      "cold": true,
+      "references": 20670,
+      "indexVersion": "9d89a62b919f5a489428a92b965ec6bf98f982a7a0f36abd5d36c2611808ebca",
+      "totalMs": 1385.35925
+    },
+    {
+      "name": "cancelación en consulta",
+      "ok": true
+    },
+    {
+      "name": "cancelación: recuperación",
+      "ok": true,
+      "cold": true,
+      "references": 20670,
+      "indexVersion": "9d89a62b919f5a489428a92b965ec6bf98f982a7a0f36abd5d36c2611808ebca",
+      "totalMs": 1389.926875
+    },
+    {
+      "name": "SIGSTOP y timeout 30 s",
+      "ok": true,
+      "totalMs": 30002.544583
+    },
+    {
+      "name": "SIGSTOP y timeout 30 s: recuperación",
+      "ok": true,
+      "cold": true,
+      "references": 20670,
+      "indexVersion": "9d89a62b919f5a489428a92b965ec6bf98f982a7a0f36abd5d36c2611808ebca",
+      "totalMs": 1649.0977500000008
+    },
+    {
+      "name": "reutilización caliente",
+      "ok": true,
+      "cold": false,
+      "references": 20670,
+      "indexVersion": "9d89a62b919f5a489428a92b965ec6bf98f982a7a0f36abd5d36c2611808ebca",
+      "totalMs": 110.94700000000012
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "registryIds": 38,
+  "complete": 18,
+  "pending": 20,
+  "linksVerified": 54,
+  "helperLinkParserCorrection": "balanced parentheses for existing route-group paths; no document links changed for the regex error",
+  "completedIds": [
+    "FE-01",
+    "FE-02",
+    "FE-03",
+    "FE-04",
+    "FE-07",
+    "FE-08",
+    "BE-01",
+    "BE-02",
+    "BE-03",
+    "BE-04",
+    "BE-07",
+    "UX-01",
+    "UX-02",
+    "UX-04",
+    "RES-04",
+    "INF-02",
+    "MKT-01",
+    "MKT-02"
+  ]
+}

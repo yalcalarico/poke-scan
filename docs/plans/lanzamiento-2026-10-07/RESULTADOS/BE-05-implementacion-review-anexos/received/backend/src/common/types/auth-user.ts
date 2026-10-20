@@ -1,0 +1,31 @@
+export interface AuthUser {
+  sub: string;
+  email: string;
+  authVersion?: number;
+}
+
+export interface AccessTokenPayload extends AuthUser {
+  iat?: number;
+  exp?: number;
+}
+
+export interface AuthResponseDto {
+  accessToken: string;
+  user: PublicUser;
+}
+
+export interface AuthTokens extends AuthResponseDto {
+  refreshToken: string;
+}
+
+export type PublicUser = {
+  id: string;
+  email: string;
+  username: string;
+  displayName: string;
+  avatarUrl: string | null;
+  preferredCurrency: string | null;
+  preferredRateType: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+};

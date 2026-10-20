@@ -1,0 +1,131 @@
+import { ConfigService } from '@nestjs/config';
+import { RedisService } from './redis.service.js';
+
+const harness = vi.hoisted(() => ({ client: null as unknown, options: null as unknown }));
+
+vi.mock('ioredis', async () => {
+  const { EventEmitter } = await import('node:events');
+  return {
+    Redis: class FakeRedis extends EventEmitter {
+    status = 'wait';
+    readonly commands: string[] = [];
+
+    constructor(
+      readonly url: string,
+      options: Record<string, unknown>,
+    ) {
+      super();
+      harness.client = this;
+      harness.options = options;
+    }
+
+    connect(): Promise<void> {
+      this.status = 'connecting';
+      return Promise.reject(new Error(this.url));
+    }
+
+    disconnect(): void {
+      this.status = 'end';
+      this.emit('end');
+    }
+
+    async get(key: string): Promise<null> {
+      this.commands.push(`GET ${key}`);
+      return null;
+    }
+    },
+  };
+});
+
+interface RedisHarness {
+  status: string;
+  commands: string[];
+  emit(event: string, ...args: unknown[]): boolean;
+  listenerCount(event: string): number;
+  disconnect(): void;
+}
+
+interface RedisOptionsHarness {
+  enableOfflineQueue: boolean;
+  maxRetriesPerRequest: number;
+  retryStrategy(times: number): number | null;
+}
+
+describe('RedisService — recuperación', () => {
+  const secretUrl = 'redis://user:secret@127.0.0.1:56381/15';
+  let service: RedisService;
+  let client: RedisHarness;
+  let options: RedisOptionsHarness;
+  let warn: ReturnType<typeof vi.spyOn>;
+
+  beforeEach(async () => {
+    harness.client = null;
+    harness.options = null;
+    service = new RedisService({ get: () => secretUrl } as unknown as ConfigService);
+    const logger = (service as unknown as { logger: { warn: (message: string) => void } }).logger;
+    warn = vi.spyOn(logger, 'warn');
+    service.onModuleInit();
+    client = harness.client as RedisHarness;
+    options = harness.options as RedisOptionsHarness;
+    await Promise.resolve();
+  });
+
+  afterEach(async () => {
+    await service.onModuleDestroy();
+    vi.restoreAllMocks();
+  });
+
+  it('sigue reintentando tras más de tres fallos con backoff acotado y sin cola offline', async () => {
+    expect(service.status()).toMatchObject({ configured: true, available: false });
+    expect(service.status().degradedSince).not.toBeNull();
+    expect(options.enableOfflineQueue).toBe(false);
+    expect(options.maxRetriesPerRequest).toBe(1);
+    expect(options.retryStrategy(4)).toBeGreaterThan(0);
+    expect(options.retryStrategy(100)).toBeLessThanOrEqual(15_000);
+    expect(options.retryStrategy(100)).toBeGreaterThan(0);
+    expect(options.retryStrategy(100)).not.toBeNull();
+  });
+
+  it('marca cada estado del corte y recupera readiness cuando vuelve Redis', async () => {
+    client.status = 'ready';
+    client.emit('ready');
+    expect(service.status()).toMatchObject({ available: true, degradedSince: null });
+
+    client.status = 'reconnecting';
+    client.emit('reconnecting', 1000);
+    expect(service.status()).toMatchObject({ available: false });
+    expect(service.status().degradedSince).not.toBeNull();
+
+    client.status = 'ready';
+    client.emit('ready');
+    expect(service.status()).toMatchObject({ available: true, degradedSince: null });
+  });
+
+  it('mientras no está listo devuelve cache miss sin mandar comandos pendientes', async () => {
+    expect(await service.get('private:key')).toBeNull();
+    expect(client.commands).toEqual([]);
+  });
+
+  it('cierra sin esperar a Redis, cancela los listeners y no imprime credenciales', async () => {
+    const listenerCount = client.listenerCount('ready');
+    expect(listenerCount).toBeGreaterThan(0);
+    expect(warn.mock.calls.flat().join(' ')).not.toContain('secret');
+
+    await expect(service.onModuleDestroy()).resolves.toBeUndefined();
+    expect(client.listenerCount('ready')).toBe(0);
+    expect(client.status).toBe('end');
+    client.emit('ready');
+    expect(service.status().available).toBe(false);
+    expect(warn.mock.calls.flat().join(' ')).not.toContain(secretUrl);
+  });
+
+  it('close y end mantienen el estado degradado', async () => {
+    client.status = 'ready';
+    client.emit('ready');
+    client.status = 'reconnecting';
+    client.emit('close');
+    expect(service.status().available).toBe(false);
+    client.emit('end');
+    expect(service.status().available).toBe(false);
+  });
+});

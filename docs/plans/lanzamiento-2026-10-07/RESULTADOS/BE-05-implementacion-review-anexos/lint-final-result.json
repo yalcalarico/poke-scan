@@ -1,0 +1,19 @@
+{
+  "command": [
+    "pnpm",
+    "exec",
+    "oxlint",
+    "--type-aware",
+    "src/modules/auth",
+    "src/common/guards/jwt-auth.guard.ts",
+    "src/common/guards/jwt-auth.guard.spec.ts",
+    "src/common/types/auth-user.ts",
+    "test/auth-session.e2e-spec.ts",
+    "test/password-recovery-harness.ts",
+    "test/password-recovery-mail-harness.ts",
+    "vitest.config.recovery-harness.ts"
+  ],
+  "exitCode": 0,
+  "finishedAtUtc": "2026-10-10T01:38:28.665099+00:00",
+  "ownDatabase": "be05_review_2af1fb6f7757_test"
+}

@@ -7,6 +7,43 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum PriceSyncSetOrigin {
+  curated
+  collection
+  manual
+}
+
+enum PriceSyncQueueOrigin {
+  legacy
+  daily
+  interactive
+}
+
+enum PriceSyncSetDayStatus {
+  pending
+  running
+  waiting_feed
+  waiting_cooldown
+  completed
+  partial
+  blocked_mapping
+  no_new_feed
+  failed
+  missed
+}
+
+enum PriceSyncCardDayStatus {
+  pending
+  processing
+  quoted
+  no_quote
+  unsupported
+  unmapped
+  no_new_feed
+  failed
+  missed
+}
+
 // ─── Usuarios y sesiones ───
 
 model User {
@@ -14,6 +51,7 @@ model User {
   email        String  @unique
   username     String  @unique
   passwordHash String
+  authVersion  Int     @default(0)
   displayName  String
   avatarUrl    String?
 
@@ -25,10 +63,12 @@ model User {
   updatedAt DateTime @updatedAt
 
   refreshTokens RefreshToken[]
+  passwordRecoveryTokens PasswordRecoveryToken[]
   collections   Collection[]
   shareLinks    ShareLink[]
   scanJobs      ScanJob[]
   portfolioSnapshots PortfolioSnapshot[]
+  collectionItemAddOperations CollectionItemAddOperation[]
 
   // Fase 8: sistema de amigos. Cada Friendship es un par (requester, addressee)
   // con un único estado; las dos relaciones inversas permiten consultar
@@ -39,11 +79,35 @@ model User {
   @@map("users")
 }
 
+model PasswordRecoveryToken {
+  id                 String    @id @default(uuid())
+  userId             String
+  tokenHash          String    @unique
+  issuedAuthVersion  Int
+  expiresAt          DateTime
+  usedAt             DateTime?
+  revokedAt          DateTime?
+  createdAt          DateTime  @default(now())
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([userId, expiresAt])
+  @@map("password_recovery_tokens")
+}
+
+model RecoveryRateLimitHit {
+  id          String   @id @default(uuid())
+  scope       String
+  keyHash     String
+  occurredAt  DateTime @default(now())
+  @@index([scope, keyHash, occurredAt])
+  @@map("recovery_rate_limit_hits")
+}
+
 model RefreshToken {
   id         String    @id @default(uuid())
   userId     String
   tokenHash  String    @unique
   deviceInfo String?
+  issuedAuthVersion Int @default(0)
   expiresAt  DateTime
   revokedAt  DateTime?
   createdAt  DateTime  @default(now())
@@ -80,6 +144,9 @@ model CardSet {
 
   cards       Card[]
   externalIds CardSetExternalId[]
+  priceSyncSet PriceSyncSet?
+  priceSyncSetDays PriceSyncSetDay[]
+  priceSyncCardDays PriceSyncCardDay[]
 
   @@index([name])
   @@index([ptcgoCode])
@@ -110,6 +177,7 @@ model Card {
   prices      CardPrice[]
   items       CollectionItem[]
   externalIds CardExternalId[]
+  priceSyncCardDays PriceSyncCardDay[]
 
   @@index([name])
   @@index([setId])
@@ -131,6 +199,13 @@ model CardPrice {
   source    String   @default("tcgplayer") // mercado/listing, distinto del proveedor de API
   currency  String   @default("USD")
   fetchedAt DateTime @default(now())
+  feedPublishedAt DateTime?
+  upstreamUpdatedAt DateTime?
+  externalGroupId Int?
+  externalProductId Int?
+  externalSubtype String?
+  ingestionRunId String?
+  ingestionChecksum String?
 
   card Card @relation(fields: [cardId], references: [id], onDelete: Cascade)
 
@@ -179,6 +254,7 @@ model Collection {
   user       User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   items      CollectionItem[]
   shareLinks ShareLink[]
+  comparisonSnapshots CollectionComparisonSnapshot[]
 
   @@index([userId])
   @@map("collections")
@@ -216,6 +292,20 @@ model CollectionItem {
   @@index([collectionId])
   @@index([cardId])
   @@map("collection_items")
+}
+
+model CollectionItemAddOperation {
+  userId      String
+  key         String
+  payloadHash String
+  resultItemId String?
+  expiresAt   DateTime
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, key])
+  @@index([expiresAt])
+  @@map("collection_item_add_operations")
 }
 
 // ─── Compartir ───
@@ -291,12 +381,15 @@ model PriceRefreshJob {
   completedAt DateTime?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+  origin      PriceSyncQueueOrigin @default(legacy)
+  syncDate    DateTime? @db.Date
 
   // El claim ordena por `availableAt` entre filas `pending`: sin este índice es
   // un seq scan con `ORDER BY` + `LIMIT 1` sobre toda la tabla.
   @@index([status, availableAt])
   // La recuperación de `processing` colgados en el arranque filtr por edad.
   @@index([status, lockedAt])
+  @@index([origin, syncDate, status, availableAt])
   @@map("price_refresh_jobs")
 }
 
@@ -314,6 +407,7 @@ model ProviderRateLimit {
   providerId   String   @id
   lastCalledAt DateTime
   updatedAt    DateTime @updatedAt
+  blockedUntil DateTime?
 
   @@map("provider_rate_limits")
 }
@@ -360,4 +454,154 @@ model Friendship {
   @@index([addresseeId, status])
   @@index([requesterId, status])
   @@map("friendships")
+}
+
+
+// El presupuesto permanece aunque el proceso muera durante la descarga.
+model TcgcsvGroupJob {
+  groupId Int @id
+  status String @default("pending")
+  availableAt DateTime @default(now())
+  lockedBy String?
+  leaseUntil DateTime?
+  downloadStartedAt DateTime?
+  publishedBuild DateTime?
+  lastError String?
+  updatedAt DateTime @default(now()) @updatedAt
+  origin PriceSyncQueueOrigin @default(legacy)
+  syncDate DateTime? @db.Date
+  @@index([status, availableAt])
+  @@index([origin, syncDate, status, availableAt])
+  @@map("tcgcsv_group_jobs")
+}
+
+model PriceSyncSet {
+  setId        String @id
+  enabled      Boolean @default(true)
+  priority     Int @default(100)
+  origin       PriceSyncSetOrigin
+  activatedAt  DateTime @default(now())
+  lastDemandAt DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  set CardSet @relation(fields: [setId], references: [id], onDelete: Cascade)
+
+  @@index([enabled, priority, setId])
+  @@map("price_sync_sets")
+}
+
+model PriceSyncSetDay {
+  provider         String
+  setId            String
+  syncDate         DateTime @db.Date
+  status           PriceSyncSetDayStatus @default(pending)
+  expectedCards    Int @default(0)
+  nextAttemptAt    DateTime?
+  startedAt        DateTime?
+  finishedAt       DateTime?
+  lastError        String?
+  feedPublishedAt  DateTime?
+  sourceCheckedAt  DateTime?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  set CardSet @relation(fields: [setId], references: [id], onDelete: Cascade)
+
+  @@id([provider, setId, syncDate])
+  @@index([provider, syncDate, status, nextAttemptAt])
+  @@map("price_sync_set_days")
+}
+
+model PriceSyncCardDay {
+  provider   String
+  cardId     String
+  setId      String
+  syncDate   DateTime @db.Date
+  status     PriceSyncCardDayStatus @default(pending)
+  checkedAt  DateTime?
+  quoteCount Int @default(0)
+  attempts   Int @default(0)
+  lastError  String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  card Card @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  set  CardSet @relation(fields: [setId], references: [id], onDelete: Cascade)
+
+  @@id([provider, cardId, syncDate])
+  @@index([provider, setId, syncDate, status])
+  @@map("price_sync_card_days")
+}
+
+// Descubrimiento y cuotas compartidos entre procesos; no son corridas de precios.
+model TcgcsvDiscoveryState {
+  id String @id
+  nextCheckAt DateTime @default(now())
+  lockedBy String?
+  leaseUntil DateTime?
+  groupsBuild DateTime?
+  groupsJson Json?
+  report Json?
+  lastError String?
+  requestWindowStartedAt DateTime @default(now())
+  requestCount Int @default(0)
+  downloadWindowStartedAt DateTime @default(now())
+  downloadCount Int @default(0)
+  updatedAt DateTime @default(now()) @updatedAt
+  @@map("tcgcsv_discovery_state")
+}
+
+model PriceSyncControl {
+  provider String @id
+  requestedGeneration Int @default(0)
+  handledGeneration Int @default(0)
+  lastHandledAt DateTime?
+  heartbeatAt DateTime?
+  schedulerEnabled Boolean @default(false)
+  workerConfiguredEnabled Boolean @default(false)
+  lockedBy String?
+  leaseUntil DateTime?
+  nextCycleAt DateTime @default(now())
+  lastError String?
+  @@map("price_sync_controls")
+}
+
+model PriceIngestionRun {
+  id String @id
+  provider String
+  groupId Int
+  feedPublishedAt DateTime
+  checksum String
+  publishedAt DateTime
+  mappedCards Int
+  unmappedCards Int
+  observations Int
+  @@unique([provider, groupId, feedPublishedAt])
+  @@map("price_ingestion_runs")
+}
+
+model CollectionComparisonSnapshot {
+  collectionId String
+  provider String
+  policy String
+  day DateTime @db.Date
+  valueUsd Decimal? @db.Decimal(20, 2)
+  totalCopies Int
+  pricedCopies Int
+  freshCopies Int
+  staleCopies Int
+  unknownFreshnessCopies Int
+  oldestFetchedAt DateTime?
+  newestFetchedAt DateTime?
+  feedPublishedAt DateTime?
+  compositionFingerprint String
+  compositionChanged Boolean
+  scopeCount Int
+  snapshotCut String
+  evaluatedAt DateTime
+  collection Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  @@id([collectionId, provider, policy, day])
+  @@index([day, provider, policy])
+  @@map("collection_comparison_snapshots")
 }

@@ -1,0 +1,55 @@
+{
+  "capturedAt": "2026-10-09 00:32:50 UTC",
+  "source": "Codex In-app Browser, agent-created tab; tab closed after capture",
+  "hydratedExamples": [
+    {
+      "label": "search-q",
+      "httpStatusFromSSR": 200,
+      "title": "Buscar · PokéScan",
+      "canonical": "https://pokescan.app/buscar",
+      "description": "Buscá una carta por nombre o por set y mirá su valor de mercado.",
+      "robots": [],
+      "readyState": "complete",
+      "mainPresent": true,
+      "searchResultRendered": true,
+      "visibleSyntheticCardName": true,
+      "renderedExcerpt": "1 carta · Carta sintética SEO · Set sintético SEO",
+      "ssrHtmlContainedCardName": false,
+      "domSummarySha256": "01010ed8b054bc0b6e3d80a3c6f50be56a5041c277d34c69e69a728f5bd9b11b"
+    },
+    {
+      "label": "card-valid-returnTo",
+      "httpStatusFromSSR": 200,
+      "title": "Carta sintética SEO · PokéScan",
+      "canonical": "https://pokescan.app/carta/[card]",
+      "description": "Carta sintética SEO — Set sintético SEO · Rare",
+      "robots": [],
+      "readyState": "complete",
+      "mainPresent": true,
+      "visibleSyntheticCardName": true,
+      "pricePanelHydrated": true,
+      "syntheticPriceValueOmitted": true,
+      "returnToInCanonical": false,
+      "domSummarySha256": "7ae976f66518fb8c1898d142c970635ba80548570c0d1f0837fd5bfd7d02f3cd"
+    },
+    {
+      "label": "share-missing",
+      "httpStatusFromSSR": 200,
+      "title": "Colección compartida · PokéScan",
+      "canonical": null,
+      "description": "Escaneá tus cartas Pokémon, mirá su valor y compartí tu colección",
+      "robots": [
+        "noindex",
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "readyState": "complete",
+      "mainPresent": true,
+      "visibleGenericMissingMessage": true,
+      "leaksSyntheticCollection": false,
+      "leaksSyntheticOwner": false,
+      "leaksSyntheticCard": false,
+      "domSummarySha256": "3c9349c4686d2b3d662742e49a8ef0239a44d00696518fd488ec892acbf4c66a"
+    }
+  ]
+}

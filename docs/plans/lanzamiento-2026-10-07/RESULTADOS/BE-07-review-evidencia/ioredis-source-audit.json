@@ -1,0 +1,31 @@
+{
+  "built/Redis.js": {
+    "sha256": "8621ee856520c5ab6e849f45faa103d540f81e0f28df0fd93f6bff5550bf4e92"
+  },
+  "built/redis/event_handler.js": {
+    "sha256": "754ebfabd5981695438061101f3db1c6454db2fd7a251a2a647efcfee1b840a1"
+  },
+  "built/redis/RedisOptions.js": {
+    "sha256": "4e0f3284265be4e3ea32319922d6be279229106d012a0bb757204652f7380378"
+  },
+  "built/connectors/AbstractConnector.js": {
+    "sha256": "31d5c09a1527f14e469d3dc2b90644b30e82278e78298b68b18d9a73c2065711"
+  },
+  "built/connectors/StandaloneConnector.js": {
+    "sha256": "b565f1b9d0c722593bbadd7b9bd1b0dbb6187cd31a1662d2249582ffd035cc26"
+  },
+  "built/Command.js": {
+    "sha256": "a630fdaf6afc3e8cd6d2e9f3cd8da191efdeea1042e4710e51f353cb0c1c34b3"
+  },
+  "built/DataHandler.js": {
+    "sha256": "a9c11490d482ec2b1e8206b583fa4787841bf90fe30b800b790cfcd10479cb6a"
+  },
+  "version": "6.0.0",
+  "observations": {
+    "autoReplay": "RedisOptions.js default true; event_handler.js readyHandler replays prevCommandQueue separately from offlineQueue; maxRetriesPerRequest only flushes current queue after every second failed reconnect.",
+    "shutdown": "Redis.js _connect installs once ready/close; removeAllListeners steals these handlers. disconnect clears reconnectTimeout and connector closes stream with fallback disconnectTimeout2000ms.",
+    "lateError": "Redis.js silentEmit ignores end and selected manuallyClosing errors; otherwise reports raw error to console when no listeners. No real late-error leak was reproduced, so no separate claim of that bug. Guarded retained error listener covers late callbacks without stripping library listeners.",
+    "events": "Redis.js setStatus queues events via process.nextTick; service connect promise callbacks are stale relative to current state and must not change availability.",
+    "timeout": "Redis.js sendCommand attaches Command.setTimeout; Command.js rejects pending command at timeout. Event handler drops prevCommandQueue without replay when autoResendUnfulfilledCommands=false; timer bounds pending promise."
+  }
+}

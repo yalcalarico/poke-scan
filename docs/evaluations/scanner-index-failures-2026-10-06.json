@@ -1,0 +1,91 @@
+{
+  "evaluatedAt": "2026-10-06T17:40:49.419Z",
+  "state": "passed",
+  "productionReady": false,
+  "temporaryDirectory": "/var/folders/5y/06b1k3pd2fz121396fbcrpf00000gn/T/scanner-index-failures-iADvo5",
+  "scope": "CLIs/Prisma/modelo/ONNX reales. HTTP loopback mediante preload del harness: ninguna descarga al CDN real. Sólo referencias sintéticas y procesos propios. SIGKILL deja locks; recuperación manual sólo en fixtures después de verificar PID muerto. No certifica ausencia de pérdida ante todo crash o precisión.",
+  "results": [
+    {
+      "case": "network 503",
+      "failedExit": 1,
+      "failedElapsedMs": 305.19550000000004,
+      "recoveryExit": 0,
+      "complete": 1,
+      "repeatedDownloads": 0
+    },
+    {
+      "case": "network 429",
+      "failedExit": 1,
+      "failedElapsedMs": 280.587,
+      "recoveryExit": 0,
+      "complete": 1,
+      "repeatedDownloads": 0
+    },
+    {
+      "case": "network invalid",
+      "failedExit": 1,
+      "failedElapsedMs": 240.87762500000008,
+      "recoveryExit": 0,
+      "complete": 1,
+      "repeatedDownloads": 0
+    },
+    {
+      "case": "network disconnect",
+      "failedExit": 1,
+      "failedElapsedMs": 279.77366699999993,
+      "recoveryExit": 0,
+      "complete": 1,
+      "repeatedDownloads": 0
+    },
+    {
+      "case": "network oversize",
+      "failedExit": 1,
+      "failedElapsedMs": 254.011708,
+      "recoveryExit": 0,
+      "complete": 1,
+      "repeatedDownloads": 0
+    },
+    {
+      "case": "network hold",
+      "failedExit": 1,
+      "failedElapsedMs": 30254.347916000002,
+      "recoveryExit": 0,
+      "complete": 1,
+      "repeatedDownloads": 0
+    },
+    {
+      "case": "SIGKILL during download",
+      "signal": "SIGKILL",
+      "orphanLockBlocksResume": true,
+      "manualFixtureRecovery": true,
+      "total": 1
+    },
+    {
+      "case": "SIGKILL during temporary",
+      "signal": "SIGKILL",
+      "orphanLockBlocksResume": true,
+      "manualFixtureRecovery": true,
+      "total": 1
+    },
+    {
+      "case": "SIGKILL after committed vector",
+      "conserved": 1,
+      "total": 2,
+      "downloadsOnResume": 1
+    },
+    {
+      "case": "SIGKILL during JSONL append",
+      "rejectsResume": true,
+      "runtimeRejects": true,
+      "originalPreserved": true,
+      "backup": "/var/folders/5y/06b1k3pd2fz121396fbcrpf00000gn/T/scanner-index-failures-iADvo5/kill-partial-jsonl/dinov2-8b1f705a3a7f6f062f6bdd21986c1583d3ef105d-int8.jsonl.backup"
+    },
+    {
+      "case": "SIGKILL batch parent",
+      "childStayedAlive": true,
+      "blockedUntilBothWritersStopped": true,
+      "manualFixtureRecovery": true,
+      "total": 12
+    }
+  ]
+}

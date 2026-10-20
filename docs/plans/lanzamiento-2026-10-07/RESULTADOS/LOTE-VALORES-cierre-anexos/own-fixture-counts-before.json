@@ -1,0 +1,13 @@
+{
+  "phase": "before",
+  "counts": {
+    "users": 2,
+    "collections": 4,
+    "items": 9,
+    "shares": 1,
+    "cards": 6,
+    "prices": 13,
+    "jobs": 6
+  },
+  "ownJobsExecuted": 0
+}

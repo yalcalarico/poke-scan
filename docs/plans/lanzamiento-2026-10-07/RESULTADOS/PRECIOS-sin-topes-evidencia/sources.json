@@ -1,0 +1,38 @@
+[
+  {
+    "path": "backend/src/jobs/tcgcsv/tcgcsv.service.ts",
+    "sha256": "a311fed12de161ba955e42b645df2249f99fc1d444daf87d8bf22a7920553193"
+  },
+  {
+    "path": "backend/src/jobs/tcgcsv/tcgcsv.service.spec.ts",
+    "sha256": "d8fe89c847b94c485e90a809137f465d7fe2d5c95b813a2924b42caaf5cad4bf"
+  },
+  {
+    "path": "backend/src/jobs/tcgcsv/tcgcsv.discovery-worker.spec.ts",
+    "sha256": "0877e01067bc3a4426fa3a9c56382a84e8b288395083d578124281538f7fe149"
+  },
+  {
+    "path": "backend/scripts/prices-control.mjs",
+    "sha256": "3eb50ee1f1e04d9152da4d4ebc757b3b0bb420481b85f19691c6c43cb94f8f35"
+  },
+  {
+    "path": "backend/scripts/prices-control.test.mjs",
+    "sha256": "96dbd2959586eadb13752b4ccf36cca3433b32daeb4524674f8066811e822f61"
+  },
+  {
+    "path": "backend/scripts/prices-sync.mjs",
+    "sha256": "9fbe29751692e2b634deee39e4c41a97a685f5e917f2d1da7b6028e0fe0f79c2"
+  },
+  {
+    "path": "backend/docs/jobs.md",
+    "sha256": "6f3e113a7296175cb1ee1face7a14899cc9d50fa8a1b9dc1b4dc29314c1cfe91"
+  },
+  {
+    "path": "backend/docs/pricing.md",
+    "sha256": "6e0749ada57d9e18984c99db8602add21fdeaf26af3c27007b13997640782352"
+  },
+  {
+    "path": "docs/infra/PROMPT-mini-pc-cloudflare.md",
+    "sha256": "7d39d633c0938841e920d991299b6c1dc55e01a9440532b5a7a4b7609aed5656"
+  }
+]

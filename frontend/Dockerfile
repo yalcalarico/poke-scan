@@ -5,10 +5,13 @@
 # ni node_modules completos ni el codigo fuente.
 
 # ─── deps ────────────────────────────────────────────────────────────────────
-FROM node:22-alpine AS deps
+ARG NODE_IMAGE=node:22.20.0-alpine
+ARG PNPM_VERSION=10.17.1
+FROM ${NODE_IMAGE} AS deps
 ENV PNPM_HOME=/pnpm
 ENV PATH="$PNPM_HOME:$PATH"
-RUN corepack enable
+ARG PNPM_VERSION
+RUN corepack enable && corepack prepare pnpm@${PNPM_VERSION} --activate
 WORKDIR /app
 
 # Solo los manifests: la capa de dependencias se cachea mientras no cambie el lockfile.
@@ -17,11 +20,15 @@ RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
     pnpm install --frozen-lockfile
 
 # ─── build ───────────────────────────────────────────────────────────────────
-FROM node:22-alpine AS builder
+FROM ${NODE_IMAGE} AS builder
 ENV PNPM_HOME=/pnpm
 ENV PATH="$PNPM_HOME:$PATH"
 ENV NEXT_TELEMETRY_DISABLED=1
-RUN corepack enable
+# La vista previa de la landing es decorativa; esta URL solo de build falla rápido
+# sin depender de una API de desarrollo ni incrustar su host.
+ENV API_INTERNAL_URL=http://127.0.0.1:1/api
+ARG PNPM_VERSION
+RUN corepack enable && corepack prepare pnpm@${PNPM_VERSION} --activate
 WORKDIR /app
 
 COPY --from=deps /app/node_modules ./node_modules
@@ -33,14 +40,14 @@ ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 RUN pnpm run build
 
 # ─── runner ──────────────────────────────────────────────────────────────────
-FROM node:22-alpine AS runner
+FROM ${NODE_IMAGE} AS runner
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
 WORKDIR /app
 
-# next/image (optimizacion de imagenes) necesita esto para no Anastasia-crash.
+# next/image (optimizacion de imagenes) necesita compatibilidad con libc en Alpine.
 RUN apk add --no-cache libc6-compat && addgroup -g 1001 -S nodejs && adduser -S nextjs -u 1001
 
 # `output: "standalone"` ya trae un server.js con el trace minimo de node_modules.

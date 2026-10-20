@@ -1,0 +1,13 @@
+{
+  "migrations": 14,
+  "users": 22,
+  "collections": 22,
+  "items": 69,
+  "shares": 13,
+  "cards": 20670,
+  "gin": 5,
+  "tcgcsvPrices": 0,
+  "queuedTCGCSV": 2,
+  "tcgcsvRateRows": 0,
+  "realDailySnapshots": 44
+}

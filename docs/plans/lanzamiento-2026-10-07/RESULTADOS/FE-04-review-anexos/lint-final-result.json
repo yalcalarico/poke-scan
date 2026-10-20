@@ -1,0 +1,11 @@
+{
+  "command": [
+    "pnpm",
+    "--dir",
+    "frontend",
+    "run",
+    "lint"
+  ],
+  "exitCode": 0,
+  "finishedAtUtc": "2026-10-10T02:18:15.775024+00:00"
+}

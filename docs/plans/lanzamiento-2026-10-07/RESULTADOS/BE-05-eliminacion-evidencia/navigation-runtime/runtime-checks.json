@@ -1,0 +1,46 @@
+[
+  {
+    "id": "owner-marker-0",
+    "pass": true
+  },
+  {
+    "id": "startup-current-private-journal-before-traffic",
+    "pass": true
+  },
+  {
+    "id": "compiled-register-1",
+    "pass": true
+  },
+  {
+    "id": "compiled-register-2",
+    "pass": true
+  },
+  {
+    "id": "compiled-register-3",
+    "pass": true
+  },
+  {
+    "id": "compiled-register-4",
+    "pass": true
+  },
+  {
+    "id": "availability-authenticated-exact-no-store",
+    "pass": true
+  },
+  {
+    "id": "share-api-warmed",
+    "pass": true
+  },
+  {
+    "id": "own-redis-known-key-warm",
+    "pass": true
+  },
+  {
+    "id": "owner-marker-9",
+    "pass": true
+  },
+  {
+    "id": "actual-pg-custom-dump-encrypted-only",
+    "pass": true
+  }
+]

@@ -1,0 +1,26 @@
+[
+  {
+    "name": "compiled API ready with real local DINOv2",
+    "passed": true
+  },
+  {
+    "name": "anonymous denied",
+    "passed": true
+  },
+  {
+    "name": "wrong operations credential denied",
+    "passed": true
+  },
+  {
+    "name": "private metrics accessible no-store",
+    "passed": true
+  },
+  {
+    "name": "warmup measured once",
+    "passed": true
+  },
+  {
+    "name": "synthetic own account created",
+    "passed": false
+  }
+]

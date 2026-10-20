@@ -1,0 +1,9 @@
+{
+  "phase": "capture-diagnostic",
+  "kind": "Error",
+  "gateId": "capture-same-document-link-visible",
+  "stackFrames": [
+    "    at record (file:///private/tmp/cuenta-gate-3aaf105723d3/runtime.mjs:18:131)",
+    "    at file:///private/tmp/cuenta-gate-3aaf105723d3/runtime.mjs:47:631"
+  ]
+}

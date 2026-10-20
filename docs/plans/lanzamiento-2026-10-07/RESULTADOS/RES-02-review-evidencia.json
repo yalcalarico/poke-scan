@@ -1,0 +1,372 @@
+{
+  "schemaVersion": 1,
+  "reviewedAt": "2026-10-08",
+  "task": "RES-02",
+  "phase": "protocol-review",
+  "reviewer": "gpt-6.1-sol high",
+  "result": "accepted-after-documentary-corrections; results and ID pending",
+  "head": "5a2fe2f557b677b2c6e38749a1932d24a21b25c5",
+  "codeChangedByReview": false,
+  "receivedAndOwnDiff": [
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/RES-02-corpus.md",
+      "receivedSha256": "f08bff608d7ddca42dfd34137f78122fe4afbcb47a24fa78ed1cbf78f81a52c6",
+      "finalSha256": "96ddab51f84429a11347413d1fb2552970b9c73df9c25514c057df58ea606410",
+      "changed": true,
+      "unifiedDiffSha256": "7cd63fdb9d68e49d0b3e8da713d07c3a1c8d9cba9c46cb940da5f9547a7f0957",
+      "unifiedDiff": "--- recibido/RES-02-corpus.md\n+++ revisado/RES-02-corpus.md\n@@ -1,12 +1,12 @@\n # RES-02 — Protocolo para ampliar la evaluación DINOv2\n \n-Fecha de preparación: **2026-10-08**. Responsable: Investigación, con revisión de coordinación. Estado: **fase protocolo; corpus amplio, ejecución y resultados pendientes**. No se incorporaron fotos, etiquetas, resultados ni parámetros nuevos. Esta entrega reutiliza el [protocolo de evaluación vigente](../../../evaluations/scanner-validation-protocol.md), el evaluador local y el código actualmente visible; no modifica el producto.\n+Fecha de preparación: **2026-10-08**. Responsable: Investigación (Luna), revisado/corregido por GPT-6.1 Sol HIGH; ver [revisión documental](RES-02-review.md). Estado: **fase protocolo; corpus amplio, ejecución y resultados pendientes**. No se incorporaron fotos, etiquetas, resultados ni parámetros nuevos. Esta entrega reutiliza el [protocolo de evaluación vigente](../../../evaluations/scanner-validation-protocol.md), el evaluador local y el código actualmente visible; no modifica el producto.\n \n ## Propósito y límites\n \n Preparar una evaluación reproducible de **50–100 fotos reales aportadas voluntariamente**, con ID exacto revisado por una persona cuando la foto sea positiva. El objetivo es medir el ranking DINOv2 en condiciones documentadas y la conducta de la política de selección actual. La predicción nunca define la etiqueta. El objetivo no es demostrar cobertura universal, calibrar un umbral con holdout ni certificar latencia de teléfono/API.\n \n-El material disponible descrito por las notas anteriores sirve como regresión histórica y desarrollo acotado. Las cinco fotos del baseline anterior, los crops de cámara ya reportados, las imágenes de fixture y cualquier augmentación o repetición **no completan el objetivo de 50–100 fotos**. Los resultados anteriores 5/5 de una muestra de cinco y las pruebas de geometría/fixtures no son precisión de teléfono ni evaluación amplia. No se inspeccionaron archivos de corpus privados ni se ejecutó inferencia en esta fase.\n+El material disponible descrito por las notas anteriores sirve como regresión histórica y desarrollo acotado. La muestra histórica descrita **no completa el objetivo de 50–100 fotos**. Las fotos reales existentes pueden contar una vez dentro del total si el custodio verifica su disponibilidad, etiqueta y permiso vigente; no se exige que todas sean nuevas. Las ya usadas al investigar permanecen en development. Crops derivados, fixtures sintéticos, augmentaciones y repeticiones no aumentan el número de fotos originales reales. Los resultados anteriores 5/5 de una muestra de cinco y las pruebas de geometría/fixtures no son precisión de teléfono ni evaluación amplia. No se inspeccionaron archivos de corpus privados ni se ejecutó inferencia en esta fase.\n \n ## Qué hace hoy el runtime y qué hace la CLI\n \n@@ -14,11 +14,11 @@\n \n La CLI vigente reutiliza embedding, modelo e índice actuales y compara el top-8, sin recorte/orientación del frontend, HTTP, autenticación, UI, consulta de precio ni escritura en colecciones. Lee bytes locales tal cual; su único preprocesado es el embedding anterior. Por eso, una entrada `original` **no mide** galería/cámara, y un `gallery-crop` o `camera-crop` sólo mide esos flujos si quien aportó el archivo confirma que son exactamente los bytes preparados/enviados por el cliente. La preparación cliente actual orienta y normaliza fotos de galería, puede rectificar perspectiva y limita el lado largo a 1400 px; una captura de cámara ya viene recortada por la guía y no vuelve a detectar bordes. Registrar versión y origen del recorte, no asumir que la CLI reproduce esa preparación.\n \n-Hay dos políticas que se deben nombrar por separado al informar: **política runtime/UI efectiva** = seleccionar el candidato #1 para revisar/sumar a sesión, sin umbral ni rechazo calibrado; guardar en una colección exige confirmación posterior. **parámetro de CLI** = el runner calcula y muestra hasta ocho candidatos, y `falseSessionAcceptances` estima falsos agregados a sesión bajo la regla actual de aceptar el #1; no simula guardados. Un campo futuro como `policyVersion`, `threshold`, `retryCount`, parámetros de preprocesado cliente o decisión humana puede anotarse en una ficha lateral, pero la CLI no lo consume ni lo valida. No presentar esos campos como filtros del reporte ni alterar la política para evaluar holdout.\n+Hay dos comportamientos que se deben nombrar por separado al informar: **política runtime/UI efectiva** = sumar el candidato #1 de la respuesta API a sesión como propuesta por revisar, sin umbral ni rechazo calibrado. Organizar exige confirmar identidad, variante, condición y destino antes de guardar; no se infieren acabado ni condición de la foto. **estimación de CLI** = el runner calcula y muestra hasta ocho candidatos del índice, y `falseSessionAcceptances` estima falsos agregados a sesión bajo la regla actual de aceptar el #1; no simula guardados. Un campo futuro como `policyVersion`, `threshold`, `retryCount`, parámetros de preprocesado cliente o decisión humana puede anotarse en una ficha lateral, pero la CLI no lo consume ni lo valida. No presentar esos campos como filtros del reporte ni alterar la política para evaluar holdout.\n \n-Referencias de implementación observadas: `backend/src/modules/cards/visual-identify.service.ts`, `backend/scripts/scanner-visual-worker.mjs`, `backend/scripts/scanner-visual-engine.mjs`, `backend/scripts/scanner-evaluate-current.mjs`, `backend/scripts/scanner-evaluation-metrics.mjs`, `frontend/lib/scanner/visual-photo.ts`, `frontend/lib/scanner/preprocess.ts` y [documentación del flujo cliente](../../../../frontend/docs/scanner.md). Las rutas se refieren al árbol local inspeccionado el 8/10; la fuente de verdad para una ejecución será el commit y los hashes capturados en ese momento, no esta versión documental.\n+Referencias de implementación observadas: [servicio visual](../../../../backend/src/modules/cards/visual-identify.service.ts), [controller autenticado](../../../../backend/src/modules/cards/visual-identify.controller.ts), [DTO](../../../../backend/src/modules/cards/dto/visual-identify.dto.ts), [worker](../../../../backend/scripts/scanner-visual-worker.mjs), [embedding](../../../../backend/scripts/scanner-visual-engine.mjs), [lector de índice](../../../../backend/scripts/scanner-visual-index.mjs), [CLI](../../../../backend/scripts/scanner-evaluate-current.mjs), [métricas](../../../../backend/scripts/scanner-evaluation-metrics.mjs), [preparación](../../../../frontend/lib/scanner/visual-photo.ts), [recorte](../../../../frontend/lib/scanner/preprocess.ts), [página](../../../../frontend/app/(app)/escanear/page.tsx), [draft](../../../../frontend/components/scanner/session-draft.ts), [guardado](../../../../frontend/components/scanner/organize-sheet.tsx) y [documentación del flujo cliente](../../../../frontend/docs/scanner.md). Las rutas se refieren al árbol local inspeccionado el 8/10; la fuente de verdad para una ejecución será el commit y los hashes capturados en ese momento, no esta versión documental.\n \n-Baseline de inspección de esta entrega: `HEAD` era `5a2fe2f557b677b2c6e38749a1932d24a21b25c5`; los archivos de evaluador, worker y preparación cliente citados tenían cambios locales (o eran nuevos) y por eso los hashes siguientes identifican ese contenido **dirty observado**, no una versión publicada. El destino `RES-02-corpus.md` y los dos nombres `RES-02-*` reservados no existían antes de escribir; no había entrega previa que reemplazar.\n+Baseline de inspección de esta entrega: `HEAD` era `5a2fe2f557b677b2c6e38749a1932d24a21b25c5`; los archivos de evaluador, worker y preparación cliente citados tenían cambios locales (o eran nuevos) y por eso los hashes siguientes identifican ese contenido **dirty observado**, no una versión publicada. Según la entrega Luna, los tres destinos no existían antes de prepararlos. La revisión recibió esos tres archivos existentes y registró sus hashes antes de corregirlos en [evidencia](RES-02-review-evidencia.json). Los ocho hashes de código/protocolo siguientes se verificaron nuevamente el 8/10 y coinciden; no se leyeron fotos ni manifiestos privados. El modelo y el índice actuales no se abrieron ni se hashearon en esta fase: su snapshot sigue pendiente para la futura ejecución.\n \n | Archivo observado | SHA-256 |\n |---|---|\n@@ -30,18 +30,17 @@\n | `frontend/lib/scanner/preprocess.ts` | `ab023e79f9a9a729c3fffd569bded514e3d0fdc7581bc05d7594f98400b3fe9c` |\n | `frontend/lib/scanner/visual-photo.ts` | `026c09d0a8017a29cccc22861af5c374bbf9e4aa2c084a4cd3a08ff4c8712fbc` |\n | `docs/evaluations/scanner-validation-protocol.md` | `824653ccba8bb1b16e8a352e7cc11f448df1b102a968feaae6e321f65ed3f55d` |\n-| `docs/evaluations/manifest-dinov2-development.json` | `50db82d22677ea6e27aeb11c7c790d84b0955faaff9f043b584b5f6d3b51f6f4` |\n \n ## Corpus, ground truth y partición sin fuga\n \n 1. Antes de evaluar, definir con la persona responsable del corpus consentimiento, finalidad, custodio, acceso, ubicación privada fuera de Git, plazo de retención y procedimiento de retiro/borrado. Obtener permiso específico para conservar y procesar fotos localmente; la descarga voluntaria de diagnóstico por sí sola no habilita cualquier uso posterior. No recolectar fondos con caras, nombres, pantallas, ubicación u otros datos personales. Las fotos de consulta siguen sin almacenarse en la API.\n-2. Asignar un alias aleatorio de foto sin nombre de archivo identificable. El custodio conserva la correspondencia sólo en el registro privado. Para cada positiva, una persona confirma set y número contra el catálogo y anota por separado acabado/variante; si el ID exacto no se puede decidir, queda `unlabelled`, no se adivina. Un ID exacto confirmado se puede registrar en el manifiesto privado de ejecución. El informe público usa sólo agregados por alias, nunca rutas, nombres originales, PII ni IDs de participantes.\n-3. Negativo significa verificado que **ningún ID del índice debe aceptarse** (por ejemplo, dorso, fondo sin carta o carta fuera del catálogo). Negativo confirmado no es equivalente a edición dudosa, carta similar ni etiqueta pendiente. Casos ambiguos/sin etiqueta se pueden inspeccionar como diagnóstico, pero se excluyen de precisión y de falsas aceptaciones. Reportar positivos, negativos y sin etiqueta con denominadores separados; no mezclar negativos en el denominador de top-1/top-8.\n-4. Contar una foto original real una vez. Reintentos de evaluación, otra pasada y procesamiento repetido sólo amplían muestras de tiempo; recortes derivados, cambios de tamaño, compresión y augmentaciones no crean nuevas fotos independientes. Guardar, en el área privada, hash de bytes para deduplicar y contar fotos/bytes distintos. No publicar hashes de imagen: podrían facilitar identificación o búsqueda de la foto.\n-5. Antes de separar, crear grupos de relación con conocimiento humano: misma identidad/edición, reimpresiones con arte igual o muy similar, y otras cartas que puedan revelar la misma composición visual. Asignar cada grupo entero a `development` o `holdout` **antes** de probar alternativas. Dejar grupos sin resolver en desarrollo/diagnóstico, nunca en holdout. Separar por grupos e identidades, no por tomas: varias fotos del mismo ID no son identidades independientes. Sellar el manifiesto holdout y sus etiquetas bajo control del custodio; quienes eligen parámetros no deben consultarlos hasta congelar método, modelo, índice y preprocesado. No elegir umbrales/reintentos con holdout ni retocar método después de conocer sus resultados. Si se necesita cambiar algo después, declarar holdout consumido y reunir otro grupo reservado.\n+2. Asignar un alias aleatorio de foto sin nombre de archivo identificable. El custodio conserva la correspondencia sólo en el registro privado. Para cada positiva, una persona confirma set y número contra el catálogo y anota por separado acabado/variante; si el ID exacto no se puede decidir, queda `unlabelled`, no se adivina. Un ID exacto confirmado se puede registrar en el manifiesto privado de ejecución. El informe público usa agregados y, sólo si son necesarios, aliases aleatorios sin correspondencia pública; nunca rutas, nombres originales, PII ni IDs de participantes.\n+3. Negativo significa verificado que **ningún ID del índice debe aceptarse** (por ejemplo, dorso, fondo sin carta u otra clase de carta). Distinguir **fuera del índice** de **fuera del catálogo espejado**: un ID exacto del catálogo que falta en el índice sigue siendo positivo y cuenta como referencia ausente; no relabelarlo negativo para mejorar accuracy. Una carta fuera del catálogo sólo es negativa si su identidad se verificó independientemente y no corresponde a ningún ID del índice; si no se puede decidir, queda sin etiqueta. Una diferencia de acabado de un mismo ID se anota aparte y no convierte la identidad en negativa ni acredita reconocimiento de variante. Negativo confirmado no es equivalente a edición dudosa, carta similar ni etiqueta pendiente. Casos ambiguos/sin etiqueta se pueden inspeccionar como diagnóstico, pero se excluyen de precisión y de falsas aceptaciones. Reportar positivos, negativos y sin etiqueta con denominadores separados; no mezclar negativos en el denominador de top-1/top-8.\n+4. Contar una foto original real una vez. Reintentos de evaluación, otra pasada y procesamiento repetido sólo amplían muestras de tiempo; recortes derivados, cambios de tamaño, compresión y augmentaciones no crean nuevas fotos independientes. Guardar, en el área privada, hash de bytes para detectar duplicados exactos, más un `original_photo_alias` estable y un `transformation_group` que vinculen original, crops y demás derivados. Un hash diferente sólo demuestra bytes distintos; no demuestra otra captura original ni independencia. Deduplicar por captura antes de correr, o elegir previamente un derivado representativo por origen y reportar comparaciones pareadas sin sumarlas como fotos nuevas. No publicar hashes de imagen: podrían facilitar identificación o búsqueda de la foto.\n+5. Antes de separar, crear grupos de relación con conocimiento humano: misma identidad/edición, variantes de idioma, reimpresiones con arte igual o muy similar, y otras cartas que puedan revelar la misma composición visual. Agrupar también negativos relacionados por escena/objeto/captura y todos los derivados de una foto; no repartirlos entre particiones. Asignar cada grupo entero a `development` o `holdout` **antes** de probar alternativas. Dejar grupos sin resolver en desarrollo/diagnóstico, nunca en holdout. Separar por grupos e identidades **del corpus de consultas**, no por tomas: varias fotos del mismo ID no son identidades independientes. Esta partición no exige retirar IDs holdout del índice de referencias: el reconocimiento cerrado necesita esas referencias de catálogo y el índice se congela completo para ambas particiones. Registrar cualquier selección/filtrado previo del índice como parte del método; no confundir catálogo espejado con índice seleccionado ni quitar referencias tras conocer el resultado. Una positiva exacta conocida sin referencia se informa con `expectedReferencePresent: false` y `missingReferences`, no como negativo artificial. Sellar el manifiesto holdout y sus etiquetas bajo control del custodio; quienes eligen parámetros no deben consultarlos hasta congelar método, modelo, índice y preprocesado. No elegir umbrales, reintentos, selección de tomas, candidatos o política con holdout, ni retocar método después de conocer sus resultados. Sellar también reglas de exclusión y denominadores; cualquier inspección que influya en tuning consume ese holdout. No presentar una reevaluación posterior al tuning como holdout independiente. Si se necesita cambiar algo después, declarar holdout consumido y reunir otro grupo reservado.\n 6. Apuntar a 50–100 fotos reales y diversidad de IDs, dispositivo, origen y condiciones (funda, reflejo, desenfoque, perspectiva, full-art, reimpresiones), equilibrando cruces en la medida que el material consentido lo permita. Mantener distribución realista y mostrar faltantes; no fabricar muestras para satisfacer cuotas. Positivos/negativos pueden describir la misma condición, pero reportar por separado los tamaños efectivos. Si la muestra o un subgrupo es demasiado pequeño, mostrar conteo y tasa descriptiva sin conclusión robusta.\n \n-Campos privados recomendados: alias de foto; etiqueta (`positive`, `negative`, `unlabelled`); ID de carta para positiva; decisión de ground truth y revisor; grupo de identidad/arte; partición; origen (`original`, `gallery-crop`, `camera-crop`); dispositivo/modelo y SO; navegador y pestaña/PWA; condiciones; fecha de captura aproximada; bytes y hash privados; versiones observadas del flujo. No incluir datos personales del custodio/revisor en manifiestos de resultados.\n+Campos privados recomendados (ficha lateral, no contrato de la CLI): alias de foto y de original; grupo de transformaciones; etiqueta (`positive`, `negative`, `unlabelled`); ID de carta para positiva; decisión de ground truth y revisor; grupo de identidad/arte; partición; origen (`original`, `gallery-crop`, `camera-crop`); dispositivo/modelo y SO; navegador y pestaña/PWA; condiciones; fecha de captura aproximada; bytes y hash privados; versiones observadas del flujo. No incluir datos personales del custodio/revisor en manifiestos de resultados.\n \n ## Ejecución reproducible cuando el corpus esté disponible\n \n@@ -51,19 +50,34 @@\n pnpm --dir backend run scanner:evaluate:current RUTA_PRIVADA/manifiesto.json RUTA_PRIVADA/reporte.json 2\n ```\n \n-La CLI documenta repeticiones entre 1 y 100 (default 2), rechaza rutas repetidas en el manifiesto, resuelve `path` relativo al manifiesto, crea reporte nuevo sin sobrescribir y no modifica el índice ni hace llamadas a precios. El ejemplo estructural de entrada ya está en el protocolo vigente y en el `--help` de la CLI. No copiar rutas reales al manifiesto público. La CLI acepta `conditions`, `origin`, `labelStatus`, `split`, pero actualmente agrega y estratifica métricas sólo por origen, partición y condición; no acepta metadata de dispositivo, política, versión cliente ni preprocesado. Mantener estos campos en una ficha privada separada y relacionar por alias. No asumir que el evaluator puede validar su coherencia.\n+La CLI documenta repeticiones entre 1 y 100 (default 2), rechaza strings `path` repetidos en el manifiesto (no detecta aliases distintos de la misma ruta resuelta), resuelve `path` relativo al manifiesto, crea reporte nuevo sin sobrescribir y no modifica el índice ni hace llamadas a precios. El ejemplo estructural de entrada ya está en el protocolo vigente y en el `--help` de la CLI. No copiar rutas reales al manifiesto público. La CLI acepta `conditions`, `origin`, `labelStatus`, `split`, pero actualmente agrega y estratifica métricas sólo por origen, partición y condición; no consume ni valida metadata de dispositivo, política, versión cliente ni preprocesado para la evaluación. El validador no rechaza todos los campos extra: tolerarlos no equivale a soportarlos, y esos extras no se copian a las filas del reporte. Mantener estos campos en una ficha privada separada y relacionar por alias con el índice `sample`/orden del manifiesto. La CLI consume `path`, `cardId`, `labelStatus`, `origin`, `split` y `conditions`; por compatibilidad, sin `labelStatus` interpreta `cardId: null` como negativo y un ID como positivo. Para RES-02 declarar siempre la etiqueta, usar `unlabelled` con null y fijar `split` (default development) y `origin` (default unspecified). No asumir que el evaluador puede validar coherencia humana, grupos, consentimiento o fuga.\n \n-Antes de una corrida real, registrar en un registro privado nuevo: fecha observada; `git rev-parse HEAD`; estado dirty y diffs relevantes; hashes SHA-256 del modelo, archivos/metadata del índice y código de embedding/evaluador; `manifestHash` y versiones del cliente/preparación. El reporte de la CLI incluye hash del manifiesto, hashes por imagen, metadata reportada por el modelo/índice, versión del índice, parámetros de muestra y candidatos. El reporte no fija por sí mismo un snapshot limpio del código ni hash de todas las partes del índice; complementar esos datos desde el entorno de ejecución. Si el árbol está dirty, identificar las modificaciones relevantes y no describirlo como snapshot limpio. No reutilizar hashes antiguos de informes como hashes actuales.\n+La [plantilla pública de manifiesto](RES-02-manifiesto-publico-plantilla.json) contiene sólo `[]`: es un placeholder de publicación sin corpus y **no es una entrada ejecutable** (el validador exige una lista no vacía). Generar el manifiesto ejecutable completo sólo fuera de Git. La [ficha privada](RES-02-ficha-privada-plantilla.csv) tiene únicamente encabezado; copiarla fuera de Git antes de completarla. Sus campos de consentimiento/retención son propuestas a acordar con el custodio, no permisos ya obtenidos ni un plazo impuesto. `ground_truth_reviewer_alias` identifica un rol/alias privado, nunca una persona en el reporte público.\n \n-La primera consulta de una invocación CLI es fría porque crea sesión de modelo; las restantes son calientes en el mismo worker/proceso. La CLI entrega `modelMs`, `indexMs`, `inferenceMs`, `rankingMs`, `totalMs` y `coordinatorMs`, con n/p50/p95/p99 separados para registros fríos/calientes. Esto no mide arranque frío real de API, caché fría de navegador, recorte/preparación cliente, red/HTTP, espera por 503 ni tiempo hasta UI visible. Tampoco mide latencia de teléfono. Para estimar arranque frío del runner se requieren procesos/reportes independientes con manifiestos/reportes no sobrescritos; describir n y entorno. Con n pequeño, p95/p99 se acercan al máximo y no son SLO ni garantía. No sumar percentiles de fases para inventar latencia total.\n+Antes de una corrida real, registrar en un registro privado nuevo: fecha observada; `git rev-parse HEAD`; estado dirty y diffs relevantes; hashes SHA-256 del modelo, archivos/metadata del índice y código de embedding/evaluador; `manifestHash` y versiones del cliente/preparación. El reporte de la CLI incluye hash del manifiesto, hashes por imagen, metadata reportada por el modelo/índice, versión del índice, parámetros de muestra y candidatos. `metadata.modelHash` identifica el modelo cargado; `preprocessingHash` es el hash de una cadena de versión declarada en el lector, no el hash del archivo fuente. `indexVersion` deriva de paths/tamaños/mtime/ctime del inventario, no del contenido de todos los vectores; no sustituye los hashes de contenido del índice. El reporte no fija por sí mismo un snapshot limpio del código ni hash de todas las partes del índice; complementar esos datos desde el entorno de ejecución. Si el árbol está dirty, identificar las modificaciones relevantes y no describirlo como snapshot limpio. No reutilizar hashes antiguos de informes como hashes actuales.\n+\n+En una corrida CLI exitosa, la primera consulta es fría porque crea la sesión del modelo; las restantes son calientes en el mismo worker/proceso. La API actual precalienta modelo/índice antes de declararse lista, por lo que su flag `cold` no representa el mismo arranque que esta CLI. La CLI entrega `modelMs`, `indexMs`, `inferenceMs`, `rankingMs`, `totalMs` y `coordinatorMs`, con n/p50/p95/p99 separados para registros fríos/calientes. `totalMs` cubre la consulta dentro del worker (carga necesaria, lectura del archivo, embedding y ranking); `coordinatorMs` empieza antes de enviar por IPC y termina al recibir la respuesta, incluyendo IPC y la parte de inicio del hijo que caiga en esa ventana. No mide todo el arranque del comando padre ni valida disponibilidad API. `modelMs` incluye hash/creación de sesión cuando es fría; `indexMs` incluye lectura/validación o chequeo del inventario; `inferenceMs` incluye preprocesado sharp y modelo. No llamarlos tiempos puros de GPU/modelo. Esto no mide arranque frío real de API, caché fría de navegador, recorte/preparación cliente, red/HTTP, espera por 503 ni tiempo hasta UI visible. Tampoco mide latencia de teléfono. Para estimar arranque frío del runner se requieren procesos/reportes independientes con manifiestos/reportes no sobrescritos; describir n y entorno. Con n pequeño, p95/p99 se acercan al máximo y no son SLO ni garantía. No sumar percentiles de fases para inventar latencia total.\n \n Para medir experiencia completa, realizar una ronda separada en dispositivos físicos disponibles y autorizados: cronómetro desde seleccionar foto/capturar hasta resultado visible, además del diagnóstico voluntario con tiempos backend; registrar red, dispositivo, app/pestaña y errores/cancelaciones. No combinar ese tiempo con latencia local de CLI ni equiparar resize/crop de escritorio con ejecución de teléfono. Una evaluación física requiere equipo real y observación documentada; el reporte CLI nunca la sustituye.\n \n ## Métricas y denominadores\n \n-La unidad primaria de precisión es **foto positiva etiquetada**, una vez por bytes distintos y en primera pasada (`repeat: 0`). Reportar numerador/denominador y tasa: top-1 exacto / positivas; top-8 con el ID exacto / positivas; referencias esperadas ausentes del índice / positivas; fallos de recuperación top-8 / positivas. Separar cada métrica por `development`/`holdout`, origen y condición con n explícito. La CLI calcula estas métricas sobre primera pasada y excluye las `unlabelled` de positivas/negativas.\n+La unidad primaria es **foto original positiva etiquetada**, con el derivado de entrada elegido antes de evaluar y en primera pasada (`repeat: 0`). La CLI usa filas de primera pasada, no deduplica por hash: `duplicatePhotoHashes` y `uniquePhotos` sólo informan bytes. Un manifiesto sin duplicados exactos aún puede contener varios crops de la misma foto. Auditar aliases/grupos y fijar una entrada por original dentro de cada comparación; los resultados de originales/crops vinculados son pareados, no muestras independientes.\n \n-Para negativos confirmados, reportar fotos con al menos un candidato y falsas aceptaciones de la política #1 / negativos, además de desglose por tipo de negativo. La tasa depende de la definición de negativo y política vigente; no es tasa de error global ni probabilidad. La CLI actual llama `falsePredictions` a positivas no top-1 y `falseSessionAcceptances` a negativos con candidato según su aproximación de la UI. Debido al ranking top-8 sobre un índice no vacío, normalmente todos los negativos tendrán candidatos; una ausencia de negativos se reporta como n=0 y tasa `null`, nunca como cero falsas aceptaciones. No contar cada uno de los ocho candidatos como ocho fotos. El conteo de candidatos se puede describir aparte si hace falta, con denominador fotos y límite top-8.\n+| Métrica | Numerador | Denominador |\n+|---|---|---|\n+| `top1Rate` | `top1`: primera candidata coincide con ID exacto | `positives`: positivas evaluadas de primera pasada |\n+| `top8Rate` | `top8`: ID exacto entre hasta ocho candidatas | `positives` |\n+| Referencia ausente | `missingReferences`: ID exacto no está en el índice cargado | `positives`, sin excluir estas fotos de top-1/top-8 |\n+| Fallo de recuperación | `retrievalMissesTop8`: positivas sin ID en top-8 | `positives`; incluye referencias ausentes |\n+| Falsa predicción | `falsePredictions`: positivas sin acierto top-1 | `positives` |\n+| Falsa aceptación estimada | `falseSessionAcceptances`: negativas con candidata | `negatives`: negativas evaluadas de primera pasada |\n+\n+Comprobar `0 ≤ top1 ≤ top8 ≤ positives`, `falsePredictions = positives − top1`, `retrievalMissesTop8 = positives − top8` y `missingReferences ≤ retrievalMissesTop8`. No sumar ausencias y fallos top-8 como categorías independientes: se solapan. La CLI excluye sin etiqueta de accuracy/falsa aceptación y usa tasa `null` cuando no hay positivas o negativas; no reemplazarla por cero. Separar development/holdout, origen y condición con n explícito. Los grupos por condición se solapan; no sumar sus n como total ni inferir independencia estadística.\n+\n+**Fallos y cobertura:** publicar además n planeadas, n intentadas, n completadas y n con error por lectura/decodificación/modelo/índice/timeout/runtime. Actualmente un error rechaza la promesa, aborta toda la invocación y no escribe el reporte; no genera filas de error. Conservar el incidente en la ficha privada y señalar corrida abortada, sin atribuirle métricas completas ni omitir la foto silenciosamente. Un fallo de referencia ausente que sí produjo ranking permanece en el denominador positivo. Para futuras corridas parciales, aplicar la regla de errores/exclusiones sellada antes de ejecutar: mostrar accuracy condicional sobre completadas **y** éxito top-1/top-8 sobre positivas intentadas (las que fallan no son aciertos), con error/pendiente separado; una positiva no intentada es cobertura pendiente, no predicción errónea. No quitar casos problemáticos del holdout ni seleccionar retry exitoso. Si el runner no permite registrar evidencia suficiente, dejar la medición pendiente y proponer handoff, sin simularla.\n+\n+Para negativos confirmados, reportar fotos con al menos un candidato y falsas aceptaciones de la política #1 / negativos, además de desglose por tipo de negativo. La tasa depende de la definición de negativo y política vigente; no es tasa de error global ni probabilidad. La CLI actual llama `falsePredictions` a positivas no top-1 y `falseSessionAcceptances` a negativos con candidato según su aproximación de la UI. No es rechazo del endpoint ni escritura observada. El controller cruza los IDs del índice contra PostgreSQL y omite candidatas sin carta espejada; la CLI no hace ese cruce. Por eso su #1 y su falsa aceptación sólo estiman la UI cuando esas referencias existen en el catálogo; auditar/documentar discrepancias en una futura medición autorizada sin consultar DB en esta fase. Debido al ranking top-8 sobre un índice no vacío, normalmente todos los negativos tendrán candidatos; una ausencia de negativos se reporta como n=0 y tasa `null`, nunca como cero falsas aceptaciones. No contar cada uno de los ocho candidatos como ocho fotos. El conteo de candidatos se puede describir aparte si hace falta, con denominador fotos y límite top-8.\n \n Para una lectura de selección humana, conservar aparte: resultado #1, si ID exacto aparece en top-8, elección final humana y si requeriría búsqueda manual. La CLI no registra correcciones humanas. No usar esa tasa como top-1 ni como falsos guardados; en el producto no se persiste en colección hasta confirmación explícita.\n \n@@ -76,7 +90,7 @@\n | Fixtures geométricos y reporte de preparación de perspectiva | Comportamiento de geometría sobre fixtures y observaciones existentes | Fotos nuevas de voluntarios, evaluación independiente de ranking o holdout |\n | JSON/reportes del 6/10 | Evidencia local fechada y limitada al snapshot/entorno de cada reporte | Hashes de código/modelo/índice actuales, estado limpio actual, teléfonos no probados o resultados futuros |\n \n-La etiqueta `unspecified` existe en la CLI; para una ejecución RES-02 destinada a comparar origen se debe completar origen con evidencia del archivo, o dejar explícita su ausencia y no atribuir el resultado a galería/cámara. La aceptación runtime propuesta no rechaza por similitud baja: `falseSessionAcceptances` es una estimación bajo selección automática de #1, no una política de rechazo. No proponer umbral/reintentos como resultado sin datos de desarrollo separados y autorización de una nueva evaluación.\n+La etiqueta `unspecified` existe en la CLI; para una ejecución RES-02 destinada a comparar origen se debe completar origen con evidencia del archivo, o dejar explícita su ausencia y no atribuir el resultado a galería/cámara. La política runtime observada no rechaza por similitud baja: `falseSessionAcceptances` es una estimación bajo selección automática de #1, no una política de rechazo. No proponer umbral/reintentos como resultado sin datos de desarrollo separados y autorización de una nueva evaluación.\n \n ## Privacidad y gestión del corpus\n \n@@ -84,7 +98,7 @@\n \n ## Material pendiente y handoff\n \n-Faltan 50–100 fotos reales consentidas; etiquetas exactas revisadas y grupos de identidad/arte; negativos verdaderos; decisión de ground truth en casos ambiguos; dispositivos/orígenes/condiciones observables; consentimiento, retención, custodio y acceso; disponibilidad de modelo/índice actual y entorno local al momento de la futura corrida; ejecución reproducible y revisión del holdout sellado. No se solicita de nuevo material ya aportado: antes de ejecución, el custodio revisa el material consentido existente y lo reutiliza sólo dentro de su permiso y retención.\n+Falta inventariar material autorizado y completar el total de 50–100 fotos originales reales, sin atribuir a esta fase un conteo recolectado; etiquetas exactas revisadas y grupos de identidad/arte; negativos verdaderos; decisión de ground truth en casos ambiguos; dispositivos/orígenes/condiciones observables; consentimiento aplicable, retención, custodio y acceso acordados; disponibilidad/presupuesto de dispositivos y participantes (sin equipos ni inversión asumidos); disponibilidad de modelo/índice actual y entorno local al momento de la futura corrida; ejecución reproducible y revisión del holdout sellado. No se solicita de nuevo material ya aportado: antes de ejecución, el custodio revisa el material consentido existente y lo reutiliza sólo dentro de su permiso y retención.\n \n **Handoff al ejecutor de resultados RES-02:** usar el evaluador y protocolo existentes; capturar hashes/versiones del snapshot real antes de correr; mantener development/holdout sellado por grupo; generar reporte agregado sin publicar material privado; distinguir CLI, endpoint y dispositivo; y devolver aquí numeradores, denominadores, limitaciones y cualquier fallo. Si el CLI impide una medición requerida, documentar el límite y proponer un handoff acotado de implementación; no fingir soporte metadata ni ampliar este protocolo a código.\n \n@@ -97,4 +111,4 @@\n - [Validación pública de catálogo/UI](../../../evaluations/catalog-public-validation-2026-10-06.md)\n - [Plan de mejoras del escáner](../../../plans/scanner-improvements.md)\n - [Pipeline frontend del escáner](../../../../frontend/docs/scanner.md)\n-- Código señalado en «Qué hace hoy el runtime y qué hace la CLI» y manifiestos históricos `docs/evaluations/manifest-dinov2-development.json`, `manifest-scanner-soak.json` (rutas locales no copiadas a esta entrega).\n+- Código señalado en «Qué hace hoy el runtime y qué hace la CLI». Los manifiestos/corpus históricos se describen por referencias documentales; la revisión no accedió a sus fotos, rutas privadas ni etiquetas individuales.\n"
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/RES-02-manifiesto-publico-plantilla.json",
+      "receivedSha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "finalSha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "changed": false,
+      "unifiedDiffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "unifiedDiff": ""
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/RES-02-ficha-privada-plantilla.csv",
+      "receivedSha256": "18a93f520f3ee0c4311e4eeb56c7043994f90d302e91723dabba8c3bf27db7fa",
+      "finalSha256": "f62bb6a430b3713855b14ed1884b5a6f7bd28995df392ca46b1d7b84dea96807",
+      "changed": true,
+      "unifiedDiffSha256": "39be88826dd4078e7efb194db106efd4344887fe999445f1648dc2d24859cd8c",
+      "unifiedDiff": "--- recibido/RES-02-ficha-privada-plantilla.csv\n+++ revisado/RES-02-ficha-privada-plantilla.csv\n@@ -1 +1 @@\n-photo_alias,label_status,expected_card_id,ground_truth_reviewed,identity_group,split,origin,device_model,operating_system,browser,app_mode,conditions,capture_date_approx,private_byte_hash,consent_reference,retention_due_date,notes\n+photo_alias,original_photo_alias,transformation_group,manifest_sample_index,label_status,expected_card_id,expected_index_membership,expected_catalog_membership,ground_truth_reviewed,ground_truth_reviewer_alias,identity_group,art_language_group,negative_group,split,holdout_sealed,origin,device_model,operating_system,browser,app_mode,conditions,capture_date_approx,private_byte_hash,client_version,preprocessing_version,policy_version,consent_reference,consent_scope,consent_verified,retention_due_date,custodian_alias,execution_status,error_category,notes\n"
+    }
+  ],
+  "reviewSha256": "0248d2e8618601f923149fa44c19e36bb2266e90a61a60c8af36fccb0662323e",
+  "sourceSnapshot": [
+    {
+      "path": "backend/src/modules/cards/visual-identify.service.ts",
+      "sha256": "e95d2f442ee4ff0be6ddc5eed6ebd7e53c8d8dda67aed2822402eb9f5d866416",
+      "headSha256": "7b9f60d0b17a216945f1edeb383f0e8608da7adb2d1fbbd17533c7af482380d1",
+      "stateVersusHead": "modified"
+    },
+    {
+      "path": "backend/scripts/scanner-evaluate-current.mjs",
+      "sha256": "4c9ce4d612cbd38e9c9f348c958eceab376c269fd3115dc906ac0b4d274729fd",
+      "headSha256": "ac5f166a3f4f13270ba8e22b6e6d56bdfdbc40db738e6a322bb99abf23fbd1f4",
+      "stateVersusHead": "modified"
+    },
+    {
+      "path": "backend/scripts/scanner-evaluation-metrics.mjs",
+      "sha256": "f15ddf6890feb0a5cd038d6d0bde1121270d8c2d23d12f8407d57519226005b4",
+      "headSha256": null,
+      "stateVersusHead": "untracked"
+    },
+    {
+      "path": "backend/scripts/scanner-visual-worker.mjs",
+      "sha256": "9ae1412c4792339462e05870b258106c3842dc302bae4ef082fa5b4fad48252a",
+      "headSha256": "710584fa9836820bea52c973e6a39b8ee0e5e34efd07f1a437f6120ce71cb396",
+      "stateVersusHead": "modified"
+    },
+    {
+      "path": "backend/scripts/scanner-visual-engine.mjs",
+      "sha256": "bdd74a664b83e915a393e9d6c14124f8caa74b8d2b6d7d7d37811be29f3e4f13",
+      "headSha256": "bdd74a664b83e915a393e9d6c14124f8caa74b8d2b6d7d7d37811be29f3e4f13",
+      "stateVersusHead": "same"
+    },
+    {
+      "path": "frontend/lib/scanner/preprocess.ts",
+      "sha256": "ab023e79f9a9a729c3fffd569bded514e3d0fdc7581bc05d7594f98400b3fe9c",
+      "headSha256": "abbe597afa6a6943fd1688e407524cf9196fbd5f9bca4a5a49eea7a6e92e04a7",
+      "stateVersusHead": "modified"
+    },
+    {
+      "path": "frontend/lib/scanner/visual-photo.ts",
+      "sha256": "026c09d0a8017a29cccc22861af5c374bbf9e4aa2c084a4cd3a08ff4c8712fbc",
+      "headSha256": "f6c7303de576c2c786adcfa0a7c1f079c4d24d89396dba8c7c91bb73c9b29dea",
+      "stateVersusHead": "modified"
+    },
+    {
+      "path": "docs/evaluations/scanner-validation-protocol.md",
+      "sha256": "824653ccba8bb1b16e8a352e7cc11f448df1b102a968feaae6e321f65ed3f55d",
+      "headSha256": "86e4f64bf418bef9fe1330d687ddc13592f9d41a26136282a648dde6c413a971",
+      "stateVersusHead": "modified"
+    },
+    {
+      "path": "backend/src/modules/cards/visual-identify.controller.ts",
+      "sha256": "048474b4181fc585ed41369643bcc7c138e3a4a79b47546f38353b7a4af2b148",
+      "headSha256": "048474b4181fc585ed41369643bcc7c138e3a4a79b47546f38353b7a4af2b148",
+      "stateVersusHead": "same"
+    },
+    {
+      "path": "backend/src/modules/cards/dto/visual-identify.dto.ts",
+      "sha256": "cce4d3cb1d967b37ec5c9b1a5fb035195f7fe13098d1e9d18e3244d29cfa54dd",
+      "headSha256": "cce4d3cb1d967b37ec5c9b1a5fb035195f7fe13098d1e9d18e3244d29cfa54dd",
+      "stateVersusHead": "same"
+    },
+    {
+      "path": "backend/scripts/scanner-visual-index.mjs",
+      "sha256": "0eefc734137052b59a151f386ffd58caeaaed662b453791cad5449499075fcdc",
+      "headSha256": "0eefc734137052b59a151f386ffd58caeaaed662b453791cad5449499075fcdc",
+      "stateVersusHead": "same"
+    },
+    {
+      "path": "frontend/app/(app)/escanear/page.tsx",
+      "sha256": "c13ef2730c23480bd8e5b3261a8f18b7c2c91cdaec74dd4ae6908ffc9af6e06d",
+      "headSha256": "fdab1f4d9c9771a82d9a793a326a80a1c03ff1076085a3df649509e3fe7f4ba5",
+      "stateVersusHead": "modified"
+    },
+    {
+      "path": "frontend/lib/scanner/camera-visual.ts",
+      "sha256": "149ff310c92f2e847cedc7e2509c04b9434bc319bec342a1b42c8f4b2f6442f8",
+      "headSha256": "149ff310c92f2e847cedc7e2509c04b9434bc319bec342a1b42c8f4b2f6442f8",
+      "stateVersusHead": "same"
+    },
+    {
+      "path": "frontend/components/scanner/session-draft.ts",
+      "sha256": "aa7963a24547d4c5b2a4d8a77bef663e3e0424bba0fb9e8535cb39059aa6ed70",
+      "headSha256": null,
+      "stateVersusHead": "untracked"
+    },
+    {
+      "path": "frontend/components/scanner/organize-sheet.tsx",
+      "sha256": "8fbcb5524fea5f69235e059908dbe6867e777290ba77964529af26870e43beeb",
+      "headSha256": "b15f73755784e64bb0c611b87ccfd0dbd4c40e335044ee63fce7689bd2d5b9dc",
+      "stateVersusHead": "modified"
+    },
+    {
+      "path": "frontend/components/scanner/image-input.ts",
+      "sha256": "7688540c58661b6c5dca2afed194f2dc8d35710de7121dd3997fe3bfcd424f47",
+      "headSha256": "7688540c58661b6c5dca2afed194f2dc8d35710de7121dd3997fe3bfcd424f47",
+      "stateVersusHead": "same"
+    },
+    {
+      "path": "frontend/lib/scanner/perspective.ts",
+      "sha256": "a3d3dc0c053767f8b988ba3ea712d1a518ac16a361b2333c0706744386102ee5",
+      "headSha256": null,
+      "stateVersusHead": "untracked"
+    },
+    {
+      "path": "frontend/lib/scanner/camera.ts",
+      "sha256": "442459948834205149695605096ae41731c1859ec198b7149833ddd668bf1594",
+      "headSha256": "442459948834205149695605096ae41731c1859ec198b7149833ddd668bf1594",
+      "stateVersusHead": "same"
+    }
+  ],
+  "snapshotScope": "Source files selectively hashed; HEAD compared read-only. Model/index/image/corpus not read or hashed. Historical reports not treated as current snapshot.",
+  "documentaryChecks": {
+    "localLinksChecked": 37,
+    "links": [
+      {
+        "document": "RES-02-corpus.md",
+        "target": "RES-02-review.md",
+        "exists": true
+      },
+      {
+        "document": "RES-02-corpus.md",
+        "target": "../../../evaluations/scanner-validation-protocol.md",
+        "exists": true
+      },
+      {
+        "document": "RES-02-corpus.md",
+        "target": "../../../../backend/src/modules/cards/visual-identify.service.ts",
+        "exists": true
+      },
+      {
+        "document": "RES-02-corpus.md",
+        "target": "../../../../backend/src/modules/cards/visual-identify.controller.ts",
+        "exists": true
+      },
+      {
+        "document": "RES-02-corpus.md",
+        "target": "../../../../backend/src/modules/cards/dto/visual-identify.dto.ts",
+        "exists": true
+      },
+      {
+        "document": "RES-02-corpus.md",
+        "target": "../../../../backend/scripts/scanner-visual-worker.mjs",
+        "exists": true
+      },
+      {
+        "document": "RES-02-corpus.md",
+        "target": "../../../../backend/scripts/scanner-visual-engine.mjs",
+        "exists": true
+      },
+      {
+        "document": "RES-02-corpus.md",
+        "target": "../../../../backend/scripts/scanner-visual-index.mjs",
+        "exists": true
+      },
+      {
+        "document": "RES-02-corpus.md",
+        "target": "../../../../backend/scripts/scanner-evaluate-current.mjs",
+        "exists": true
+      },
+      {
+        "document": "RES-02-corpus.md",
+        "target": "../../../../backend/scripts/scanner-evaluation-metrics.mjs",
+        "exists": true
+      },
+      {
+        "document": "RES-02-corpus.md",
+        "target": "../../../../frontend/lib/scanner/visual-photo.ts",
+        "exists": true
+      },
+      {
+        "document": "RES-02-corpus.md",
+        "target": "../../../../frontend/lib/scanner/preprocess.ts",
+        "exists": true
+      },
+      {
+        "document": "RES-02-corpus.md",
+        "target": "../../../../frontend/app/(app)/escanear/page.tsx",
+        "exists": true
+      },
+      {
+        "document": "RES-02-corpus.md",
+        "target": "../../../../frontend/components/scanner/session-draft.ts",
+        "exists": true
+      },
+      {
+        "document": "RES-02-corpus.md",
+        "target": "../../../../frontend/components/scanner/organize-sheet.tsx",
+        "exists": true
+      },
+      {
+        "document": "RES-02-corpus.md",
+        "target": "../../../../frontend/docs/scanner.md",
+        "exists": true
+      },
+      {
+        "document": "RES-02-corpus.md",
+        "target": "RES-02-review-evidencia.json",
+        "exists": true
+      },
+      {
+        "document": "RES-02-corpus.md",
+        "target": "RES-02-manifiesto-publico-plantilla.json",
+        "exists": true
+      },
+      {
+        "document": "RES-02-corpus.md",
+        "target": "RES-02-ficha-privada-plantilla.csv",
+        "exists": true
+      },
+      {
+        "document": "RES-02-corpus.md",
+        "target": "../../../evaluations/scanner-validation-protocol.md",
+        "exists": true
+      },
+      {
+        "document": "RES-02-corpus.md",
+        "target": "../../../evaluations/scanner-load-2026-10-06.md",
+        "exists": true
+      },
+      {
+        "document": "RES-02-corpus.md",
+        "target": "../../../evaluations/scanner-soak-2026-10-06.md",
+        "exists": true
+      },
+      {
+        "document": "RES-02-corpus.md",
+        "target": "../../../evaluations/catalog-public-validation-2026-10-06.md",
+        "exists": true
+      },
+      {
+        "document": "RES-02-corpus.md",
+        "target": "../../../plans/scanner-improvements.md",
+        "exists": true
+      },
+      {
+        "document": "RES-02-corpus.md",
+        "target": "../../../../frontend/docs/scanner.md",
+        "exists": true
+      },
+      {
+        "document": "RES-02-review.md",
+        "target": "../11-orquestacion.md",
+        "exists": true
+      },
+      {
+        "document": "RES-02-review.md",
+        "target": "../04-investigacion.md",
+        "exists": true
+      },
+      {
+        "document": "RES-02-review.md",
+        "target": "../../../evaluations/scanner-validation-protocol.md",
+        "exists": true
+      },
+      {
+        "document": "RES-02-review.md",
+        "target": "../../../../backend/src/modules/cards/visual-identify.service.ts",
+        "exists": true
+      },
+      {
+        "document": "RES-02-review.md",
+        "target": "../../../../backend/scripts/scanner-visual-worker.mjs",
+        "exists": true
+      },
+      {
+        "document": "RES-02-review.md",
+        "target": "../../../../backend/scripts/scanner-visual-engine.mjs",
+        "exists": true
+      },
+      {
+        "document": "RES-02-review.md",
+        "target": "../../../../backend/src/modules/cards/visual-identify.controller.ts",
+        "exists": true
+      },
+      {
+        "document": "RES-02-review.md",
+        "target": "../../../../backend/src/modules/cards/dto/visual-identify.dto.ts",
+        "exists": true
+      },
+      {
+        "document": "RES-02-review.md",
+        "target": "RES-02-corpus.md",
+        "exists": true
+      },
+      {
+        "document": "RES-02-review.md",
+        "target": "RES-02-manifiesto-publico-plantilla.json",
+        "exists": true
+      },
+      {
+        "document": "RES-02-review.md",
+        "target": "RES-02-ficha-privada-plantilla.csv",
+        "exists": true
+      },
+      {
+        "document": "RES-02-review.md",
+        "target": "RES-02-review-evidencia.json",
+        "exists": true
+      }
+    ],
+    "publishedSourceHashesMatched": 8,
+    "sourceSnapshots": 18,
+    "publicManifestEntries": 0,
+    "privateCsvColumns": 34,
+    "privateCsvDataRows": 0,
+    "metricDefinitionsRead": 6,
+    "metricIdentitiesReviewedBySource": [
+      "0 <= top1 <= top8 <= positives",
+      "falsePredictions = positives - top1",
+      "retrievalMissesTop8 = positives - top8",
+      "missingReferences <= retrievalMissesTop8"
+    ],
+    "privacy": "Reviewed added docs/template/diff: no photos, image hashes, participant data, corpus private paths or secrets; source/document hashes are labelled as such."
+  },
+  "notExecuted": [
+    "tests",
+    "builds",
+    "evaluator",
+    "inference",
+    "CLI help",
+    "DB",
+    "Redis",
+    "stack",
+    "browser",
+    "external providers",
+    "people or other chat contact"
+  ],
+  "resourcesReleased": true,
+  "limitations": [
+    "No new corpus results, exact inventory or consent verification",
+    "No current model/index content hashes",
+    "No physical-device latency",
+    "CLI aborts on first error without aggregate report; duplicates are counted unless privately removed before run",
+    "Global values gate remains pending; no implementation lot advanced"
+  ]
+}

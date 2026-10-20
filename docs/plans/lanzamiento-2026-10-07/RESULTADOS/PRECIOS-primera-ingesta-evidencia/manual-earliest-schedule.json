@@ -1,0 +1,11 @@
+{
+  "atUtc": "2026-10-13T23:09:12.067221+00:00",
+  "sqlResult": "BEGIN\nUPDATE 1\n[{\"groupId\":24722,\"status\":\"pending\",\"availableAt\":\"2026-10-14T14:22:14.533\",\"lockedBy\":null,\"leaseUntil\":null,\"downloadStartedAt\":\"2026-10-13T14:22:14.533\",\"publishedBuild\":null,\"lastError\":null,\"updatedAt\":\"2026-10-13T23:09:12.055\"}, {\"groupId\":24837,\"status\":\"pending\",\"availableAt\":\"2026-10-14T20:30:00\",\"lockedBy\":null,\"leaseUntil\":null,\"downloadStartedAt\":\"2026-10-13T19:29:03.999\",\"publishedBuild\":null,\"lastError\":null,\"updatedAt\":\"2026-10-13T20:34:09.212\"}]\nCOMMIT",
+  "groupId": 24722,
+  "nextAttemptUtc": "2026-10-14T14:22:14.533Z",
+  "nextAttemptArgentina": "2026-10-14T11:22:14.533-03:00",
+  "priorDownloadTimestampPreserved": true,
+  "classicSchedulePreserved": true,
+  "newContentDownloaded": false,
+  "guardChecksPassed": 6
+}

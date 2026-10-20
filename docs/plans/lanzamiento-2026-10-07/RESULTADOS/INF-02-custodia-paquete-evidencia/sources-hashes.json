@@ -1,0 +1,12 @@
+{
+  "backend/Dockerfile": "a1c8515f29b7df1ae3616da0633ca2b1c4c20b49117027b8268a96341d2a27c3",
+  "scripts/infra/inf02-custody-package.mjs": "9fd3377e16202cb594b8033d47da751225530bcc49ad3f83352d59011557b9e6",
+  "scripts/infra/inf02-custody-package.test.mjs": "6344375b8b58cae54d0bc5c22d919a98c153534ec3b13e2bee5e7a117e9e977f",
+  "scripts/infra/inf02-project.mjs": "fcc8f1c4156659859a85e46d3c6895af70894b35be205b3dd04a9c998ec58c36",
+  "scripts/infra/inf02-start.mjs": "2ad0d167f8188f41093cfb2ede1fc0dee0a45d3924820a89e1d2a96b73c61672",
+  "scripts/infra/inf02-recreate.mjs": "1063e7090e499bdb48a433ba6c369f4dd2306544a59ef57519c3b7d8a14196bb",
+  "scripts/infra/inf02-cleanup.mjs": "d17f32213526f58177f2a34d6426db97a3d6d6bfb12bb08241c76acf2a2b1755",
+  "infra/inf02/compose.custody.yaml": "2c08a4528017da37a4471b180329a0dd439d4e8034b80cf75b53a9447c2cfc61",
+  "infra/inf02/README.md": "2bb44c26a483b4aa641181005a8fb81105de9f68f56e37a122458c233d5b2df5",
+  "package.json": "bc0ee37f8a708323dbe50df39a15fb6da4d36195457d5b3ed66b079587ee23cb"
+}

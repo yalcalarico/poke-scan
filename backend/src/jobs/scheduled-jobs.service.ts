@@ -1,10 +1,15 @@
-import { Injectable, Logger, type OnModuleInit } from '@nestjs/common';
+import { Inject, Injectable, Logger, Optional, type OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Cron } from '@nestjs/schedule';
+import { randomUUID } from 'node:crypto';
+import { PrismaService } from '../prisma/index.js';
+import { PRICE_PROVIDER, type PriceProvider } from '../modules/providers/card-provider.interface.js';
+import { TcgcsvService } from './tcgcsv/tcgcsv.service.js';
 
 import { CatalogSyncService } from './catalog-sync.service.js';
 import { CardPricesRetentionService } from './card-prices-retention.service.js';
-import { PriceBackfillService, BACKFILL_BATCH } from './price-backfill.service.js';
+import { PriceBackfillService } from './price-backfill.service.js';
+import { PriceSyncDailyService } from './price-sync-daily.service.js';
 
 /**
  * Lee un booleano de la config con default.
@@ -25,16 +30,22 @@ export class ScheduledJobsService implements OnModuleInit {
   private readonly catalogSyncEnabled: boolean;
   private readonly backfillEnabled: boolean;
   private readonly retentionEnabled: boolean;
+  private readonly workerConfiguredEnabled: boolean;
 
   constructor(
     config: ConfigService,
     private readonly catalogSync: CatalogSyncService,
     private readonly backfill: PriceBackfillService,
     private readonly retention: CardPricesRetentionService,
+    @Optional() private readonly prisma?: PrismaService,
+    @Optional() private readonly tcgcsv?: TcgcsvService,
+    @Optional() @Inject(PRICE_PROVIDER) private readonly provider?: PriceProvider,
+    @Optional() private readonly daily?: PriceSyncDailyService,
   ) {
     this.catalogSyncEnabled = flag(config, 'ENABLE_CATALOG_SYNC_CRON', true);
     this.backfillEnabled = flag(config, 'ENABLE_PRICE_BACKFILL_CRON', true);
     this.retentionEnabled = flag(config, 'ENABLE_RETENTION_CRON', true);
+    this.workerConfiguredEnabled = flag(config, 'PRICE_QUEUE_ENABLED', true);
   }
 
   onModuleInit(): void {
@@ -44,6 +55,61 @@ export class ScheduledJobsService implements OnModuleInit {
       return;
     }
     this.logger.log(`Crons de mantenimiento activos: ${enabled.join('; ')}.`);
+    // El ciclo diario se recupera mediante la señal durable y la hora UTC.
+  }
+
+  private async requestPriceCycle(provider: 'tcgdex' | 'tcgcsv'): Promise<void> {
+    if (!this.prisma) return;
+    // Repetir una señal mientras hay otra pendiente no agranda el backlog manual.
+    await this.prisma.$executeRaw`
+      UPDATE price_sync_controls SET "requestedGeneration" = CASE
+        WHEN "requestedGeneration" = "handledGeneration" THEN "requestedGeneration" + 1 ELSE "requestedGeneration" END
+      WHERE provider = ${provider}
+    `;
+  }
+
+  @Cron('*/5 * * * * *', { timeZone: 'UTC' })
+  async pollPriceCycles(): Promise<void> {
+    if (!this.prisma) return;
+    for (const provider of ['tcgdex', 'tcgcsv'] as const) {
+      const enabled = provider === 'tcgdex'
+        ? this.backfillEnabled && this.provider?.id === 'tcgdex'
+        : this.tcgcsv?.enabled() === true;
+      const worker = provider === 'tcgdex' ? this.workerConfiguredEnabled : enabled;
+      const owner = randomUUID();
+      try {
+        await this.prisma.$executeRaw`
+          UPDATE price_sync_controls SET "heartbeatAt" = NOW(), "schedulerEnabled" = ${enabled}, "workerConfiguredEnabled" = ${worker}
+          WHERE provider = ${provider}
+        `;
+        if (!enabled || !worker) continue;
+        const [claim] = await this.prisma.$queryRaw<{ requestedGeneration: number }[]>`
+          UPDATE price_sync_controls SET "lockedBy" = ${owner}, "leaseUntil" = NOW() + INTERVAL '2 minutes'
+          WHERE provider = ${provider} AND "requestedGeneration" > "handledGeneration" AND "nextCycleAt" <= NOW()
+            AND ("leaseUntil" IS NULL OR "leaseUntil" <= NOW()) RETURNING "requestedGeneration"
+        `;
+        if (!claim) continue;
+        let done = true;
+        if (provider === 'tcgcsv') {
+          done = await this.tcgcsv!.discover(true);
+          await this.tcgcsv!.signalDaily();
+        } else {
+          await this.daily?.planToday(true);
+        }
+        await this.prisma.$executeRaw`
+          UPDATE price_sync_controls SET "handledGeneration" = CASE WHEN ${done} THEN ${claim.requestedGeneration} ELSE "handledGeneration" END,
+            "lastHandledAt" = CASE WHEN ${done} THEN NOW() ELSE "lastHandledAt" END,
+            "nextCycleAt" = NOW() + INTERVAL '1 minute', "lastError" = NULL, "lockedBy" = NULL, "leaseUntil" = NULL
+          WHERE provider = ${provider} AND "lockedBy" = ${owner} AND "leaseUntil" > NOW()
+        `;
+      } catch {
+        await this.prisma.$executeRaw`
+          UPDATE price_sync_controls SET "lockedBy" = NULL, "leaseUntil" = NULL, "nextCycleAt" = NOW() + INTERVAL '1 hour',
+            "lastError" = 'No se pudo encolar el ciclo de precios' WHERE provider = ${provider} AND "lockedBy" = ${owner}
+        `;
+        this.logger.warn(`Ciclo ${provider} pendiente; se conserva la señal`);
+      }
+    }
   }
 
   /**
@@ -53,7 +119,7 @@ export class ScheduledJobsService implements OnModuleInit {
   describeSchedule(): string[] {
     const jobs: string[] = [];
     if (this.catalogSyncEnabled) jobs.push('sync de catálogo (lunes 04:07)');
-    if (this.backfillEnabled) jobs.push('backfill de precios (cada hora, :13)');
+    if (this.backfillEnabled) jobs.push('precios tcgdex diarios (03:15 UTC)');
     if (this.retentionEnabled) jobs.push('retención de precios (mensual)');
     return jobs;
   }
@@ -90,48 +156,12 @@ export class ScheduledJobsService implements OnModuleInit {
     }
   }
 
-  /**
-   * Backfill de precios, **cada hora**.
-   *
-   * Encola las cartas sin precio vigente del proveedor activo, hasta
-   * `BACKFILL_BATCH` por corrida. No pide precios: encola, y el worker los pide
-   * al ritmo global. Es la diferencia entre un job que gasta requests y uno que
-   * respeta el presupuesto.
-   *
-   * ## Por qué cada hora y no una vez por día
-   *
-   * Por el **drenaje**, no por la cuota. El ritmo lo impone `ProviderRateGate`
-   * (26/min) y el lote no lo cambia: 300 cartas son ~12 minutos de cola.
-   *
-   * La pregunta es cuánto tarda en vaciarse el backlog. Medido: con
-   * `PRICE_PROVIDER=tcgdex` recién migrado, **20.667 de 20.670** cartas estaban
-   * sin precio vigente. A 300 por día el backlog tarda 69 días en vaciarse, y
-   * `sort=price` y los totales dan cero ese tiempo entero.
-   *
-   * A 300 por hora son 7.200 al día: el backlog se vacía en tres días y después
-   * es un goteo. Y como el lote es chico, cada drenaje dura 12 minutos, así que
-   * la cola no le queda llena de cartas de backfill por delante de la carta que
-   * un usuario está mirando. Un lote de 5.000 vaciaría más rápido, pero dejaría
-   * al usuario esperando una hora detrás de las 5.000.
-   *
-   * El `force: false` del sync de catálogo y este job son independientes a
-   * propósito: uno mantiene el catálogo espejado, el otro los precios del
-   * proveedor activo.
-   */
-  @Cron('13 * * * *')
+  /** Compatibilidad con callers antiguos; la planificación programada es diaria. */
   async backfillPricesHourly(): Promise<void> {
-    if (!this.backfillEnabled) return;
-    try {
-      const { enqueued, pending } = await this.backfill.enqueueStale({ limit: BACKFILL_BATCH });
-      this.logger.log(
-        `Backfill: ${enqueued} encoladas, ${pending} cartas todavía sin precio vigente.`,
-      );
-    } catch (error) {
-      // Un cron que lanza se cancela solo en algunas versiones de nest/schedule
-      // y, en el peor caso, tumba el arranque del proceso. Un job de
-      // mantenimiento que falla tiene que avisar y seguir.
-      this.logger.error(`Falló el backfill: ${(error as Error).message}`);
-    }
+    // Compatibilidad de llamada en tests y scripts; ya no recorre el catálogo.
+    if (!this.backfillEnabled || !this.daily) return;
+    try { await this.daily.planToday(false); }
+    catch (error) { this.logger.error(`Falló la planificación diaria: ${(error as Error).message}`); }
   }
 
   /**

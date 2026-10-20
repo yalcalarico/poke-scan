@@ -10,6 +10,12 @@ import { RedisService } from '../redis/redis.service.js';
 import { ProviderRateGate } from './provider-rate.gate.js';
 import { PriceQueueService } from './price-queue.service.js';
 import { TCGDEX_SET_MAPPING, TcgdexSetMappingService } from './tcgdex-set-mapping.service.js';
+import { priceMetadata, validDate, type PriceMetadataDto } from '../common/price-metadata.js';
+import { ProviderRateLimitError } from '../common/errors/provider-rate-limit.error.js';
+
+function utcDate(at: Date): Date {
+  return new Date(Date.UTC(at.getUTCFullYear(), at.getUTCMonth(), at.getUTCDate()));
+}
 
 const MAX_AGE_MS = 24 * 60 * 60 * 1000;
 /**
@@ -27,7 +33,7 @@ const CACHE_TTL_SECONDS = 60 * 60;
  */
 const NEGATIVE_CACHE_TTL_SECONDS = 6 * 60 * 60;
 
-export interface CardPriceView {
+export interface CardPriceView extends PriceMetadataDto {
   cardId: string;
   variant: string;
   low: number | null;
@@ -58,7 +64,7 @@ function toView(row: {
   source: string;
   currency: string;
   fetchedAt: Date;
-}, activeProviderId: string): CardPriceView {
+}, activeProviderId: string, evaluatedAt = new Date()): CardPriceView {
   return {
     cardId: row.cardId,
     variant: row.variant,
@@ -70,8 +76,23 @@ function toView(row: {
     source: row.source,
     currency: row.currency,
     fetchedAt: row.fetchedAt,
+    ...priceMetadata(row.fetchedAt, row.provider, activeProviderId, evaluatedAt),
     isStale:
       row.provider !== activeProviderId || Date.now() - row.fetchedAt.getTime() >= MAX_AGE_MS,
+  };
+}
+
+export function hydrateCachedPrice(price: CardPriceView, activeProviderId: string, now = new Date()): CardPriceView {
+  const fetchedAt = new Date(price.fetchedAt);
+  const evaluation = validDate(price.evaluatedAt, now);
+  const hasMetadata = evaluation !== null && ['fresh', 'stale', 'unknown'].includes(price.freshness) &&
+    (price.freshness === 'unknown' || validDate(price.fetchedAt, evaluation) !== null) &&
+    price.upstreamUpdatedAt === null && price.upstreamFreshness === 'unknown';
+  return {
+    ...price,
+    fetchedAt,
+    ...(hasMetadata ? {} : { evaluatedAt: now.toISOString(), freshness: 'unknown' as const, upstreamUpdatedAt: null, upstreamFreshness: 'unknown' as const }),
+    isStale: price.provider !== activeProviderId || now.getTime() - fetchedAt.getTime() >= MAX_AGE_MS,
   };
 }
 
@@ -79,6 +100,7 @@ export class PriceFetchError extends Error {
   constructor(
     readonly cardId: string,
     message: string,
+    readonly cause?: unknown,
   ) {
     super(message);
     this.name = 'PriceFetchError';
@@ -114,16 +136,8 @@ export class SyncPricesService {
   async getPricesForCard(cardId: string): Promise<CardPriceView[]> {
     const cached = await this.redis.getJson<CardPriceView[]>(this.cacheKey(cardId));
     if (cached) {
-      const prices = cached.map((price) => {
-        const fetchedAt = new Date(price.fetchedAt);
-        return {
-          ...price,
-          fetchedAt,
-          isStale:
-            price.provider !== this.priceProvider.id ||
-            Date.now() - fetchedAt.getTime() >= MAX_AGE_MS,
-        };
-      });
+      const evaluatedAt = new Date();
+      const prices = cached.map((price) => hydrateCachedPrice(price, this.priceProvider.id, evaluatedAt));
       // Una lista vacía puede ser una respuesta negativa cacheada por seis
       // horas. Respetar esa TTL evita insistirle a la fuente por cartas que
       // todavía no cotiza.
@@ -222,6 +236,135 @@ export class SyncPricesService {
    * `refresh()` —el camino que tiene que devolver algo— el que degrada.
    */
   async fetchAndStore(cardId: string): Promise<CardPriceView[]> {
+    return (await this.fetchAndStoreWithOutcome(cardId)).prices;
+  }
+
+  async hasTerminalDailyObservation(cardId: string): Promise<boolean> {
+    const syncDate = utcDate(new Date());
+    const row = await this.prisma.priceSyncCardDay.findUnique({
+      where: { provider_cardId_syncDate: { provider: this.priceProvider.id, cardId, syncDate } },
+      select: { status: true },
+    });
+    return row !== null && ['quoted', 'no_quote', 'unmapped', 'unsupported', 'no_new_feed'].includes(row.status);
+  }
+
+  async fetchAndStoreWithOutcome(cardId: string, dailyDeduplicate = false, onProviderRequest?: () => Promise<void>): Promise<{
+    prices: CardPriceView[];
+    status: 'quoted' | 'no_quote' | 'unmapped' | 'unsupported' | 'failed';
+    checkedAt: Date | null;
+    quoteCount: number;
+  }> {
+    if (dailyDeduplicate) {
+      const today = utcDate(new Date());
+      const observed = await this.prisma.priceSyncCardDay.findUnique({
+        where: { provider_cardId_syncDate: { provider: this.priceProvider.id, cardId, syncDate: today } },
+      });
+      if (observed && ['quoted', 'no_quote', 'unmapped', 'unsupported', 'no_new_feed'].includes(observed.status)) {
+        const terminalStatus = observed.status === 'quoted' ? 'quoted'
+          : observed.status === 'unmapped' ? 'unmapped'
+            : observed.status === 'unsupported' ? 'unsupported' : 'no_quote';
+        return {
+          prices: await this.latestKnownPrices(cardId),
+          status: terminalStatus,
+          checkedAt: observed.checkedAt,
+          quoteCount: observed.quoteCount,
+        };
+      }
+    }
+    let setId: string | null = null;
+    const cardBefore = await this.prisma.card.findUnique({ where: { id: cardId }, select: { setId: true } });
+    setId = cardBefore?.setId ?? null;
+    const mapped = cardBefore ? await this.prisma.cardSet.findUnique({ where: { id: cardBefore.setId }, select: { tcgdexSetId: true } }) : null;
+    let prices: CardPriceView[] = [];
+    let status: 'quoted' | 'no_quote' | 'unmapped' | 'unsupported' | 'failed' = 'unsupported';
+    let checkedAt: Date | null = null;
+    let quoteCount = 0;
+    let didFetch = false;
+    try {
+      prices = await this.fetchAndStoreRaw(cardId, async (remote, fetchedAt) => {
+        didFetch = true;
+        checkedAt = fetchedAt;
+        const quotes = remote.filter((price) => price.source === this.priceProvider.defaultSource && price.currency === this.priceProvider.defaultCurrency && price.market !== null);
+        quoteCount = quotes.length;
+        status = quoteCount > 0 ? 'quoted' : 'no_quote';
+        if (!setId) return;
+        const syncDate = new Date(Date.UTC(fetchedAt.getUTCFullYear(), fetchedAt.getUTCMonth(), fetchedAt.getUTCDate()));
+        const evidence = { provider: this.priceProvider.id, cardId, setId, syncDate };
+        await this.prisma.$transaction(async (tx) => {
+          if (remote.length > 0) {
+            await tx.cardPrice.createMany({ data: remote.map((price) => ({
+              cardId, variant: price.variant, low: price.low, mid: price.mid, high: price.high,
+              market: price.market, provider: this.priceProvider.id, source: price.source,
+              currency: price.currency, fetchedAt,
+            })) });
+          }
+          await tx.priceSyncCardDay.upsert({
+            where: { provider_cardId_syncDate: { provider: evidence.provider, cardId, syncDate: evidence.syncDate } },
+            create: { ...evidence, status, checkedAt: fetchedAt, quoteCount, lastError: null },
+            update: { status, checkedAt: fetchedAt, quoteCount, lastError: null },
+          });
+          await this.refreshSetDay(tx, setId!, syncDate);
+        });
+      }, onProviderRequest);
+      if (!cardBefore) status = 'unsupported';
+      else if (!didFetch) {
+        status = mapped?.tcgdexSetId == null ? 'unmapped' : 'unsupported';
+        if (status === 'unmapped' && setId) {
+          const syncDate = utcDate(new Date());
+          await this.prisma.$transaction(async (tx) => {
+            await tx.priceSyncCardDay.upsert({
+              where: { provider_cardId_syncDate: { provider: this.priceProvider.id, cardId, syncDate } },
+              create: { provider: this.priceProvider.id, cardId, setId: setId!, syncDate, status, checkedAt: null, quoteCount: 0 },
+              update: { status, checkedAt: null, quoteCount: 0 },
+            });
+            await this.refreshSetDay(tx, setId!, syncDate);
+          });
+        }
+      }
+    } catch (error) {
+      status = 'failed';
+      const rateLimit = error instanceof ProviderRateLimitError
+        ? error
+        : error instanceof Error && error.cause instanceof ProviderRateLimitError
+          ? error.cause
+          : null;
+      if (rateLimit) await this.gate.recordRateLimit(rateLimit);
+      checkedAt = new Date();
+      if (setId) {
+        const syncDate = new Date(Date.UTC(checkedAt.getUTCFullYear(), checkedAt.getUTCMonth(), checkedAt.getUTCDate()));
+        const evidence = { provider: this.priceProvider.id, cardId, setId, syncDate };
+        await this.prisma.$transaction(async (tx) => {
+          await tx.priceSyncCardDay.upsert({
+            where: { provider_cardId_syncDate: { provider: evidence.provider, cardId, syncDate: evidence.syncDate } },
+            create: { ...evidence, status: 'failed', checkedAt, quoteCount: 0, lastError: (error as Error).message.slice(0, 500) },
+            update: { status: 'failed', checkedAt, lastError: (error as Error).message.slice(0, 500) },
+          });
+          await this.refreshSetDay(tx, setId!, syncDate);
+        });
+      }
+      throw error;
+    }
+    return { prices, status, checkedAt, quoteCount };
+  }
+
+  private async refreshSetDay(tx: Prisma.TransactionClient, setId: string, syncDate: Date): Promise<void> {
+    await tx.$executeRaw(Prisma.sql`
+      UPDATE price_sync_set_days sd SET
+        status = CASE
+          WHEN EXISTS (SELECT 1 FROM price_sync_card_days c WHERE c.provider = sd.provider AND c."setId" = sd."setId" AND c."syncDate" = sd."syncDate" AND c.status IN ('pending'::"PriceSyncCardDayStatus", 'processing'::"PriceSyncCardDayStatus")) THEN 'running'::"PriceSyncSetDayStatus"
+          WHEN EXISTS (SELECT 1 FROM price_sync_card_days c WHERE c.provider = sd.provider AND c."setId" = sd."setId" AND c."syncDate" = sd."syncDate" AND c.status = 'failed'::"PriceSyncCardDayStatus")
+            AND NOT EXISTS (SELECT 1 FROM price_sync_card_days c WHERE c.provider = sd.provider AND c."setId" = sd."setId" AND c."syncDate" = sd."syncDate" AND c.status = 'quoted'::"PriceSyncCardDayStatus")
+            AND NOT EXISTS (SELECT 1 FROM price_sync_card_days c WHERE c.provider = sd.provider AND c."setId" = sd."setId" AND c."syncDate" = sd."syncDate" AND c.status IN ('pending'::"PriceSyncCardDayStatus", 'processing'::"PriceSyncCardDayStatus")) THEN 'failed'::"PriceSyncSetDayStatus"
+          WHEN NOT EXISTS (SELECT 1 FROM price_sync_card_days c WHERE c.provider = sd.provider AND c."setId" = sd."setId" AND c."syncDate" = sd."syncDate" AND c.status <> 'quoted'::"PriceSyncCardDayStatus") THEN 'completed'::"PriceSyncSetDayStatus"
+          ELSE 'partial'::"PriceSyncSetDayStatus" END,
+        "sourceCheckedAt" = (SELECT MAX(c."checkedAt") FROM price_sync_card_days c WHERE c.provider = sd.provider AND c."setId" = sd."setId" AND c."syncDate" = sd."syncDate"),
+        "finishedAt" = CASE WHEN NOT EXISTS (SELECT 1 FROM price_sync_card_days c WHERE c.provider = sd.provider AND c."setId" = sd."setId" AND c."syncDate" = sd."syncDate" AND c.status IN ('pending'::"PriceSyncCardDayStatus", 'processing'::"PriceSyncCardDayStatus")) THEN COALESCE(sd."finishedAt", NOW()) ELSE NULL END,
+        "updatedAt" = NOW()
+      WHERE sd.provider = ${this.priceProvider.id} AND sd."setId" = ${setId} AND sd."syncDate" = ${syncDate}::date
+    `);
+  }
+
+  private async fetchAndStoreRaw(cardId: string, onProviderResult: (remote: RemoteCardPrice[], fetchedAt: Date) => Promise<void>, onProviderRequest?: () => Promise<void>): Promise<CardPriceView[]> {
     const card = await this.prisma.card.findUnique({
       where: { id: cardId },
       select: {
@@ -254,9 +397,10 @@ export class SyncPricesService {
 
     let remote: RemoteCardPrice[];
     try {
+      await onProviderRequest?.();
       remote = await this.priceProvider.getCardPrices(card.id, tcgdexSetId, card.number);
     } catch (error) {
-      throw new PriceFetchError(cardId, (error as Error).message);
+      throw new PriceFetchError(cardId, (error as Error).message, error);
     }
 
     const currentQuotes = remote.filter(
@@ -265,22 +409,7 @@ export class SyncPricesService {
         price.currency === this.priceProvider.defaultCurrency,
     );
     const fetchedAt = new Date();
-    if (remote.length > 0) {
-      await this.prisma.cardPrice.createMany({
-        data: remote.map((price) => ({
-          cardId,
-          variant: price.variant,
-          low: price.low,
-          mid: price.mid,
-          high: price.high,
-          market: price.market,
-          provider: this.priceProvider.id,
-          source: price.source,
-          currency: price.currency,
-          fetchedAt,
-        })),
-      });
-    }
+    await onProviderResult(remote, fetchedAt);
 
     if (currentQuotes.length === 0) {
       this.logger.log(
@@ -296,6 +425,7 @@ export class SyncPricesService {
       provider: this.priceProvider.id,
       fetchedAt,
       isStale: false,
+      ...priceMetadata(fetchedAt, this.priceProvider.id, this.priceProvider.id, fetchedAt),
     }));
     await this.cache(cardId, view);
     this.logger.log(
@@ -389,7 +519,8 @@ export class SyncPricesService {
         AND p.currency = ${this.priceProvider.defaultCurrency}
       ORDER BY p."cardId", p.variant, p."fetchedAt" DESC
     `;
-    return rows.map((row) => toView(row, this.priceProvider.id));
+    const evaluatedAt = new Date();
+    return rows.map((row) => toView(row, this.priceProvider.id, evaluatedAt));
   }
 
   private async latestFallbackPrices(cardId: string): Promise<CardPriceView[]> {
@@ -430,7 +561,8 @@ export class SyncPricesService {
         AND p.currency = ${this.priceProvider.defaultCurrency}
       ORDER BY p."cardId", p.variant, p."fetchedAt" DESC
     `;
-    return rows.map((row) => toView(row, this.priceProvider.id));
+    const evaluatedAt = new Date();
+    return rows.map((row) => toView(row, this.priceProvider.id, evaluatedAt));
   }
 
   private async latestKnownPrices(cardId: string): Promise<CardPriceView[]> {

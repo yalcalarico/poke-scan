@@ -1,0 +1,57 @@
+{
+  "observedAt": "2026-10-08T12:51:49.868Z",
+  "images": {
+    "backend": {
+      "id": "sha256:1e92edf09a920cf1e42017644cf054a11b90b20d2d54ef6bf41dd58dd6c647f3",
+      "created": "2026-10-08T00:17:55.993249761Z"
+    },
+    "frontend": {
+      "id": "sha256:c89a6a501f8929b82ff562c8b3e06e8337f6d53beaf0f744bd0395e6d8241c5f",
+      "created": "2026-10-07T23:54:05.46903546Z"
+    }
+  },
+  "method": "same IDs accepted INF02; latest mtime of application runtime source precedes corresponding image build; not a historical source digest attestation",
+  "sources": [
+    {
+      "folder": "backend/src",
+      "latestFile": "backend/src/modules/cards/visual-identify.lifecycle.spec.ts",
+      "latestMtime": "2026-10-07T23:00:27.180Z"
+    },
+    {
+      "folder": "backend/scripts",
+      "latestFile": "backend/scripts/scanner-visual-worker.mjs",
+      "latestMtime": "2026-10-07T22:40:23.904Z"
+    },
+    {
+      "folder": "backend/prisma",
+      "latestFile": "backend/prisma/migrations/20261007090000_collection_item_add_idempotency/migration.sql",
+      "latestMtime": "2026-10-07T12:53:57.793Z"
+    },
+    {
+      "folder": "frontend/app",
+      "latestFile": "frontend/app/(app)/escanear/page.tsx",
+      "latestMtime": "2026-10-07T19:22:01.163Z"
+    },
+    {
+      "folder": "frontend/components",
+      "latestFile": "frontend/components/scanner/__tests__/organize-sheet.test.tsx",
+      "latestMtime": "2026-10-07T19:50:21.648Z"
+    },
+    {
+      "folder": "frontend/lib",
+      "latestFile": "frontend/lib/api/api-client.test.ts",
+      "latestMtime": "2026-10-07T23:34:22.810Z"
+    },
+    {
+      "folder": "frontend/hooks",
+      "latestFile": "frontend/hooks/use-mobile-camera.ts",
+      "latestMtime": "2026-10-04T02:43:54.950Z"
+    },
+    {
+      "folder": "frontend/types",
+      "latestFile": "frontend/types/api.ts",
+      "latestMtime": "2026-10-07T22:41:48.714Z"
+    }
+  ],
+  "packagingNote": "Frontend Dockerfile has later metadata than its cached image; INF02 accepted the actual final runtime image independently; no new application runtime source edits in this gate"
+}

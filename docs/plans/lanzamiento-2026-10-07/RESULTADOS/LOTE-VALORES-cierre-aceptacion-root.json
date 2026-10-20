@@ -1,0 +1,30 @@
+{
+  "checkedAtUtc": "2026-10-09T12:17:30.762371+00:00",
+  "accepted": true,
+  "verification": {
+    "received-source-sha256.json": {
+      "count": 430,
+      "mismatches": []
+    },
+    "runtime-next-sha256.json": {
+      "count": 2061,
+      "mismatches": []
+    },
+    "runtime-backend-dist-sha256.json": {
+      "count": 277,
+      "mismatches": []
+    },
+    "annexes": {
+      "count": 30,
+      "mismatches": []
+    },
+    "reportsHashes": {
+      "LOTE-VALORES-cierre.md": "0cb382a0e27f9cb270f13e7ead26d580294c22a146b0b0f29cfde505a0aa0879",
+      "LOTE-VALORES-cierre-evidencia.json": "b179926823cd224df8804a2196fd7cdc61d3c2b00d8c11ba83bef89487a75d97",
+      "LOTE-VALORES-cierre-browser-root.json": "787bc9133dedf77b696dbd9d21e3fda29a4850f21ce1526c79f8e5a285d32f77"
+    }
+  },
+  "cleanupEvidenceAccepted": "Sol HIGH: fixtures0, clone/Redis removed, ownership/PIDs/comment/connections verified, devTEST scoped counts unchanged. Root lsof3000/3001/56379 no listeners and browser/session/viewport cleanup performed.",
+  "additionalDockerRead": "Not executed: automatic approval review unavailable due usage limit; no bypass/retry. This is an additional independent query, not a failure of the already executed cleanup.",
+  "limits": "No complete DB snapshot, phones, people, accuracy, production or off-host claims; historical EPERM preserved."
+}

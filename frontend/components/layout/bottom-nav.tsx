@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import { PreviewLink } from '@/components/visual-preview/preview-link';
 import { usePathname } from 'next/navigation';
 
 import { AppMark } from '@/components/brand';
@@ -35,6 +35,7 @@ export function BottomNav() {
   const pathname = usePathname();
 
   return (
+    <>
     <nav
       aria-label="Navegación principal"
       className={cn(
@@ -53,14 +54,14 @@ export function BottomNav() {
         a la derecha, que es la convención de un navbar de sitio.
       */}
       <div className="mx-auto flex h-16 max-w-lg items-stretch lg:h-14 lg:max-w-6xl lg:px-6">
-        <Link
+        <PreviewLink
           href="/inicio"
           aria-label="PokéScan, inicio de la app"
           className="hidden shrink-0 items-center gap-2 rounded-control focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--focus-ring)] lg:flex"
         >
           <AppMark size={32} />
           <span className="text-body-strong text-primary">PokéScan</span>
-        </Link>
+        </PreviewLink>
 
         <ul
           className={cn(
@@ -72,7 +73,7 @@ export function BottomNav() {
           )}
         >
           {NAV_ITEMS.map((item) => {
-            const isActive = isNavItemActive(pathname, item.href);
+            const isActive = isNavItemActive(pathname === '/buscar-v2' ? '/buscar' : pathname, item.href);
             const Icon = item.icon;
 
             return (
@@ -83,7 +84,7 @@ export function BottomNav() {
                   item.href === '/inicio' && 'lg:hidden',
                 )}
               >
-                <Link
+                <PreviewLink
                   href={item.href}
                   aria-label={item.label}
                   aria-current={isActive ? 'page' : undefined}
@@ -114,12 +115,14 @@ export function BottomNav() {
                       item.label
                     )}
                   </span>
-                </Link>
+                </PreviewLink>
               </li>
             );
           })}
         </ul>
       </div>
     </nav>
+
+    </>
   );
 }

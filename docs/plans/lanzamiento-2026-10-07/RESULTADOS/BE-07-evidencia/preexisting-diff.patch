@@ -1,0 +1,86 @@
+diff --git a/backend/docs/gotchas.md b/backend/docs/gotchas.md
+index 6d10895..4e795ca 100644
+--- a/backend/docs/gotchas.md
++++ b/backend/docs/gotchas.md
+@@ -1309,6 +1309,20 @@ referencia del delta sobrevive" y pone 10 refreshes fuera de la ventana de
+ detalle: si la consolidación no deja un punto usable, el delta queda sin
+ referencia.
+ 
++## 36. Un alta aditiva incierta necesita conservar su `Idempotency-Key`
++
++`POST /collections/:id/items` suma cantidad. Si el cliente pierde la respuesta,
++repetir sin `Idempotency-Key` vuelve a sumar; una lectura posterior de cantidad
++no atribuye ese incremento cuando hubo otras ediciones. Para un intento incierto,
++el cliente conserva la misma clave UUID y el mismo payload por hasta 30 días.
++Usar otra clave representa una nueva alta intencional. El backend conserva un
++tombstone después del vencimiento para que una clave antigua nunca vuelva a
++escribir, así que no se debe reutilizar una clave para otra operación.
++
++La escritura y el registro de idempotencia comparten transacción. No agregar un
++job de limpieza que borre tombstones: permitiría que un replay demorado sume de
++nuevo. Ver [api.md](api.md) y [database.md](database.md) para el contrato.
++
+ ## Cross-references
+ 
+ - [api.md](api.md) — los endpoints y sus formas
+diff --git a/backend/docs/testing.md b/backend/docs/testing.md
+index bed6088..61902f8 100644
+--- a/backend/docs/testing.md
++++ b/backend/docs/testing.md
+@@ -17,11 +17,14 @@
+ 
+ | Spec | Qué cubre |
+ |---|---|
+-| `app.controller.spec.ts` | `GET /health`: sano, degradado, sin Redis configurado |
++| `app.controller.spec.ts` | `GET /health`: sano, degradado, sin Redis configurado; `GET /ready`: estados DB/scanner/Redis y códigos HTTP |
++| `readiness.http.spec.ts` | Nest + Supertest in-process: 200/503, `no-store`, throttler excluido, busy informativo y liveness conservada |
++| `readiness.service.spec.ts` | URL dedicada limitada, single-flight/deadline compartido, caché, shutdown, éxito tardío descartado y TCP blackhole sin DB |
++| `visual-identify.lifecycle.spec.ts` | warmup IPC, generaciones/backoff, idle death, timeout, cancelación, envíos fallidos, eventos tardíos, listeners estables y shutdown; branch real del worker con ONNX/índice simulados, sin embedding |
+ | `auth.service.spec.ts` | registro, login, hash del refresh, rotación, reuso, expiración, logout |
+ | `cards.service.spec.ts` | búsqueda con trigram, `getById` 404, `getCardWithPrices` con rate cacheado, `sort=price` global |
+-| `collections.service.spec.ts` | increment de `quantity`, ownership, stats, 409, cascadas, filtros, marca de intercambio del alta |
+-| `share.service.spec.ts` | slug, caché, 404 de enlace vencido, `truncated` |
++| `collections.service.spec.ts` | increment de `quantity`, replay con clave idempotente, concurrencia, vencimiento, ownership, stats, 409, cascadas, filtros, marca de intercambio del alta |
++| `share.service.spec.ts` | 21 casos: allowlist pública, 500 visibles con valor/cobertura de 522/523 grupos, market cero, grupos iguales entre colecciones, Redis en memoria con legacy/`DEL` fallido/`SET` tardío, TTL y vencimiento con reloj controlado, HTTP real `no-store` en 200/404 |
+ | `friends.service.spec.ts` | búsqueda, solicitudes, responder, 403/404, baja, bloqueo |
+ | `currency.service.spec.ts` | feature flag, caché 1 h, `stale` >48 h, DolarApi caído, valores saneados |
+ | `tcgdex.provider.spec.ts` | mapeo de las 7 variantes, 404 con fallback de padding, retry de 503, parsing defensivo |
+diff --git a/backend/src/redis/redis.service.spec.ts b/backend/src/redis/redis.service.spec.ts
+index 56cbc30..2f8a48e 100644
+--- a/backend/src/redis/redis.service.spec.ts
++++ b/backend/src/redis/redis.service.spec.ts
+@@ -203,15 +203,27 @@ describe('RedisService — degradación observable', () => {
+     await moduleRef.close();
+   });
+ 
+-  it('sin REDIS_URL no está configurado y tampoco degradado', () => {
++  it('sin REDIS_URL no está configurado y tampoco degradado', async () => {
+     // La distinción importa en una alerta: "no usamos caché" y "la caché se
+     // cayó hace 40 minutos" son incident distintos.
+-    const sinUrl = build(undefined);
+-
+-    const status = sinUrl.status();
+-    expect(status.configured).toBe(false);
+-    expect(status.available).toBe(false);
+-    expect(status.degradedSince).toBeNull();
++    // RedisService también consulta process.env: aislar este caso del Redis del runner.
++    const inheritedUrl = process.env.REDIS_URL;
++    let sinUrl: RedisService | undefined;
++    delete process.env.REDIS_URL;
++    try {
++      sinUrl = build(undefined);
++      const status = sinUrl.status();
++      expect(status.configured).toBe(false);
++      expect(status.available).toBe(false);
++      expect(status.degradedSince).toBeNull();
++    } finally {
++      try {
++        await sinUrl?.onModuleDestroy();
++      } finally {
++        if (inheritedUrl === undefined) delete process.env.REDIS_URL;
++        else process.env.REDIS_URL = inheritedUrl;
++      }
++    }
+   });
+ 
+   it('con Redis sano el estado no está degradado', async (ctx) => {

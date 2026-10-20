@@ -1,0 +1,51 @@
+{
+  "sourceAndCompiledFilesVerified": 1300,
+  "changed": [],
+  "temporaryPorts": [
+    {
+      "port": 55596,
+      "closed": true
+    },
+    {
+      "port": 55951,
+      "closed": true
+    }
+  ],
+  "temporaryOwner": {
+    "pid": 49813,
+    "host": "127.0.0.1",
+    "port": 55951,
+    "scope": "GET landing/FAQ/static assets from compiled Next; only injected initial theme storage on private origin; no API/db access",
+    "source": "http://127.0.0.1:3000"
+  },
+  "temporaryPidAbsent": true,
+  "userInstancePreserved": {
+    "expectedPidsAlive": [
+      47336,
+      47337,
+      47348,
+      47400
+    ],
+    "http": [
+      {
+        "url": "http://localhost:3000/",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/faq",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3001/api/ready",
+        "status": 200
+      }
+    ]
+  },
+  "dbRedisFixturesCreated": 0,
+  "testsOrBuildsRepeated": false,
+  "cleanupHelperCorrection": {
+    "first": "/api/health/ready returned404",
+    "correct": "/api/ready from controller, returned200",
+    "productChange": false
+  }
+}

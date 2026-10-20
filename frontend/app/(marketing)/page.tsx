@@ -1,19 +1,14 @@
 import type { Metadata } from 'next';
 
 import { LandingPage } from '@/components/marketing';
+import { acquisitionMetadata } from '@/lib/marketing/acquisition-metadata';
 
-export const metadata: Metadata = {
-  title: { absolute: 'PokéScan — tu colección Pokémon, más clara' },
+export const metadata: Metadata = acquisitionMetadata({
+  title: 'Tu colección Pokémon, ordenada carta por carta',
   description:
-    'Escaneá cartas Pokémon, organizá tus sets y consultá estimaciones de mercado en USD o ARS. Probá PokéScan gratis.',
-  openGraph: {
-    title: 'PokéScan — tu colección Pokémon, más clara',
-    description:
-      'Escaneá cartas, organizá tus sets y consultá estimaciones en USD o ARS.',
-    type: 'website',
-  },
-  alternates: { canonical: '/' },
-};
+    'Buscá cartas, organizá tus sets y tené a mano tus duplicadas. Consultá referencias en USD o convertidas a ARS cuando hay datos.',
+  canonical: '/',
+});
 
 export default function MarketingHomePage() {
   return <LandingPage />;

@@ -102,8 +102,8 @@ describe('AuthService', () => {
     });
 
     expect(stored).toHaveLength(1);
-    expect(stored[0]!.tokenHash).not.toBe(refreshToken);
-    expect(stored[0]!.tokenHash).toBe(sha256(refreshToken));
+    expect(stored[0]!.tokenHash !== refreshToken).toBe(true);
+    expect(stored[0]!.tokenHash === sha256(refreshToken)).toBe(true);
     expect(stored[0]!.expiresAt.getTime()).toBeGreaterThan(Date.now());
   });
 
@@ -140,7 +140,7 @@ describe('AuthService', () => {
 
     expect(oldStored!.revokedAt).not.toBeNull();
     expect(newStored!.revokedAt).toBeNull();
-    expect(rotated.refreshToken).not.toBe(oldToken);
+    expect(rotated.refreshToken !== oldToken).toBe(true);
     expect(rotated.accessToken).toEqual(expect.any(String));
   });
 

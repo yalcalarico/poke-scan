@@ -1,0 +1,12 @@
+--- run-original.py
++++ run-without-internal-override.py
+@@ -2,7 +2,8 @@
+ import subprocess,json,os,re,datetime,sys
+ out=Path(__file__).resolve().parent;own=json.loads((out/'ownership.json').read_text());ann=Path(own['annex']);root=ann.parents[4]
+ # All URLs are owned loopback; only the DB name and role enter artifacts.
+-env=os.environ.copy();env.update(DATABASE_URL='postgresql://pokemon:pokemon@127.0.0.1:55432/'+own['database'],DATABASE_URL_TEST='postgresql://pokemon:pokemon@127.0.0.1:55432/'+own['database'],REDIS_URL='redis://127.0.0.1:'+str(own['redisPort']),NEXT_PUBLIC_API_URL='http://127.0.0.1:3001/api',NEXT_PUBLIC_SITE_URL='http://127.0.0.1:3000',API_INTERNAL_URL='http://127.0.0.1:1/api')
++env=os.environ.copy();env.update(DATABASE_URL='postgresql://pokemon:pokemon@127.0.0.1:55432/'+own['database'],DATABASE_URL_TEST='postgresql://pokemon:pokemon@127.0.0.1:55432/'+own['database'],REDIS_URL='redis://127.0.0.1:'+str(own['redisPort']),NEXT_PUBLIC_API_URL='http://127.0.0.1:3001/api',NEXT_PUBLIC_SITE_URL='http://127.0.0.1:3000')
++env.pop('API_INTERNAL_URL', None)
+ name=sys.argv[1];cmd=sys.argv[2:];assert cmd[0]=='pnpm'
+ def safe(line):
+  line=re.sub(r'\x1b\[[0-9;]*m','',line)

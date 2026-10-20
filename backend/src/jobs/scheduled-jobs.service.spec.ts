@@ -4,6 +4,7 @@ import { CatalogSyncService } from './catalog-sync.service.js';
 import { CardPricesRetentionService } from './card-prices-retention.service.js';
 import { PriceBackfillService } from './price-backfill.service.js';
 import { ScheduledJobsService } from './scheduled-jobs.service.js';
+import type { PriceSyncDailyService } from './price-sync-daily.service.js';
 
 type Env = Record<string, string | undefined>;
 
@@ -25,6 +26,7 @@ describe('ScheduledJobsService', () => {
       catalogSync?: Partial<CatalogSyncService>;
       backfill?: Partial<PriceBackfillService>;
       retention?: Partial<CardPricesRetentionService>;
+      daily?: Partial<PriceSyncDailyService>;
     } = {},
   ): ScheduledJobsService => {
     const config = {
@@ -43,12 +45,13 @@ describe('ScheduledJobsService', () => {
       run: vi.fn().mockResolvedValue({ consolidated: 0, pruned: 0, dryRun: false }),
       ...stubs.retention,
     } as unknown as CardPricesRetentionService;
+    const daily = { planToday: vi.fn().mockResolvedValue(7), ...stubs.daily } as unknown as PriceSyncDailyService;
 
     // Se construye con `new` y no con el `TestingModule` porque los crons leen
     // los flags **en el constructor**: hace falta que el entorno esté listo
     // antes de que exista el service, y `createTestingModule().get()` es
     // async justamente por el `compile()`.
-    return new ScheduledJobsService(config, catalogSync, backfill, retention);
+    return new ScheduledJobsService(config, catalogSync, backfill, retention, undefined, undefined, undefined, daily);
   };
 
   it('sin flags, los tres jobs están prendidos', () => {
@@ -113,31 +116,28 @@ describe('ScheduledJobsService', () => {
     expect(catalogSync.start).toHaveBeenCalledWith(false);
   });
 
-  it('el backfill encola y nunca pide precios al proveedor', async () => {
+  it('la compatibilidad horaria delega sólo al planificador registrado', async () => {
     const backfill = {
       enqueueStale: vi.fn().mockResolvedValue({ enqueued: 7, pending: 20000 }),
     };
-    const service = build({}, { backfill });
+    const daily = { planToday: vi.fn().mockResolvedValue(7) };
+    const service = build({}, { backfill, daily });
 
     await service.backfillPricesHourly();
 
-    expect(backfill.enqueueStale).toHaveBeenCalledTimes(1);
-    // El único método del backfill es encolar. Si alguno apareciera, sería el
-    // que rompe el ritmo global.
-    expect(Object.keys(backfill)).toEqual(['enqueueStale']);
+    expect(daily.planToday).toHaveBeenCalledWith(false);
+    expect(backfill.enqueueStale).not.toHaveBeenCalled();
   });
 
-  it('un fallo del backfill no sube: lo loguea y sigue', async () => {
-    const backfill = {
-      enqueueStale: vi.fn().mockRejectedValue(new Error('la DB se cayó')),
-    };
-    const service = build({}, { backfill });
+  it('un fallo del planificador no sube: lo loguea y sigue', async () => {
+    const daily = { planToday: vi.fn().mockRejectedValue(new Error('la DB se cayó')) };
+    const service = build({}, { daily });
 
     await expect(service.backfillPricesHourly()).resolves.toBeUndefined();
     // Y el siguiente cron puede volver a intentarlo, porque el estado interno
     // del timer no quedó envenenado.
     await expect(service.backfillPricesHourly()).resolves.toBeUndefined();
-    expect(backfill.enqueueStale).toHaveBeenCalledTimes(2);
+    expect(daily.planToday).toHaveBeenCalledTimes(2);
   });
 
   it('un fallo de la retención tampoco sube', async () => {
@@ -161,15 +161,12 @@ describe('ScheduledJobsService', () => {
     expect(retention.run).toHaveBeenCalledWith();
   });
 
-  it('laperiodicidad del sync es semanal y el backfill diario', async () => {
-    // No es un test de cron: es un test de que las expresiones de `@Cron` no
-    //Sally de un semanal a diario sin que nadie lo lea. 83 requests de catálogo
-    // por día contra una cuota de 1.000 es 8,3 % del presupuesto diario en una
-    // tarea que no lo necesita.
-    const source = await import('node:fs').then((fs) =>
-      fs.readFileSync(new URL('./scheduled-jobs.service.ts', import.meta.url), 'utf8'),
-    );
+  it('el catálogo queda semanal y TCGdex usa una sola planificación diaria UTC', async () => {
+    const fs = await import('node:fs');
+    const source = fs.readFileSync(new URL('./scheduled-jobs.service.ts', import.meta.url), 'utf8');
+    const dailySource = fs.readFileSync(new URL('./price-sync-daily.service.ts', import.meta.url), 'utf8');
     expect(source).toContain("@Cron('7 4 * * 1')");
-    expect(source).toContain("@Cron('13 * * * *')");
+    expect(dailySource).toContain("@Cron('15 3 * * *', { timeZone: 'UTC' })");
+    expect(source).not.toContain("@Cron('13 * * * *')");
   });
 });

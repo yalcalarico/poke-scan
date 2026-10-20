@@ -1,0 +1,16 @@
+{
+  "launcherInherited": {
+    "PRICE_QUEUE_ENABLED": null,
+    "ENABLE_CATALOG_SYNC_CRON": null,
+    "ENABLE_PRICE_BACKFILL_CRON": null,
+    "ENABLE_RETENTION_CRON": null,
+    "SCANNER_VISUAL_ENABLED": null,
+    "NODE_OPTIONS": null
+  },
+  "envFilesSelectedFlags": {
+    ".env": {},
+    "backend/.env": {
+      "SCANNER_VISUAL_ENABLED": "1"
+    }
+  }
+}

@@ -1,5 +1,6 @@
 const HAS_SESSION_KEY = 'pcs.hasSession';
 let accessToken: string | null = null;
+let sessionEpoch = 0;
 
 function sessionFlag(value?: boolean): boolean {
   if (typeof window === 'undefined') return false;
@@ -19,14 +20,30 @@ export function getAccessToken(): string | null {
   return accessToken;
 }
 
-export function setTokens(access: string): void {
-  accessToken = access;
-  sessionFlag(true);
+export function getSessionEpoch(): number {
+  return sessionEpoch;
 }
 
-export function clearTokens(): void {
+export function setTokens(access: string): number {
+  accessToken = access;
+  sessionFlag(true);
+  sessionEpoch += 1;
+  return sessionEpoch;
+}
+
+export function setRefreshedAccessToken(access: string, expectedEpoch: number): boolean {
+  if (sessionEpoch !== expectedEpoch) return false;
+  accessToken = access;
+  sessionFlag(true);
+  return true;
+}
+
+export function clearTokens(expectedEpoch?: number): boolean {
+  if (expectedEpoch !== undefined && sessionEpoch !== expectedEpoch) return false;
   accessToken = null;
   sessionFlag(false);
+  sessionEpoch += 1;
+  return true;
 }
 
 export function hasSession(): boolean {

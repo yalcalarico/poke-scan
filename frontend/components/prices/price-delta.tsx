@@ -5,7 +5,7 @@ import type { LucideIcon } from 'lucide-react';
 
 import { useCurrency } from '@/hooks/use-currency';
 import { cn } from '@/lib/cn';
-import { formatRelativeTime } from '@/lib/format';
+import { formatReferenceTime } from '@/lib/prices/format';
 
 /**
  * Frescura máxima de un precio antes de considerarlo viejo: 24 h, la misma
@@ -40,10 +40,9 @@ export function priceAgeMs(updatedAt: string | null | undefined, now = Date.now(
 /**
  * ¿El precio tiene más de 24 h? Es la condición del `Alert tone="warning"`.
  *
- * Vive acá y no en el componente que muestra el aviso porque la regla de
- * frescura la necesitan tres: la tabla (que reimprime "actualizado hace X"), el
- * `PriceHero` y la sección que decide si hay que volver a pedir el precio en el
- * cliente. Una sola fuente, tres consumidores.
+ * Compatibilidad para consumidores que necesitan decidir si releer. La UI no
+ * usa este cálculo para etiquetar frescura: esa clasificación llega como
+ * metadata del servidor.
  */
 export function isPriceStale(updatedAt: string | null | undefined, now = Date.now()): boolean {
   const age = priceAgeMs(updatedAt, now);
@@ -107,7 +106,7 @@ export interface PriceDeltaProps {
  * salidas es menos API que dos.
  *
  * Lo que **no** hace es inventar el dato: sin `changeUsd` y `changePercent` —o
- * con los dos en `null`— no hay píldora, hay "Actualizado hace 3 h", y el `Alert
+ * con los dos en `null`— no hay píldora, hay "Consultado el {fecha}", y el `Alert
  * tone="warning"` de "esto está viejo" lo pone el consumidor
  * (`CardPriceSection`), porque un `Alert` no es una píldora y esta caja no debe
  * crecer de ancho completo.
@@ -116,7 +115,7 @@ export interface PriceDeltaProps {
  *
  * `card_prices` tiene unos días de historia, así que casi siempre no hay dos
  * puntos con precio dentro de la ventana y el backend devuelve `null`. El
- * componente traduce eso a la fecha de actualización, que es lo único que sabe
+ * componente traduce eso a la fecha de consulta, que es lo único que sabe
  * decir con verdad. La alternativa —pintar `0 %`— afirmaría que el precio no se
  * movió, que es un dato, y "nunca inventar un dato" es la regla de este
  * proyecto. La línea de la serie (`PriceHistory`) tiene el mismo criterio, y por
@@ -151,7 +150,7 @@ export function PriceDelta({
     return (
       <p className={className}>
         <span className="text-caption text-tertiary tabular-nums">
-          Actualizado {formatRelativeTime(updatedAt)}
+          Consultado el {formatReferenceTime(updatedAt)}
         </span>
       </p>
     );

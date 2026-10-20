@@ -1,0 +1,1 @@
+{"status":"ready","degraded":false,"detail":{"database":{"state":"ready"},"scanner":{"state":"ready","busy":false},"redis":{"state":"ready"}}}

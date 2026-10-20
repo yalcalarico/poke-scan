@@ -1,0 +1,31 @@
+{
+  "delegationsUsed": 2,
+  "maximum": 4,
+  "producer": "gpt-6-luna medium",
+  "reviewer": "gpt-6.1-sol high read-only",
+  "risk": "Namespace signatures, path substitution cleanup and recreation downgrade",
+  "findings": [
+    "Root resolution too high",
+    "Custody inside logical original tree",
+    "Unsafe automatic cleanup/path revalidation",
+    "Bind remaps signed absolute namespaces",
+    "Base recreate drops overlay/protection",
+    "Bind auto creates paths"
+  ],
+  "rootResolution": [
+    "Root paths/canonical fixtures fixed",
+    "Guard source/output/parent identities before mutations",
+    "Preserve partials without recursive chmod/removal",
+    "Custody outside original namespace; explicit UID1001 namespace provisioning and no re-signing",
+    "Own image tag and base helpers reject profile/current opt-in; cleanup explicit",
+    "create_host_path false"
+  ],
+  "initialFocusedFailed": 4,
+  "finalFocusedPassed": 7,
+  "correctionCyclesPerFinding": 1,
+  "buildFromScratchNoNetwork": "Failed corepack pnpm download unavailable, preserved; no network retry",
+  "offlineAlternative": "Exact dependency/lock cached Linux builder, fresh source/Prisma compile; actual custody-runner target supplied explicit current runner-base context",
+  "firstRuntime": "Failed own Docker bootstrap after3controls; original stderr not captured so cause not conclusively located. TCP readiness and safe diagnostics added; second runtime21passed",
+  "runtimeCorrections": 1,
+  "screenshotsGenerated": 0
+}

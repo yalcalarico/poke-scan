@@ -1,0 +1,16 @@
+{
+  "command": [
+    "pnpm",
+    "--dir",
+    "frontend",
+    "exec",
+    "vitest",
+    "run",
+    "lib/api/session-generation.test.ts",
+    "lib/api/recovery-api.test.ts",
+    "lib/api/api-client.test.ts",
+    "hooks/use-auth.test.tsx"
+  ],
+  "exitCode": 0,
+  "finishedAtUtc": "2026-10-10T02:18:38.009416+00:00"
+}

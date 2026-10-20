@@ -1,0 +1,11 @@
+{
+  "id": "orquestaci-n-pok-scan",
+  "observedBefore": "ACTIVE",
+  "after": "PAUSED",
+  "cadencePreserved": true,
+  "identityNameKindTargetCreationPreserved": true,
+  "promptUpdatedForAcceptedAcquisition": true,
+  "source": "automation.toml inspected before and after structured automation_update",
+  "reactivated": false,
+  "duplicated": false
+}

@@ -1,0 +1,124 @@
+# SEO-03 · Brief de contenido y preview público
+
+**Fecha:** 2026-10-08 (Argentina, UTC−03:00; revisión 9/10 UTC) · **Fase:** documental revisada Sol HIGH; implementación/preview servido pendientes. [Dictamen y evidencia](SEO-03-review.md).  
+**Alcance:** tres briefs de contenido útil, auditoría estática de Open Graph/Twitter y handoff a FE-07/MKT-03. No se editó producto ni se generó ningún asset.
+
+## Criterio de contenido
+
+La hipótesis de audiencia heredada de MKT-01 es gente que completa sets y organiza duplicadas. RES-01 no tiene entrevistas ni resultados, así que los términos y preguntas de abajo son **hipótesis de intención**, no demanda medida: no se asignan volúmenes, posiciones ni potencial de tráfico. Las piezas explican tareas que el producto ya permite; cada una deriva a una ruta existente y evita publicar datos de colecciones de usuarios.
+
+La evidencia de producto es local, sin certificar despliegue: [MKT-01 y revisión](MKT-01-review.md) conservan búsqueda, CSV básico, historial de referencias de cartas y observaciones del portafolio por consulta como Free. No presentarlos como Pro futuro ni como seguimiento automático. El catálogo requiere conexión; una página pública visible desde caché no acredita búsqueda, reconocimiento o guardado offline. Ninguna sesión con mocks acredita funcionamiento conectado, dispositivos físicos, precisión o comprensión de usuarios. Para medir activación según [RES-03](RES-03-protocolo.md#dec-04-método-mínimo-y-diccionario-propuesto), verificar mediante lectura autoritativa al menos una copia persistida en la colección correcta: visitar, registrarse, ver una candidata o crear una colección vacía no alcanza. Una activación de estudio guiado se informa como estudio, separada del uso espontáneo.
+
+### Brief 1 · Cómo ordenar duplicadas sin mezclar impresiones
+
+**Intención hipotética:** alguien quiere saber qué cuenta como duplicada, cómo detectar copias del mismo set y cómo separar una carta igual por nombre pero distinta por impresión. Consultas exploratorias: “cómo organizar cartas Pokémon repetidas”, “cómo separar duplicadas Pokémon por set”. No se afirma que sean consultas frecuentes.
+
+**Pregunta que resuelve:** ¿cómo armo un inventario que me permita encontrar copias y distinguir cartas que comparten nombre?
+
+**Esqueleto útil:** empezar por set/impresión; mostrar una tabla o ejemplo textual de identidad de carta, variante, condición y cantidad; explicar que la agrupación de guardado conserva esos atributos, sin inferir condición desde una foto; terminar con un método breve para revisar faltantes y duplicadas por set. No usar imágenes de cartas sin permiso documentado. Aclarar que la lista sirve para organizar la colección, no acredita precio de venta. CSV básico puede servir como salida voluntaria del inventario y ya es Free; no exportar datos de participantes para publicar esta pieza.
+
+**Claims y evidencia:** organización por set, duplicadas y marcas “para intercambio” constan en el copy aceptado de MKT-01 y en las rutas/componentes locales de colecciones. Tratar completado de sets y organización de repetidas como hipótesis de utilidad (MKT-01; RES-01 pendiente), no como conducta observada. La condición registrada no modifica automáticamente la referencia de precio (UX-03/DEC-03).
+
+**CTA existente:** “Explorá el catálogo” → [`/buscar`](../../../../frontend/app/%28app%29/buscar/page.tsx), ruta ya existente y pública según [`routes.md`](../../../../frontend/docs/routes.md). El guardado requiere cuenta; no presentar la visita al catálogo como colección ya creada. Un futuro CTA de escaneo puede apuntar a `/escanear`, sujeto a sesión y conexión, pero no es necesario para esta pieza.
+
+**Medición RES-03, manual:** anotar por pieza y fecha el enlace compartido, visitas observables solo si el canal ya las muestra y clics reportados hacia `/buscar`, con origen y denominador realmente disponibles. En sesión consentida, `N1` = personas que inician la tarea de ordenar; `S1` = quienes terminan con carta/variante/condición/cantidad/destino correctos persistidos y comprobados. Publicar `S1/N1`, asistencia y abandonos; activar una copia y completar toda la tarea son métricas distintas. Si faltan visitas/clics fiables, registrar “no observable”, sin tasa de conversión. No atribuir usuarios únicos ni instalar analytics. No hay resultados de esta medición.
+
+### Brief 2 · Cómo distinguir variantes antes de guardar
+
+**Intención hipotética:** quien quiere organizar una carta con acabado distinto pregunta “qué variante de carta Pokémon tengo”, “carta reverse holo vs holo”, o cómo registrar dos copias que parecen iguales. Son ejemplos para explorar, sin volumen ni demanda comprobados.
+
+**Pregunta que resuelve:** ¿qué dato tengo que mirar para no juntar copias con acabado distinto, y qué puede confirmar PokéScan?
+
+**Esqueleto útil:** guiar la inspección manual de nombre, set/número e indicio visible de acabado; separar variante de condición; explicar que el reconocimiento visual propone una candidata que se revisa/corrige y puede fallar; mostrar que la variante elegida es la referencia relevante cuando hay datos. No prometer que cámara detecta acabado o condición, no dar exactitud porcentual y no autocompletar una identificación como certeza.
+
+**Claims y evidencia:** MKT-01 describe DINOv2 con cuenta/conexión, revisión obligatoria y resultado potencialmente incorrecto o ausente; `frontend/docs/scanner.md` documenta el flujo visual. DEC-03 y UX-03 establecen variante como referencia de precio y condición sin ajuste automático. Compatibilidad física/cobertura general del reconocimiento no está validada por este brief.
+
+**CTA existente:** “Buscá una carta por nombre, número o artista” → [`/buscar`](../../../../frontend/app/%28app%29/buscar/page.tsx). CTA secundario opcional “Probá el reconocimiento visual” → `/escanear`, ya enlazado desde landing, con cuenta, conexión, cámara compatible o foto y revisión manual. No enlazar a una ficha con ID inventado.
+
+**Medición RES-03, manual:** en prueba consentida, pedir que la persona explique qué diferencia variante de condición y que encuentre la variante o corrija la sugerencia antes de guardar. `N2` = personas que inician esta tarea; `S2` = quienes revisan los atributos y guardan/comprueban el registro correcto sin ayuda. Reportar `S2/N2`, explicación, ayuda, errores y abandonos por persona; los intentos de escaneo no son participantes independientes ni accuracy del modelo. Es una tarea editorial propuesta, no una rúbrica validada nueva; la comprensión del precio de UX-03 se mantiene aparte. No hubo participantes ni resultados en SEO-03.
+
+### Brief 3 · Qué significa ver una referencia en USD o ARS
+
+**Intención hipotética:** una persona ve un importe y pregunta “precio carta Pokémon USD a pesos”, “qué significa el valor en ARS” o si ese número es lo que puede cobrar localmente. Es una hipótesis derivada del contenido y las preguntas de MKT-01; no hay volúmenes de búsqueda ni observaciones de usuarios.
+
+**Pregunta que resuelve:** ¿de qué mercado sale el dato, qué significa la conversión y qué límites tiene el total?
+
+**Esqueleto útil:** separar moneda/fuente del mercado reportado; definir USD como referencia cuando la fuente aporta ese dato; explicar ARS como conversión al tipo de cambio actual elegido, no precio argentino realizable; distinguir fecha de consulta de fecha upstream; ilustrar que referencias faltantes hacen un total parcial y que condición no ajusta el importe. En historial, aclarar que las observaciones pueden cambiar por cantidades y referencias y que ARS histórico usa cambio actual: no es ganancia/ROI ni serie histórica de FX. Incluir una invitación a leer el detalle de fuente/variante cuando la app tenga datos.
+
+**Claims y evidencia:** copy aceptado de [MKT-01](MKT-01-copy.md), [RES-04](RES-04-fuentes.md), [UX-03](UX-03-valores.md) y [DEC-03](../10-decisiones-y-contratos.md#dec-03--qué-significan-precio-e-historial) sustentan estos límites. RES-04 documenta precios actuales provenientes de TCGdex con mercado TCGplayer y USD; no atribuir el feed de precios actual ni su cuota al catálogo histórico pokemontcg.io. RES-04 no halló un par homogéneo que permita afirmar precio argentino o venta local verificable; no incluir ejemplos de precio actual ni sumar una cifra de mercado. Precio Pro, cuotas, alertas y seguimiento automático siguen sin oferta aprobada.
+
+**CTA existente:** “Consultá el catálogo” → [`/buscar`](../../../../frontend/app/%28app%29/buscar/page.tsx). Una vez que la persona elige una carta, las fichas existentes usan `/carta/[id]`; el CTA editorial no debe inventar un ID ni sugerir que una referencia está siempre disponible. No dirigir a una colección ajena ni a `/share/[slug]`.
+
+**Medición RES-03, manual:** usar la tarea neutral ya definida en [`RES-03-protocolo.md`](RES-03-protocolo.md#rúbrica-de-comprensión-del-precio) y la codificación de UX-03: referencia internacional/conversión y no venta local; cobertura parcial/desconocido frente a cero; condición sin ajuste. `N3` incluye todas las personas consentidas que inician, incluso incompletas/ayuda/abandono; `S3` exige los tres criterios espontáneos, antes de la pregunta neutral. Objetivo propuesto: `N3 ≥ 10` y `S3/N3 ≥ 90 %`, con completitud y faltantes aparte; no es un resultado. Historial se informa por separado. Comprender la cifra tampoco acredita una activación guardada. No hay participantes ni resultados atribuidos aquí.
+
+## Preview OG/Twitter actual y propuesta mínima
+
+**Auditoría estática, 8/10:** [`app/layout.tsx`](../../../../frontend/app/layout.tsx) declara `metadataBase` a partir de `NEXT_PUBLIC_SITE_URL` con fallback literal `https://pokescan.app`, `openGraph` común (`type`, `siteName`, `locale`) y `twitter.card = summary_large_image`, pero ninguno define una imagen. La metadata de [`landing`](../../../../frontend/app/%28marketing%29/page.tsx) define title/description/OG y canonical, sin `openGraph.images` ni `twitter.images`. [`FAQ`](../../../../frontend/app/%28marketing%29/faq/page.tsx) define title/description/canonical y no agrega imagen propia. No existe `opengraph-image` ni `twitter-image` bajo `frontend/app` en el árbol inspeccionado.
+
+El [layout marketing](../../../../frontend/app/%28marketing%29/layout.tsx) no agrega metadata. La landing declara su propio objeto `openGraph`, que sustituye el objeto del layout raíz por combinación superficial; por eso no afirmar que conserva automáticamente `siteName`/`locale` del raíz. FAQ no declara ese objeto. Esta es lectura de exports con el contrato de Next instalado, no extracción de tags servidos ni medición del modo de render.
+
+En `frontend/public/icons/` sí hay iconos actuales: `icon-512.png` y `maskable-512.png` (512×512), `icon-192.png` (192×192) y `apple-touch-icon.png` (180×180). `icon-512.png` es una marca cuadrada con mucho margen; no es una composición panorámica de preview. No se observó navegador, unfurl remoto ni metadata servida: esto es solo una auditoría de fuentes/archivos, no una afirmación sobre previews actuales en producción.
+
+**Propuesta futura, acotada:** para la landing y FAQ, agregar una imagen genérica común 1200×630 con el nombre PokéScan, una frase de producto ya aceptada por MKT-01 y el icono existente como elemento de marca. La variante de menor mantenimiento es una única convención de segmento en `frontend/app/(marketing)/opengraph-image.tsx` y `frontend/app/(marketing)/twitter-image.tsx` (o un solo archivo OG que ambas metadata referencien), reusando `frontend/public/icons/icon-512.png`; no necesita ilustraciones de cartas ni claims nuevos. Dejar la URL final relativa a `metadataBase`/`NEXT_PUBLIC_SITE_URL`; el valor absoluto desplegado queda **dependiente del dominio aprobado/configuración de INF-01**. No escribir `https://pokescan.app` como host productivo confirmado. Si el formato generado no resulta adecuado para clientes de preview, alternativa estática futura: `frontend/app/(marketing)/opengraph-image.png` y referencia de la misma URL desde Twitter.
+
+La documentación local de Next **16.3.6**, versión comprobada en el paquete instalado, indica tags automáticos para convenciones OG/Twitter y precedencia del archivo sobre metadata por objeto; una imagen más específica reemplaza la superior. Con exports por objeto, repetir `openGraph` sustituye ese bloque: compartir campos explícitamente en cada ruta si se usa esa alternativa. `metadataBase` resuelve URLs relativas. La optimización estática de imágenes generadas es el default documentado sujeto a APIs de request/datos sin caché, no un render medido aquí. Fuentes locales consultadas: [`metadata and OG images`](../../../../frontend/node_modules/next/dist/docs/01-app/01-getting-started/14-metadata-and-og-images.md), [`generateMetadata`](../../../../frontend/node_modules/next/dist/docs/01-app/03-api-reference/04-functions/generate-metadata.md), [`opengraph-image`](../../../../frontend/node_modules/next/dist/docs/01-app/03-api-reference/03-file-conventions/01-metadata/opengraph-image.md). Sol consultó nuevamente el 9/10 UTC (8/10 local) las fuentes oficiales [convenciones OG/Twitter](https://nextjs.org/docs/app/api-reference/file-conventions/metadata/opengraph-image) y [generateMetadata / metadataBase y combinación](https://nextjs.org/docs/app/api-reference/functions/generate-metadata). El sitio web mostraba versión 16.4.0; corrobora recomendaciones actuales y no cambia la instalada ni prueba su runtime.
+
+**Aceptación futura del preview:** con implementación habilitada por coordinación, comprobar landing y FAQ por separado: título/description aprobados, imagen OG y Twitter absolutas resueltas, respuesta de imagen legible con MIME/dimensiones/alt y composición 1200×630; la dimensión propuesta no acredita compatibilidad universal. Registrar HTML completo/tags efectivos por UA y el unfurl que realmente pueda observarse, conforme al método ya aceptado de SEO-01, sin repetir su matriz de privacidad ni modificar streaming. La imagen solo usa marca/copy genéricos existentes, sin referencias de precio ni datos de usuario. La validación local puede usar base explícita aislada; dominio aprobado/configuración/salida desplegada siguen necesarios para afirmar preview productivo. No se midió ni implementó nada de eso en esta fase.
+
+**Límites de indexación/privacidad:** no sumar páginas de share, colección o cuenta al sitemap; no colocar slug, nombre de usuario, cifras privadas ni carta individual en una imagen genérica. Mantener noindex de share y el contrato FE-02/BE-01 de caché/privacidad. Una imagen OG no resuelve autenticación ni convierte una ruta en pública.
+
+## Handoff
+
+- **FE-07:** recibe el copy aceptado de MKT-01 para los componentes landing/FAQ existentes; su implementación no se inicia desde este brief mientras coordinación conserve el gate previo abierto. Los briefs SEO-03 son piezas editoriales separadas y no alteran esas pantallas ni sus CTAs. La futura reserva de implementación del preview debe acordarse con coordinación; revisar tags efectivos con dominio/configuración local explícitos. SEO-03 documental no adquiere ownership de auth, streaming o privacidad ni abre una tarea frontend nueva.
+- **MKT-03:** tomar estas tres piezas como backlog candidato, no calendario ni decisión de publicar. Antes de priorizar, incorporar resultados de RES-01/03; conservar intención como hipótesis hasta medirla. MKT decide redactar/canal/frecuencia; cualquier publicación externa requiere el gate operativo correspondiente.
+- **CTA comprobados en fuentes locales:** `/buscar` existe y es público; `/escanear` existe y exige cuenta/conexión al ejecutar reconocimiento. `/faq` existe. Las rutas editoriales candidatas no son destinos disponibles hasta una entrega frontend futura acordada.
+- **Rutas editoriales candidatas, sin crear ni enlazar como destinos disponibles:** `/guias/duplicadas-pokemon`, `/guias/variantes-pokemon` y `/guias/referencia-usd-ars`, respectivamente. Son propuestas para una entrega frontend futura acordada, no rutas existentes ni un alcance adicional de FE-07; los tres briefs usan hoy `/buscar` como CTA. No se agregan al sitemap, canonical ni navegación en esta fase.
+- **Pendiente de aceptación completa SEO-03:** preview servido de landing/FAQ con imagen correcta aún no existe; el dominio productivo no está aprobado ni hay salida desplegada. Al recibir este brief, el gate estándar estaba abierto por el EPERM de Turbopack documentado en el lote valores; esta revisión no reejecuta ni congela ese diagnóstico. La corrección BUILD-GATE-causalSol de coordinación tiene reserva independiente y su resultado debe consumirse cuando esté disponible. No se usó webpack como sustituto en esta revisión. El presente brief no amplía SEO-03 a resolver auth, streaming, privacidad runtime o gates de producto.
+
+## Método, fuentes y preservación
+
+La entrega inicial de Luna declaró lectura documental y revalidación estática de metadata/rutas; ese método y sus hashes se conservan íntegros en la [copia recibida](evidencia-seo03-review/SEO-03-contenido-recibido.md). Sol revisó AGENTS raíz/frontend, README/06-seo/DEC-03, MKT-01-copy/review, RES-04-fuentes/review, RES-03, UX-03 y SEO-01-review/runtime-review; inspeccionó selectivamente metadata de adquisición, controles/envío de búsqueda, CSV y documentación de rutas/escáner/portafolio. Consultó las guías locales Next y dos páginas oficiales web citadas arriba, sin consultar Google para volúmenes ni extrapolar demanda. Los resultados de entrevistas, comprensión, runtime SEO-01 y gates previos conservan su identidad y alcance: no son pruebas nuevas de SEO-03.
+
+No se ejecutaron builds, tests, servidores, DB/Redis, browser ni requests de producto. El icono existente se inspeccionó visualmente y sus dimensiones se obtuvieron del encabezado PNG, sin edición. La propuesta 1200×630 y las rutas editoriales son futuras. Derechos de arte/marca/modelo/feed siguen como límites de RES-04, sin revalidación jurídica ni autorización inferida aquí.
+
+Hashes SHA-256 de todas las fuentes selectivas del baseline propio de revisión, recalculados antes de corregir. La tabla recibida tenía 14 filas: 13 coincidían y RES-04 contenía un valor de 63 caracteres; se corrigió desde el archivo real, no desde una expectativa escrita. Estos hashes identifican archivos completos; la revisión de código fue selectiva. Planes centrales pueden cambiar por coordinación después de esta captura y no son invariantes del trabajo concurrente.
+
+| Archivo fuente | SHA-256 al inicio de revisión |
+|---|---|
+| `AGENTS.md` | `0a44196ce9194cafcd54094af02e90e73f0da0f693604d0876d97bf14ee30688` |
+| `frontend/AGENTS.md` | `63f2c50380ed6303237cce215ce27af1d620d094c215e28d1b1538a3c070e3bb` |
+| `docs/plans/lanzamiento-2026-10-07/README.md` | `24ec5dee918d19778b3a7bfd4187fecf1eff2e2f855ffdd2a26ed0843fc1eced` |
+| `docs/plans/lanzamiento-2026-10-07/06-seo.md` | `61d6f363e53535c3cde75a3812d92d2f03b275c83762d0ed7fc68eed6435b2c3` |
+| `docs/plans/lanzamiento-2026-10-07/10-decisiones-y-contratos.md` | `a1334c37eab2be2893cfdba65f2e294eaa8c2f5820950a9e572c999c50a71b3c` |
+| `docs/plans/lanzamiento-2026-10-07/RESULTADOS/MKT-01-copy.md` | `d12287eb65d1feff484201f069f518018ad79e543d3832d440dc9bab55157f6d` |
+| `docs/plans/lanzamiento-2026-10-07/RESULTADOS/MKT-01-review.md` | `905a34f980c40aa245d6019cc2936a9898ae491057d7032970145521aa828d4c` |
+| `docs/plans/lanzamiento-2026-10-07/RESULTADOS/RES-04-fuentes.md` | `1d8d9db271f8a9c4691c5477c490a14a8e8268a44b564798b00a57344625126a` |
+| `docs/plans/lanzamiento-2026-10-07/RESULTADOS/RES-04-review.md` | `b71e33816357879a11ea108501653909697fb8021425db6bb95329250f7a81ef` |
+| `docs/plans/lanzamiento-2026-10-07/RESULTADOS/RES-03-protocolo.md` | `2595f9aa242d8faaf43575ef6273888db3df7a13a1b2063f17bdcec2e8928c57` |
+| `docs/plans/lanzamiento-2026-10-07/RESULTADOS/UX-03-valores.md` | `66838aefa7b8bb6f751f547150da5ed33b3649f64fee57f096995dd9a0e300c0` |
+| `docs/plans/lanzamiento-2026-10-07/RESULTADOS/UX-03-review.md` | `1552e843bdf930a9476149b4bd2ea655f92dde38e3656f025024fb004f5fb3fd` |
+| `docs/plans/lanzamiento-2026-10-07/RESULTADOS/SEO-01-review.md` | `f49435adcf79443b6c701fc4f2adfc574051e0bf5833dbea73eda4474121a2d0` |
+| `docs/plans/lanzamiento-2026-10-07/RESULTADOS/SEO-01-runtime-review.md` | `01a1180f9d6a5b94d5776ca03763d342f2881dfbb09989ac22ee529c8f780f99` |
+| `frontend/app/layout.tsx` | `4f142a61056cfb3819f0160f5d94b3459020bea37fff718944cfc5a33082ed8c` |
+| `frontend/app/(marketing)/layout.tsx` | `0d59b1ddc1a9d2d74291bbd24f56f1c91e4df5ebcaadc5066f08d5108b2265b4` |
+| `frontend/app/(marketing)/page.tsx` | `bbb661d27ae8d4fd7190162265260c1ef25701c6771716aa685bba3a3d06a0c6` |
+| `frontend/app/(marketing)/faq/page.tsx` | `d2d96fb9009da52cb788b2ae39493287855b8f221265636228e44d1bedc9b9b5` |
+| `frontend/app/(app)/buscar/page.tsx` | `289af2e7e52607999d5ea12a614613996ec0cd65c549a1433c5eef014bcf5fd0` |
+| `frontend/app/(app)/escanear/page.tsx` | `c13ef2730c23480bd8e5b3261a8f18b7c2c91cdaec74dd4ae6908ffc9af6e06d` |
+| `frontend/components/search/search-controls.tsx` | `fc08a3d0cdc1140b234be76e99654bf7c3a2cfefad86db7987be4c801f5626be` |
+| `frontend/components/search/catalog-search.tsx` | `df45d69b520d428b29dd05656699398d9072750b08f03c98450e33def7425f28` |
+| `frontend/components/collections/collection-actions.tsx` | `896ad8819ff1b2f4cddfceb949b38ce761b7fb1cf9c2b674102cfa7caf985ad9` |
+| `frontend/lib/collections/export-collection.ts` | `c5e1006e8479c0bcecfc2b6ce728da55eedaef75629dab67c2a18ce0ec539603` |
+| `frontend/docs/routes.md` | `5b18947635a90656e57fd7f4286eadbf2b589264e492d46d2aff33bc6c4069a5` |
+| `frontend/docs/scanner.md` | `cd5646940492469583b428c1911a7f7820538742764abfb254b50f630adcbf52` |
+| `frontend/docs/portfolio.md` | `8e6b0ffb6becf29ad531e82608795cd4e5f3a0163cb274aec31e37db8c181816` |
+| `frontend/node_modules/next/package.json` | `906602ce9cbbc4d57b1d5bc8b99b6e74b23ff8eecba57e3c47b680b61823ec0c` |
+| `frontend/node_modules/next/dist/docs/01-app/01-getting-started/14-metadata-and-og-images.md` | `76c7b626838fc34d8657b742d178baf4fa857543016b7a0c8c537b75253f9110` |
+| `frontend/node_modules/next/dist/docs/01-app/03-api-reference/04-functions/generate-metadata.md` | `68e0ff80fa633a99fe65ac1b6f1d7f7ededa666adc0a407a1ab43f43cf7ebe1a` |
+| `frontend/node_modules/next/dist/docs/01-app/03-api-reference/03-file-conventions/01-metadata/opengraph-image.md` | `375540f4bc3ffa85f96342b2af89121ec74e5b1656ff14a96a34df75f14caa13` |
+| `frontend/public/icons/apple-touch-icon.png` | `389f4029e2c35c88e58cdd8d82d5bdcec6c03a83e770b8f2be9dda974edd7318` |
+| `frontend/public/icons/icon-192.png` | `cf124c679c1321dce022323a181c8a07c7c8bc62789fb4621d663f08a3431650` |
+| `frontend/public/icons/icon-512.png` | `0dcc9078967cb8768611f165a42c8c9f75f9127897e880c6e8b712815e853ef0` |
+| `frontend/public/icons/maskable-512.png` | `152930dc18e409ea76d93b9a1c7654c940f00e74292732eda6af218f1f6677a1` |
+
+El árbol estaba ampliamente dirty y la carpeta del plan era untracked antes de corregir. [Baseline propio](evidencia-seo03-review/baseline.json), [fuentes comprobadas](evidencia-seo03-review/fuentes-verificadas.json), [diff](evidencia-seo03-review/correcciones.diff) y [validación](evidencia-seo03-review/validacion.json) separan recibido, cambios y límites. Sol escribió únicamente este brief, `SEO-03-review.md` y `evidencia-seo03-review/`; no tocó producto, assets, exports, configuración ni output. La preservación cubre 424 archivos de producto hashados, sin incluir la reserva ajena `frontend/next.config.ts` ni leer build outputs. Reserva documental liberada al entregar; coordinación conserva estados/registro. **SEO-03 completo sigue pendiente de implementación y preview servido verificable.**

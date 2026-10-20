@@ -1,0 +1,142 @@
+{
+  "reviewer": "/root/build_gate_causal_sol · GPT-6.1 Sol HIGH",
+  "status": "ensayo frío estándar exit0; corrección experimental entregada para revisión/gate integrado",
+  "versions": {
+    "next": "16.3.6",
+    "node": "22.20.0",
+    "pnpm": "10.17.1"
+  },
+  "officialSources": [
+    {
+      "url": "https://raw.githubusercontent.com/vercel/next.js/v16.3.6/crates/next-api/src/project.rs",
+      "lines": "1169-1206",
+      "supports": "selección backend hacia ExecutionContext"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/vercel/next.js/v16.3.6/crates/next-core/src/next_config.rs",
+      "lines": "2351-2361",
+      "supports": "default/option"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/vercel/next.js/v16.3.6/turbopack/crates/turbopack-node/src/process_pool/mod.rs",
+      "lines": "299-325",
+      "supports": "listener previo spawn"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/vercel/next.js/v16.3.6/turbopack/crates/turbopack-node/src/worker_pool/mod.rs",
+      "lines": "55-89;129-141;203-240",
+      "supports": "worker y canales"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/vercel/next.js/v16.3.6/turbopack/crates/turbopack-node/src/worker_pool/worker_thread.rs",
+      "lines": "57-83;160-175",
+      "supports": "callback N-API/mensajes nativos"
+    }
+  ],
+  "localSourceHashes": "/private/tmp/build-gate-causal-sol-20261008/local-source-sha256.json",
+  "ownership": "/private/tmp/build-gate-causal-sol-20261008/ownership.json",
+  "baselineSourceManifest": "/private/tmp/build-gate-causal-sol-20261008/baseline-source-sha256.json",
+  "sourceMatchedPrior": 430,
+  "receivedNextFiles": 3258,
+  "receivedNextManifest": "/private/tmp/build-gate-causal-sol-20261008/received-next-sha256.json",
+  "experimentalOption": true,
+  "singleFunctionalVariable": "experimental.turbopackPluginRuntimeStrategy: childProcesses default -> workerThreads",
+  "buildsRun": 1,
+  "runtimeOrGlobalRun": false,
+  "businessProviderRequests": 0,
+  "gateClosed": false,
+  "limitations": [
+    "backend worker threads evita el punto TcpListener demostrado; build frío estándar exit0",
+    "causa de diferencia app/fixtures no identificada",
+    "worker threads heredan env padre; sin valores env leídos",
+    "una comparación focal con baseline histórico; no A/B/A nuevo",
+    "global/check y runtime nuevos pendientes de coordinación"
+  ],
+  "trial": {
+    "recordedAt": "2026-10-09T00:53:13.539000+00:00",
+    "buildCommand": "pnpm --dir frontend run build",
+    "buildExitCode": 0,
+    "permission": "require_escalated accepted",
+    "bundler": "Turbopack",
+    "coldOutput": true,
+    "log": "/private/tmp/build-gate-causal-sol-20261008/project-worker-threads-build.log",
+    "logSha256": "ea68a3df0a3d3fc186b82cb7150b1c87180a1534bc72029a2ca45232a97cecb8",
+    "sourceHashes": 430,
+    "sourceChanged": [
+      "frontend/next.config.ts"
+    ],
+    "workerArtifact": "/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/frontend/.next/build/chunks/[root-of-the-server]__04-wfmr._.js",
+    "workerArtifactSha256": "6a50868780b7f1a2187080b0fe8a1c863496587a8f4632feedf3943430d52de9",
+    "workerChecks": {
+      "worker_threads": true,
+      "workerData": true,
+      "binding.workerCreated": true,
+      "binding.sendTaskMessage": true,
+      "binding.recvTaskMessageInWorker": true,
+      "noCreateConnection": true
+    },
+    "cssArtifact": "/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/frontend/.next/static/chunks/16vq0kr06wbs9.css",
+    "cssArtifactSha256": "b4b066a1e03e5551ff0be40da1774065702b79c18650db1513a9adb773c6b716",
+    "cssBytes": 69668,
+    "cssChecks": {
+      "--canvas:": true,
+      "--brand:": true,
+      ".bg-canvas": true,
+      ".text-primary": true,
+      ".p-4": true,
+      ".flex": true,
+      ".rounded-control": true,
+      ".rounded-surface": true
+    },
+    "requiredConfigStrategy": "workerThreads",
+    "requiredConfigOutput": "standalone",
+    "standaloneServer": true,
+    "sitemapGenerated": true,
+    "sitemapSha256": "0760d838a85742af966283c8cb99a0610d2bf7fe0a04784a70a74db9bf9d877d",
+    "nextOutputFiles": 2055,
+    "nextManifest": "/private/tmp/build-gate-causal-sol-20261008/trial-next-sha256.json",
+    "nextManifestSha256": "98331ba00871be21c2b0765261112888e0300ff4184559237ee563c1381e8e0b",
+    "portsFree": [
+      3000,
+      3001,
+      3002,
+      3313
+    ],
+    "runtimeExecuted": false,
+    "globalExecuted": false,
+    "staticHarnessCorrection": {
+      "initialMissingSelector": ".rounded-card",
+      "initialResult": false,
+      "reason": "selector supuesto inexistente en design system; no falla de producto",
+      "correctedActualSelectors": [
+        ".rounded-control",
+        ".rounded-surface"
+      ],
+      "correctedResult": true
+    },
+    "ownPoolProcessMatches": 0,
+    "poolCheckPermission": "require_escalated accepted",
+    "poolCheckExit": 1,
+    "defaultProcessCheckUnavailable": true,
+    "buildSession": 29788,
+    "buildSessionComplete": true
+  },
+  "onlyChangedProductSource": "frontend/next.config.ts",
+  "sourcePreservedUnchanged": 429,
+  "preservedOutputFiles": 3258,
+  "cleanup": {
+    "buildSessionComplete": true,
+    "ownPoolProcessMatches": 0,
+    "portsFree": [
+      3000,
+      3001,
+      3002,
+      3313
+    ],
+    "tmpIntentionallyPreserved": "/private/tmp/build-gate-causal-sol-20261008",
+    "stackCreated": false,
+    "databaseRedisCreated": false,
+    "browserCreated": false,
+    "ownWriterAndOutputReservationReleasedAfterDelivery": true
+  }
+}

@@ -1,0 +1,205 @@
+{
+  "evaluatedAt": "2026-10-06T15:55:25.757Z",
+  "state": "passed",
+  "unauthorizedStatus": 401,
+  "photoHash": "21b91828671187ae3011c13cd2fe048b531f6c5663fdba50c5f42692a6391c2f",
+  "scope": "HTTP loopback en puerto efímero con controller, DTO, JwtAuthGuard, service, Prisma y DINOv2 reales. JWT efímero del harness; sin login, AppModule, throttler, proxy, navegador ni red de teléfono. SIGSTOP sólo en workers propios para asegurar una consulta activa; sin escrituras de cartas/precios/fotos.",
+  "productionReady": false,
+  "rows": [
+    {
+      "name": "arranque HTTP",
+      "status": 200,
+      "cold": true,
+      "pid": 69278,
+      "httpMs": 1876.8342500000003,
+      "references": 20670,
+      "ids": [
+        "ex7-31",
+        "pop5-10",
+        "dp2-122",
+        "ex7-40",
+        "swsh5-96",
+        "ex10-54",
+        "ex7-19",
+        "dp7-88"
+      ],
+      "listeners": {
+        "message": 0,
+        "exit": 1,
+        "error": 1,
+        "disconnect": 1
+      }
+    },
+    {
+      "name": "cancelación HTTP",
+      "round": 1,
+      "clientError": "AbortError",
+      "busyStatus": 503,
+      "cancelledPid": 69278,
+      "releaseMs": 10.896250000000236,
+      "exitMs": 12.313083000000006
+    },
+    {
+      "name": "reintento 1",
+      "status": 200,
+      "cold": true,
+      "pid": 69284,
+      "httpMs": 1423.335375,
+      "references": 20670,
+      "ids": [
+        "ex7-31",
+        "pop5-10",
+        "dp2-122",
+        "ex7-40",
+        "swsh5-96",
+        "ex10-54",
+        "ex7-19",
+        "dp7-88"
+      ],
+      "listeners": {
+        "message": 0,
+        "exit": 1,
+        "error": 1,
+        "disconnect": 1
+      }
+    },
+    {
+      "name": "reutilización 1",
+      "status": 200,
+      "cold": false,
+      "pid": 69284,
+      "httpMs": 161.96241699999973,
+      "references": 20670,
+      "ids": [
+        "ex7-31",
+        "pop5-10",
+        "dp2-122",
+        "ex7-40",
+        "swsh5-96",
+        "ex10-54",
+        "ex7-19",
+        "dp7-88"
+      ],
+      "listeners": {
+        "message": 0,
+        "exit": 1,
+        "error": 1,
+        "disconnect": 1
+      }
+    },
+    {
+      "name": "cancelación HTTP",
+      "round": 2,
+      "clientError": "AbortError",
+      "busyStatus": 503,
+      "cancelledPid": 69284,
+      "releaseMs": 10.726542000000336,
+      "exitMs": 12.585959000000003
+    },
+    {
+      "name": "reintento 2",
+      "status": 200,
+      "cold": true,
+      "pid": 69291,
+      "httpMs": 1406.2056670000002,
+      "references": 20670,
+      "ids": [
+        "ex7-31",
+        "pop5-10",
+        "dp2-122",
+        "ex7-40",
+        "swsh5-96",
+        "ex10-54",
+        "ex7-19",
+        "dp7-88"
+      ],
+      "listeners": {
+        "message": 0,
+        "exit": 1,
+        "error": 1,
+        "disconnect": 1
+      }
+    },
+    {
+      "name": "reutilización 2",
+      "status": 200,
+      "cold": false,
+      "pid": 69291,
+      "httpMs": 135.62504199999967,
+      "references": 20670,
+      "ids": [
+        "ex7-31",
+        "pop5-10",
+        "dp2-122",
+        "ex7-40",
+        "swsh5-96",
+        "ex10-54",
+        "ex7-19",
+        "dp7-88"
+      ],
+      "listeners": {
+        "message": 0,
+        "exit": 1,
+        "error": 1,
+        "disconnect": 1
+      }
+    },
+    {
+      "name": "cancelación HTTP",
+      "round": 3,
+      "clientError": "AbortError",
+      "busyStatus": 503,
+      "cancelledPid": 69291,
+      "releaseMs": 10.653374999999869,
+      "exitMs": 10.955041999999594
+    },
+    {
+      "name": "reintento 3",
+      "status": 200,
+      "cold": true,
+      "pid": 69297,
+      "httpMs": 1394.105375,
+      "references": 20670,
+      "ids": [
+        "ex7-31",
+        "pop5-10",
+        "dp2-122",
+        "ex7-40",
+        "swsh5-96",
+        "ex10-54",
+        "ex7-19",
+        "dp7-88"
+      ],
+      "listeners": {
+        "message": 0,
+        "exit": 1,
+        "error": 1,
+        "disconnect": 1
+      }
+    },
+    {
+      "name": "reutilización 3",
+      "status": 200,
+      "cold": false,
+      "pid": 69297,
+      "httpMs": 138.3447499999993,
+      "references": 20670,
+      "ids": [
+        "ex7-31",
+        "pop5-10",
+        "dp2-122",
+        "ex7-40",
+        "swsh5-96",
+        "ex10-54",
+        "ex7-19",
+        "dp7-88"
+      ],
+      "listeners": {
+        "message": 0,
+        "exit": 1,
+        "error": 1,
+        "disconnect": 1
+      }
+    }
+  ]
+}

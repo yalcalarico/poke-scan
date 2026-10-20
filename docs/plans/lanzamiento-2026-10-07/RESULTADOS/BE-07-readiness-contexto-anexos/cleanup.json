@@ -1,0 +1,48 @@
+{
+  "ports": {
+    "3000": {
+      "exitCode": 1,
+      "output": "",
+      "free": true
+    },
+    "3001": {
+      "exitCode": 1,
+      "output": "",
+      "free": true
+    },
+    "58802": {
+      "exitCode": 1,
+      "output": "",
+      "free": true
+    },
+    "58804": {
+      "exitCode": 1,
+      "output": "",
+      "free": true
+    },
+    "58806": {
+      "exitCode": 1,
+      "output": "",
+      "free": true
+    },
+    "58808": {
+      "exitCode": 1,
+      "output": "",
+      "free": true
+    },
+    "58810": {
+      "exitCode": 1,
+      "output": "",
+      "free": true
+    }
+  },
+  "workerPid": 14773,
+  "workerProcessAbsent": true,
+  "workerPsExitCode": 1,
+  "workerPsOutput": "",
+  "allOriginalEmitMethodsRestored": true,
+  "dbRedisResourcesCreated": false,
+  "liveResources": [],
+  "atUtc": "2026-10-09T13:37:24.936979+00:00",
+  "sandboxPsEperm": "PermissionError: [Errno 1] Operation not permitted: ps; read-only retry outside sandbox exit1/empty confirms no process"
+}

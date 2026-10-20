@@ -1,0 +1,43 @@
+services:
+  backend:
+    build:
+      target: custody-runner
+      additional_contexts:
+        custody-ops: ${CUSTODY_PACKAGE_DIR:?Set CUSTODY_PACKAGE_DIR to a verified INF-02 custody package}
+    env_file:
+      - ${CUSTODY_RUNTIME_ENV_FILE:?Set CUSTODY_RUNTIME_ENV_FILE to a private runtime env file}
+    environment:
+      ACCOUNT_DELETION_MODE: local-private
+      ACCOUNT_DELETION_CUSTODY_MODE: local-simulated
+      ACCOUNT_DELETION_CUSTODY_STORE_DIR: /var/lib/pokescan/custody/store
+      ACCOUNT_DELETION_CUSTODY_ANCHOR_DIR: /var/lib/pokescan/custody/anchor
+      ACCOUNT_DELETION_BACKUP_REPOSITORY_DIR: /var/lib/pokescan/backups/repository
+      ACCOUNT_DELETION_BACKUP_INVENTORY_DIR: /var/lib/pokescan/backups/inventory
+      ACCOUNT_DELETION_BACKUP_CHECKPOINT_DIR: /var/lib/pokescan/backups/checkpoint
+      ACCOUNT_DELETION_JOURNAL_DIR: /var/lib/pokescan/suppression/journal
+      ACCOUNT_DELETION_CHECKPOINT_DIR: /var/lib/pokescan/suppression/checkpoint
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=64m,mode=1777
+    volumes:
+      - type: bind
+        source: ${INF03_CUSTODY_STORE_HOST:?Set the owned custody store directory}
+        target: /var/lib/pokescan/custody/store
+      - type: bind
+        source: ${INF03_CUSTODY_ANCHOR_HOST:?Set the owned custody anchor directory}
+        target: /var/lib/pokescan/custody/anchor
+      - type: bind
+        source: ${INF03_BACKUP_REPOSITORY_HOST:?Set the owned backup repository directory}
+        target: /var/lib/pokescan/backups/repository
+      - type: bind
+        source: ${INF03_BACKUP_INVENTORY_HOST:?Set the owned backup inventory directory}
+        target: /var/lib/pokescan/backups/inventory
+      - type: bind
+        source: ${INF03_BACKUP_CHECKPOINT_HOST:?Set the owned backup checkpoint directory}
+        target: /var/lib/pokescan/backups/checkpoint
+      - type: bind
+        source: ${INF03_SUPPRESSION_JOURNAL_HOST:?Set the owned suppression journal directory}
+        target: /var/lib/pokescan/suppression/journal
+      - type: bind
+        source: ${INF03_SUPPRESSION_CHECKPOINT_HOST:?Set the owned suppression checkpoint directory}
+        target: /var/lib/pokescan/suppression/checkpoint

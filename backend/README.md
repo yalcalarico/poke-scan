@@ -16,7 +16,7 @@
 | TypeScript | 6.x | `module`/`moduleResolution`: `nodenext` |
 | Prisma | **6.19.3 clavado** | Prisma 7 eliminó `url` del datasource: no subir |
 | PostgreSQL | 16 | Puerto **55432** en el host (5432 suele estar ocupado) |
-| Redis | 7 (ioredis 6) | Caché y flags de sync. Opcional: si no está, la app sigue |
+| Redis | 7 (ioredis 6) | Caché y coordinación opcional; algunos servicios degradan si no está |
 | Vitest | 4.x | `fileParallelism: false` (ver [docs/testing.md](docs/testing.md)) |
 | Lint | oxlint + tsgolint | `oxlint --type-aware src/ test/` |
 
@@ -32,7 +32,7 @@ pnpm install && pnpm run db:generate
 # 3. migraciones (desde la raíz: prisma migrate deploy && prisma generate)
 pnpm --dir . exec prisma migrate deploy
 
-# 4. catálogo (20.670 cartas, ~85 requests, varios minutos)
+# 4. catálogo (sync inicial; el tiempo y las requests dependen de la fuente y el cursor)
 pnpm run db:sync
 
 # 5. API en watch
@@ -66,7 +66,7 @@ Variables de entorno (`.env`, con los defaults de ejemplo):
 - **Auth**: access token JWT de 15 min + refresh token opaco (SHA-256 en BD) con
   rotación y detección de reuso. `JwtAuthGuard` se aplica con `@UseGuards`
   explícito por controller, **no** global.
-- **Catálogo**: 20.670 cartas y 176 sets espejados en Postgres. La búsqueda usa
+- **Catálogo**: cartas y sets espejados en Postgres. La búsqueda usa
   índices trigram de `pg_trgm` + `ILIKE` en una sola query SQL.
 - **Precios**: bajo demanda, cacheados en 2 capas (Redis 1 h + Postgres 24 h) y
   con una cola en background a ~26 req/min. Un handler público nunca llama a
@@ -79,8 +79,8 @@ Variables de entorno (`.env`, con los defaults de ejemplo):
 ```
 backend/
 ├── prisma/
-│   ├── schema.prisma          10 modelos, tablas snake_case vía @@map
-│   └── migrations/            3 migraciones (una a mano: pg_trgm)
+│   ├── schema.prisma          Modelos Prisma; tablas snake_case vía @@map
+│   └── migrations/            Migraciones Prisma y SQL manual (pg_trgm)
 ├── scripts/                   seed.ts · sync-full.ts · api-smoke.ts
 ├── src/
 │   ├── main.ts                bootstrap: helmet, CORS, /api, ValidationPipe
@@ -89,9 +89,9 @@ backend/
 │   ├── common/                guard JWT, decoradores @Public/@CurrentUser, tipos
 │   ├── prisma/                PrismaService (@Global) + PrismaModule
 │   ├── redis/                 RedisService tolerante a Redis caído (@Global)
-│   ├── jobs/                  SyncSets / SyncCards / SyncPrices + controller admin
+│   ├── jobs/                  Sync, precios, comparación y scheduler
 │   └── modules/               auth · users · cards · collections · share
-│                              currency · friends · providers
+│                              currency · friends · providers · account-deletion · metrics
 └── docs/                      esta documentación
 ```
 
@@ -103,7 +103,7 @@ backend/
 | `pnpm run build` | `nest build` → `dist/` |
 | `pnpm run start:prod` | `node dist/main` |
 | `pnpm run lint` | oxlint type-aware |
-| `pnpm run test` | Vitest (8 archivos, 104 tests) |
+| `pnpm run test` | Vitest |
 | `pnpm run test:watch` / `test:cov` / `test:debug` | Variantes de Vitest |
 | `pnpm run test:e2e` | Solo `*.e2e-spec.ts` (hoy solo `/api/health`) |
 | `pnpm run db:generate` | `prisma generate` |
@@ -115,10 +115,10 @@ backend/
 
 | Doc | Qué resuelve |
 |---|---|
-| [docs/api.md](docs/api.md) | Referencia de los 40 endpoints (+ `/health`): auth, DTOs, respuestas, errores, ejemplos |
-| [docs/database.md](docs/database.md) | Los 10 modelos, las 3 migraciones, índices y patrones de query |
-| [docs/modules.md](docs/modules.md) | Mapa de los 8 módulos y sus dependencias |
-| [docs/providers.md](docs/providers.md) | Patrón `CardDataProvider`, `VARIANT_MAP`, cómo migrar a Scrydex |
+| [docs/api.md](docs/api.md) | Referencia de endpoints: auth, DTOs, respuestas, errores y ejemplos |
+| [docs/database.md](docs/database.md) | Modelos, migraciones, índices y patrones de query |
+| [docs/modules.md](docs/modules.md) | Mapa de módulos y sus dependencias |
+| [docs/providers.md](docs/providers.md) | Proveedores activos, comparación y alternativas documentadas |
 | [docs/pricing.md](docs/pricing.md) | Precios bajo demanda, 2 capas de caché, cola y conversión ARS |
 | [docs/jobs.md](docs/jobs.md) | Sync de catálogo y precios, reanudación, endpoints admin |
 | [docs/testing.md](docs/testing.md) | Cómo escribir specs, por qué `fileParallelism: false` |

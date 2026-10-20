@@ -1,0 +1,24 @@
+[
+  {
+    "phase": "migrate",
+    "command": [
+      "pnpm",
+      "--dir",
+      "backend",
+      "exec",
+      "prisma",
+      "migrate",
+      "deploy"
+    ],
+    "exitCode": 0
+  },
+  {
+    "phase": "check",
+    "command": [
+      "pnpm",
+      "run",
+      "check"
+    ],
+    "exitCode": 1
+  }
+]

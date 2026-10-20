@@ -1,0 +1,37 @@
+{
+  "accepted": true,
+  "dateClient": "2026-10-13",
+  "scope": "One-shot local simulated backup calendar/cycle, not installed cron or real offhost",
+  "focalFinal": 15,
+  "standardCheck": {
+    "passed": 1146,
+    "skipped": 0,
+    "exactOnce": true,
+    "lintTypesNestNextTurbopack": true
+  },
+  "integratedDistinctControls": 15,
+  "runtimeSelectedFilesUnchanged": 1487,
+  "artifactHashesVerified": 27,
+  "sourceCopies": 6,
+  "delegations": 1,
+  "producerInterruptedByUsageLimit": true,
+  "rootReviewedAndCorrected": true,
+  "cleanupComplete": true,
+  "userInstanceIntentionalAlive": true,
+  "noScreenshots": true,
+  "miniPCPreparationComplete": true,
+  "miniPCExecutionDeferredFinal": true,
+  "IDsComplete": 20,
+  "IDsPending": 18,
+  "automationUnchanged": "PAUSED/two-hours",
+  "notAccredited": [
+    "real cron/timer",
+    "B2/offhost",
+    "miniPC",
+    "RPO/RTO",
+    "power-loss",
+    "joint rollback",
+    "actual ten-minute timeout"
+  ],
+  "reportLinksVerified": 16
+}

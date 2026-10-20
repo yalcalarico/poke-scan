@@ -44,6 +44,10 @@ describe('CardsService', () => {
                 source: 'tcgplayer',
                 currency: 'USD',
                 fetchedAt: new Date('2024-05-01T12:00:00.000Z'),
+                evaluatedAt: '2024-05-01T12:00:00.000Z',
+                freshness: 'fresh',
+                upstreamUpdatedAt: null,
+                upstreamFreshness: 'unknown',
               },
             ],
           },
@@ -221,6 +225,7 @@ describe('CardsService', () => {
       expect(price.mid).toBeCloseTo(9.87, 5);
       expect(JSON.parse(JSON.stringify(price)).market).toBe(7.25);
       expect(price.fetchedAt).toBe('2024-05-01T12:00:00.000Z');
+      expect(price).toMatchObject({ evaluatedAt: '2024-05-01T12:00:00.000Z', freshness: 'fresh', upstreamUpdatedAt: null, upstreamFreshness: 'unknown' });
     }
   });
 

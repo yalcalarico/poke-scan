@@ -1,0 +1,40 @@
+[
+  {
+    "phase": "migrate",
+    "command": [
+      "pnpm",
+      "--dir",
+      "backend",
+      "exec",
+      "prisma",
+      "migrate",
+      "deploy"
+    ],
+    "exitCode": 0
+  },
+  {
+    "phase": "focused",
+    "command": [
+      "pnpm",
+      "--dir",
+      "frontend",
+      "exec",
+      "vitest",
+      "run",
+      "components/visual-preview",
+      "components/cards/__tests__/card-grid.test.tsx",
+      "components/collections/__tests__/collection-card.test.tsx",
+      "components/collections/__tests__/portfolio-overview.test.tsx"
+    ],
+    "exitCode": 0
+  },
+  {
+    "phase": "check",
+    "command": [
+      "pnpm",
+      "run",
+      "check"
+    ],
+    "exitCode": 1
+  }
+]

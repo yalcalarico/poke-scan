@@ -1,0 +1,23 @@
+{
+  "summary.json": "613b7754791b4aa750ca32424ed7534883384e21736634b987f91ffa4ec58ccd",
+  "runtime-source-output-verification.json": "5fce703fc0be8172713cdcf9047706dfacb9baf99126e321bd23a222e5b881d7",
+  "runtime-resource-cleanup.json": "bb73509b01a0b0e742e3703ed53285fdc4ebca2ac6699166c58be8ad11f39655",
+  "source-delta.json": "87bb44b168d5175c0887d0072cb88a7d8dc3cfb8ad82c52f4e0bc9d08eadfdd2",
+  "current-check.log": "e1658112c48a6d0915135bc9301aa54e3ee8ca79b624222b1a48abd19d829dbf",
+  "recuperacion-enlace-listo.jpg": "e4eb6da6d05cb66882a6ae1830d272633282d39eb5b1693c890f947495fe61b8",
+  "current-check-result.json": "7c9f37534c1d1590ebbc3d15bab72d5b80fbeee5da9fbc903d612eb301477ec6",
+  "initial-current-check.log": "4d7a10da3d4ede927d982f5c6ab8e10d9ce42f77acbfc17b5981418ca2f5657a",
+  "final-instance.json": "9b7053375e4fc7890191785b4ed401ee8552ce8e5548d364b9dc16a5e3e73fec",
+  "db-owner.json": "6b27ddb882bd3b911d3178937b5b4126117796e8fbcebaf7fe00bd1bfcf02bac",
+  "recuperacion-completada.jpg": "872e5e23027497d60f5d5a3386da72c0cf8f4d3d344d4ba8bef7d11078ddc729",
+  "initial-current-check-result.json": "5284cb00b66342340105c515bb9f84bfc1f7bd773fe0079b9429863728ff4c5f",
+  "runtime-checks.json": "583b3a9b95e9af13603c8d06f9e1dbd3baa2c64f7fcf13371eaca5a503225356",
+  "runtime-harness-audit.mjs": "8f8cddc99eb56e303c4929a599732cfd717b86c0f95549e26be7e3283c2208b1",
+  "cleanup-receipt.json": "60ddc143e08b267db9f2c3d7eb823517355c69e2575c0b87cfb02460085f313f",
+  "current-focused.log": "2314a773ae5b03054ba99ef7b01c60261ed468d3581969be0a6391905efa89da",
+  "focused-result.json": "51f3f4925b08e460f24979d5e6e265a810dfb9e6f048434503b96292b7e217c3",
+  "fuentes/backend/src/modules/auth/resend-recovery-mail.port.ts": "3ca8bf39cd41c24a96f7158b6e8630265cf29da149d2363b7c7579f80edc6b9b",
+  "fuentes/backend/src/modules/auth/resend-recovery-mail.port.spec.ts": "e05c605d24406a8e1fcaf6d776132ffc08be7e3bd732d05461911f12463bcf72",
+  "fuentes/backend/src/modules/auth/auth.module.ts": "4fb38eb4aee99bb53948f6af3e0c5e0118464c4caa5efd75aa5d83879d24c420",
+  "fuentes/docs/infra/resend-recovery.md": "c7942d50bf406dae0febfcbc3da3e770458cd23f0411df0cd9c8db3b4024d90c"
+}

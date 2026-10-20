@@ -1,0 +1,194 @@
+{
+  "reviewer": "Sol HIGH",
+  "captured_at": "2026-10-09T12:28:51.343411+00:00",
+  "received": [
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/NEG-03-cuenta-requisitos.md",
+      "received_copy": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/evidencia-neg03-cuenta-review/NEG-03-cuenta-requisitos-recibido.md",
+      "sha256": "bbf2fbc0400adfb35e9d3fad5afae88135e53223a322d49e99e8e00d06c29e03",
+      "bytes": 15910
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/evidencia-neg03-cuenta/baseline-selectiva.json",
+      "received_copy": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/evidencia-neg03-cuenta-review/baseline-selectiva-recibido.json",
+      "sha256": "62c438c1ab12bdba624dbc6ff961a8bcfea95e5d8be165ca8bf04812ca9614ec",
+      "bytes": 5123
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/evidencia-neg03-cuenta/validacion-documental.json",
+      "received_copy": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/evidencia-neg03-cuenta-review/validacion-documental-recibido.json",
+      "sha256": "31df72ea5e4acd3de4cf352357a3e62e845b7e352c13bf3ce986ca52778f2522",
+      "bytes": 13353
+    }
+  ],
+  "sources": [
+    {
+      "path": "AGENTS.md",
+      "sha256": "0a44196ce9194cafcd54094af02e90e73f0da0f693604d0876d97bf14ee30688",
+      "bytes": 12424
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/README.md",
+      "sha256": "24ec5dee918d19778b3a7bfd4187fecf1eff2e2f855ffdd2a26ed0843fc1eced",
+      "bytes": 7565
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/08-negocio-monetizacion.md",
+      "sha256": "e396d76091248484fc57a4c8b0245f46e408b3527ecc1f74bb127f6639bf2e96",
+      "bytes": 7692
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/10-decisiones-y-contratos.md",
+      "sha256": "a040c6d51aa674adc7449b9dc683e1d1f5fa0cc6aaf0b6f2377991827a2ab6e5",
+      "bytes": 19459
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/01-frontend.md",
+      "sha256": "ba1c7db23291d45b38d6352a3f5b1d5c0920459721d64f349bccb5592c3c8109",
+      "bytes": 14670
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/02-backend.md",
+      "sha256": "eaa51a56f69f102605e0c7810379cae969135cc047686ebfcae9e14e7772e657",
+      "bytes": 14867
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/03-ui-ux.md",
+      "sha256": "6fd798bbb2867c00e18ac53a689233105cd01b167bbdb4a8a73eea203ee04a19",
+      "bytes": 9776
+    },
+    {
+      "path": "backend/src/modules/auth/auth.service.ts",
+      "sha256": "0a254e70b586234adb0273e5ab6f038e92629161c6aea305de6de87120dd7502",
+      "bytes": 6216
+    },
+    {
+      "path": "backend/src/modules/auth/auth.controller.ts",
+      "sha256": "6e1418e90f41739a7aaf6be807498caa46491fc92beef554ad58d9c8fa29a7c5",
+      "bytes": 3369
+    },
+    {
+      "path": "backend/src/modules/auth/session-security.ts",
+      "sha256": "d2389954d9106d797fc19a2a7af9d88077ea740383cb5271056bafae2973aa99",
+      "bytes": 2923
+    },
+    {
+      "path": "backend/prisma/schema.prisma",
+      "sha256": "aa1a08ba649e542444fd79e724e497d8304c469b33a1cc0966646e831e6b3624",
+      "bytes": 12473
+    },
+    {
+      "path": "backend/src/modules/share/share.service.ts",
+      "sha256": "306b6290135591dbdeee63b22b0d015eb44bed5fc640f8ce4eb056ff70fb8c62",
+      "bytes": 19207
+    },
+    {
+      "path": "backend/src/modules/share/public-share.controller.ts",
+      "sha256": "acf9b7ef58255bff779152981f94faca44b4b155ec8f9d10e621c5bc23a8d2ee",
+      "bytes": 931
+    },
+    {
+      "path": "backend/docs/database.md",
+      "sha256": "b13f35f6425b5be03bb1b4517d6bd3957dbd1e8737f665306f585cdbb499d4fa",
+      "bytes": 25479
+    },
+    {
+      "path": "docs/security.md",
+      "sha256": "77ca6e0ad62b3b100f6f6e2190e77cb708d5ad310bc546fcba9e331140b9af28",
+      "bytes": 4601
+    },
+    {
+      "path": "docs/architecture.md",
+      "sha256": "2dcd7b86a7552648c3af37a24a84d9c4dfa77cb91967f98cb1d25528f2093072",
+      "bytes": 9561
+    },
+    {
+      "path": "frontend/docs/scanner.md",
+      "sha256": "cd5646940492469583b428c1911a7f7820538742764abfb254b50f630adcbf52",
+      "bytes": 15476
+    },
+    {
+      "path": "infra/inf03/README.md",
+      "sha256": "7176efc0c91de25d8d62932c7c252b89dac23fca5972763a222526a3896dbe90",
+      "bytes": 9665
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-03-local-review.md",
+      "sha256": "ddaba3d7bdc6f4c897a19de675a8f800e4171caf58f486311109c678f3fd5d4c",
+      "bytes": 12411
+    },
+    {
+      "path": "backend/src/modules/auth/auth.module.ts",
+      "sha256": "a088b427e35b791b70c30aaf85e0e88cb4a91e1c1aafd93274da692f157387dc",
+      "bytes": 988
+    },
+    {
+      "path": "backend/src/common/guards/jwt-auth.guard.ts",
+      "sha256": "ae56011d88cfeeba08eaf3df29b8314ad00dc2d0008fa0aa0a9cb439cbf41fc1",
+      "bytes": 1581
+    },
+    {
+      "path": "frontend/public/sw.js",
+      "sha256": "5647d8e6f5cb69511817b2ac00df6d5eaa4b906a8f6f7001ef59cbcbadb24503",
+      "bytes": 8566
+    },
+    {
+      "path": "frontend/docs/portfolio.md",
+      "sha256": "8e6b0ffb6becf29ad531e82608795cd4e5f3a0163cb274aec31e37db8c181816",
+      "bytes": 3651
+    },
+    {
+      "path": "frontend/app/share/[slug]/page.tsx",
+      "sha256": "a2c7b3dc3a1159a8deb7f505cbc7e271519c7b11610ae0042ec7bfb02fb34072",
+      "bytes": 4595
+    },
+    {
+      "path": "frontend/lib/api/api-client.ts",
+      "sha256": "2273f6f6adedaca136b7cf26925b01b2ea7cad34e44a7d3f6896b2f471d9225d",
+      "bytes": 5993
+    },
+    {
+      "path": "frontend/lib/api/auth.ts",
+      "sha256": "4eee2697a27eaba4aef33e9f6487aa7b2c84d49cc3b08f05d4272cfc01872e89",
+      "bytes": 1254
+    },
+    {
+      "path": "frontend/lib/api/token-storage.ts",
+      "sha256": "ce7e03a78388c4c1743eebc7a5af362829a83283ded6188bab37d9440d21b6e0",
+      "bytes": 1006
+    },
+    {
+      "path": "frontend/hooks/use-auth.tsx",
+      "sha256": "8e59872c612fc20d66f5503464b8ca83e7319f0876e75498297705cca7681745",
+      "bytes": 3414
+    },
+    {
+      "path": "backend/src/modules/cards/visual-identify.controller.ts",
+      "sha256": "048474b4181fc585ed41369643bcc7c138e3a4a79b47546f38353b7a4af2b148",
+      "bytes": 2720
+    },
+    {
+      "path": "backend/src/modules/cards/visual-identify.service.ts",
+      "sha256": "e95d2f442ee4ff0be6ddc5eed6ebd7e53c8d8dda67aed2822402eb9f5d866416",
+      "bytes": 12822
+    },
+    {
+      "path": "backend/src/modules/collections/collections.service.ts",
+      "sha256": "a2d13f3c9ecbc88fbd9a8ab4e87bc2bcb0fdd6614af651aff18612f0f1ef2a19",
+      "bytes": 50328
+    },
+    {
+      "path": "frontend/components/scanner/session-storage.ts",
+      "sha256": "e53a60992e18481e1b1d51ce5a20ca8fb34adcb180820f32dc7ac28709fbf6f2",
+      "bytes": 2666
+    }
+  ],
+  "excluded_from_stability_claim": [
+    "Redis implementation/specs",
+    "backend/docs/testing.md",
+    "backend/docs/gotchas.md",
+    "central registry and orchestration state",
+    "concurrent outputs"
+  ],
+  "historical_sources_count": 21
+}

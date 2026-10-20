@@ -1,0 +1,42 @@
+{
+  "date": "2026-10-11",
+  "acceptedBy": "root",
+  "step": "DEC-04 method for first round",
+  "method": "manual observation and existing private protocol tables",
+  "humanCollectionGates": "still pending; no retention/custodian/provider approval invented",
+  "completedIds": 18,
+  "pendingIds": 20,
+  "newAreaIdsClosed": 0,
+  "nextStep": "BE-06 aggregate operational metrics; awaiting user answer",
+  "automaticFrontendEvents": "deferred; FE-05 remains pending",
+  "newProductEdits": 0,
+  "productHashesIntact": 1322,
+  "priorInputsIntact": {
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/RES-03-protocolo.md": "2595f9aa242d8faaf43575ef6273888db3df7a13a1b2063f17bdcec2e8928c57",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/MKT-02-beta.md": "8e1c9ceee3483f9528c22b77d9712006606dea5c2c8b54567d0d068eca7c739f",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/MKT-02-review.md": "76df4227eaedb5f5039cdc8d72252414dbeb5634d8721aeb67e8dc74a60e2a90",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/NEG-03-cuenta-requisitos.md": "79365783583653359d4abcf9c682dfd9b06cf6def20158b5f23aeef914afe20b",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/LOTE-ADQUISICION-cierre.md": "67258dbdd97b69435c6939ae6383f8787c0619910f050ab98da36f1a550e9770",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/LOTE-ADQUISICION-cierre-aceptacion-root.json": "15cb2661b1e140c929563c489a448a4ac1beaa65ce6a6049b3c86d4c16441554"
+  },
+  "documentLinksAndAnchorsVerified": [
+    "RES-03-protocolo.md#dec-04-método-mínimo-y-diccionario-propuesto",
+    "MKT-02-beta.md#medición-manual-y-definiciones",
+    "SEO-03-contenido.md"
+  ],
+  "newDelegations": 0,
+  "testsBuildsDbRedisRuntimeAutomationActions": 0,
+  "stepApprovalPreferencePersisted": true,
+  "manifest": {
+    "docs/orquestacion-codex.md": "09a382ffec3620b3122bf5b1f858aba7749170c8307342049ae31c60d5f3ce22",
+    "docs/plans/lanzamiento-2026-10-07/10-decisiones-y-contratos.md": "68a1a1af6c300df69a589816f1b20dd6e5a2c93965b242b3eda3b18c0c7910cf",
+    "docs/plans/lanzamiento-2026-10-07/CONTEXTO-PART2.md": "5745dd04a82d0e7620d915318aa4392a51297f0119e070cf0fa30de8881ffecb",
+    "docs/plans/lanzamiento-2026-10-07/01-frontend.md": "b8f899ca09ca3c4440107c8d384c27583e6c7d139a30aeef64cfea2605a97405",
+    "docs/plans/lanzamiento-2026-10-07/STATUS-CHECKLIST.md": "b04a1582c45bea7af26d05252cf0f2abc9a9c354cda9ac4f148d604aff15c1cb",
+    "docs/plans/lanzamiento-2026-10-07/REGISTRO-TAREAS.md": "0f61204ff7f83f1a06f8136cb407780fd7633ee8707111b75cab8bd7fcc0fbdd",
+    "docs/plans/lanzamiento-2026-10-07/02-backend.md": "2078da6eb90fbd765c9551b9ad78da49488634259148611cbeb127f291281641",
+    "docs/plans/lanzamiento-2026-10-07/11-orquestacion.md": "a9e891c0f6ec72cfc4ad699882f558a8ca9e93518b8a212c18a86459cbe78ac1",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/ORQUESTACION-ESTADO.md": "c259a788db8143a44c6cbca035fcd2f050cb33c11dcf0efc147c50aeaedab0f4",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/DEC-04-medicion-minima.md": "9c2448903e5cf5eb4d370d4eee60ddd05d1d8d74ea243be7df9ad3f10e824f4f"
+  }
+}

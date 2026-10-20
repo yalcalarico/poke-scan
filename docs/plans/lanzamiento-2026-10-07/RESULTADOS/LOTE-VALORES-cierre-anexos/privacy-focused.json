@@ -1,0 +1,93 @@
+{
+  "capturedAt": "2026-10-09T01:01:17.420Z",
+  "scope": "one synthetic collection anonymous SSR; current Turbopack + real API; no SEO matrix repeated",
+  "http": {
+    "anonymousNext": 200,
+    "ownerAPI": 200,
+    "anonymousAPI": 401,
+    "foreignAPI": 404
+  },
+  "markers": {
+    "routeSuppliedCollectionUUID": {
+      "completeResponse": true,
+      "literalDocumentWithoutScripts": false,
+      "flightScripts": true,
+      "otherScripts": false
+    },
+    "ownerUUID": {
+      "completeResponse": false,
+      "literalDocumentWithoutScripts": false,
+      "flightScripts": false,
+      "otherScripts": false
+    },
+    "otherUserUUID": {
+      "completeResponse": false,
+      "literalDocumentWithoutScripts": false,
+      "flightScripts": false,
+      "otherScripts": false
+    },
+    "itemUUID": {
+      "completeResponse": false,
+      "literalDocumentWithoutScripts": false,
+      "flightScripts": false,
+      "otherScripts": false
+    },
+    "privateEmail": {
+      "completeResponse": false,
+      "literalDocumentWithoutScripts": false,
+      "flightScripts": false,
+      "otherScripts": false
+    },
+    "privateNote": {
+      "completeResponse": false,
+      "literalDocumentWithoutScripts": false,
+      "flightScripts": false,
+      "otherScripts": false
+    },
+    "fixtureCollectionName": {
+      "completeResponse": false,
+      "literalDocumentWithoutScripts": false,
+      "flightScripts": false,
+      "otherScripts": false
+    },
+    "fixtureDisplayName": {
+      "completeResponse": false,
+      "literalDocumentWithoutScripts": false,
+      "flightScripts": false,
+      "otherScripts": false
+    },
+    "fixturePassword": {
+      "completeResponse": false,
+      "literalDocumentWithoutScripts": false,
+      "flightScripts": false,
+      "otherScripts": false
+    },
+    "actualAccessTokens": {
+      "completeResponse": false,
+      "literalDocumentWithoutScripts": false,
+      "flightScripts": false,
+      "otherScripts": false
+    },
+    "actualRefreshTokens": {
+      "completeResponse": false,
+      "literalDocumentWithoutScripts": false,
+      "flightScripts": false,
+      "otherScripts": false
+    },
+    "fieldNames": {
+      "completeResponse": true,
+      "literalDocumentWithoutScripts": false,
+      "flightScripts": true,
+      "otherScripts": false
+    }
+  },
+  "classification": "route-supplied collection UUID occurs only in Flight scripts; protected fixture values absent in complete response",
+  "noindexObserved": true,
+  "noindexUsedAsAuthorizationProof": false,
+  "rawOrActualValuesPersisted": false,
+  "actualAccessTokenMarkerCount": 2,
+  "actualRefreshTokenMarkerCount": 2,
+  "domPendingCoordinator": true,
+  "initialHarnessCorrection": "first capture extracted wrong cookie label; access tokens were checked but refresh values were not. Preserve first capture separately; final capture uses actual pcs.refreshToken and requires two present.",
+  "sanitizedEvidenceSha256": "3da49592676b8bd197e0d82ebbd0d8b7bdfc1d303070be52a84944c699e11c45"
+}

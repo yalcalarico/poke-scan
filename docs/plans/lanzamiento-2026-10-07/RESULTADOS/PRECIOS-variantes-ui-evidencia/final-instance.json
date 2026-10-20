@@ -1,0 +1,43 @@
+{
+  "atUtc": "2026-10-13T23:41:53.079596+00:00",
+  "intentionalUserInstanceAlive": true,
+  "owners": {
+    "api": {
+      "pid": 22239,
+      "parent": 22238,
+      "role": "local-user-request-api",
+      "port": 3001,
+      "listenerPid": 22250,
+      "ancestryVerified": true
+    },
+    "next": {
+      "pid": 22253,
+      "parent": 22252,
+      "role": "local-user-request-next",
+      "port": 3000,
+      "listenerPid": 22264,
+      "ancestryVerified": true
+    }
+  },
+  "checks": [
+    {
+      "route": "http://localhost:3000/carta/me55-18",
+      "status": 200
+    },
+    {
+      "route": "http://localhost:3001/api/ready",
+      "status": 200
+    },
+    {
+      "route": "http://localhost:3001/api/cards/me55-18/comparison?variant=holofoil&days=7",
+      "status": 200,
+      "marketUsd": 0.2,
+      "realHistoryDays": 1,
+      "nextContentDownload": "2026-10-14T23:19:54.628Z"
+    }
+  ],
+  "ownQAResourcesGone": true,
+  "tcgcsvActualPricesPreserved": true,
+  "sevenDayArchiveImportBlockedByProvider403": true,
+  "sourceAndQuotaPolicyPreserved": true
+}

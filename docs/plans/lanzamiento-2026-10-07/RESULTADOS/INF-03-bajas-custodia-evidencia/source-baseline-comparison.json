@@ -1,0 +1,21 @@
+{
+  "selectedFiles": 537,
+  "baselineTiming": "After dispatch, not full prior dirty tree snapshot",
+  "authorizedSelectedChanges": [
+    "backend/src/modules/account-deletion/account-deletion.module.ts",
+    "backend/src/modules/account-deletion/account-deletion.service.ts",
+    "backend/src/modules/account-deletion/account-suppression.service.ts",
+    "infra/inf03/CUSTODIA-RECUPERACION-LOCAL.md"
+  ],
+  "taskFilesOutsideSelection": [
+    "backend/src/modules/account-deletion/suppression-custody.ts",
+    "backend/src/modules/account-deletion/suppression-custody-worker.ts",
+    "backend/src/modules/account-deletion/account-suppression-custody.spec.ts",
+    "backend/src/modules/account-deletion/suppression-custody.spec.ts",
+    "backend/src/modules/account-deletion/suppression-custody-process.spec.ts",
+    "backend/src/modules/account-deletion/suppression-custody-authority.spec.ts",
+    "backend/docs/testing.md",
+    "docs/infra/account-deletion.md"
+  ],
+  "allOtherSelectedFilesUnchanged": true
+}

@@ -1,0 +1,27 @@
+{
+  "purpose": "Local custody recovery validation",
+  "records": [
+    {
+      "phase": "stop",
+      "command": [
+        "pnpm",
+        "run",
+        "stop"
+      ],
+      "exitCode": 0,
+      "startedAtUtc": "2026-10-13T01:29:30.608039+00:00",
+      "finishedAtUtc": "2026-10-13T01:29:31.036621+00:00"
+    },
+    {
+      "phase": "check",
+      "command": [
+        "pnpm",
+        "run",
+        "check"
+      ],
+      "exitCode": 0,
+      "startedAtUtc": "2026-10-13T01:29:31.037023+00:00",
+      "finishedAtUtc": "2026-10-13T01:31:08.076311+00:00"
+    }
+  ]
+}

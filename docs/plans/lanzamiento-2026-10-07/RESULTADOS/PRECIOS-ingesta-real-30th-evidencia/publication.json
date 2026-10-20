@@ -1,0 +1,37 @@
+{
+  "runId": "8941f0c5-93c5-4393-9dff-8e539993608d",
+  "mappedCards": 156,
+  "unmappedCards": 5,
+  "observations": 156,
+  "unmapped": [
+    {
+      "id": "me55-87",
+      "name": "Nidoran ♀",
+      "number": "87"
+    },
+    {
+      "id": "me55-126",
+      "name": "Poké Pad",
+      "number": "126"
+    },
+    {
+      "id": "me55-R",
+      "name": "Mew",
+      "number": "R"
+    },
+    {
+      "id": "me55-G",
+      "name": "Mew",
+      "number": "G"
+    },
+    {
+      "id": "me55-B",
+      "name": "Mew",
+      "number": "B"
+    }
+  ],
+  "publishedAt": "2026-10-13T23:22:01.271Z",
+  "feedPublishedAt": "2026-10-13T20:06:44.000Z",
+  "fetchedAt": "2026-10-13T23:19:55.343Z",
+  "nextContentDownloadNotBefore": "2026-10-14T23:19:54.628Z"
+}

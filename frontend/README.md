@@ -57,16 +57,16 @@ frontend/
 │   ├── layout.tsx          # root: metadata, viewport, providers, service worker
 │   ├── (marketing)/        # landing pública (/) + FAQ (/faq)
 │   ├── not-found.tsx       # 404 global
-│   ├── providers.tsx       # AuthProvider > CurrencyProvider
+│   ├── providers.tsx       # ThemeProvider > AuthProvider > CurrencyProvider > ToastProvider
 │   ├── pwa-sw-register.tsx # registra /sw.js solo en producción
 │   ├── globals.css         # Tailwind 4 + tokens y reglas PWA
 │   ├── robots.ts           # reglas de rastreo
 │   ├── sitemap.ts          # landing, catálogo y FAQ
 │   ├── (app)/              # app PWA: inicio (/inicio), catálogo y colecciones
-│   ├── (auth)/             # route group: login/registro, layout centrado
+│   ├── (auth)/             # login/registro/recuperación/eliminación, PlainShell
 │   └── share/[slug]/       # público, FUERA de (app) a propósito
 ├── components/             # design system, app y sitio público
-│   ├── layout/ marketing/ auth/ cards/ collections/ prices/ scanner/ search/ share/ ui/
+│   ├── layout/ marketing/ auth/ cards/ collections/ prices/ scanner/ search/ share/ ui/ visual-preview/
 ├── hooks/
 │   ├── use-auth.tsx        # AuthContext (user, isLoading, login, logout…)
 │   └── use-currency.tsx    # CurrencyContext (USD/ARS, blue/oficial, formatMoney)

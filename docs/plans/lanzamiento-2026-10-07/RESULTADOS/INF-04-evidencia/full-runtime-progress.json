@@ -1,0 +1,86 @@
+[
+  {
+    "name": "compiled API and real DINOv2 ready over own PG proxy",
+    "passed": true
+  },
+  {
+    "name": "real CLI baseline metrics and process host sample",
+    "passed": true
+  },
+  {
+    "name": "synthetic account only in marked clone",
+    "passed": true
+  },
+  {
+    "name": "busy rate alert from real concurrent DINO admission windows",
+    "passed": true
+  },
+  {
+    "name": "busy alert recovers on new successful admissions",
+    "passed": true
+  },
+  {
+    "name": "invalid crop produces actual failed inference outcome",
+    "passed": true
+  },
+  {
+    "name": "inference error alert from worker decode failures",
+    "passed": true
+  },
+  {
+    "name": "post-error inference succeeds after readiness recovery",
+    "passed": true
+  },
+  {
+    "name": "error alert recovers on new completed inferences",
+    "passed": true
+  },
+  {
+    "name": "depth and age alerts from owned queue fixture",
+    "passed": true
+  },
+  {
+    "name": "empty queue recovers depth and age alerts",
+    "passed": true
+  },
+  {
+    "name": "Redis outage alert keeps API alive and ready",
+    "passed": true
+  },
+  {
+    "name": "Redis recovery same compiled API process",
+    "passed": true
+  },
+  {
+    "name": "own DB connection path outage detected without stopping shared PG",
+    "passed": true
+  },
+  {
+    "name": "DB path recovers same compiled API process",
+    "passed": true
+  },
+  {
+    "name": "real owned DINO worker loss detected",
+    "passed": true
+  },
+  {
+    "name": "worker warmup recovery observed",
+    "passed": true
+  },
+  {
+    "name": "optional local metadata failures produce alerts",
+    "passed": true
+  },
+  {
+    "name": "optional metadata recoveries are local declarations only",
+    "passed": true
+  },
+  {
+    "name": "API restart changes metrics epoch without negative deltas",
+    "passed": true
+  },
+  {
+    "name": "JSONL excludes secrets photos users queue IDs arbitrary metadata",
+    "passed": true
+  }
+]

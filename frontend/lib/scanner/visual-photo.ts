@@ -6,12 +6,14 @@ import {
   type GalleryImageInput,
 } from "@/components/scanner/image-input";
 import { normalizeCardImageData, type NormalizedCard } from "./preprocess";
+import { analyzeCaptureQuality, type CaptureQuality } from '@/lib/scanner/capture-quality';
 
 export interface VisualPhoto {
   source: GalleryImageInput;
   normalized: NormalizedCard;
   image: string;
   preparationMs: number;
+  quality?: CaptureQuality;
 }
 export async function prepareVisualPhoto(
   file: File,
@@ -39,6 +41,7 @@ export async function prepareVisualPhoto(
       source,
       normalized,
       image,
+      quality: analyzeCaptureQuality(normalized.image),
       preparationMs: performance.now() - start,
     };
   } catch (error) {

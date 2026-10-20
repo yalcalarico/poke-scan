@@ -1,0 +1,33 @@
+{
+  "type": "read-only static delegated review",
+  "agent": "/root/deletion_gate_context_review_sol",
+  "model": "gpt-6.1-sol",
+  "effort": "high",
+  "findings": [
+    {
+      "issue": "backup/retention success before cleanup/close",
+      "resolution": "Output delayed until all finally cleanup/close completes",
+      "causalEvidence": "close-baseline.log failed 1/5; inventory-focal.log passed 13/13; backup same delayed-output structure inspected root"
+    },
+    {
+      "issue": "payload/receipt not fsynced before inventory metadata",
+      "resolution": "syncPrivateFile guards owner/mode/nlink/inode and syncs both payload and receipt before registering; repository lock close syncs directory before emitting success",
+      "evidence": "sources/scripts/inf03-backup.mjs and sources/scripts/inf03-inventory-common.mjs; actual encrypted backup consumed; power-loss durability not physically tested"
+    },
+    {
+      "issue": "backend restore helper did not recheck expiry after replay",
+      "resolution": "Final complete context revalidation after preserved head-change code",
+      "causalEvidence": "baseline.log 3pass/1fail; focal.log 16pass"
+    }
+  ],
+  "limits": [
+    "Trusted current independent checkpoint custody is a premise; joint rollback by the custodian not detected",
+    "Unregistered/off-host copies not auto erased",
+    "Controlled thrown exception and orderly close, not SIGKILL or power-loss exercise"
+  ],
+  "delegationsThisTask": 2,
+  "delegationCap": 4,
+  "runtimeAttempts": 3,
+  "runtimeCorrections": 2,
+  "activeAgents": 0
+}

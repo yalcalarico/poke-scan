@@ -1,0 +1,13 @@
+{
+  "command": [
+    "pnpm",
+    "exec",
+    "vitest",
+    "run",
+    "--config",
+    "vitest.config.recovery-harness.ts"
+  ],
+  "exitCode": 0,
+  "finishedAtUtc": "2026-10-10T01:35:34.249722+00:00",
+  "ownDatabase": "be05_review_2af1fb6f7757_test"
+}

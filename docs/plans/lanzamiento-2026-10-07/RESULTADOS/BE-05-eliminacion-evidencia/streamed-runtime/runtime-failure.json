@@ -1,0 +1,7 @@
+{
+  "phase": "confirmed-delete",
+  "checksCompleted": 39,
+  "reason": "runtime-error",
+  "errorKind": "TimeoutError",
+  "firstLine": "locator.waitFor: Timeout 30000ms exceeded."
+}

@@ -1,0 +1,32 @@
+{
+  "checkedAt": "2026-10-09",
+  "scope": "static/selective documentation only",
+  "preexistence": {
+    "targetDocument": "absent before creation",
+    "evidenceDirectory": "absent before creation"
+  },
+  "sourceSha256": {
+    "INF-01-entorno.md": "9ad9f19907bd4747ed6b17d61814467aff05d1746c5044b52104044bbedbc9bd",
+    "INF-01-review.md": "9f1221fec14197d6037000f681b81bc85a6ebad423a50635c021cbb9fceaa952",
+    "BE-05-contrato-borrador.md": "9b0c36f8bacc6192b3dc7f8ee695e1cc0992798e1fbd15302b4ec6fc38362a74",
+    "BE-05-borrador-review.md": "10c874de3674be711e828397e77cfab3c20003470df21a6b9ca0474a52ff1cc3",
+    "BE-05-borrador-aceptacion-root.json": "584855ba0788ed58a68197de516283633c262c1b03ecd2f41032895de47e6c88",
+    "UX-04-cuenta.md": "d652eced63e071a909cdc1ceb3ed97a30b57e440b80f28b726d8b3627c8a560a",
+    "UX-04-review.md": "ae9ed98de5a24d0b548102c5df9fb7b9160936419075906e20e9153b7a61cbe6",
+    "UX-04-aceptacion-root.json": "7b560b2048b2de9687d5800f10f703eca33258b0d0a8b141d3707f560cc90a53",
+    "NEG-03-cuenta-requisitos.md": "79365783583653359d4abcf9c682dfd9b06cf6def20158b5f23aeef914afe20b"
+  },
+  "proposalSha256": "c4e4294c5449884e720a0049d01c740f0c5d7f6e7f0b83658c0261f242266d06",
+  "proposalLines": 128,
+  "localLinksChecked": 11,
+  "missingLocalLinks": [],
+  "semanticReview": "Document is explicitly preparatory; test-only local adapter, no SMTP configuration/provider claim, queue/storage limits, generic 202 and BE-05 admission authority, token privacy and future-only criteria are distinguished from behavior executed.",
+  "execution": {
+    "tests": false,
+    "suite405": false,
+    "buildOrCheck": false,
+    "databaseRedisApiBrowserNetworkEmailSmtp": false,
+    "envOrCredentialsRead": false
+  },
+  "dirtyCheckout": "Extensive unrelated modifications/untracked files were present; no global snapshot/audit was made and prior state was preserved."
+}

@@ -31,6 +31,15 @@ Desde backend, los mismos comandos son pnpm run scanner:index --set me55 --limit
 
 ## Archivos y reanudación
 
+Actualización A3 (6/10): cada descarga se limita durante la lectura a 10 MiB y
+se decodifica completamente (máximo 16 megapíxeles) antes de publicar la caché
+por rename. Una caché existente que no se pueda decodificar se elimina bajo
+el lock exclusivo y vuelve a descargarse; las válidas conservan sus bytes.
+El temporal del mismo ID se descarta al reanudar, sin promover una descarga
+interrumpida. El timeout de 30 s cancela explícitamente el lector del cuerpo.
+No hay reintento automático dentro del mismo intento; una respuesta 429 sigue
+requiriendo respetar manualmente la espera del proveedor antes de otro lote.
+
 - images/ contiene originales descargados; nombres SHA-256 de ID+URL con extensión .image. Sharp detecta el formato desde bytes. El registro del vector conserva imageUrl e imagePath.
 - dinov2-REVISION-int8.jsonl: un objeto por carta con id, name, imageUrl, imagePath y vector normalizado de 384 números.
 - meta.json: hash SHA-256 de modelo/preprocesado, revisión, precisión y dimensiones. Un índice legado sin metadata o de otro modelo se rechaza: usá otro directorio.
@@ -38,7 +47,7 @@ Desde backend, los mismos comandos son pnpm run scanner:index --set me55 --limit
 - evaluation.json: rangos y distractores por ID, top-1/top-10, tiempos y productionReady:false. Manifiesto: arreglo de objetos {path,cardId}, paths a fotos originales e IDs exactos.
 - index.lock: exclusión mutua tanto para indexación como evaluación, adquirida antes de leer/modificar metadata o índice.
 
-Para continuar, repetí el mismo comando/directorio: omite vectores existentes, reutiliza imágenes descargadas si la inferencia anterior falló y vuelve a intentar pendientes/fallos. Conservá el directorio completo. No borrar metadata para mezclar modelos. Ctrl+C espera el intento actual (hasta timeout de red 30s más inferencia y pausa), guarda resumen y limpia lock. Con kill -9 o crash nativo puede quedar lock: verificá su PID y borrá sólo si el proceso terminó. Un JSONL dañado se rechaza: conservá copia y reconstruí el índice antes de continuar.
+Para continuar, repetí el mismo comando/directorio: omite vectores existentes, reutiliza imágenes descargadas si la inferencia anterior falló y vuelve a intentar pendientes/fallos. Conservá el directorio completo. No borrar metadata para mezclar modelos. Ctrl+C espera el intento actual (hasta timeout de red 30s más inferencia y pausa), guarda resumen y limpia lock. Con kill -9 o crash nativo puede quedar lock: verificá su PID y borrá sólo si el proceso terminó. En lotes, matar sólo al padre con SIGKILL puede dejar al hijo indexador activo: verificá los PIDs de ambos locks y todos los escritores antes de liberar cualquiera. El CLI y el runtime rechazan un JSONL sin salto de línea final; conservá copia y reconstruí el índice antes de continuar. No se trunca ni repara automáticamente una línea parcial.
 
 ## Tiempo y evaluación pendiente
 
@@ -116,3 +125,15 @@ Se corrigieron `imageSmall` e `imageLarge` de las 12 cartas `mcd18` con referenc
 El lote continúa con el siguiente set si el indexador termina con error. Al final muestra `failedSets` y devuelve exit code 1 si quedó alguno pendiente; Ctrl+C sigue interrumpiendo el lote. Los errores de integridad detectados antes de descargar siguen deteniendo la ejecución. Se corrigió también la referencia de Oddish `svp-102` con https://www.tcgcollector.com/cards/43279/oddish-scarlet-and-violet-promos-102, verificada por HTTP y visualmente.
 
 Se corrigieron las referencias `xyp-XY39` (Kingdra) y `xyp-XY46` (Altaria) desde TCG Collector, y `xyp-XY68` (Chesnaught) desde https://www.serebii.net/card/xypromos/068.shtml. Las tres imágenes respondieron correctamente y se verificaron visualmente nombres, números y estampas de prerelease. Ambas columnas de imagen se actualizan en DB; Next permite únicamente `/card/xypromos/68.jpg` de Serebii.
+
+## SIGINT verificado el 6 de octubre de 2026
+
+CLI directo y lotes por expansion probados con SIGINT real en temporales,
+modelo real y fixtures sinteticas cacheadas: exit 130, locks liberados,
+reanudacion sin duplicados ni cambios en los vectores previos. El set completo
+se omite al repetirlo; escritores concurrentes no borran locks activos.
+No se descargaron referencias ni se modifico el indice completo.
+
+[Informe y comando reproducible](scanner-index-resume-2026-10-06.md).
+No certifica interrupcion de red, SIGKILL, corte electrico ni estabilidad
+prolongada. Las fixtures temporales no son referencias reales para reconocer.

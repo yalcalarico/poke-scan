@@ -21,3 +21,23 @@ La identidad visual se valida además contra fotos y el índice real mediante `p
 ## Alcance
 
 La suite también cubre los componentes, cliente HTTP, rutas del service worker, hooks y utilidades existentes. `public/sw.js` purga cachés antiguas con su versión; el reconocimiento necesita conexión y no existe un motor del navegador offline. El smoke `pnpm run verify:app` usa HTTP real, no reemplaza una prueba de navegación y cámara en un navegador.
+
+La recuperación de cuenta tiene pruebas focales en `lib/api/recovery-api.test.ts`
+para el estado HTTP exacto, ausencia de bearer y falta de refresh/replay;
+`lib/recovery/recovery-capture-script.test.ts` cubre el fragmento estricto,
+`replaceState`, fail-closed, entrada cliente y pérdida al volver; y
+`components/auth/recovery-experience.test.tsx` cubre StrictMode, envío único,
+éxito y resultado incierto. `lib/api/session-generation.test.ts` prueba respuestas
+401/refresh tardías. El test del service worker verifica la purga de cachés
+actuales y viejas. La navegación real, bfcache y teclado requieren el gate de
+navegador y no se acreditan con Vitest.
+
+La revisión FE-04 agregó cobertura del provider en `hooks/use-auth.test.tsx`,
+cola compartida refresh/reset/login, espera de Web Lock con generación vieja y
+revalidación tras refresh antes de replay/redirect. Recuperación prueba pares
+status/código y shapes inesperados, mensajes/fields seguros, redirect:error y
+no-store, pérdida de entrada incluso en la misma ruta, foco de campos, claves
+astrales, login manual y anuncio único al terminar la espera. Los stubs de fetch,
+Web Locks, history y bfcache son pruebas de frontera; no acreditan HTTP, cookies,
+correo, navegador real, contraste AA ni tamaños computados. Eso y el check estándar
+completo corresponden al gate integrado posterior.

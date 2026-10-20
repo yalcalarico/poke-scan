@@ -1,0 +1,7 @@
+{
+  "documentSha256": "ae5afbaf1c86bf71677203245fb80474283cf8d6ed92480b62de9be4342fa70c",
+  "sourceHashes": 17,
+  "links": 14,
+  "broken": [],
+  "check": "documental; hashes calculados al cierre; sin tests de implementación futura"
+}

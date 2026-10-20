@@ -1,0 +1,87 @@
+{
+  "atUTC": "2026-10-13T14:22:14.533373+00:00",
+  "requests": [
+    {
+      "url": "https://tcgcsv.com/tcgplayer/3/24722/products",
+      "status": 200,
+      "bytes": 271501,
+      "sha256": "265275e221dc80d827074990b737fff485d2516139ebcc33147ba94afcf71b13"
+    },
+    {
+      "url": "https://tcgcsv.com/tcgplayer/3/24722/prices",
+      "status": 200,
+      "bytes": 32766,
+      "sha256": "9f34d3a1ed775164682f5e836f25aff5644d523086142a64e754b6a805614d46"
+    },
+    {
+      "url": "https://tcgcsv.com/tcgplayer/3/24837/prices",
+      "status": 200,
+      "bytes": 4630,
+      "sha256": "f0ace063fc0c220bbfce3680609b7f08f00d6dedac67c6587e1531d6b827cf66"
+    },
+    {
+      "url": "https://tcgcsv.com/last-updated.txt",
+      "status": 200,
+      "bytes": 24,
+      "sha256": "ce5d3faa4ad9361fee8c56cc22881331494964019af5bfe2bcac3d571b685669"
+    }
+  ],
+  "retries": 0,
+  "mode": "Public GET of two explicitly identified groups; no full catalog sync",
+  "english30th": {
+    "groupId": 24722,
+    "productRecords": 222,
+    "numberedProducts": 161,
+    "priceRecords": 217,
+    "marketNonNullRecords": 217,
+    "pricedNumberedProducts": 161
+  },
+  "articunoSamples": [
+    {
+      "productId": 716220,
+      "name": "Articuno - 132/128",
+      "number": [
+        "132/128"
+      ],
+      "url": "https://www.tcgplayer.com/product/716220/pokemon-me-30th-celebration-articuno-132-128",
+      "prices": [
+        {
+          "productId": 716220,
+          "lowPrice": 5.5,
+          "midPrice": 8.25,
+          "highPrice": 198.99,
+          "marketPrice": 6.76,
+          "directLowPrice": null,
+          "subTypeName": "Holofoil"
+        }
+      ]
+    },
+    {
+      "productId": 716451,
+      "name": "Articuno - 018/128",
+      "number": [
+        "018/128"
+      ],
+      "url": "https://www.tcgplayer.com/product/716451/pokemon-me-30th-celebration-articuno-018-128",
+      "prices": [
+        {
+          "productId": 716451,
+          "lowPrice": 0.01,
+          "midPrice": 0.25,
+          "highPrice": 19.99,
+          "marketPrice": 0.23,
+          "directLowPrice": 0.1,
+          "subTypeName": "Holofoil"
+        }
+      ]
+    }
+  ],
+  "classic": {
+    "groupId": 24837,
+    "priceRecords": 30,
+    "marketNonNullRecords": 30,
+    "identityMatchesNotVerified": true
+  },
+  "lastUpdated": "2026-10-12T20:05:44+0000",
+  "success": true
+}

@@ -1,0 +1,83 @@
+{
+  "cutoffUtc": "2026-10-14T00:37:06.925558+00:00",
+  "data": {
+    "users": {
+      "rows": 22,
+      "hash": "766ab5df0ab885a39ce7b83175f66f96"
+    },
+    "collections": {
+      "rows": 22,
+      "hash": "59b9d1bafdd76c8e74ea7339c063eb5f"
+    },
+    "collection_items": {
+      "rows": 69,
+      "hash": "f723750dd3dbc91337830427ba4c60a1"
+    },
+    "share_links": {
+      "rows": 13,
+      "hash": "614a0f5bc85c774254e174f7887d3c5d"
+    },
+    "cards": {
+      "rows": 20670,
+      "hash": "062662767783a494f5a4af852c8a4f35"
+    },
+    "card_sets": {
+      "rows": 176,
+      "hash": "9d4bdf4933aad247ef5d1f54701ed4b7"
+    },
+    "card_prices": {
+      "rows": 29813,
+      "hash": "fd993db0ee03fcef305ffc3333773536"
+    },
+    "card_external_ids": {
+      "rows": 21118,
+      "hash": "bc5972e9836b219da4e224c7f43d1d10"
+    },
+    "card_set_external_ids": {
+      "rows": 350,
+      "hash": "08185d14407a74c64a80ccc9adf6224b"
+    },
+    "tcgcsvPriorJobs": [
+      {
+        "groupId": 24541,
+        "status": "completed",
+        "availableAt": "2026-10-14T23:53:26.66",
+        "lockedBy": null,
+        "leaseUntil": null,
+        "downloadStartedAt": "2026-10-13T23:53:26.66",
+        "publishedBuild": "2026-10-13T20:06:44",
+        "lastError": null,
+        "updatedAt": "2026-10-14T00:02:32.892"
+      },
+      {
+        "groupId": 24722,
+        "status": "completed",
+        "availableAt": "2026-10-14T23:19:54.628",
+        "lockedBy": null,
+        "leaseUntil": null,
+        "downloadStartedAt": "2026-10-13T23:19:54.628",
+        "publishedBuild": "2026-10-13T20:06:44",
+        "lastError": null,
+        "updatedAt": "2026-10-13T23:22:01.271"
+      },
+      {
+        "groupId": 24837,
+        "status": "pending",
+        "availableAt": "2026-10-14T20:30:00",
+        "lockedBy": null,
+        "leaseUntil": null,
+        "downloadStartedAt": "2026-10-13T19:29:03.999",
+        "publishedBuild": null,
+        "lastError": null,
+        "updatedAt": "2026-10-13T20:34:09.212"
+      }
+    ],
+    "gin": [
+      "CREATE INDEX card_sets_name_trgm_idx ON public.card_sets USING gin (name gin_trgm_ops)",
+      "CREATE INDEX cards_artist_trgm_idx ON public.cards USING gin (artist gin_trgm_ops)",
+      "CREATE INDEX cards_name_trgm_idx ON public.cards USING gin (name gin_trgm_ops)",
+      "CREATE INDEX users_display_name_trgm_idx ON public.users USING gin (\"displayName\" gin_trgm_ops)",
+      "CREATE INDEX users_username_trgm_idx ON public.users USING gin (username gin_trgm_ops)"
+    ]
+  }
+}

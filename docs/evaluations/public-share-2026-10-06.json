@@ -1,0 +1,143 @@
+{
+  "evaluatedAt": "2026-10-06T15:39:39.503Z",
+  "slug": "tb7cpl5fql",
+  "httpStatus": 200,
+  "authenticated": false,
+  "stats": {
+    "totalCards": 34,
+    "uniqueCards": 31,
+    "duplicateCards": 3,
+    "setsCount": 8,
+    "totalValueUsd": 2.3,
+    "totalValueArs": null,
+    "cardsMissingPrice": 17
+  },
+  "items": [
+    {
+      "cardId": "me2pt5-168",
+      "quantity": 2
+    },
+    {
+      "cardId": "me2pt5-7",
+      "quantity": 2
+    },
+    {
+      "cardId": "zsv10pt5-31",
+      "quantity": 1
+    },
+    {
+      "cardId": "me2pt5-148",
+      "quantity": 1
+    },
+    {
+      "cardId": "me2pt5-153",
+      "quantity": 1
+    },
+    {
+      "cardId": "me2pt5-115",
+      "quantity": 1
+    },
+    {
+      "cardId": "me2pt5-25",
+      "quantity": 1
+    },
+    {
+      "cardId": "sv10-129",
+      "quantity": 1
+    },
+    {
+      "cardId": "me2pt5-271",
+      "quantity": 1
+    },
+    {
+      "cardId": "me2pt5-241",
+      "quantity": 1
+    },
+    {
+      "cardId": "mcd19-11",
+      "quantity": 1
+    },
+    {
+      "cardId": "me2pt5-83",
+      "quantity": 1
+    },
+    {
+      "cardId": "me2pt5-180",
+      "quantity": 1
+    },
+    {
+      "cardId": "me2pt5-132",
+      "quantity": 1
+    },
+    {
+      "cardId": "me2pt5-108",
+      "quantity": 1
+    },
+    {
+      "cardId": "me2pt5-145",
+      "quantity": 1
+    },
+    {
+      "cardId": "me2pt5-154",
+      "quantity": 1
+    },
+    {
+      "cardId": "swshp-SWSH122",
+      "quantity": 1
+    },
+    {
+      "cardId": "me2pt5-157",
+      "quantity": 1
+    },
+    {
+      "cardId": "me2pt5-167",
+      "quantity": 1
+    },
+    {
+      "cardId": "me2pt5-161",
+      "quantity": 1
+    },
+    {
+      "cardId": "me2pt5-174",
+      "quantity": 1
+    },
+    {
+      "cardId": "me2pt5-206",
+      "quantity": 1
+    },
+    {
+      "cardId": "sv9-27",
+      "quantity": 1
+    },
+    {
+      "cardId": "me2pt5-64",
+      "quantity": 1
+    },
+    {
+      "cardId": "me2pt5-10",
+      "quantity": 1
+    },
+    {
+      "cardId": "me2pt5-255",
+      "quantity": 1
+    },
+    {
+      "cardId": "me55-23",
+      "quantity": 1
+    },
+    {
+      "cardId": "dp2-7",
+      "quantity": 1
+    },
+    {
+      "cardId": "me55-92",
+      "quantity": 1
+    },
+    {
+      "cardId": "me55-137",
+      "quantity": 2
+    }
+  ],
+  "sensitiveKeysFound": [],
+  "scope": "GET publico sin Authorization/cookies. No cambia coleccion ni permisos; contador de vistas puede incrementarse."
+}

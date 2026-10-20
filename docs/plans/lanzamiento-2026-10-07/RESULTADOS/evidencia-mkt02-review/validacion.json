@@ -1,0 +1,221 @@
+{
+  "method": "Inspección documental local y sondas estáticas; no suite de aplicación.",
+  "checks": {
+    "betaTables3Channels8Stages5Schedule": true,
+    "receivedHad7Stages": true,
+    "elevenReceivedHashesMatched": true,
+    "linksAndAnchorsValid": true,
+    "D28WindowAndEligibility": true,
+    "individualEvidenceMax90FromSession": true,
+    "noSuccessWithoutConfirmedSave": true,
+    "sourceAndReceivedHashesTracked": true
+  },
+  "tables": {
+    "MKT-02-beta.md": [
+      {
+        "columns": 6,
+        "dataRows": 3
+      },
+      {
+        "columns": 2,
+        "dataRows": 8
+      },
+      {
+        "columns": 3,
+        "dataRows": 5
+      }
+    ],
+    "MKT-02-evidencia.md": [
+      {
+        "columns": 2,
+        "dataRows": 11
+      }
+    ],
+    "MKT-02-review.md": [
+      {
+        "columns": 2,
+        "dataRows": 8
+      },
+      {
+        "columns": 2,
+        "dataRows": 6
+      }
+    ]
+  },
+  "links": [
+    {
+      "from": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/MKT-02-beta.md",
+      "destination": "MKT-02-review.md",
+      "exists": true,
+      "anchorValid": true
+    },
+    {
+      "from": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/MKT-02-beta.md",
+      "destination": "../README.md",
+      "exists": true,
+      "anchorValid": true
+    },
+    {
+      "from": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/MKT-02-beta.md",
+      "destination": "../07-marketing.md",
+      "exists": true,
+      "anchorValid": true
+    },
+    {
+      "from": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/MKT-02-beta.md",
+      "destination": "../10-decisiones-y-contratos.md",
+      "exists": true,
+      "anchorValid": true
+    },
+    {
+      "from": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/MKT-02-beta.md",
+      "destination": "RES-01-segmento.md",
+      "exists": true,
+      "anchorValid": true
+    },
+    {
+      "from": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/MKT-02-beta.md",
+      "destination": "RES-03-protocolo.md",
+      "exists": true,
+      "anchorValid": true
+    },
+    {
+      "from": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/MKT-02-beta.md",
+      "destination": "MKT-01-copy.md",
+      "exists": true,
+      "anchorValid": true
+    },
+    {
+      "from": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/MKT-02-beta.md",
+      "destination": "MKT-01-review.md",
+      "exists": true,
+      "anchorValid": true
+    },
+    {
+      "from": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/MKT-02-beta.md",
+      "destination": "INF-01-review.md",
+      "exists": true,
+      "anchorValid": true
+    },
+    {
+      "from": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/MKT-02-beta.md",
+      "destination": "LOTE-OPERACION-validacion.md",
+      "exists": true,
+      "anchorValid": true
+    },
+    {
+      "from": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/MKT-02-beta.md",
+      "destination": "../STATUS-CHECKLIST.md",
+      "exists": true,
+      "anchorValid": true
+    },
+    {
+      "from": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/MKT-02-evidencia.md",
+      "destination": "MKT-02-beta.md",
+      "exists": true,
+      "anchorValid": true
+    },
+    {
+      "from": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/MKT-02-evidencia.md",
+      "destination": "MKT-02-review.md",
+      "exists": true,
+      "anchorValid": true
+    },
+    {
+      "from": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/MKT-02-evidencia.md",
+      "destination": "evidencia-mkt02-review/validacion.json",
+      "exists": true,
+      "anchorValid": true
+    },
+    {
+      "from": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/MKT-02-review.md",
+      "destination": "../07-marketing.md#mkt-02--preparar-reclutamiento-beta-acotado",
+      "exists": true,
+      "anchorValid": true
+    },
+    {
+      "from": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/MKT-02-review.md",
+      "destination": "evidencia-mkt02-review/MKT-02-beta-recibido.md",
+      "exists": true,
+      "anchorValid": true
+    },
+    {
+      "from": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/MKT-02-review.md",
+      "destination": "evidencia-mkt02-review/MKT-02-evidencia-recibido.md",
+      "exists": true,
+      "anchorValid": true
+    },
+    {
+      "from": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/MKT-02-review.md",
+      "destination": "evidencia-mkt02-review/dirty-antes.txt",
+      "exists": true,
+      "anchorValid": true
+    },
+    {
+      "from": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/MKT-02-review.md",
+      "destination": "evidencia-mkt02-review/baseline.json",
+      "exists": true,
+      "anchorValid": true
+    },
+    {
+      "from": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/MKT-02-review.md",
+      "destination": "evidencia-mkt02-review/hashes-recibidos-verificados.json",
+      "exists": true,
+      "anchorValid": true
+    },
+    {
+      "from": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/MKT-02-review.md",
+      "destination": "evidencia-mkt02-review/fuentes-verificadas.json",
+      "exists": true,
+      "anchorValid": true
+    },
+    {
+      "from": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/MKT-02-review.md",
+      "destination": "evidencia-mkt02-review/validacion.json",
+      "exists": true,
+      "anchorValid": true
+    },
+    {
+      "from": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/MKT-02-review.md",
+      "destination": "evidencia-mkt02-review/correcciones.diff",
+      "exists": true,
+      "anchorValid": true
+    },
+    {
+      "from": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/MKT-02-review.md",
+      "destination": "evidencia-mkt02-review/hashes-finales.json",
+      "exists": true,
+      "anchorValid": true
+    },
+    {
+      "from": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/MKT-02-review.md",
+      "destination": "MKT-02-beta.md",
+      "exists": true,
+      "anchorValid": true
+    },
+    {
+      "from": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/MKT-02-review.md",
+      "destination": "MKT-02-evidencia.md",
+      "exists": true,
+      "anchorValid": true
+    },
+    {
+      "from": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/MKT-02-review.md",
+      "destination": "RES-03-protocolo.md#seguimiento-y-cohorte-d28",
+      "exists": true,
+      "anchorValid": true
+    },
+    {
+      "from": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/MKT-02-review.md",
+      "destination": "RES-03-protocolo.md#consentimiento-acceso-y-retención-propuestos",
+      "exists": true,
+      "anchorValid": true
+    }
+  ],
+  "linkCounts": {
+    "MKT-02-beta.md": 11,
+    "MKT-02-evidencia.md": 3,
+    "MKT-02-review.md": 14
+  },
+  "allChecksPassed": true
+}

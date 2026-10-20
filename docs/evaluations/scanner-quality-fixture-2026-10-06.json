@@ -1,0 +1,16 @@
+{
+  "evaluatedAt": "2026-10-06T17:14:38.369Z",
+  "scope": "Fixture sintético para comprobar avisos y diagnóstico; no foto real ni calibración de umbrales.",
+  "quality": {
+    "schemaVersion": 1,
+    "analysisWidth": 183,
+    "analysisHeight": 256,
+    "laplacianVariance": 0.1604103645049939,
+    "brightFraction": 0.0777947542653425,
+    "largestBrightRegionFraction": 0.0777947542653425,
+    "warnings": [
+      "blur",
+      "glare"
+    ]
+  }
+}

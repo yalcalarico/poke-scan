@@ -1,0 +1,40 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.2 /Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/frontend
+
+ ❯ lib/scanner/__tests__/perspective.test.ts (8 tests | 1 failed) 176ms
+   ❯ perspectiva del recorte (8)
+     × conserva el marco exterior aunque el dibujo interior tenga perspectiva (giro 90°) 52ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  lib/scanner/__tests__/perspective.test.ts > perspectiva del recorte > conserva el marco exterior aunque el dibujo interior tenga perspectiva (giro 90°)
+AssertionError: expected +0 to be 90 // Object.is equality
+
+- Expected
++ Received
+
+- 90
++ 0
+
+ ❯ lib/scanner/__tests__/perspective.test.ts:35:29
+     33|     }
+     34|     const result = normalizeCardImageData(rotation ? rotateImageData(p…
+     35|     expect(result.rotation).toBe(rotation);
+       |                             ^
+     36|     expect(result.image.height).toBeGreaterThan(280);
+     37|     // El pie de la carta no forma parte del cuadrilátero del dibujo.
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 18 passed (19)
+      Tests  1 failed | 132 passed (133)
+   Start at  10:39:23
+   Duration  4.90s (environment 34%, tests 32%, transform 18%, setup 8%, import 8%)
+
+    Isolate  19 workers spawned · ~565ms startup each (spawn + environment, per file)
+             at least ~627ms faster with isolate: false — reuses workers across files instead of one per file
+

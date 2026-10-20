@@ -84,8 +84,10 @@ convenciones de código.
 | | |
 |---|---|
 | [`docs/architecture.md`](docs/architecture.md) | Cómo se arma el sistema y por qué |
-| [`docs/data-sources.md`](docs/data-sources.md) | pokemontcg.io, DolarApi, rate limits, cómo migrar a Scrydex |
-| [`docs/decisions.md`](docs/decisions.md) | 18 decisiones de diseño con sus alternativas descartadas |
+| [`docs/README.md`](docs/README.md) | Índice actual, operación, investigación e historial |
+| [`docs/estado-actual.md`](docs/estado-actual.md) | Hitos, pendientes y decisiones vigentes |
+| [`docs/data-sources.md`](docs/data-sources.md) | Catálogo, TCGdex, TCGCSV, DolarApi y límites separados |
+| [`docs/decisions.md`](docs/decisions.md) | Decisiones de diseño y alternativas descartadas |
 | [`backend/docs/`](backend/docs/) | API, base de datos, módulos, precios, jobs, testing, trampas |
 | [`frontend/docs/`](frontend/docs/) | Rutas, componentes, escáner, cliente API, design system, testing, trampas |
 
@@ -96,14 +98,14 @@ convenciones de código.
 - ✅ 20.670 cartas · 176 sets sincronizados
 - ✅ Verificación integral con `pnpm run check` (backend y frontend)
 - ✅ Autenticación con rotación de tokens y detección de reuso
-- ✅ Reconocimiento DINOv2 con verificación geométrica, cámara automática móvil y selección del candidato #1
+- ✅ Reconocimiento DINOv2 local por similitud coseno, cámara automática móvil y propuesta del candidato #1 para revisar
 - ✅ Precios USD y ARS con caché de 2 capas
 - ✅ Identidad/procedencia de proveedores, cola de precios persistente y ritmo global
-- ✅ Backfill horario de precios del proveedor activo
+- ✅ Ciclos diarios de TCGdex y TCGCSV por sets habilitados, reanudables; histórico y comparación con procedencia separada
 - ✅ Links públicos + sistema de amigos
 - ✅ Búsqueda por nombre/número/artista, orden por precio, filtro server-side de intercambio
 - ✅ Suite aislada en `pokemon_cards_test`; smoke test end-to-end (`pnpm run verify:app`)
-- ⏳ Deploy de producción: imagen Docker corregida pero build no verificado; faltan secrets de producción y backup/restore probado
+- ⏳ Mini PC, publicación y operación externas: preparación y ensayos locales entregados; validación en hardware y servicios reales diferida
 
 ### Limitaciones conocidas
 
@@ -113,25 +115,25 @@ convenciones de código.
 - **DINOv2 puede confundir reimpresiones o acabados.** Revisá la edición al organizar la sesión; también hay búsqueda manual. Requiere modelo e índice locales en la API y una sesión autenticada.
 - **Las claves de pokemontcg.io mueren el 1/3/2027.** El sync semanal es
   configurable; Scrydex sigue pendiente de decisión de producto y costo.
-- **Redis no se reconecta solo** si falla después de agotar los reintentos. El
-  health lo informa como degradado y la app sigue sirviendo sin caché; hace falta
-  reiniciar el backend para que vuelva a conectarse.
+- **Redis puede quedar degradado durante una caída.** La API continúa con los
+  fallbacks disponibles y mantiene reintentos con backoff hasta recuperar conexión,
+  sin necesitar reinicio. Un timeout de escritura no demuestra que no se escribió.
 - **El smoke test no reemplaza Playwright/E2E por navegador.** `verify:app`
   comprueba HTTP real de API y páginas, mientras auth/ownership/UI se cubren
   parcialmente por tests de servicio y componentes.
-- **El deploy sigue pendiente.** El stack local funciona; la imagen del backend
-  tiene pnpm fijado pero aún no se comprobó el build final, y faltan secrets y
-  backup/restore de producción.
+- **La operación real sigue pendiente.** El packaging y backup/restore se ensayaron
+  localmente; no acreditan mini PC instalada, B2/off-host, correo externo, uptime
+  ni producción. Ver [prompt futuro](docs/infra/PROMPT-mini-pc-cloudflare.md).
 - **Las rutas inexistentes devuelven HTTP 200** renderizando la 404, por el
   streaming de Next 16. Ver `frontend/docs/routes.md`.
 
-## Planes de trabajo
+## Planes históricos de trabajo
 
 | | |
 |---|---|
 | [`docs/plans/01-frontend-product.md`](docs/plans/01-frontend-product.md) | Integraciones de producto, robustez del scanner y sincronización de docs |
 | [`docs/plans/02-backend-production.md`](docs/plans/02-backend-production.md) | Cotizaciones, lock de jobs y lo que falta para producción |
 
-Los dos planes marcan **qué se hizo** y **qué quedó con su motivo**. No son una
-lista de deseos: registran las decisiones abiertas y los límites operativos del
-producto.
+Los dos planes están archivados en sus rutas originales para conservar enlaces
+y decisiones. El [estado actual](docs/estado-actual.md) enlaza los pendientes
+vigentes; no ejecutar los checklists históricos como una nueva orden.

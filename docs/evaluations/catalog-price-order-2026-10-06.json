@@ -1,0 +1,78 @@
+{
+  "evaluatedAt": "2026-10-06T15:43:49.096Z",
+  "state": "passed",
+  "elapsedMs": 396178.829708,
+  "beforeHash": "692e488fc095cbde6287d4075c5e491a181a45a3e88671b1ad0f0ffb7c2ad158",
+  "afterHash": "692e488fc095cbde6287d4075c5e491a181a45a3e88671b1ad0f0ffb7c2ad158",
+  "scope": "Catalogo completo asc/desc en paginas de 100, ultimo market por variante tcgdex/tcgplayer/USD y MAX por carta; sin precio al final, desempates nombre/ID. SQL read-only y GET search; sin refrescar precios.",
+  "results": [
+    {
+      "direction": "ASC",
+      "pages": 207,
+      "total": 20670,
+      "priced": 16433,
+      "unpriced": 4237,
+      "uniqueIds": 20670,
+      "expectedOrderHash": "c5da5ec30a2276cb127ff8f1a46f4ff016dcbec5927e441ba38ca2a6b5168637",
+      "actualOrderHash": "c5da5ec30a2276cb127ff8f1a46f4ff016dcbec5927e441ba38ca2a6b5168637",
+      "boundary": [
+        {
+          "id": "sm9-170",
+          "name": "Latias & Latios-GX",
+          "price": "3913.85"
+        },
+        {
+          "id": "ecard2-149",
+          "name": "Lugia",
+          "price": "4500.00"
+        },
+        {
+          "id": "swsh10tg-TG01",
+          "name": "Abomasnow",
+          "price": null
+        },
+        {
+          "id": "xy8-40",
+          "name": "Abomasnow",
+          "price": null
+        }
+      ],
+      "mismatchPages": 0,
+      "mismatches": []
+    },
+    {
+      "direction": "DESC",
+      "pages": 207,
+      "total": 20670,
+      "priced": 16433,
+      "unpriced": 4237,
+      "uniqueIds": 20670,
+      "expectedOrderHash": "c6667187f4279f934c92b3d597650c7cfc7aaba96179c5f023066f7e90b49ebb",
+      "actualOrderHash": "c6667187f4279f934c92b3d597650c7cfc7aaba96179c5f023066f7e90b49ebb",
+      "boundary": [
+        {
+          "id": "me2pt5-28",
+          "name": "Camerupt",
+          "price": "0.05"
+        },
+        {
+          "id": "swsh4-160",
+          "name": "Telescopic Sight",
+          "price": "0.05"
+        },
+        {
+          "id": "swsh10tg-TG01",
+          "name": "Abomasnow",
+          "price": null
+        },
+        {
+          "id": "xy8-40",
+          "name": "Abomasnow",
+          "price": null
+        }
+      ],
+      "mismatchPages": 0,
+      "mismatches": []
+    }
+  ]
+}

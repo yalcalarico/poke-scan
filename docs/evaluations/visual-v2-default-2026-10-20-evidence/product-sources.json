@@ -1,0 +1,30 @@
+[
+  {
+    "path": "frontend/components/visual-preview/visual-preview.tsx",
+    "sha256": "1fb57ef95a3bdfec90911174abb0d8db173dec2eb1e2a4ab55201cafab3b798c"
+  },
+  {
+    "path": "frontend/components/visual-preview/preview-link.tsx",
+    "sha256": "17d8d05b1f67cb9832eac8489c77872ae2969b38eb0643bee661217ebe57ca7e"
+  },
+  {
+    "path": "frontend/components/visual-preview/navigation.ts",
+    "sha256": "97a080af3898932d2e16006b2de2fb97c11a5a7e7353a218eb007f4e3801d8b1"
+  },
+  {
+    "path": "frontend/components/visual-preview/navigation.test.ts",
+    "sha256": "7daf7060ac8b1a372df7684a1ae8ba0aea47682104e42407447a310af789cbfa"
+  },
+  {
+    "path": "frontend/components/nav.ts",
+    "sha256": "506c3fea242473463b477d47cd03ccab74a115b4960ad190a5835a01486f0325"
+  },
+  {
+    "path": "frontend/components/layout/bottom-nav.tsx",
+    "sha256": "7d08923334d3552b84488dfba8247de4e991064bf2061d3a68bc697c0e501cf9"
+  },
+  {
+    "path": "frontend/app/(app)/buscar-v2/page.tsx",
+    "sha256": "b6cb93ad9ee3d7ebfe9715504327bdaafe94d3273c656f3380b9df04f33bf664"
+  }
+]

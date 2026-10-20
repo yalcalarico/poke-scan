@@ -1,4 +1,5 @@
-import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { AccountSuppressionService } from '../account-deletion/account-suppression.service.js';
+import { Inject, Injectable, Logger, NotFoundException, Optional, UnauthorizedException } from '@nestjs/common';
 import { randomInt } from 'node:crypto';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/index.js';
@@ -6,11 +7,13 @@ import { RedisService } from '../../redis/index.js';
 import { PRICE_PROVIDER, type PriceProvider } from '../providers/card-provider.interface.js';
 import type {
   CardDto,
-  CollectionItemDto,
-  CollectionStatsDto,
   PriceDto,
   SetDto,
 } from '../collections/collections.service.js';
+import type { CardCondition, CardVariant } from '../collections/dto/card-variant.js';
+import { CARD_CONDITIONS, CARD_VARIANTS } from '../collections/dto/card-variant.js';
+import { latestMarketPriceJoin } from '../../common/sql/latest-price.js';
+import { priceMetadata, valuationFromCounts, type PriceMetadataDto, type ValueAggregateDto } from '../../common/price-metadata.js';
 import { CreateShareDto } from './dto/create-share.dto.js';
 import { UpdateShareDto } from './dto/update-share.dto.js';
 
@@ -22,6 +25,7 @@ const SLUG_MAX_ATTEMPTS = 5;
 
 const SHARE_CACHE_TTL_SECONDS = 5 * 60;
 const MAX_PUBLIC_ITEMS = 500;
+const PUBLIC_SHARE_CACHE_VERSION = 'public-v2';
 
 const ALL_COLLECTIONS_LABEL = 'Todas las colecciones';
 
@@ -70,11 +74,58 @@ export interface ShareLinkDto {
 export interface SharedCollectionDto {
   ownerDisplayName: string;
   collectionName: string;
-  items: CollectionItemDto[];
-  stats: CollectionStatsDto;
+  items: PublicSharedItemDto[];
+  stats: PublicShareStatsDto;
   /** true si había más de MAX_PUBLIC_ITEMS items y se cortó la lista. */
   truncated: boolean;
   sharedAt: string;
+}
+
+export interface PublicReferencePriceDto {
+  market: number | null;
+  currency: string;
+  provider: string | null;
+  source: string;
+  fetchedAt: string;
+  evaluatedAt?: string;
+  freshness?: PriceMetadataDto['freshness'];
+  upstreamUpdatedAt?: string | null;
+  upstreamFreshness?: PriceMetadataDto['upstreamFreshness'];
+}
+
+export interface PublicSharedItemDto {
+  card: CardDto;
+  variant: CardVariant;
+  condition: CardCondition;
+  quantity: number;
+  price: PublicReferencePriceDto | null;
+}
+
+export interface PublicShareStatsDto {
+  totalGroups: number;
+  totalCards: number;
+  uniqueCards: number;
+  duplicateCards: number;
+  setsCount: number;
+  totalValueUsd: number | null;
+  pricedGroups: number;
+  cardsMissingPrice: number;
+  valuation: ValueAggregateDto;
+}
+
+interface AggregateRow {
+  totalGroups: bigint;
+  totalCards: bigint;
+  uniqueCards: bigint;
+  duplicateCards: bigint;
+  setsCount: bigint;
+  pricedGroups: bigint;
+  totalValueUsd: Prisma.Decimal | null;
+  pricedCopies: bigint;
+  freshCopies: bigint;
+  staleCopies: bigint;
+  oldestFetchedAt: Date | null;
+  newestFetchedAt: Date | null;
 }
 
 export interface ShareViewStatsDto {
@@ -127,8 +178,16 @@ function buildUrl(slug: string): string {
   return `${baseUrl()}/${slug}`;
 }
 
-function isExpired(expiresAt: Date | null): boolean {
-  return expiresAt !== null && expiresAt.getTime() <= Date.now();
+export function publicCacheKey(providerId: string, slug: string): string {
+  return `share:${PUBLIC_SHARE_CACHE_VERSION}:${providerId}:${slug}`;
+}
+
+function isCardVariant(value: string): value is CardVariant {
+  return CARD_VARIANTS.some((candidate) => candidate === value);
+}
+
+function isCardCondition(value: string): value is CardCondition {
+  return CARD_CONDITIONS.some((candidate) => candidate === value);
 }
 
 @Injectable()
@@ -139,6 +198,7 @@ export class ShareService {
     private readonly prisma: PrismaService,
     private readonly redis: RedisService,
     @Inject(PRICE_PROVIDER) private readonly priceProvider: PriceProvider,
+    @Optional() private readonly suppression?: AccountSuppressionService,
   ) {}
 
   // ───-links privados ───
@@ -233,40 +293,47 @@ export class ShareService {
   // ─── Ruta pública ───
 
   async getPublic(slug: string): Promise<SharedCollectionDto> {
-    const cacheKey = `share:${this.priceProvider.id}:${slug}`;
+    const link = await this.prisma.shareLink.findFirst({
+      where: { slug, isActive: true, OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }] },
+      include: SHARE_INCLUDE,
+    });
+    if (!link) {
+      throw new NotFoundException('Este enlace no está disponible');
+    }
 
+    try { await this.suppression?.assertAllowed(link.userId); }
+    catch (error) {
+      if (error instanceof UnauthorizedException) throw new NotFoundException('Este enlace no está disponible');
+      throw error;
+    }
+    const cacheKey = publicCacheKey(this.priceProvider.id, slug);
     const cached = await this.redis.getJson<SharedCollectionDto>(cacheKey);
     if (cached) {
       this.trackView(slug);
       return cached;
     }
 
-    const link = await this.prisma.shareLink.findUnique({
-      where: { slug },
-      include: SHARE_INCLUDE,
-    });
-
-    if (!link || !link.isActive || isExpired(link.expiresAt)) {
-      throw new NotFoundException('Este enlace no está disponible');
-    }
-
+    const evaluatedAt = new Date();
     const items = await this.loadPublicItems(link);
     const prices = await this.fetchLatestPrices(
       items.map((item) => item.cardId),
       items.map((item) => item.variant),
+      evaluatedAt,
     );
     const dtos = this.toItemDtos(items, prices);
 
+    const stats = await this.aggregatePublicStats(link, evaluatedAt);
     const payload: SharedCollectionDto = {
       ownerDisplayName: link.user.displayName,
       collectionName: link.collection?.name ?? ALL_COLLECTIONS_LABEL,
       items: dtos,
-      stats: this.aggregateStats(dtos),
+      stats,
       truncated: items.length > MAX_PUBLIC_ITEMS,
       sharedAt: toIso(link.createdAt),
     };
 
-    await this.redis.setJson(cacheKey, payload, SHARE_CACHE_TTL_SECONDS);
+    const ttl = this.cacheTtlSeconds(link.expiresAt);
+    if (ttl > 0) await this.redis.setJson(cacheKey, payload, ttl);
     this.trackView(slug);
 
     return payload;
@@ -310,7 +377,11 @@ export class ShareService {
   }
 
   private async invalidateCache(slug: string): Promise<void> {
-    await this.redis.del(`share:${this.priceProvider.id}:${slug}`);
+    try {
+      await this.redis.del(publicCacheKey(this.priceProvider.id, slug));
+    } catch (error) {
+      this.logger.warn(`No se pudo invalidar caché pública de ${slug}: ${(error as Error).message}`);
+    }
   }
 
   private trackView(slug: string): void {
@@ -341,6 +412,7 @@ export class ShareService {
   private async fetchLatestPrices(
     cardIds: string[],
     variants: string[],
+    evaluatedAt: Date,
   ): Promise<Map<string, PriceDto>> {
     const uniqueCardIds = [...new Set(cardIds)];
     if (uniqueCardIds.length === 0) return new Map();
@@ -380,39 +452,62 @@ export class ShareService {
         currency: row.currency,
         source: row.source,
         fetchedAt: toIso(row.fetchedAt),
+        ...priceMetadata(row.fetchedAt, row.provider, this.priceProvider.id, evaluatedAt),
       });
     }
     return prices;
   }
 
-  private aggregateStats(items: CollectionItemDto[]): CollectionStatsDto {
-    let totalCards = 0;
-    let duplicateCards = 0;
-    let totalValueUsd = 0;
-    let cardsMissingPrice = 0;
-    const setIds = new Set<string>();
-    const cardIds = new Set<string>();
+  private cacheTtlSeconds(expiresAt: Date | null): number {
+    if (!expiresAt) return SHARE_CACHE_TTL_SECONDS;
+    return Math.min(SHARE_CACHE_TTL_SECONDS, Math.floor((expiresAt.getTime() - Date.now()) / 1000));
+  }
 
-    for (const item of items) {
-      totalCards += item.quantity;
-      if (item.quantity > 1) duplicateCards += 1;
-      setIds.add(item.card.setId);
-      cardIds.add(item.card.id);
-      if (item.price?.market != null) {
-        totalValueUsd += item.quantity * item.price.market;
-      } else {
-        cardsMissingPrice += 1;
-      }
-    }
-
+  private async aggregatePublicStats(link: ShareWithRefs, evaluatedAt: Date): Promise<PublicShareStatsDto> {
+    const scope = link.collectionId
+      ? Prisma.sql`i."collectionId" = ${link.collectionId}`
+      : Prisma.sql`c."userId" = ${link.userId}`;
+    const rows = await this.prisma.$queryRaw<AggregateRow[]>(Prisma.sql`
+      SELECT COUNT(*) AS "totalGroups",
+        COALESCE(SUM(i.quantity), 0) AS "totalCards",
+        COUNT(DISTINCT i."cardId") AS "uniqueCards",
+        COUNT(*) FILTER (WHERE i.quantity > 1) AS "duplicateCards",
+        COUNT(DISTINCT cards."setId") AS "setsCount",
+        COUNT(*) FILTER (WHERE lp.market IS NOT NULL) AS "pricedGroups",
+        SUM(i.quantity * lp.market) AS "totalValueUsd",
+        COALESCE(SUM(i.quantity) FILTER (WHERE lp.market IS NOT NULL), 0) AS "pricedCopies",
+        COALESCE(SUM(i.quantity) FILTER (WHERE lp.market IS NOT NULL AND lp.provider = ${this.priceProvider.id} AND lp."fetchedAt" <= ${evaluatedAt} AND lp."fetchedAt" > ${new Date(evaluatedAt.getTime() - 86400000)}), 0) AS "freshCopies",
+        COALESCE(SUM(i.quantity) FILTER (WHERE lp.market IS NOT NULL AND (lp.provider <> ${this.priceProvider.id} OR lp."fetchedAt" <= ${new Date(evaluatedAt.getTime() - 86400000)})), 0) AS "staleCopies",
+        MIN(lp."fetchedAt") FILTER (WHERE lp.market IS NOT NULL AND lp."fetchedAt" <= ${evaluatedAt}) AS "oldestFetchedAt",
+        MAX(lp."fetchedAt") FILTER (WHERE lp.market IS NOT NULL AND lp."fetchedAt" <= ${evaluatedAt}) AS "newestFetchedAt"
+      FROM collection_items i
+      JOIN collections c ON c.id = i."collectionId"
+      JOIN cards ON cards.id = i."cardId"
+      ${latestMarketPriceJoin(this.priceProvider)}
+      WHERE ${scope}
+    `);
+    const row = rows[0];
+    const totalGroups = Number(row?.totalGroups ?? 0);
+    const pricedGroups = Number(row?.pricedGroups ?? 0);
+    const rawValue = toNumber(row?.totalValueUsd);
+    const totalCards = Number(row?.totalCards ?? 0);
+    const pricedCopies = Number(row?.pricedCopies ?? 0);
+    const freshCopies = Number(row?.freshCopies ?? 0);
+    const staleCopies = Number(row?.staleCopies ?? 0);
+    const amount = totalGroups === 0 ? 0 : pricedGroups === 0 ? null : round2(rawValue ?? 0);
+    const valuationDto = valuationFromCounts({ totalCopies: totalCards, pricedCopies, amount: amount ?? 0, evaluatedAt,
+      freshCopies, staleCopies, unknownFreshnessCopies: Math.max(0, pricedCopies - freshCopies - staleCopies),
+      oldestFetchedAt: row?.oldestFetchedAt ?? null, newestFetchedAt: row?.newestFetchedAt ?? null });
     return {
+      totalGroups,
       totalCards,
-      uniqueCards: cardIds.size,
-      duplicateCards,
-      setsCount: setIds.size,
-      totalValueUsd: round2(totalValueUsd),
-      totalValueArs: null,
-      cardsMissingPrice,
+      uniqueCards: Number(row?.uniqueCards ?? 0),
+      duplicateCards: Number(row?.duplicateCards ?? 0),
+      setsCount: Number(row?.setsCount ?? 0),
+      totalValueUsd: amount,
+      pricedGroups,
+      cardsMissingPrice: totalGroups - pricedGroups,
+      valuation: valuationDto,
     };
   }
 
@@ -433,21 +528,28 @@ export class ShareService {
   private toItemDtos(
     items: ItemWithCard[],
     prices: Map<string, PriceDto>,
-  ): CollectionItemDto[] {
+  ): PublicSharedItemDto[] {
     return items
       .slice(0, MAX_PUBLIC_ITEMS)
-      .map((item) => ({
-        id: item.id,
-        collectionId: item.collectionId,
-        card: this.toCardDto(item),
-        variant: item.variant,
-        condition: item.condition,
-        quantity: item.quantity,
-        isForTrade: item.isForTrade,
-        notes: item.notes,
-        addedAt: toIso(item.addedAt),
-        price: prices.get(priceKey(item.cardId, item.variant)) ?? null,
-      }));
+      .map((item) => {
+        if (!isCardVariant(item.variant) || !isCardCondition(item.condition)) {
+          throw new Error('El inventario tiene una variante o condición inválida');
+        }
+        return {
+          card: this.toCardDto(item),
+          variant: item.variant,
+          condition: item.condition,
+          quantity: item.quantity,
+          price: (() => {
+          const price = prices.get(priceKey(item.cardId, item.variant));
+          return price
+            ? { market: price.market, currency: price.currency, provider: price.provider, source: price.source, fetchedAt: price.fetchedAt,
+                evaluatedAt: price.evaluatedAt, freshness: price.freshness, upstreamUpdatedAt: price.upstreamUpdatedAt,
+                upstreamFreshness: price.upstreamFreshness }
+            : null;
+          })(),
+        };
+      });
   }
 
   private toCardDto(item: ItemWithCard): CardDto {

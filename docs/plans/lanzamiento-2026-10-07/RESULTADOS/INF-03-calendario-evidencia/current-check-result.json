@@ -1,0 +1,27 @@
+{
+  "purpose": "Local simulated backup calendar validation",
+  "records": [
+    {
+      "phase": "stop",
+      "command": [
+        "pnpm",
+        "run",
+        "stop"
+      ],
+      "exitCode": 0,
+      "startedAtUtc": "2026-10-13T09:52:28.171801+00:00",
+      "finishedAtUtc": "2026-10-13T09:52:28.457001+00:00"
+    },
+    {
+      "phase": "check",
+      "command": [
+        "pnpm",
+        "run",
+        "check"
+      ],
+      "exitCode": 0,
+      "startedAtUtc": "2026-10-13T09:52:28.457447+00:00",
+      "finishedAtUtc": "2026-10-13T09:54:20.577991+00:00"
+    }
+  ]
+}

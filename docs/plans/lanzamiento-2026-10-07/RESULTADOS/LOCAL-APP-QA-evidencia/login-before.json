@@ -1,0 +1,5 @@
+{
+  "path": "/api/auth/login",
+  "status": 500,
+  "message": "Internal server error"
+}

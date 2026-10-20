@@ -1,0 +1,156 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.2 /Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/frontend
+
+ ❯ lib/scanner/__tests__/perspective.test.ts (8 tests | 1 failed) 179ms
+   ❯ perspectiva del recorte (8)
+     × conserva el marco exterior aunque el dibujo interior tenga perspectiva (giro 90°) 36ms
+ ❯ components/scanner/__tests__/scan-page-gallery.test.tsx (7 tests | 1 failed) 452ms
+   × la foto subida usa DINOv2, suma el candidato elegido y libera la imagen original 171ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  components/scanner/__tests__/scan-page-gallery.test.tsx > la foto subida usa DINOv2, suma el candidato elegido y libera la imagen original
+TestingLibraryElementError: Unable to find an element with the text: ¿No coincidió? Guardá el recorte. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<header[39m
+      [33mclass[39m=[32m"sticky top-0 z-sticky bg-surface/85 pt-[env(safe-area-inset-top)] backdrop-blur-md lg:top-[calc(var(--nav-height)+env(safe-area-inset-top))] lg:pt-0"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"mx-auto flex h-14 w-full max-w-6xl items-center gap-2 px-4 sm:px-6"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex h-11 w-11 shrink-0 items-center justify-center"[39m
+        [36m>[39m
+          [36m<a[39m
+            [33maria-label[39m=[32m"Volver a buscar"[39m
+            [33mclass[39m=[32m"-ml-2 flex h-11 w-11 items-center justify-center rounded-full text-secondary transition-colors duration-fast hover:bg-surface-3 hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--focus-ring)]"[39m
+            [33mhref[39m=[32m"/buscar"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-chevron-left h-6 w-6"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"24"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"24"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m15 18-6-6 6-6"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+          [36m</a>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"min-w-0 flex-1 text-center"[39m
+        [36m>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"truncate text-h3 text-primary"[39m
+          [36m>[39m
+            [0mEscanear[0m
+          [36m</p>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex h-11 w-11 shrink-0 items-center justify-center"[39m
+        [36m/>[39m
+      [36m</div>[39m
+    [36m</header>[39m
+    [36m<main[39m
+      [33mclass[39m=[32m"mx-auto w-full max-w-6xl px-4 pb-[calc(5rem+env(safe-area-inset-bottom))] pt-4 sm:px-6 sm:pt-6 lg:pb-8 lg:pt-[calc(var(--nav-height)+env(safe-area-inset-top)+1.5rem)] flex flex-col gap-4"[39m
+      [33mid[39m=[32m"contenido"[39m
+    [36m>[39m
+      [36m<p>[39m
+        [0mSesión: [0m
+        [0m1[0m
+      [36m</p>[39m
+      [36m<button[39m
+        [33mclass[39m=[32m"inline-flex items-center justify-center gap-2 rounded-control font-label transition-[color,background-color,border-color,transform,box-shadow] duration-fast ease-standard active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--focus-ring)] disabled:pointer-events-none disabled:active:scale-100 border border-line bg-surface text-primary shadow-xs hover:bg-surface-2 dark:bg-surface-2 h-11 px-4 text-label"[39m
+        [33mtype[39m=[32m"button"[39m
+      [36m>[39m
+        [0mRevisar última foto[0m
+      [36m</button>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex flex-col gap-1"[39m
+      [36m>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"text-caption text-tertiary"[39m
+        [36m>[39m
+          [0m1[0m
+          [0m [0m
+          [0mlectura pendiente[0m
+          [0m de guardar en una colección.[0m
+        [36m</p>[39m
+        [36m<button[39m
+          [33mclass[39m=[32m"inline-flex items-center justify-center gap-2 rounded-control font-label transition-[color,background-color,border-color,transform,box-shadow] duration-fast ease-standard active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--focus-ring)] disabled:pointer-events-none disabled:active:scale-100 text-secondary hover:bg-surface-3 hover:text-primary h-11 px-4 text-label w-full"[39m
+          [33mtype[39m=[32m"button"[39m
+        [36m>[39m
+          [0mDescartar la sesión[0m
+        [36m</button>[39m
+      [36m</div>[39m
+    [36m</main>[39m
+    [36m<div>[39m
+      [36m<button>[39m
+        [0mRevisar lectura [0m
+        [0m1[0m
+      [36m</button>[39m
+    [36m</div>[39m
+    [36m<input[39m
+      [33maccept[39m=[32m"image/*"[39m
+      [33maria-label[39m=[32m"Elegir una foto de la carta"[39m
+      [33mclass[39m=[32m"sr-only"[39m
+      [33mtype[39m=[32m"file"[39m
+    [36m/>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ Object.getElementError node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ components/scanner/__tests__/scan-page-gallery.test.tsx:46:26
+     44|   expect(mocks.download).not.toHaveBeenCalled();
+     45|   fireEvent.click(screen.getByRole('button', { name: 'Revisar última f…
+     46|   fireEvent.click(screen.getByText('¿No coincidió? Guardá el recorte')…
+       |                          ^
+     47|   fireEvent.click(screen.getByRole('button', { name: 'Descargar recort…
+     48|   expect(mocks.download).toHaveBeenCalledWith(expect.objectContaining(…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  lib/scanner/__tests__/perspective.test.ts > perspectiva del recorte > conserva el marco exterior aunque el dibujo interior tenga perspectiva (giro 90°)
+AssertionError: expected 50 to be 200 // Object.is equality
+
+- Expected
++ Received
+
+- 200
++ 50
+
+ ❯ lib/scanner/__tests__/perspective.test.ts:39:39
+     37|     // El pie de la carta no forma parte del cuadrilátero del dibujo.
+     38|     const footer = (Math.floor(result.image.height * .85) * result.ima…
+     39|     expect(result.image.data[footer]).toBe(200);
+       |                                       ^
+     40|   });
+     41|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  2 failed | 17 passed (19)
+      Tests  2 failed | 131 passed (133)
+   Start at  10:40:15
+   Duration  5.10s (environment 35%, tests 32%, transform 18%, setup 8%, import 7%)
+
+    Isolate  19 workers spawned · ~598ms startup each (spawn + environment, per file)
+             at least ~664ms faster with isolate: false — reuses workers across files instead of one per file
+

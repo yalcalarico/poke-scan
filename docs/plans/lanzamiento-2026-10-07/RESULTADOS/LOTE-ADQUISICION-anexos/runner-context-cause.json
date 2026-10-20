@@ -1,0 +1,10 @@
+{
+  "rootAuthorization": "Focal fullfile10; si verde, una revalidaci\u00f3n est\u00e1ndar exacta nueva con contexto corregido y recursos propios frescos",
+  "originalOverride": "API_INTERNAL_URL=loopback:1/api para todos los pasos",
+  "sourceCause": "getApiBaseUrl production prioriza API_INTERNAL_URL; api-client.test producci\u00f3n stubs NEXT_PUBLIC_API_URL pero no API_INTERNAL_URL heredada",
+  "delta": "Quitar override privado y env.pop API_INTERNAL_URL; NEXT_PUBLIC_API_URL y NEXT_PUBLIC_SITE_URL loopback conservados",
+  "productOrTestsChanged": false,
+  "globalCommandChanged": false,
+  "originalRun": "adquisicion-gate-8e4fa11b7ccb",
+  "originalRunCleanupComplete": true
+}

@@ -1,0 +1,5 @@
+8580472ef53c88a25a360dd9221172b466d2ee0058b335d275373383ab18329d  backend/src/redis/redis.service.ts
+e9ba8da70dff4d69fa9ce3e7086fc6d888c3862dddd7a138d0169c2ea01be61a  backend/src/redis/redis.service.spec.ts
+237bfe19384a5238c0669250cc6423d9e0b01fbebc69968c3cda05862b1a5c44  backend/src/redis/redis.recovery.spec.ts
+fc980b9cf0d0dbe035003ea8d753e38e219a00d46b4a660cd44a9aa90a97f205  backend/docs/gotchas.md
+008fc2daa147c91af033a6a3e260feb284b5b4a843a7645185b8fa8ec9e750fe  backend/docs/testing.md

@@ -6,18 +6,20 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from 'react';
 
 import {
   getMe,
+  ApiError,
   login as loginRequest,
   logout as logoutRequest,
   register as registerRequest,
   type RegisterPayload,
 } from '@/lib/api';
-import { hasSession } from '@/lib/api/token-storage';
+import { clearTokens, getSessionEpoch, hasSession } from '@/lib/api/token-storage';
 import type { UserDto } from '@/types/api';
 
 export interface AuthContextValue {
@@ -28,6 +30,7 @@ export interface AuthContextValue {
   register: (payload: RegisterPayload) => Promise<UserDto>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<UserDto | null>;
+  clearSession: (expectedEpoch: number) => boolean;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -35,6 +38,7 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<UserDto | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const generation = useRef(0);
 
   /**
    * Releer el usuario desde la API.
@@ -47,37 +51,41 @@ export function AuthProvider({ children }: { children: ReactNode }) {
    * un refresh al volver de la PWA) dejaba la app colgada en el skeleton.
    */
   const refreshUser = useCallback(async (): Promise<UserDto | null> => {
+    const epoch = getSessionEpoch();
+    const started = generation.current;
     if (!hasSession()) {
-      setUser(null);
-      setIsLoading(false);
+      if (generation.current === started && getSessionEpoch() === epoch) { setUser(null); setIsLoading(false); }
       return null;
     }
     try {
       const me = await getMe();
+      if (generation.current !== started || getSessionEpoch() !== epoch) return null;
       setUser(me);
       return me;
     } catch {
-      setUser(null);
+      if (generation.current === started && (getSessionEpoch() === epoch || !hasSession())) setUser(null);
       return null;
     } finally {
-      setIsLoading(false);
+      if (generation.current === started && (getSessionEpoch() === epoch || !hasSession())) setIsLoading(false);
     }
   }, []);
 
   useEffect(() => {
     let cancelled = false;
     const bootstrap = async () => {
+      const epoch = getSessionEpoch();
+      const started = generation.current;
       if (!hasSession()) {
-        if (!cancelled) setIsLoading(false);
+        if (!cancelled && generation.current === started && getSessionEpoch() === epoch) setIsLoading(false);
         return;
       }
       try {
         const me = await getMe();
-        if (!cancelled) setUser(me);
+        if (!cancelled && generation.current === started && getSessionEpoch() === epoch) setUser(me);
       } catch {
-        if (!cancelled) setUser(null);
+        if (!cancelled && generation.current === started && (getSessionEpoch() === epoch || !hasSession())) setUser(null);
       } finally {
-        if (!cancelled) setIsLoading(false);
+        if (!cancelled && generation.current === started && (getSessionEpoch() === epoch || !hasSession())) setIsLoading(false);
       }
     };
     void bootstrap();
@@ -87,25 +95,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
-    const data = await loginRequest(email, password);
-    setUser(data.user);
-    setIsLoading(false);
-    return data.user;
+    let started = ++generation.current;
+    try {
+      const data = await loginRequest(email, password, () => { started = ++generation.current; });
+      if (generation.current !== started) throw new ApiError(401, 'La sesión cambió. Volvé a intentarlo.');
+      setUser(data.user);
+      return data.user;
+    } finally { if (generation.current === started) setIsLoading(false); }
   }, []);
 
   const register = useCallback(async (payload: RegisterPayload) => {
-    const data = await registerRequest(payload);
-    setUser(data.user);
-    setIsLoading(false);
-    return data.user;
+    let started = ++generation.current;
+    try {
+      const data = await registerRequest(payload, () => { started = ++generation.current; });
+      if (generation.current !== started) throw new ApiError(401, 'La sesión cambió. Volvé a intentarlo.');
+      setUser(data.user);
+      return data.user;
+    } finally { if (generation.current === started) setIsLoading(false); }
   }, []);
 
   const logout = useCallback(async () => {
+    let started = ++generation.current;
     try {
-      await logoutRequest();
+      await logoutRequest(() => { started = ++generation.current; });
     } finally {
-      setUser(null);
+      if (generation.current === started && !hasSession()) { setUser(null); setIsLoading(false); }
     }
+  }, []);
+
+  const clearSession = useCallback((expectedEpoch: number) => {
+    if (!clearTokens(expectedEpoch)) return false;
+    generation.current += 1;
+    setUser(null);
+    setIsLoading(false);
+    return true;
   }, []);
 
   const value = useMemo<AuthContextValue>(
@@ -117,8 +140,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       register,
       logout,
       refreshUser,
+      clearSession,
     }),
-    [user, isLoading, login, register, logout, refreshUser],
+    [user, isLoading, login, register, logout, refreshUser, clearSession],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -1,12 +1,12 @@
 # Módulos — mapa y dependencias
 
-> Qué responsabilidad tiene cada uno de los 8 módulos de `src/modules`, qué
+> Qué responsabilidad tiene cada módulo de `src/modules`, qué
 > services expone y de qué depende. Leelo antes de agregar un módulo nuevo o de
 > tocar un import entre módulos.
 
 ## Diagrama de dependencias
 
-Las flechas van de "módulo que importa" a "módulo del que depende".
+Las flechas van de "módulo que importa" a "módulo del que depende". El diagrama muestra el núcleo; `AccountDeletionModule` y `MetricsModule` también se registran globalmente en `AppModule`.
 
 ```
                           ┌──────────────┐
@@ -40,7 +40,7 @@ Leyenda: `Prisma`, `Redis` y `Providers` están marcados `@Global()`, así que
 **cualquier** service puede inyectarlos sin importar nada. `Jobs` **no** es
 global: hay que importarlo explícitamente para usar sus services.
 
-## Los 8 módulos
+## Módulos de dominio
 
 ### auth
 
@@ -208,12 +208,34 @@ inyección, para poder cambiarla sin tocar los jobs.
 | Depende de | nada (solo `fetch` nativo) |
 | `@Global` | sí |
 
-Es el único módulo `@Global` además de `Prisma`, `Redis`: los jobs y cualquier
+Es un módulo `@Global`, junto con `Prisma`, `Redis`, `AccountDeletion` y `Metrics`: los jobs y cualquier
 otro service pueden inyectar `CARD_DATA_PROVIDER` sin importar `ProvidersModule`
 (aunque `JobsModule` lo importe igual explícitamente).
 
 Detalle completo de la interfaz, el `VARIANT_MAP` y cómo migrar a Scrydex en
 [providers.md](providers.md).
+
+### account-deletion
+
+**Responsabilidad**: coordinar la baja de cuenta con custodia durable de supresión, journal/checkpoint local y reconciliación. La disponibilidad se mantiene desactivada por defecto hasta configurar la custodia; ver [API](api.md#auth) y el [procedimiento de baja](../../docs/infra/account-deletion.md).
+
+| | |
+|---|---|
+| Controllers | Ninguno propio; `AuthController` expone las rutas de disponibilidad y solicitud |
+| Services | `AccountDeletionService`, `AccountSuppressionService` |
+| Exports | Ambos services |
+| `@Global` | sí |
+
+### metrics
+
+**Responsabilidad**: recopilar métricas operativas agregadas del scanner, cola de precios y Redis, y exponerlas en `GET /api/ops/metrics` con `X-Metrics-Token`.
+
+| | |
+|---|---|
+| Controllers | `MetricsController` (`/ops/metrics`) |
+| Services | `MetricsService`, `MetricsRecorder` y middleware de métricas HTTP |
+| Exports | `MetricsRecorder` |
+| `@Global` | sí |
 
 ## `jobs` — no es un módulo de `src/modules`, pero es parte del mapa
 

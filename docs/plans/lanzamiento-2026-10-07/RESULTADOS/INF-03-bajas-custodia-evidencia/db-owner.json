@@ -1,0 +1,35 @@
+{
+  "runId": "ack_75237790611c",
+  "owner": "/root",
+  "database": "ack_75237790611c_test",
+  "marker": "owner=/root;run=ack_75237790611c;source=CUSTODY-standard-fixture",
+  "pgFullID": "18aa2f6937521ae010930ae98cbee45f2fa435b554c65cf90daaffba0c641ba8",
+  "sourceCounts": {
+    "migrations": 13,
+    "users": 22,
+    "collections": 22,
+    "items": 69,
+    "shares": 13,
+    "cards": 20670,
+    "gin": 5
+  },
+  "standardTestBefore": {
+    "migrations": 11,
+    "users": 2,
+    "collections": 3,
+    "items": 2,
+    "shares": 1,
+    "cards": 20670,
+    "gin": 5,
+    "priced": 7
+  },
+  "createdAtUtc": "2026-10-13T01:55:05.070987+00:00",
+  "liveResources": [],
+  "redis": {
+    "name": "ack_75237790611c-redis",
+    "id": "51b118782eccb9f7d645cf53b69e15b0a015f085566c301e800d879688d83e6d",
+    "port": 56619,
+    "label": "owner=/root;run=ack_75237790611c;source=CUSTODY-standard-fixture"
+  },
+  "cleanedAtUtc": "2026-10-13T02:12:48.264697+00:00"
+}

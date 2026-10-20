@@ -1,0 +1,13 @@
+import assert from 'node:assert/strict';
+const calls=[];
+globalThis.fetch=async(input,init)=>{calls.push(String(input));return {ok:true};};
+let now=Date.parse('2026-10-14T14:22:14.532Z');Date.now=()=>now;
+await import('./live-fetch-guard.mjs');
+const price='https://tcgcsv.com/tcgplayer/3/24722/prices';
+await assert.rejects(fetch(price));assert.equal(calls.length,0);
+now+=1;await fetch(price);assert.equal(calls.length,1);
+await assert.rejects(fetch('https://tcgcsv.com/tcgplayer/3/24837/prices'));
+await assert.rejects(fetch('https://api.pokemontcg.io/v2/cards'));
+await assert.rejects(fetch(price,{method:'POST'}));
+await assert.rejects(fetch(price,{headers:{Authorization:'private'}}));
+console.log('6 controles horarios/de aislamiento correctos; sin red');

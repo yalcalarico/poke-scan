@@ -1,0 +1,19 @@
+{
+  "phase": "backend-focused",
+  "command": [
+    "pnpm",
+    "--dir",
+    "backend",
+    "exec",
+    "vitest",
+    "run",
+    "src/jobs/tcgcsv/tcgcsv.adapter.spec.ts",
+    "src/jobs/tcgcsv/tcgcsv.client.spec.ts",
+    "src/jobs/tcgcsv/tcgcsv.service.spec.ts",
+    "src/jobs/collection-comparison.service.spec.ts",
+    "src/jobs/comparison.http.spec.ts"
+  ],
+  "exitCode": 0,
+  "startedAtUtc": "2026-10-13T19:40:14.602384+00:00",
+  "finishedAtUtc": "2026-10-13T19:40:24.406933+00:00"
+}

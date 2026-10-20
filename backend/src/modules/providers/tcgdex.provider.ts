@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PROVIDER_IDS } from './card-provider.interface.js';
+import { ProviderRateLimitError, retryAfterMilliseconds } from '../../common/errors/provider-rate-limit.error.js';
 import type {
   PriceProvider,
   RemoteCardPrice,
@@ -170,6 +171,13 @@ export class TcgdexProvider implements PriceProvider {
           throw new NotFoundError(`tcgdex respondió 404 para ${path}`);
         }
 
+        if (response.status === 429) {
+          throw new ProviderRateLimitError(
+            this.id,
+            retryAfterMilliseconds(response.headers.get('retry-after')),
+          );
+        }
+
         if (!RETRYABLE_STATUS.has(response.status)) {
           throw new Error(
             `tcgdex respondió ${response.status} ${response.statusText} para ${path}`,
@@ -179,6 +187,7 @@ export class TcgdexProvider implements PriceProvider {
         lastError = new Error(`tcgdex respondió ${response.status} para ${path}`);
       } catch (error) {
         if (error instanceof NotFoundError) throw error;
+        if (error instanceof ProviderRateLimitError) throw error;
         lastError = error;
       }
 

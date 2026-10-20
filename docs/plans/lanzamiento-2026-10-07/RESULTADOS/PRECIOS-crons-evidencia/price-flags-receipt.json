@@ -1,0 +1,10 @@
+{
+  "changedFlags": {
+    "PRICE_QUEUE_ENABLED": "true",
+    "ENABLE_PRICE_BACKFILL_CRON": "true",
+    "ENABLE_TCGCSV_INGESTION": "true"
+  },
+  "otherFlagsPreserved": true,
+  "wrapperSuppliers": "TCGCSV and English TCGdex GET only; other suppliers and jobs remain blocked",
+  "previousEnvSHA256": "32c36edd7702acfbc328086d428b6b85226d5f075527998ccf31eb37dcae8ab4"
+}

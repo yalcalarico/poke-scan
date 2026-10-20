@@ -1,0 +1,66 @@
+[
+  {
+    "file": "cleanup-receipt.json",
+    "sha256": "0f1de07d9563ae1dde97c8855349ea31e84e0921f2cec3882c299936d7065b28"
+  },
+  {
+    "file": "current-check-result.json",
+    "sha256": "27efb994ad7bf7377024a4c2c889cf54dc76d8514d3e671d267fb9904ae82e83"
+  },
+  {
+    "file": "current-check.log",
+    "sha256": "5b51e1ea29d83db349240bb7666453b174da37d192e3db50541dab315fa471b8"
+  },
+  {
+    "file": "final-instance.json",
+    "sha256": "38cfa6a537b62a5900fa76f66e8c55c2e1d603dc8ff1ec8ff1952d7088256b68"
+  },
+  {
+    "file": "focused.log",
+    "sha256": "cfab8d33fc28251cc0974c04b9a687e49bd35acd6926980cd16b1f8b9fc81e23"
+  },
+  {
+    "file": "live-baseline.json",
+    "sha256": "e46d5cb2197a1ba38310b0b4c39c4260a2e745053e892ee7f373e5cfdc087322"
+  },
+  {
+    "file": "live-cli.log",
+    "sha256": "524660f3d3ff4cbb95824cac89ade792aff97b4005cf077a082b35dbeb4eff99"
+  },
+  {
+    "file": "live-public-consumer.json",
+    "sha256": "c35b382fa0264526eb681b395e0d0c380c02ecdfee697b3446a7814ad7d600c3"
+  },
+  {
+    "file": "live-status.log",
+    "sha256": "0734eab6e1ffb5d7f23aeeb295ffc08f013f3211b16e8ea79a931d5107c3f996"
+  },
+  {
+    "file": "live-verifier-1-failure.json",
+    "sha256": "534fce3cb83e17261bc4db19730838b8b05e2ac6f28632d9a946beba76baa0ce"
+  },
+  {
+    "file": "migrate-clone-result.json",
+    "sha256": "940fdee0201a7fe702d631e4cbdc8a3b6a2f482fb0eb90580329713ec58ddbda"
+  },
+  {
+    "file": "migrate-clone.log",
+    "sha256": "2910f4221a1f0f8e5935b47c645f5d1b8097bbdffb3ac899d8cea99b7c4a6a33"
+  },
+  {
+    "file": "runtime-cli.log",
+    "sha256": "de21a75d0ab781d3c131911a9e1c49958c33e732413a89400269729ba3b8672c"
+  },
+  {
+    "file": "runtime-readiness.json",
+    "sha256": "1ddfbc2af868ada15332d63dca696b2ab24cbeb86c922e7eee380290526bcf54"
+  },
+  {
+    "file": "runtime-result.json",
+    "sha256": "b85f82ffe61473c3ce46343b6c219ef150fad2d296ed50a7eb7440c35b4c1ae4"
+  },
+  {
+    "file": "sources.json",
+    "sha256": "abb66ad5f5cb5c95f92a6ec765f1cedf011a54cdebdff3cbc34c862c1a312c19"
+  }
+]

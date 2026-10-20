@@ -1,0 +1,32 @@
+{
+  "date": "2026-10-08",
+  "reviewer": "coordinador Sol HIGH",
+  "standardDirect": {
+    "command": "pnpm --dir frontend run build",
+    "permission": "require_escalated accepted",
+    "exitCode": 1,
+    "failure": "Turbopack internal CSS bind EPERM",
+    "autoReviewRejection": false
+  },
+  "alternativeOutputRestored": {
+    "command": "pnpm --dir frontend run build --webpack",
+    "exitCode": 0,
+    "doesNotReplaceStandardGate": true
+  },
+  "productSourceHashesUnchanged": 430,
+  "prior510RuntimeHashesVerifiedBeforeDiagnostic": true,
+  "priorRuntimeManifestIsHistoricalAfterDiagnostic": true,
+  "noGlobalSuitesRepeated": true,
+  "noNewDatabaseRedisStackOrBrowser": true,
+  "logs": [
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/LOTE-VALORES-root-build-standard-direct.log",
+      "sha256": "71de4e064689753509300f96ae59b6ce714ab4c042a496cbfa9f7e2d2b854122"
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/LOTE-VALORES-root-build-webpack-restore.log",
+      "sha256": "77925c02ccab9b1da1d2d17c2695ec8368913ab0375f41ddca99f6413cad479f"
+    }
+  ],
+  "gateClosed": false
+}

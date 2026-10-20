@@ -1,6 +1,7 @@
 'use client';
 
 import { useCurrency } from '@/hooks/use-currency';
+import { PriceReferenceDetails } from '@/components/prices/price-evidence';
 import { conditionLabel, variantLabel } from '@/lib/variants';
 import type { CollectionItemDto } from '@/types/api';
 
@@ -12,8 +13,12 @@ export function CollectionItemDetails({ item }: { item: CollectionItemDto }) {
     <p>{conditionLabel(item.condition)}</p>
     <div className="flex flex-wrap justify-between gap-1 border-t border-line pt-2 tabular-nums">
       <span>Cantidad: {item.quantity}</span>
+      <span>Por copia: {market === null ? '—' : formatMoney(market)}</span>
       <span className="font-semibold text-primary">Total: {market === null ? '—' : formatMoney(market * item.quantity)}</span>
     </div>
     {item.isForTrade ? <p className="text-brand">Para intercambio</p> : null}
+    {market === null ? <p className="text-warning">Sin referencia de precio para esta variante.</p> : null}
+    {item.price ? <PriceReferenceDetails reference={item.price} showConversion /> : <p className="text-warning">Sin referencia de precio para esta variante · antigüedad no disponible.</p>}
+    <p>La condición {conditionLabel(item.condition)} no ajusta este valor.</p>
   </div>;
 }

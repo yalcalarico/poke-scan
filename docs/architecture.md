@@ -4,44 +4,24 @@
 
 ## Vista general
 
+```mermaid
+flowchart TD
+  PWA["PWA · Next.js / React · cámara y recorte local"] -->|"JSON / JWT; refresh HttpOnly"| API["API NestJS"]
+  API --> PG["PostgreSQL · catálogo, cuenta, colecciones, históricos y coordinación durable"]
+  API --> REDIS["Redis · caché opcional y lock de catálogo"]
+  API --> DINO["DINOv2 local · modelo e índice · sin guardar fotos"]
+  API --> JOBS["Jobs · cola, gate persistente y ciclos diarios"]
+  JOBS --> PG
+  JOBS --> CATALOG["pokemontcg.io · catálogo"]
+  JOBS --> PRICES["TCGdex · referencia activa"]
+  JOBS --> CSV["TCGCSV · comparación separada"]
+  API --> CURRENCY["Servicio de moneda · DolarApi con caché/fallback"]
 ```
-┌──────────────────────────────────────────────────────────────┐
-│  PWA — Next.js 16 (App Router) · mobile-first                │
-│                                                              │
-│  El CLIENTE encuadra; la API reconoce:                      │
-│    cámara → recorte → API DINOv2 → candidato #1  │
-│  Reconocer requiere conexión y sesión autenticada.       │
-│  La API usa el modelo y el índice locales.                │
-└───────────────────────────┬──────────────────────────────────┘
-                            │ HTTPS · JSON · JWT Bearer
-┌───────────────────────────▼──────────────────────────────────┐
-│  API — NestJS 12                                             │
-│                                                              │
-│ (auth)      register/login/refresh · rotación + anti-reuso   │
-│  (cards)    búsqueda difusa · detalle · identify · precios   │
-│  (collec.)  colecciones · items · duplicados · stats         │
-│  (share)    links públicos de solo lectura                    │
-│  (friends)  solicitudes entre usuarios                        │
-│  (currency) cotización USD→ARS (DolarApi)                    │
-│  (jobs)      sync de catálogo · refresco de precios          │
-│  (providers) capa de abstracción de la fuente (intercambiable) │
-└──────┬─────────────────────────────────┬─────────────────────┘
-       │                                 │
-┌──────▼──────────────┐          ┌───────▼─────────────────────┐
-│ PostgreSQL 16       │          │  Redis 7                     │
-│ 20 670 cartas       │          │  precios (1 h)               │
-│ 176 sets            │          │  cotización (1 h)            │
-│ usuarios, colecciones│         │  cursor del sync             │
-│ precios (histórico) │          │  share público (5 min)       │
-└─────────────────────┘          └─────────────────────────────┘
 
-           ▲ solo los jobs hablan con pokemontcg.io
-           │ (nunca un handler público — ver data-sources.md)
-┌──────────┴───────────────────────────────────────────────────┐
-│  pokemontcg.io v2   (deprecada, sin key: 1000/día · 30/min) │
-│  DolarApi.com       (cotización ARS, gratis)                 │
-└──────────────────────────────────────────────────────────────┘
-```
+Los handlers públicos de cartas consultan datos locales; encolan lo necesario
+sin llamar directamente a los proveedores de catálogo/precios. La cuota de
+pokemontcg.io corresponde al sync de catálogo, no a ambos proveedores de precios.
+
 
 ## El flujo de datos, paso a paso
 
@@ -49,7 +29,7 @@
 
 Teléfono: cámara → sondeo local del encuadre → recorte estable. Escritorio: foto subida → detección y orientación del contorno.
 
-Ambos envían el recorte a `POST /api/cards/identify-visual` autenticado. DINOv2 compara con el índice local, verifica detalles geométricos y devuelve el ranking. El cliente elige el #1, pide su precio y lo suma a la sesión. “Organizar” guarda en la colección elegida mediante los endpoints existentes.
+Ambos envían el recorte a `POST /api/cards/identify-visual` autenticado. DINOv2 compara por similitud coseno con el índice local y devuelve los ocho candidatos. No usa ORB ni OCR. El cliente propone el #1, pide su precio y lo suma a la sesión para revisión; no confirma identidad ni edición por sí solo. “Organizar” guarda en la colección elegida mediante los endpoints existentes.
 
 La API procesa la foto sin almacenarla. Reconocer necesita conexión, modelo e índice locales. Las actualizaciones del índice se detectan sin reiniciar el servidor. Ver [escáner](../frontend/docs/scanner.md).
 
@@ -72,7 +52,26 @@ si el cliente tuviera su propia caché, la regla de 24 h podría quedar desaline
 entre dispositivos. La carga de precio en cliente evita que una respuesta lenta
 de la fuente retenga todo el SSR de la ficha.
 
-### 3. Compartir
+### 3. Ciclos e históricos de precios
+
+`price_sync_sets` define el alcance diario común (semilla curada y sets usados en
+colecciones). TCGdex planifica a las 03:15 UTC y TCGCSV a las 21:00 UTC; ambos
+reanudan cada 15 min sobre PostgreSQL mientras la API y sus flags estén activos.
+La consulta interactiva de precio conserva cola y caché: no pagina todo el catálogo.
+
+TCGCSV descubre identidades por separado, comprueba `last-updated.txt`/build y
+reserva cada archivo de precios durante 24 h. La publicación es atómica y sólo
+asocia productos con identidad segura. No hay topes globales de 40 sets/500
+requests; sí ejecución serial, deduplicación y pausas 429/Retry-After.
+
+Las observaciones guardan proveedor, variante, moneda, consulta y fecha upstream
+cuando existe. El feed publicado no demuestra la hora real de cotización. Las
+gráficas conservan huecos, cobertura y cambios de composición; no reconstruyen
+siete días anteriores que nunca se recibieron. TCGCSV compara con TCGdex sin
+promediar ni sustituir la referencia activa. Ver [comparación](../frontend/docs/comparison.md)
+y [jobs](../backend/docs/jobs.md).
+
+### 4. Compartir
 
 ```
 Colección → POST /share → slug aleatorio de 10 chars
@@ -101,7 +100,7 @@ app/
   share/          <PlainShell> — SIN nav: /share/[slug]
 ```
 
-Tres cosas que explican el resto del árbol:
+Reglas que explican el resto del árbol:
 
 - **Los providers están arriba, en el layout raíz.** Son de la app entera, no de un
   tipo de pantalla. Montarlos por rama los duplicaría y el estado de la moneda y
@@ -112,10 +111,10 @@ Tres cosas que explican el resto del árbol:
   pública de una colección compartida ni en el login: mandar a alguien a buscar,
   escanear, colecciones y ajustes arriba de la colección de otra persona es un
   invito a dejar de mirarla.
-- **El servidor no pide nada de la cuenta.** El token vive en `sessionStorage`, así
-  que ninguna ruta bloquea el acceso en el server: la ruta renderiza siempre y el
-  componente cliente decide. `RequireAuth` es la única con guard dedicado, y hace
-  `router.replace('/login')`.
+- **La sesión de cuenta se resuelve en cliente.** El access token vive en memoria
+  y el refresh en cookie HttpOnly; los guards esperan el bootstrap de sesión.
+  Una ruta renderizada no autoriza datos: la API comprueba autenticación y
+  ownership. Ver [sesión](../frontend/docs/api-client.md).
 
 El detalle completo está en [`frontend/docs/routes.md`](../frontend/docs/routes.md).
 
@@ -157,6 +156,7 @@ proyecto. El resumen para el que arrive nuevo:
 2. **El rate limit manda sobre el diseño.** Nada puede llamar a la API externa
    desde un handler público. Si agregás una funcionalidad que necesite precios
    frescos, tiene que pasar por el servicio de precios.
-3. **Los precios llegan por detrás.** Una carta recién agregada tarda ~2 s en
-   tener precio. La UI lo maneja con skeleton.
+3. **Los precios pueden demorar o faltar.** Cola, estado del proveedor, variante
+   y cobertura condicionan la respuesta; la UI distingue carga, último conocido
+   y ausencia. No hay garantía de una cotización en dos segundos.
 4. **El ranking visual puede fallar con reimpresiones y reflejos.** La primera predicción se suma automáticamente; revisá la edición al organizar y usá búsqueda manual si hace falta.

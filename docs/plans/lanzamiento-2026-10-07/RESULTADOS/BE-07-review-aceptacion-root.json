@@ -1,0 +1,27 @@
+{
+  "checkedAtUtc": "2026-10-09T12:44:03.554528+00:00",
+  "acceptedFocusedPhase": true,
+  "proof": {
+    "final-source.sha256": {
+      "count": 5,
+      "mismatches": []
+    },
+    "review-artifacts.sha256": {
+      "count": 35,
+      "mismatches": []
+    },
+    "received-luna-evidence.sha256": {
+      "count": 11,
+      "mismatches": []
+    }
+  },
+  "sourceBaselineCount": 501,
+  "changedInReservation": [
+    "backend/src/redis/redis.recovery.spec.ts",
+    "backend/src/redis/redis.service.ts"
+  ],
+  "reviewedCode": "noResend/timeout3s/permanent backoff15s, events authoritative, connect callbacks/log guards, preserve ioredis internal listeners, each error timestamp; docs distinguish command timeout/socket-ready vs connection outage",
+  "focusedTests": 27,
+  "globalGatePending": true,
+  "limits": "No APIweb/Postgres fallback accepted until integrated gate; prior gates not rerun."
+}

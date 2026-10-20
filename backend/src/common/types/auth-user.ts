@@ -1,6 +1,7 @@
 export interface AuthUser {
   sub: string;
   email: string;
+  authVersion?: number;
 }
 
 export interface AccessTokenPayload extends AuthUser {

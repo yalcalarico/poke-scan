@@ -1,0 +1,39 @@
+{
+  "complete": true,
+  "deleted": [
+    {
+      "type": "container",
+      "name": "inf03-b48f8b77c1db-destination-pg",
+      "fullId": "5aa7f30463caf6745a51ae900d0af469ce403751c3627872d396ee56f334294c",
+      "SQLConnectionsBeforeStop": 0
+    },
+    {
+      "type": "container",
+      "name": "inf03-b48f8b77c1db-source-pg",
+      "fullId": "d6e5c2a3bb7297e392906898b32bdafcefe6d858b2680891f2be2879b1f3c245",
+      "SQLConnectionsBeforeStop": 0
+    },
+    {
+      "type": "volume",
+      "name": "inf03-b48f8b77c1db-destination-pgdata"
+    },
+    {
+      "type": "volume",
+      "name": "inf03-b48f8b77c1db-source-pgdata"
+    },
+    {
+      "type": "network",
+      "name": "inf03-b48f8b77c1db-destination-net",
+      "fullId": "72d47d6f384798d8cac2d0d3231d9b9a1eaa51f90b413cc0d382197f1cb0f70e"
+    },
+    {
+      "type": "network",
+      "name": "inf03-b48f8b77c1db-source-net",
+      "fullId": "9f9ec760c0e5055da43652ca398244563449d0adf388b20f2e6c17f85203f27f"
+    }
+  ],
+  "baseRemovedByRecordedIdentity": true,
+  "ephemeralKeysAndBytesRemoved": true,
+  "SQLConnectionsBeforeStop": 0,
+  "noSharedResourceMutation": true
+}

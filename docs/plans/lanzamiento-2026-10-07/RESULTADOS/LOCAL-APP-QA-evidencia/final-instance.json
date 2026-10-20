@@ -1,0 +1,21 @@
+{
+  "api": {
+    "pid": 47337,
+    "parent": 47336,
+    "role": "local-user-request-api",
+    "port": 3001
+  },
+  "webParentPid": 47400,
+  "webMode": "Next standalone compiled",
+  "apiMode": "Nest compiled; NODE_ENV development for localhost cookie",
+  "localURL": "http://localhost:3000",
+  "databaseScope": "normal local development database migrated to13",
+  "connections": {
+    "devConnections": 5,
+    "ownedClones": 0
+  },
+  "intentionallyLeftRunning": true,
+  "ownQAResourcesAlive": false,
+  "priceQueueAndCronsEnabled": false,
+  "providerFetchGuardEnabled": true
+}

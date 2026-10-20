@@ -1,0 +1,301 @@
+{
+  "task": "FE-07 + SEO-03, revisi\u00f3n/correcciones local Sol HIGH",
+  "reviewer": "/root/adquisicion_review_sol",
+  "date": "2026-10-10",
+  "status": "review_complete_gate_pending",
+  "inputs": {
+    "implementation": "RESULTADOS/FE-07-SEO-03-implementacion.md",
+    "copy": "RESULTADOS/MKT-01-copy.md",
+    "copyReview": "RESULTADOS/MKT-01-review.md",
+    "seo": "RESULTADOS/SEO-03-contenido.md",
+    "seoReview": "RESULTADOS/SEO-03-review.md",
+    "receivedInputCopiesVerified": 8,
+    "nextInstalledVersion": "16.3.6"
+  },
+  "findings": [
+    {
+      "id": "R1",
+      "status": "corrected",
+      "finding": "FAQ standalone s\u00f3lo ten\u00eda h2 sin h1",
+      "change": "Heading=h1 s\u00f3lo fullPage; texto/estilo id\u00e9nticos, embedded h2 conservado"
+    },
+    {
+      "id": "R2",
+      "status": "corrected",
+      "finding": "Descriptor OG expl\u00edcito no declaraba MIME",
+      "change": "type:image/png consistente con ruta ImageResponse"
+    },
+    {
+      "id": "R3",
+      "status": "corrected",
+      "finding": "Skiplink ra\u00edz #contenido carec\u00eda destino en main landing y FAQ",
+      "change": "id=contenido en ambos main existentes; navegaci\u00f3n efectiva pendiente gate"
+    },
+    {
+      "id": "R4",
+      "status": "maintainability",
+      "finding": "Valores ImageResponse correspond\u00edan tokens pero no estaban identificados",
+      "change": "LIGHT_TOKENS nombra los cuatro valores actuales CSS; comentario se\u00f1ala sincronizaci\u00f3n y limitaci\u00f3n CSSvars"
+    },
+    {
+      "id": "R5",
+      "status": "discarded",
+      "finding": "Documentaci\u00f3n mostraba contraste dark viejo",
+      "change": "CSS actual #8a8a95 ratio4.906432 cumple AA, caption final intacto; no fixcontraste atribuido"
+    }
+  ],
+  "runs": [
+    {
+      "name": "diff-check-final",
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "startedAtUtc": "2026-10-10T14:34:45.266054+00:00",
+      "finishedAtUtc": "2026-10-10T14:34:45.295291+00:00",
+      "exitCode": 0,
+      "log": "logs/diff-check-final.log"
+    },
+    {
+      "name": "lint-frontend-after-last-source",
+      "command": [
+        "pnpm",
+        "--dir",
+        "frontend",
+        "run",
+        "lint"
+      ],
+      "startedAtUtc": "2026-10-10T14:33:54.423459+00:00",
+      "finishedAtUtc": "2026-10-10T14:34:01.075320+00:00",
+      "exitCode": 0,
+      "log": "logs/lint-frontend-after-last-source.log"
+    },
+    {
+      "name": "lint-frontend-final",
+      "command": [
+        "pnpm",
+        "--dir",
+        "frontend",
+        "run",
+        "lint"
+      ],
+      "startedAtUtc": "2026-10-10T14:32:16.705563+00:00",
+      "finishedAtUtc": "2026-10-10T14:32:24.023014+00:00",
+      "exitCode": 0,
+      "log": "logs/lint-frontend-final.log"
+    },
+    {
+      "name": "regression-after",
+      "command": [
+        "pnpm",
+        "--dir",
+        "frontend",
+        "exec",
+        "vitest",
+        "run",
+        "components/marketing/__tests__/faq-section.test.tsx",
+        "lib/marketing/__tests__/acquisition-metadata.test.ts"
+      ],
+      "startedAtUtc": "2026-10-10T14:32:06.268498+00:00",
+      "finishedAtUtc": "2026-10-10T14:32:08.041922+00:00",
+      "exitCode": 0,
+      "log": "logs/regression-after.log"
+    },
+    {
+      "name": "regression-before",
+      "command": [
+        "pnpm",
+        "--dir",
+        "frontend",
+        "exec",
+        "vitest",
+        "run",
+        "components/marketing/__tests__/faq-section.test.tsx",
+        "lib/marketing/__tests__/acquisition-metadata.test.ts"
+      ],
+      "startedAtUtc": "2026-10-10T14:31:31.481717+00:00",
+      "finishedAtUtc": "2026-10-10T14:31:33.037054+00:00",
+      "exitCode": 1,
+      "log": "logs/regression-before.log"
+    },
+    {
+      "name": "stop-before-regression",
+      "command": [
+        "pnpm",
+        "run",
+        "stop"
+      ],
+      "startedAtUtc": "2026-10-10T14:31:26.986151+00:00",
+      "finishedAtUtc": "2026-10-10T14:31:27.397309+00:00",
+      "exitCode": 0,
+      "log": "logs/stop-before-regression.log"
+    },
+    {
+      "name": "typecheck-frontend-after-last-source",
+      "command": [
+        "pnpm",
+        "--dir",
+        "frontend",
+        "exec",
+        "tsc",
+        "--noEmit"
+      ],
+      "startedAtUtc": "2026-10-10T14:34:19.942284+00:00",
+      "finishedAtUtc": "2026-10-10T14:34:21.580231+00:00",
+      "exitCode": 0,
+      "log": "logs/typecheck-frontend-after-last-source.log"
+    },
+    {
+      "name": "typecheck-frontend-final",
+      "command": [
+        "pnpm",
+        "--dir",
+        "frontend",
+        "exec",
+        "tsc",
+        "--noEmit"
+      ],
+      "startedAtUtc": "2026-10-10T14:32:58.286413+00:00",
+      "finishedAtUtc": "2026-10-10T14:33:00.055073+00:00",
+      "exitCode": 0,
+      "log": "logs/typecheck-frontend-final.log"
+    }
+  ],
+  "focusedTests": {
+    "distinctCases": 6,
+    "before": {
+      "passed": 3,
+      "failed": 3,
+      "exitCode": 1
+    },
+    "after": {
+      "passed": 6,
+      "failed": 0,
+      "exitCode": 0
+    },
+    "newTestCases": 0,
+    "existingAssertionsExtended": [
+      "FAQ fullPage heading level1",
+      "OG MIME en ambas rutas"
+    ],
+    "lastChangesAfterFocused": "IDs de main y retiro de cambio caption; no alteran los componentes/helpers ejercitados por esas aserciones. Lint/tsc finales posteriores."
+  },
+  "preservation": {
+    "atUtc": "2026-10-10T14:34:16.110498+00:00",
+    "baselineFiles": 546,
+    "unchangedSinceReceived": 539,
+    "reviewDeltas": [
+      {
+        "path": "frontend/app/(marketing)/faq/page.tsx",
+        "receivedSha256": "cdcf2d98a07957426587a86f851a7659fec00e5db659f5593d7ec528d85e5c34",
+        "finalSha256": "b30e0cdbef7dc480c98d7499efb0aa4a155b93e542d34a974c76b9512685aaf0",
+        "reservedProduct": true
+      },
+      {
+        "path": "frontend/app/(marketing)/opengraph-image.tsx",
+        "receivedSha256": "4b824c7800dadcfc48f54e5f572fee00aea6f16adec1b5a5cb46386882605f81",
+        "finalSha256": "3edeb5dd315e638e627bb210465f175db911787870c525171335cb5d64aef654",
+        "reservedProduct": true
+      },
+      {
+        "path": "frontend/components/marketing/__tests__/faq-section.test.tsx",
+        "receivedSha256": "5b00f659cc446981f2b9e49e69e37590dd4bdc194a35059c11a8b25272eb391a",
+        "finalSha256": "90383ca2adb53d438467bf8471328055c2124bbe9d750422dc76d996b7afcd25",
+        "reservedProduct": true
+      },
+      {
+        "path": "frontend/components/marketing/faq-section.tsx",
+        "receivedSha256": "6de1178c68081d68db86f70866e4e549745393eabd98e261b6d0bf5ebd09d571",
+        "finalSha256": "9fb7ec18d1d290aba4bf62d030e45ea2e2b9bfa12f7053b44b5517739d16c373",
+        "reservedProduct": true
+      },
+      {
+        "path": "frontend/components/marketing/landing-page.tsx",
+        "receivedSha256": "5bba09ef9ef828ff404a67bdb063c6d54d6a0faab346dddb05f3132b88ed4f2d",
+        "finalSha256": "43d5d5f084ae17edc25551caf201b39cf5ccfb36a8a5d615af1efabc4fa298d1",
+        "reservedProduct": true
+      },
+      {
+        "path": "frontend/lib/marketing/__tests__/acquisition-metadata.test.ts",
+        "receivedSha256": "56f1dc9fa026afd26cdc9767eec19908483a093cdd1a49e9401fecdb93ec4465",
+        "finalSha256": "9d79d47316f2b976b5163efd0bdcb49ca05d0eefe6dc8c1717aec7fbf9fcb4df",
+        "reservedProduct": true
+      },
+      {
+        "path": "frontend/lib/marketing/acquisition-metadata.ts",
+        "receivedSha256": "74c64b4e00ef5d17893338e5d18afef8136ac56d1c57d884bde4603449294144",
+        "finalSha256": "3d526fc7ddd4593272792f628e32bb30d69d10a98e44ff32ecf5951bd18592b3",
+        "reservedProduct": true
+      }
+    ],
+    "missing": [],
+    "producerArtifactFilesPreserved": 29,
+    "producerProductFinalCopies": 8,
+    "allProducerArtifactsPreserved": true,
+    "cuenta": {
+      "source": "RESULTADOS/LOTE-CUENTA-anexos/sources-final.json",
+      "files": 507,
+      "unchanged": 502,
+      "changed": [
+        {
+          "path": "frontend/app/(marketing)/faq/page.tsx",
+          "cuentaSha256": "d2d96fb9009da52cb788b2ae39493287855b8f221265636228e44d1bedc9b9b5",
+          "finalSha256": "b30e0cdbef7dc480c98d7499efb0aa4a155b93e542d34a974c76b9512685aaf0"
+        },
+        {
+          "path": "frontend/app/(marketing)/page.tsx",
+          "cuentaSha256": "bbb661d27ae8d4fd7190162265260c1ef25701c6771716aa685bba3a3d06a0c6",
+          "finalSha256": "a186669ea2efa2520de951273eb7e22a92a8086413fec2a74f204919a1d9b240"
+        },
+        {
+          "path": "frontend/components/marketing/__tests__/faq-section.test.tsx",
+          "cuentaSha256": "c222735ef138ee44cc26826ab5eb1c7cadfd65104b9fd5579b0a295e1bd2d3ba",
+          "finalSha256": "90383ca2adb53d438467bf8471328055c2124bbe9d750422dc76d996b7afcd25"
+        },
+        {
+          "path": "frontend/components/marketing/faq-section.tsx",
+          "cuentaSha256": "cf3fd767abb33c025137fb3a7c0d138f97574123f97b98017f5c467a75aa5112",
+          "finalSha256": "9fb7ec18d1d290aba4bf62d030e45ea2e2b9bfa12f7053b44b5517739d16c373"
+        },
+        {
+          "path": "frontend/components/marketing/landing-page.tsx",
+          "cuentaSha256": "41ad37ed441902a8f60b8c78300af3167961ad0cdee4420cdbb80878d24f355c",
+          "finalSha256": "43d5d5f084ae17edc25551caf201b39cf5ccfb36a8a5d615af1efabc4fa298d1"
+        }
+      ],
+      "missing": []
+    },
+    "finalProductHashes": {
+      "frontend/components/marketing/landing-page.tsx": "43d5d5f084ae17edc25551caf201b39cf5ccfb36a8a5d615af1efabc4fa298d1",
+      "frontend/components/marketing/faq-section.tsx": "9fb7ec18d1d290aba4bf62d030e45ea2e2b9bfa12f7053b44b5517739d16c373",
+      "frontend/components/marketing/__tests__/faq-section.test.tsx": "90383ca2adb53d438467bf8471328055c2124bbe9d750422dc76d996b7afcd25",
+      "frontend/app/(marketing)/page.tsx": "a186669ea2efa2520de951273eb7e22a92a8086413fec2a74f204919a1d9b240",
+      "frontend/app/(marketing)/faq/page.tsx": "b30e0cdbef7dc480c98d7499efb0aa4a155b93e542d34a974c76b9512685aaf0",
+      "frontend/app/(marketing)/opengraph-image.tsx": "3edeb5dd315e638e627bb210465f175db911787870c525171335cb5d64aef654",
+      "frontend/lib/marketing/acquisition-metadata.ts": "3d526fc7ddd4593272792f628e32bb30d69d10a98e44ff32ecf5951bd18592b3",
+      "frontend/lib/marketing/__tests__/acquisition-metadata.test.ts": "9d79d47316f2b976b5163efd0bdcb49ca05d0eefe6dc8c1717aec7fbf9fcb4df"
+    }
+  },
+  "metadataReview": {
+    "explicitObjects": "Landing/FAQ repiten title/description/type/siteName/locale/url/images; Twitter expl\u00edcito. No se presume herencia profunda.",
+    "imagePath": "/opengraph-image",
+    "fileBasedPriority": "Gu\u00eda declara prioridad file-based. Resolver local mergeStaticMetadata s\u00f3lo aplica imagen por archivo en nivel sin images propia; helper expl\u00edcito estable. El head real por ruta/UA debe medirse en gate.",
+    "titles": "Plain title hereda template ra\u00edz %s \u00b7 Pok\u00e9Scan; social title agrega marca una vez. No host fijado en helper.",
+    "asset": "frontend/public/icons/icon-512.png le\u00eddo via node fs y process.cwd/public; Docker standalone copia public.",
+    "fontSource": "Next @vercel/og instalado carga Geist-Regular.ttf v\u00eda fs. Tiene loader fallback externo para glifos faltantes: ausencia de requests no acreditada en revisi\u00f3n.",
+    "mime": "PNG1200x630 exportado; OG descriptor ahora type=image/png; no PNG generado/servido en fase review."
+  },
+  "limits": [
+    "No build/check global/runtime/browser/API/DB/Redis/preview servido/producci\u00f3n en revisi\u00f3n.",
+    "Sin validaci\u00f3n visual mobile/desktop/temas/teclado, lectores pantalla/PWA/tel\u00e9fonos a\u00fan.",
+    "FE-07 sigue sujeto gate y QA visual; SEO-03 completo pendiente dominio/salida productivos.",
+    "No cambio de centrales, contratos, config, dependencias, rootlayout, shell, share/auth/backend.",
+    "Hist\u00f3ricos CUENTA timeout/backfill y Redis sockethangup sin diagn\u00f3stico ni repetici\u00f3n."
+  ],
+  "reservation": {
+    "status": "released_on_delivery",
+    "ownedRuntimeResources": []
+  },
+  "IDsClosed": []
+}

@@ -1,0 +1,14 @@
+{
+  "path": "/",
+  "hashPresent": false,
+  "managerPresent": false,
+  "tokenPresent": false,
+  "linkHeading": false,
+  "requestHeading": false,
+  "unavailableHeading": false,
+  "submitEnabled": false,
+  "scriptTag": false,
+  "historyEvents": [],
+  "readyState": "complete",
+  "hashAtEnabled": false
+}

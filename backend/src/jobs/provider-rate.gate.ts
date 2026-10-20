@@ -1,8 +1,10 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
+import { setTimeout as delay } from 'node:timers/promises';
 
 import { PRICE_PROVIDER, type PriceProvider } from '../modules/providers/card-provider.interface.js';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { ProviderRateLimitError } from '../common/errors/provider-rate-limit.error.js';
 
 /**
  * Separación mínima entre dos llamadas al **mismo** proveedor de precios.
@@ -73,6 +75,11 @@ export class ProviderRateGate {
   async wait(): Promise<void> {
     await this.ensureRow();
     for (;;) {
+      const blockedFor = await this.blockedForMs();
+      if (blockedFor > 0) {
+        await new Promise((resolve) => setTimeout(resolve, blockedFor));
+        continue;
+      }
       const taken = await this.tryTakeSlot();
       if (taken) return;
       const waitMs = await this.millisecondsUntilFree();
@@ -81,6 +88,49 @@ export class ProviderRateGate {
       // volver a fallar, con lo que el loop dormía el mismo gap dos veces.
       if (waitMs > 0) await new Promise((resolve) => setTimeout(resolve, waitMs + 1));
     }
+  }
+
+  async waitOutProviderPause(signal?: AbortSignal): Promise<boolean> {
+    await this.ensureRow();
+    let waited = false;
+    for (;;) {
+      const blockedFor = await this.blockedForMs();
+      if (blockedFor <= 0) return waited;
+      waited = true;
+      try { await delay(blockedFor, undefined, { signal }); }
+      catch { return waited; }
+    }
+  }
+
+  /** El worker libera el claim si aparece una pausa antes de poder tomar slot. */
+  async waitForClaimedJobSlot(): Promise<number | null> {
+    await this.ensureRow();
+    for (;;) {
+      const blockedFor = await this.blockedForMs();
+      if (blockedFor > 0) return blockedFor;
+      if (await this.tryTakeSlot()) return null;
+      const waitMs = await this.millisecondsUntilFree();
+      await new Promise((resolve) => setTimeout(resolve, Math.min(Math.max(1, waitMs + 1), 100)));
+    }
+  }
+
+  async recordRateLimit(error: ProviderRateLimitError): Promise<void> {
+    const delay = Math.max(0, error.retryAfterMs);
+    await this.prisma.$executeRaw(Prisma.sql`
+      INSERT INTO provider_rate_limits ("providerId", "lastCalledAt", "blockedUntil", "updatedAt")
+      VALUES (${error.providerId}, NOW(), NOW() + ${`${delay} milliseconds`}::interval, NOW())
+      ON CONFLICT ("providerId") DO UPDATE SET
+        "blockedUntil" = GREATEST(COALESCE(provider_rate_limits."blockedUntil", NOW()), EXCLUDED."blockedUntil"),
+        "updatedAt" = NOW()
+    `);
+  }
+
+  private async blockedForMs(): Promise<number> {
+    const rows = await this.prisma.$queryRaw<{ blockedUntil: Date | null }[]>(Prisma.sql`
+      SELECT "blockedUntil" FROM provider_rate_limits WHERE "providerId" = ${this.priceProvider.id}
+    `);
+    const blockedUntil = rows[0]?.blockedUntil;
+    return blockedUntil ? Math.max(0, blockedUntil.getTime() - Date.now()) : 0;
   }
 
   /**
@@ -93,8 +143,8 @@ export class ProviderRateGate {
       INSERT INTO provider_rate_limits ("providerId", "lastCalledAt", "updatedAt")
       VALUES (
         ${this.priceProvider.id},
-        (now() AT TIME ZONE 'UTC') - interval '1 day',
-        (now() AT TIME ZONE 'UTC')
+        NOW() - interval '1 day',
+        NOW()
       )
       ON CONFLICT ("providerId") DO NOTHING
     `;
@@ -103,10 +153,11 @@ export class ProviderRateGate {
   private async tryTakeSlot(): Promise<boolean> {
     const taken = await this.prisma.$queryRaw<{ providerId: string }[]>(Prisma.sql`
       UPDATE provider_rate_limits
-      SET "lastCalledAt" = (now() AT TIME ZONE 'UTC'),
-          "updatedAt" = (now() AT TIME ZONE 'UTC')
+      SET "lastCalledAt" = NOW(),
+          "updatedAt" = NOW()
       WHERE "providerId" = ${this.priceProvider.id}
-        AND "lastCalledAt" <= (now() AT TIME ZONE 'UTC') - ${this.gapInterval()}::interval
+        AND ("blockedUntil" IS NULL OR "blockedUntil" <= NOW())
+        AND "lastCalledAt" <= NOW() - ${this.gapInterval()}::interval
       RETURNING "providerId"
     `);
     return taken.length > 0;

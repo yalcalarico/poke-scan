@@ -1,0 +1,82 @@
+{
+  "owner": "/root/be05_account_draft_review_sol",
+  "runId": "cuenta-gate-3aaf105723d3",
+  "tmp": "/private/tmp/cuenta-gate-3aaf105723d3",
+  "annex": "/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/docs/plans/lanzamiento-2026-10-07/RESULTADOS/LOTE-CUENTA-anexos",
+  "database": "be05_review_3aaf105723d3_test",
+  "databaseComment": "cuenta-gate-3aaf105723d3-owned",
+  "redis": "cuenta-gate-3aaf105723d3-redis",
+  "redisLabel": "cuenta-gate-3aaf105723d3",
+  "redisPort": 56395,
+  "resources": [
+    {
+      "role": "database",
+      "name": "be05_review_3aaf105723d3_test",
+      "pgContainer": "18aa2f6937521ae010930ae98cbee45f2fa435b554c65cf90daaffba0c641ba8",
+      "comment": "cuenta-gate-3aaf105723d3-owned"
+    },
+    {
+      "role": "redis",
+      "name": "cuenta-gate-3aaf105723d3-redis",
+      "id": "31003d3c622fd04c9a669438888e744340808efb9b2ab7cbbe6128864c6006ba",
+      "label": "cuenta-gate-3aaf105723d3",
+      "bind": "127.0.0.1:56395",
+      "tmpfs": true
+    }
+  ],
+  "liveResources": [
+    "database",
+    "redis"
+  ],
+  "at": "2026-10-10T02:25:32.582739+00:00",
+  "plannedResources": [
+    {
+      "role": "database",
+      "name": "be05_review_3aaf105723d3_test",
+      "comment": "cuenta-gate-3aaf105723d3-owned"
+    },
+    {
+      "role": "redis",
+      "name": "cuenta-gate-3aaf105723d3-redis",
+      "label": "cuenta-gate-3aaf105723d3",
+      "bind": "127.0.0.1:56395"
+    }
+  ],
+  "processes": [
+    {
+      "role": "api-and-gate",
+      "pid": 34453,
+      "parentPID": 16174,
+      "command": [
+        "node",
+        "/private/tmp/cuenta-gate-3aaf105723d3/runtime.mjs"
+      ],
+      "port": 3001,
+      "listener": "127.0.0.1"
+    },
+    {
+      "role": "web",
+      "pid": 34457,
+      "parentPID": 34453,
+      "command": [
+        "node",
+        "frontend/node_modules/next/dist/bin/next",
+        "start",
+        "frontend",
+        "--hostname",
+        "127.0.0.1",
+        "--port",
+        "3000"
+      ],
+      "port": 3000
+    },
+    {
+      "role": "browser",
+      "pid": 34462,
+      "parentPID": 34453,
+      "executable": "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+      "privateContext": true,
+      "websocketPort": 64895
+    }
+  ]
+}

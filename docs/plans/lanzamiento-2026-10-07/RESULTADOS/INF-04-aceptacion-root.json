@@ -1,0 +1,191 @@
+{
+  "acceptedAtUtc": "2026-10-11T16:23:19.366497+00:00",
+  "root": "/root",
+  "task": "INF-04 local monitoring",
+  "localPhaseAccepted": true,
+  "fullTaskComplete": false,
+  "remaining": [
+    "external uptime on actual environment",
+    "longer bounded load, latency, total process RSS/CPU on target host",
+    "real budget/operator/hosting decisions"
+  ],
+  "counts": {
+    "completedIDs": 19,
+    "pendingIDs": 19,
+    "focal": 15,
+    "standard": 1011,
+    "skips": 0,
+    "integratedDistinct": 22
+  },
+  "checks": [
+    {
+      "name": "compiled API and real DINOv2 ready over own PG proxy",
+      "passed": true
+    },
+    {
+      "name": "real CLI baseline metrics and process host sample",
+      "passed": true
+    },
+    {
+      "name": "synthetic account only in marked clone",
+      "passed": true
+    },
+    {
+      "name": "busy rate alert from real concurrent DINO admission windows",
+      "passed": true
+    },
+    {
+      "name": "busy alert recovers on new successful admissions",
+      "passed": true
+    },
+    {
+      "name": "invalid crop produces actual failed inference outcome",
+      "passed": true
+    },
+    {
+      "name": "inference error alert from worker decode failures",
+      "passed": true
+    },
+    {
+      "name": "post-error inference succeeds after readiness recovery",
+      "passed": true
+    },
+    {
+      "name": "error alert recovers on new completed inferences",
+      "passed": true
+    },
+    {
+      "name": "depth and age alerts from owned queue fixture",
+      "passed": true
+    },
+    {
+      "name": "empty queue recovers depth and age alerts",
+      "passed": true
+    },
+    {
+      "name": "Redis outage alert keeps API alive and ready",
+      "passed": true
+    },
+    {
+      "name": "Redis recovery same compiled API process",
+      "passed": true
+    },
+    {
+      "name": "own DB connection path outage detected without stopping shared PG",
+      "passed": true
+    },
+    {
+      "name": "DB path recovers same compiled API process",
+      "passed": true
+    },
+    {
+      "name": "real owned DINO worker loss detected",
+      "passed": true
+    },
+    {
+      "name": "worker warmup recovery observed",
+      "passed": true
+    },
+    {
+      "name": "optional local metadata failures produce alerts",
+      "passed": true
+    },
+    {
+      "name": "optional metadata recoveries are local declarations only",
+      "passed": true
+    },
+    {
+      "name": "API restart changes metrics epoch without negative deltas",
+      "passed": true
+    },
+    {
+      "name": "JSONL excludes secrets photos users queue IDs arbitrary metadata",
+      "passed": true
+    },
+    {
+      "name": "restart monitor observes final ready and closes all actual availability alerts before teardown",
+      "passed": true
+    }
+  ],
+  "initialGate": {
+    "tests": 1009,
+    "skips": 0,
+    "passed": true,
+    "predatesRootRegressionFixes": true
+  },
+  "rootRegressionProof": {
+    "beforeFailures": 2,
+    "afterPassed": 15,
+    "causes": [
+      "scanner initializing was incorrectly treated as recovered",
+      "Date.parse accepted private comment text and invalid calendar dates"
+    ]
+  },
+  "runtimeCorrections": [
+    "initial private harness sent recovery inferences before readiness; corrected by waiting for real ready",
+    "second private harness expected500/503 from malformed crop; backend contract returns400 after failed worker inference",
+    "additional focused terminal restart observation to capture ready before teardown"
+  ],
+  "preservedHistoricalSocketAndBackfill": true,
+  "delegation": {
+    "task": "INF-04 local",
+    "delegatedAssignments": 2,
+    "implementationOwner": "/root/inf04_monitor_luna",
+    "correctionCycles": 2,
+    "capacityEscalations": 0,
+    "centralAndRuntimeOwner": "/root",
+    "fullIDCloses": false,
+    "remainingAcceptance": "external uptime,host prolonged load and real costs/operator",
+    "nextStepRequiresHumanReply": true,
+    "finalCorrectionOwner": "/root"
+  },
+  "sandboxRuns": [
+    "inf04_6932acc91052",
+    "inf04_556fe11cfcbd",
+    "inf04_31901a0acc5d"
+  ],
+  "cleanupAllOwnResources": true,
+  "sharedVerification": "bounded counts, GIN counts and container IDs only; no blanket whole-database byte identity claim",
+  "intentionallyLiveInstance": {
+    "url": "http://localhost:3000",
+    "scope": "intentionally live user instance on habitual dev; compiled Nest/Next",
+    "statuses": {
+      "login": 200,
+      "health": 200,
+      "ready": 200,
+      "metricsDefault": 404
+    },
+    "processes": [
+      {
+        "role": "api",
+        "pid": 56735,
+        "parent": 56724,
+        "executable": "node"
+      },
+      {
+        "role": "next",
+        "pid": 56740,
+        "parent": 56737,
+        "executable": "next-server (v16.3.6)"
+      }
+    ],
+    "apiLauncher": {
+      "pid": 56724,
+      "parent": 56706,
+      "role": "local-user-request-api",
+      "port": 3001
+    },
+    "jobsCronsProvidersBlocked": true,
+    "metricsSecretUnset": true,
+    "ownQAPortsFree": [
+      56401,
+      56403
+    ],
+    "ownQAResourcesLive": 0,
+    "checkedAtUtc": "2026-10-11T16:20:16Z"
+  },
+  "nextStepRequiresHumanReply": true,
+  "nextProposed": "INF-01 human hosting decision; no execution/reservation started",
+  "automationModified": false,
+  "statusFromCurrentHeaders": "PAUSED, two hours"
+}

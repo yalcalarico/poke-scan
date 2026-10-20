@@ -1,0 +1,31 @@
+{
+  "owner": "/root",
+  "runId": "inf04_556fe11cfcbd",
+  "resources": [
+    {
+      "pid": 56197,
+      "role": "own-pg-network-proxy",
+      "alive": false
+    },
+    {
+      "pid": 56198,
+      "role": "own-compiled-api",
+      "alive": false
+    },
+    {
+      "pid": 56213,
+      "role": "own-monitor",
+      "alive": false
+    },
+    {
+      "pid": 56463,
+      "role": "own-pg-network-proxy",
+      "alive": false
+    },
+    {
+      "pid": 56567,
+      "role": "own-compiled-api",
+      "alive": false
+    }
+  ]
+}

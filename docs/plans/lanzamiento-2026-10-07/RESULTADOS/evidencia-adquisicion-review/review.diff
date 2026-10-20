@@ -1,0 +1,136 @@
+--- recibido/frontend/components/marketing/landing-page.tsx
++++ final/frontend/components/marketing/landing-page.tsx
+@@ -51,7 +51,7 @@
+   const previewCards = await fetchPreviewCards();
+ 
+   return (
+-    <main>
++    <main id="contenido">
+       <section className="mx-auto grid w-full max-w-7xl items-center gap-10 px-4 pb-12 pt-12 sm:px-6 sm:pb-16 sm:pt-16 lg:grid-cols-[0.95fr_1.05fr] lg:gap-14 lg:px-8 lg:pb-20 lg:pt-20">
+         <div className="flex flex-col items-start gap-6">
+           <Badge tone="brand" className="rounded-pill px-3 py-1">
+--- recibido/frontend/components/marketing/faq-section.tsx
++++ final/frontend/components/marketing/faq-section.tsx
+@@ -54,13 +54,15 @@
+ ] as const;
+ 
+ export function FaqSection({ fullPage = false }: { fullPage?: boolean }) {
++  const Heading = fullPage ? 'h1' : 'h2';
++
+   return (
+     <section id="faq" aria-labelledby="faq-title" className="mx-auto flex w-full max-w-4xl flex-col gap-6">
+       <div className="flex flex-col gap-2">
+         <p className="text-overline text-brand">PREGUNTAS FRECUENTES</p>
+-        <h2 id="faq-title" className="text-h1 text-primary">
++        <Heading id="faq-title" className="text-h1 text-primary">
+           Lo importante, sin letra chica.
+-        </h2>
++        </Heading>
+         <p className="max-w-2xl text-body text-secondary">
+           Cómo funciona el escáner, qué significa el precio y qué está disponible hoy.
+         </p>
+--- recibido/frontend/components/marketing/__tests__/faq-section.test.tsx
++++ final/frontend/components/marketing/__tests__/faq-section.test.tsx
+@@ -38,7 +38,7 @@
+     render(<FaqSection fullPage />);
+ 
+     expect(screen.queryByRole('link', { name: 'Ver todas las preguntas' })).toBeNull();
+-    expect(screen.getByRole('heading', { name: 'Lo importante, sin letra chica.' })).toBeVisible();
++    expect(screen.getByRole('heading', { name: 'Lo importante, sin letra chica.', level: 1 })).toBeVisible();
+   });
+ 
+   it('mantiene los ocho destinos estables, incluido el ancla del CTA Pro', () => {
+--- recibido/frontend/app/(marketing)/faq/page.tsx
++++ final/frontend/app/(marketing)/faq/page.tsx
+@@ -12,7 +12,7 @@
+ 
+ export default function FaqPage() {
+   return (
+-    <main className="mx-auto w-full max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
++    <main id="contenido" className="mx-auto w-full max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
+       <FaqSection fullPage />
+     </main>
+   );
+--- recibido/frontend/app/(marketing)/opengraph-image.tsx
++++ final/frontend/app/(marketing)/opengraph-image.tsx
+@@ -7,6 +7,15 @@
+   'PokéScan: buscar cartas Pokémon, organizar colecciones y consultar referencias de mercado.';
+ export const size = { width: 1200, height: 630 };
+ export const contentType = 'image/png';
++
++// ImageResponse no resuelve variables CSS: mantener estos valores del tema claro
++// sincronizados con --canvas, --brand y --text-* de app/globals.css.
++const LIGHT_TOKENS = {
++  canvas: '#f4f4f6',
++  brand: '#d81c23',
++  textPrimary: '#0b0b0f',
++  textSecondary: '#5c5c68',
++} as const;
+ 
+ const iconData = readFile(join(process.cwd(), 'public/icons/icon-512.png')).then(
+   (icon) => `data:image/png;base64,${icon.toString('base64')}`,
+@@ -20,7 +29,7 @@
+       <div
+         style={{
+           alignItems: 'center',
+-          backgroundColor: '#f4f4f6',
++          backgroundColor: LIGHT_TOKENS.canvas,
+           display: 'flex',
+           height: '100%',
+           padding: '64px',
+@@ -30,7 +39,7 @@
+       >
+         <div
+           style={{
+-            backgroundColor: '#d81c23',
++            backgroundColor: LIGHT_TOKENS.brand,
+             height: '12px',
+             left: 0,
+             position: 'absolute',
+@@ -49,7 +58,7 @@
+             />
+             <span
+               style={{
+-                color: '#d81c23',
++                color: LIGHT_TOKENS.brand,
+                 fontSize: '30px',
+                 fontWeight: 700,
+                 letterSpacing: '-0.02em',
+@@ -60,7 +69,7 @@
+           </div>
+           <div
+             style={{
+-              color: '#0b0b0f',
++              color: LIGHT_TOKENS.textPrimary,
+               fontSize: '58px',
+               fontWeight: 700,
+               letterSpacing: '-0.04em',
+@@ -72,7 +81,7 @@
+           </div>
+           <div
+             style={{
+-              color: '#5c5c68',
++              color: LIGHT_TOKENS.textSecondary,
+               fontSize: '28px',
+               lineHeight: 1.35,
+               maxWidth: '950px',
+--- recibido/frontend/lib/marketing/acquisition-metadata.ts
++++ final/frontend/lib/marketing/acquisition-metadata.ts
+@@ -32,6 +32,7 @@
+           url: IMAGE_PATH,
+           width: 1200,
+           height: 630,
++          type: 'image/png',
+           alt: IMAGE_ALT,
+         },
+       ],
+--- recibido/frontend/lib/marketing/__tests__/acquisition-metadata.test.ts
++++ final/frontend/lib/marketing/__tests__/acquisition-metadata.test.ts
+@@ -36,6 +36,7 @@
+           url: '/opengraph-image',
+           width: 1200,
+           height: 630,
++          type: 'image/png',
+           alt: imageAlt,
+         },
+       ],

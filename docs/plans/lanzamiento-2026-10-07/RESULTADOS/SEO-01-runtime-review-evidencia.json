@@ -1,0 +1,336 @@
+{
+  "task": "SEO-01 runtime review",
+  "reviewer": {
+    "model": "gpt-6.1-sol",
+    "reasoningEffort": "high",
+    "agent": "/root/seo01_runtime_review_sol"
+  },
+  "finishedAt": "2026-10-09T00:42:21.563209+00:00",
+  "verdict": "local matrix accepted after documentary corrections, bounded anonymous collection marker classification pending; SEO-01 full ID not closed",
+  "focusedEvidenceChecks": [
+    {
+      "name": "matrix shape",
+      "passed": true,
+      "detail": {
+        "labels": 22,
+        "rows": 67,
+        "ua": {
+          "normal": 23,
+          "googlebot": 22,
+          "twitterbot": 22
+        }
+      }
+    },
+    {
+      "name": "controlled error",
+      "passed": true,
+      "detail": "normal UA only; proxy503/Next200"
+    },
+    {
+      "name": "core observed preservation",
+      "passed": true,
+      "detail": "all measured case fields and seven API entries unchanged"
+    },
+    {
+      "name": "DOM/resources preservation",
+      "passed": true,
+      "detail": "producer summaries unchanged"
+    },
+    {
+      "name": "share revoked",
+      "passed": true,
+      "detail": "DEC-02 metadata/status/targeted marker observations"
+    },
+    {
+      "name": "share expired",
+      "passed": true,
+      "detail": "DEC-02 metadata/status/targeted marker observations"
+    },
+    {
+      "name": "share missing",
+      "passed": true,
+      "detail": "DEC-02 metadata/status/targeted marker observations"
+    },
+    {
+      "name": "card/unknown signals",
+      "passed": true,
+      "detail": "API/Next distinct"
+    },
+    {
+      "name": "canonical query exclusion",
+      "passed": true,
+      "detail": "all supplied UA observations"
+    },
+    {
+      "name": "private/auth noindex",
+      "passed": true,
+      "detail": "indexing only"
+    },
+    {
+      "name": "sitemap exclusion",
+      "passed": true,
+      "detail": "fallback output, no production approval"
+    },
+    {
+      "name": "probe assertion relabeled",
+      "passed": true,
+      "detail": "literal producer assertion distinguished"
+    },
+    {
+      "name": "privacy gap preserved",
+      "passed": true,
+      "detail": "aggregate unresolved"
+    },
+    {
+      "name": "source 16 preservation",
+      "passed": true,
+      "detail": "0 mismatches"
+    },
+    {
+      "name": "retained dom-browser.json",
+      "passed": true,
+      "detail": "exact supplied summary"
+    },
+    {
+      "name": "retained site-resources.json",
+      "passed": true,
+      "detail": "exact supplied summary"
+    },
+    {
+      "name": "identity sanitization",
+      "passed": true,
+      "detail": {
+        "checkedFiles": 18,
+        "exactKnownPrivateIdMatches": 0,
+        "credentials": "deleted private state; source variable references/generation only",
+        "rawHtml": "no response body annex"
+      }
+    },
+    {
+      "name": "local links",
+      "passed": true,
+      "detail": {
+        "checked": 7,
+        "links": [
+          {
+            "from": "SEO-01-runtime.md",
+            "target": "SEO-01-runtime-evidencia.json",
+            "exists": true
+          },
+          {
+            "from": "SEO-01-runtime.md",
+            "target": "SEO-01-runtime-review.md",
+            "exists": true
+          },
+          {
+            "from": "SEO-01-runtime.md",
+            "target": "SEO-01-runtime-anexos/review-baseline.json",
+            "exists": true
+          },
+          {
+            "from": "SEO-01-runtime-review.md",
+            "target": "SEO-01-runtime-anexos/review-baseline.json",
+            "exists": true
+          },
+          {
+            "from": "SEO-01-runtime-review.md",
+            "target": "SEO-01-runtime-review-evidencia.json",
+            "exists": true
+          },
+          {
+            "from": "SEO-01-runtime-review.md",
+            "target": "../../../../frontend/app/(app)/colecciones/[id]/page.tsx",
+            "exists": true
+          },
+          {
+            "from": "SEO-01-runtime-review.md",
+            "target": "../../../../frontend/components/collections/collection-detail.tsx",
+            "exists": true
+          }
+        ]
+      }
+    }
+  ],
+  "artifactHashes": {
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/SEO-01-runtime.md": "2bc9a011b8846c436e1079f15bfa7fd54007236454606f33bcbba23760d3e29b",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/SEO-01-runtime-evidencia.json": "2f3589b57692e96bfd75e271ccfa5b15bb3addb33801616ea7514a483730203d",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/SEO-01-runtime-review.md": "01a1180f9d6a5b94d5776ca03763d342f2881dfbb09989ac22ee529c8f780f99"
+  },
+  "annexHashes": {
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/SEO-01-runtime-anexos/SEO-01-runtime-evidencia-recibido.json": "dba832491d86486daebd77fe18cdd0ecd445c7fed99581d987e3a00f717727ff",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/SEO-01-runtime-anexos/SEO-01-runtime-evidencia.json.diff": "142a67256a27c6a82ec95de75a951b2c6dd64fde66029966313fd10ace2ab84e",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/SEO-01-runtime-anexos/SEO-01-runtime-recibido.md": "c95d69dd0db16fd3a3a0d7b02c58745b4ad874e57197ae535e629d0bb8d16b08",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/SEO-01-runtime-anexos/SEO-01-runtime.md.diff": "694314805314c9c350a677ca9f8103fe6290ef3433669b8e2ee32ab02c1f6a84",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/SEO-01-runtime-anexos/dom-browser.json": "a746a5a300738a6e136647c621dd29dba3f0ca8ba72354a0cc69e61d1f3f599d",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/SEO-01-runtime-anexos/harness/audit.mjs": "449c13245d524c1c4b0454f9e590b19aeb4f22496042c8533d116603a152f7dd",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/SEO-01-runtime-anexos/harness/control-proxy.mjs": "4e577149343dec2bade25824f0bd0ea39867f86d52a729e1cbae11cd80ddb137",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/SEO-01-runtime-anexos/harness/fixtures.mjs": "b040b6bf1fc7f87b41ab8ecadcfe1fc1743148478ba2ce366d197edcf6787ad4",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/SEO-01-runtime-anexos/harness/network-guard.mjs": "2d8c9e667688d9ff20fa316cc2746d7cc147547735643b085cf7c75ffca57c89",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/SEO-01-runtime-anexos/harness/privacy-probe.mjs": "da01c9b537491280c0754d5859be2c375714a6ca0ab77ae3a49eb48019132391",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/SEO-01-runtime-anexos/harness/run-owned.py": "f1ca83f24f9d3b9e9b640fd50ae838f4b7b097c2b58628183453b94b6bfa7ff2",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/SEO-01-runtime-anexos/harness/site-resources.mjs": "18bce8e3bf7a9112c0da222e4400f2a4b9d5e3a118b241cbb8c4a86de5d5814f",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/SEO-01-runtime-anexos/ownership-after.json": "37b57aa435dcd1ef7f4f111d48f7dac94c38016fd291e76eb49540e13053c06b",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/SEO-01-runtime-anexos/ownership-before.json": "a17146ff571bfa266cccdb7d84217eaf0e51add8c6198adb0730297ce391f0d1",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/SEO-01-runtime-anexos/privacy-probe.json": "21bc9b57d9e478e6f3d5cdd1c7459fd4d07d52cfca1cab049737291a752ba56a",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/SEO-01-runtime-anexos/review-baseline.json": "ca74b6da52270eec3af3ac90b6606b8fbac4e5fa47f35344f7c40237cedee749",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/SEO-01-runtime-anexos/site-resources.json": "3c157cce5a455561b43b909b013719ea4b73eb1e447b735c333863580b20892c"
+  },
+  "received": {
+    "SEO-01-runtime.md": {
+      "sha256": "c95d69dd0db16fd3a3a0d7b02c58745b4ad874e57197ae535e629d0bb8d16b08",
+      "preservedAt": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/SEO-01-runtime-anexos/SEO-01-runtime-recibido.md"
+    },
+    "SEO-01-runtime-evidencia.json": {
+      "sha256": "dba832491d86486daebd77fe18cdd0ecd445c7fed99581d987e3a00f717727ff",
+      "preservedAt": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/SEO-01-runtime-anexos/SEO-01-runtime-evidencia-recibido.json"
+    }
+  },
+  "diffs": {
+    "SEO-01-runtime.md": {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/SEO-01-runtime-anexos/SEO-01-runtime.md.diff",
+      "sha256": "694314805314c9c350a677ca9f8103fe6290ef3433669b8e2ee32ab02c1f6a84"
+    },
+    "SEO-01-runtime-evidencia.json": {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/SEO-01-runtime-anexos/SEO-01-runtime-evidencia.json.diff",
+      "sha256": "142a67256a27c6a82ec95de75a951b2c6dd64fde66029966313fd10ace2ab84e"
+    }
+  },
+  "source16FinalSha256": {
+    "frontend/app/layout.tsx": "4f142a61056cfb3819f0160f5d94b3459020bea37fff718944cfc5a33082ed8c",
+    "frontend/app/robots.ts": "8e2b98aab41ea03faccaa8155893697b07b4eb5a3470ef0ba7788c4efda2d47b",
+    "frontend/app/sitemap.ts": "64160f8083a097b8ee92c6542b809f634b5787b81eb7d26e04cfa198eb930a29",
+    "frontend/app/(marketing)/page.tsx": "bbb661d27ae8d4fd7190162265260c1ef25701c6771716aa685bba3a3d06a0c6",
+    "frontend/app/(marketing)/faq/page.tsx": "d2d96fb9009da52cb788b2ae39493287855b8f221265636228e44d1bedc9b9b5",
+    "frontend/app/(app)/buscar/page.tsx": "289af2e7e52607999d5ea12a614613996ec0cd65c549a1433c5eef014bcf5fd0",
+    "frontend/app/(app)/carta/[id]/page.tsx": "ca095cb6c2538d383b09067c677a93dcb6df1799f1ec19fd2e15c3750558ee0c",
+    "frontend/app/(app)/inicio/page.tsx": "399a61f054fe18edaa7524f3c9fb27528acc8a7491528e10f6b5c86fd926f71b",
+    "frontend/app/(app)/colecciones/page.tsx": "80b6509a0fd14523e058ce426a14f59e8c308bfe04a1eb92f0f490243fca0dbe",
+    "frontend/app/(app)/ajustes/page.tsx": "694c6dc325035d92b1fdabfd81354e84139621f16e801e77b1e0dae8c51046f9",
+    "frontend/app/(app)/escanear/page.tsx": "c13ef2730c23480bd8e5b3261a8f18b7c2c91cdaec74dd4ae6908ffc9af6e06d",
+    "frontend/app/(auth)/layout.tsx": "97244768a02a10a6d3c8ee3586120cfe4702aa3027d9dc3722af4b3dd7df2701",
+    "frontend/app/(auth)/login/page.tsx": "63406d7d408c48cd5423cf14b00712547128729101b6a0fbbaf4bacbe56c6eaf",
+    "frontend/app/(auth)/registro/page.tsx": "09204e0bb0d0358f679e9fcfe3d433142a6a1d964ee75b222fde4674fa61305e",
+    "frontend/app/share/[slug]/page.tsx": "a2c7b3dc3a1159a8deb7f505cbc7e271519c7b11610ae0042ec7bfb02fb34072",
+    "frontend/lib/api/api-client.ts": "2273f6f6adedaca136b7cf26925b01b2ea7cad34e44a7d3f6896b2f471d9225d"
+  },
+  "buildOutputComparison": {
+    "baselineManifest": "/private/tmp/build-gate-diagnosis-sol-20261008/final-next-sha256.json",
+    "baselineManifestSha256": "6b7bd3a10a36d0b9a2832059f49ddbff588808cca3db1567a33fb73f8b8359bb",
+    "baselineFiles": 3254,
+    "currentFiles": 3258,
+    "changed": [
+      {
+        "path": "frontend/.next/server/app/inicio.meta",
+        "baselineSha256": "1a54ccf22aebdfd64d593ba232d6825c75bd5bc17e925d98e6cdda38eef94cf4",
+        "currentSha256": "625857edf7e4b9defe3575b0ab1c7f648ed044ab82dc262c5a2de53e58f73a83"
+      },
+      {
+        "path": "frontend/.next/server/app/index.html",
+        "baselineSha256": "33b9c326598abed7796f00bc333db0f1d83d49c40c7576f8e66961040f10e62e",
+        "currentSha256": "6c948029a85fc0bd405c2ab39bb7608de71b8f9e5efbf7fa49345a7bd0f5daf3"
+      },
+      {
+        "path": "frontend/.next/server/app/inicio.html",
+        "baselineSha256": "891cc7743c1ea30e82a2fdaa72bb179988ce95f5c0bbd08cc999555a45728243",
+        "currentSha256": "f9b877917f09a26a3d8478e0518246cfefc3f90f0311fc57cf961f68212603ff"
+      },
+      {
+        "path": "frontend/.next/server/app/index.meta",
+        "baselineSha256": "cd2ee2aa5541726da16d1721cf5571cfcb8d2d85f6e8830af88b7e1291159d9b",
+        "currentSha256": "053e6690e315de3263a6458980f1103ab992a221bee31fdd17c1076cb04ed8b8"
+      },
+      {
+        "path": "frontend/.next/server/app/inicio.rsc",
+        "baselineSha256": "e4688add0624cc8aa3003473e2cf30270da5b144d08d9992f0c4628e2c89782c",
+        "currentSha256": "44d7c1349cd3d35fe81e809067c51e8378fd3e365435612a0f097ab76ad2cec8"
+      },
+      {
+        "path": "frontend/.next/server/app/index.rsc",
+        "baselineSha256": "18e2a7b3270b2f2d21f31a4b51e9912d17e70c3fbbd422cc85a06df8244457ec",
+        "currentSha256": "fcfc3c27145caa2ad3669c9838537fc4b3b47803e13975db69bcd34f3e24ddad"
+      },
+      {
+        "path": "frontend/.next/server/app/inicio.segments/_full.segment.rsc",
+        "baselineSha256": "e4688add0624cc8aa3003473e2cf30270da5b144d08d9992f0c4628e2c89782c",
+        "currentSha256": "44d7c1349cd3d35fe81e809067c51e8378fd3e365435612a0f097ab76ad2cec8"
+      },
+      {
+        "path": "frontend/.next/server/app/inicio.segments/!KGFwcCk/inicio/__PAGE__.segment.rsc",
+        "baselineSha256": "1f402831b6ed780ad54f30ce32a570b4e864ec8dd2b330883c665184ff9ea322",
+        "currentSha256": "5eeb24a95f4d3c8094fffa9fecd85004237d83b37795d280c4304f190971b5cc"
+      },
+      {
+        "path": "frontend/.next/server/app/index.segments/_full.segment.rsc",
+        "baselineSha256": "18e2a7b3270b2f2d21f31a4b51e9912d17e70c3fbbd422cc85a06df8244457ec",
+        "currentSha256": "fcfc3c27145caa2ad3669c9838537fc4b3b47803e13975db69bcd34f3e24ddad"
+      },
+      {
+        "path": "frontend/.next/server/app/index.segments/!KG1hcmtldGluZyk/__PAGE__.segment.rsc",
+        "baselineSha256": "4817eed5560534e8cb077d316a97ee083ce540cf5692209f4a2dd914c76d1b2b",
+        "currentSha256": "e58d172887ded3f50c9f302a337236a60dc43a544a2a33856b2019a60395043e"
+      }
+    ],
+    "missing": [],
+    "additional": [
+      "frontend/.next/cache/fetch-cache/030f592e432c65204b042af1303fe2ac93ef851cc85a40abc8c7e9877b7aea1d",
+      "frontend/.next/cache/fetch-cache/56601d15f3a9a9d64dbf8aa165df94c1b2f468401a60debd205d912da5ddb8ed",
+      "frontend/.next/cache/fetch-cache/7842340a04cb3a1920ce17998601f2e57b946cbe72b78df6eb1c75f7d0749640",
+      "frontend/.next/cache/images/KjQ2119kCf4P5gPIys4zGJZwRNzKC64eNQXcVh7Z7nc/14400.1791520274414.oOEMmPGnInTx1npj5IOPRWaXuVkbLcMI4Izt5uCKWi8.Vy8iMTNkZC0xYTBkYjI0MTkwMiI.avif"
+    ],
+    "buildId": "NZkIeTzxfiKhm5bMdwd1i",
+    "backendDistBaselineCount": 277,
+    "backendDistCurrentCount": 277,
+    "backendDistContentEquality": "not established; baseline counts alone have no content hashes"
+  },
+  "cleanupIndependentReadOnly": {
+    "capturedAt": "2026-10-09T00:38:41.398515+00:00",
+    "ports3000_3001_3002_56379": {
+      "command": "lsof -nP -iTCP:3000 -iTCP:3001 -iTCP:3002 -iTCP:56379 -sTCP:LISTEN",
+      "stdout": "",
+      "observation": "no listeners returned"
+    },
+    "processes3250_3261_3305": {
+      "command": "ps -p 3250,3261,3305 -o pid=,comm=",
+      "stdout": "",
+      "observation": "no process rows"
+    },
+    "redisId": {
+      "fullId": "ad7d4456b82b225dd85ddb8ac20299e77dc6fe75709ae9f8249eae1ebf79492c",
+      "dockerPsRows": []
+    },
+    "redisOwnerLabel": {
+      "value": "codex.owner=seo01-runtime-sol-20261008",
+      "dockerPsRows": []
+    },
+    "postgres": {
+      "query": "SELECT datname, shobj_description(oid, 'pg_database') FROM pg_database WHERE datname = 'seo01_runtime_sol_20261008_test'; SELECT count(*) FROM pg_stat_activity WHERE datname = 'seo01_runtime_sol_20261008_test';",
+      "databaseRows": [],
+      "connections": 0,
+      "preDropOwnerCommentAndZeroConnections": "producer attestation in ownership-after; independent verification cannot recover dropped comment"
+    },
+    "privateRuntimeStateAbsent": true,
+    "rawCaptureAbsent": true,
+    "externalLogAbsent": true,
+    "browserTabClosed": "producer attestation; tab identity not retained, no independent browser reopening"
+  },
+  "limits": [
+    "Body/DOM digests supplied by producer cannot be independently recomputed without removed raw content or retained canonical DOM hashing algorithm.",
+    "Pre-DROP owner comment/zero connections and browser close are producer attestations, distinguished from independent absence checks.",
+    "Guard zero records is scoped to patched Node global fetch; missing temporary log counts as zero.",
+    "No separate Flight classification, broad auth/ownership or cache-transition acceptance from this matrix.",
+    "Not production, Search Console or standard Turbopack gate evidence."
+  ],
+  "writes": [
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/SEO-01-runtime.md",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/SEO-01-runtime-evidencia.json",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/SEO-01-runtime-review.md",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/SEO-01-runtime-review-evidencia.json",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/SEO-01-runtime-anexos/**"
+  ],
+  "release": {
+    "reservationReleased": true,
+    "runtimeResourcesCreated": false,
+    "testsOrBuildRun": false,
+    "plansOrRegistryEdited": false
+  }
+}

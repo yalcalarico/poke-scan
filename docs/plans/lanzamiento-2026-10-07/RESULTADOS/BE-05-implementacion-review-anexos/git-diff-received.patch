@@ -1,0 +1,1191 @@
+diff --git a/backend/docs/api.md b/backend/docs/api.md
+index 00091bb..23d3ab3 100644
+--- a/backend/docs/api.md
++++ b/backend/docs/api.md
+@@ -34,7 +34,7 @@
+ 
+ ### Autenticación
+ 
+-- **Access token**: JWT firmado con `JWT_SECRET`, payload `{ sub, email }`,
++- **Access token**: JWT firmado con `JWT_SECRET`, payload `{ sub, email, authVersion }`,
+  Expira a los 15 min (`JWT_ACCESS_TTL`).
+ - **Refresh token**: **no es un JWT**. Es `randomBytes(48).toString('base64url')`
+   que se guarda hasheado con SHA-256 en `refresh_tokens.tokenHash`
+@@ -74,6 +74,10 @@ Cada `POST /auth/refresh` **revoca** el token usado y emite uno nuevo:
+ 4. Si `expiresAt` ya pasó → `401 Refresh token expirado`.
+ 5. Se marca `revokedAt` y se crea el token siguiente en la misma transacción; el HTTP renueva la cookie sin exponer el refresh en JSON.
+ 
++Un refresh emitido con `issuedAuthVersion` anterior al `User.authVersion` se
++rechaza sin revocar sesiones de la versión actual. Esto permite que un refresh
++robado anterior a un reset no desloguee el inicio de sesión posterior.
++
+ `POST /auth/logout` es **idempotente**: revoca el token si estaba vivo y siempre
+ devuelve `{ success: true }`, incluso con un token inexistente.
+ 
+@@ -188,12 +192,98 @@ una superficie de monitoring. Para debuggear está el log.
+ curl -s http://localhost:3001/api/health
+ ```
+ 
++### `GET /api/ready`
++
++Público, sin body ni auth. No-store y exento del throttler global porque lo usa
++el gateway de infraestructura. Es readiness, no liveness: `/api/health` conserva
++su respuesta HTTP 200 para los probes que ya existen.
++
++Responde **200** con `status: "ready"` cuando PostgreSQL responde y el scanner
++está `ready` o `disabled`. Responde **503** con `status: "not_ready"` cuando la
++DB no responde o el scanner está `initializing`, `unavailable` o `incompatible`.
++Un scanner deshabilitado deja lista la API general, pero no habilita el piloto de
++reconocimiento. `busy` informa una inferencia activa sin retirar la instancia.
++Redis informa `disabled`, `ready` o `degraded`; su caída no cambia readiness ni
++liveness porque los flujos existentes tienen fallback.
++
++```json
++{
++  "status": "not_ready",
++  "degraded": false,
++  "detail": {
++    "database": { "state": "ready" },
++    "scanner": { "state": "initializing", "busy": false },
++    "redis": { "state": "disabled" }
++  }
++}
++```
++
++La consulta DB usa un cliente Prisma 6 dedicado, pool de una conexión y límites
++de conexión/adquisición/socket de 1 s, `statement_timeout` de 750 ms y deadline
++HTTP de 4 s. Resultados se coalescen mientras hay una consulta activa y se
++cachean hasta 1 s. El timeout HTTP no cancela por sí mismo una promesa Prisma;
++los límites efectivos del driver y del servidor acotan esa operación. El
++arranque DB conserva el fail-fast existente.
++
++Con scanner habilitado, un warmup IPC de lifecycle crea la sesión ONNX y valida
++el índice antes de marcarlo listo. No calcula embeddings ni usa fotos. El probe
++lee el estado cacheado y nunca inicia el worker, descarga artefactos ni recorre
++el índice. Fallos clasificables se reintentan fuera del probe con backoff de
++5/15/30/60 s. Modelo/índice ausente es `unavailable`; metadata/vector
++incompatible es `incompatible`. La respuesta no contiene rutas, errores
++privados, secretos, hashes ni datos del usuario.
++
++Los flags de scanner se configuran al arrancar; para cambiarlos en operación,
++reiniciá la instancia. Arrancar deshabilitado no crea worker ni timers. Shutdown
++cancela tanto warmup como inferencia pendiente y evita nuevos reintentos. Un
++fallo de warmup retira la generación antes de validar de nuevo modelo e índice.
++
++La infraestructura debe esperar un primer `ready` antes de admitir tráfico y
++después sondear según su política. No usar `/api/ready` como liveness de Docker:
++su HEALTHCHECK actual sigue apuntando a `/api/health`.
++
+ ---
+ 
+ ## Auth
+ 
+ Controller: `src/modules/auth/auth.controller.ts`. Prefijo `/auth`.
+ 
++### Recuperación de cuenta
++
++`POST /api/auth/password-recovery-requests` recibe `{ "email": string }` y
++responde `202` con un texto genérico tanto si la cuenta existe como si no. La
++entrega corre en background dentro de un ticket de 2 s; la respuesta no espera
++la búsqueda de cuenta ni al adaptador de correo. El correo queda deshabilitado
++hasta conectar un puerto de entrega acreditado. Si la configuración HMAC o la
++base no está disponible, responde `503` antes de buscar la cuenta. El limitador
++compartido en PostgreSQL aplica 5 pedidos/15 min por IP, 3 por identificador/hora
++más 60 s entre admisiones del mismo identificador y 1000 operaciones/min
++globales. Los topes de IP/global responden `429` con `Retry-After`; los topes
++por identidad mantienen la respuesta `202` genérica.
++
++`POST /api/auth/password-recoveries` recibe `{ "token": string,
++"newPassword": string }`; no requiere sesión y devuelve `{ "success": true }`
++sólo después del commit. Un token ausente, inválido, usado, revocado o vencido
++responde `400 RECOVERY_LINK_INVALID`; validación de contraseña responde
++`400 INPUT_INVALID`. Ambos endpoints exigen el header de sesión y Origin
++permitidos, están exentos del throttler en memoria y envían
++`Cache-Control: no-store`, `Pragma: no-cache` y `Expires: 0` también en errores.
++El token tiene 32 bytes aleatorios, se almacena únicamente su SHA-256, vence a
++los 30 min por defecto (configurable con `RECOVERY_TOKEN_TTL_SECONDS`) y se
++limitan a tres tokens activos por cuenta sin expulsar tokens anteriores.
++
++El reset incrementa `User.authVersion`, bloquea la fila de usuario y consume el
++token, revoca otros tokens de recuperación y refresh en una transacción. Los
++JWT emitidos incluyen esa versión; el guard consulta la versión actual en
++PostgreSQL en cada request. JWT legacy sin claim sólo se aceptan si
++`JWT_LEGACY_CUTOFF` tiene una fecha fija válida, `iat` es anterior y la cuenta
++conserva versión cero; sin cutoff se rechazan. Un refresh emitido antes de un
++reset no revoca sesiones nuevas al ser reutilizado.
++
++El adaptador de correo de prueba sólo se inyecta en el harness aislado, sin
++endpoint de debug ni SMTP. Su ensayo requiere una base propia marcada y vacía;
++ver [`testing.md`](testing.md).
++
+ ### `POST /api/auth/register`
+ 
+ Público. **201 Created**. Límite: 5/min.
+@@ -495,6 +585,8 @@ interface CardPriceDto {
+   cardId: string; variant: string;
+   low: number | null; mid: number | null; high: number | null; market: number | null;
+   currency: string; source: string; fetchedAt: string;
++  evaluatedAt: string; freshness: 'fresh' | 'stale' | 'unknown';
++  upstreamUpdatedAt: string | null; upstreamFreshness: 'fresh' | 'stale' | 'unknown';
+   // Procedencia de la fila. `provider: null` es una cotización anterior a la
+   // columna: se puede mostrar como último conocido, y `isStale` la marca.
+   provider: string | null;
+@@ -520,6 +612,19 @@ interface ConversionMeta {
+ }
+ ```
+ 
++Los precios de items y las referencias públicas agregan la misma metadata
++adentro de `price`. `evaluatedAt` queda fijado al calcular la respuesta y se
++preserva en caché. `freshness` describe la antigüedad de `fetchedAt`, no la del
++mercado. Hoy `upstreamUpdatedAt` es `null` y `upstreamFreshness` es `unknown`;
++una fecha de consulta no acredita una actualización de la fuente. Las cachés
++legacy sin estos campos siguen siendo válidas y se interpretan como desconocidas.
++
++Los agregados incluyen `valuation: { amount, currency: 'USD', evaluatedAt,
++coverage, recency }`. La cobertura cuenta copias con `market` conocido (incluye
++cero); `amount` es `0` para vacío, `null` si ninguna copia tiene precio y el
++subtotal conocido si es parcial. Los snapshots históricos derivan cobertura de
++sus contadores guardados y llevan `evaluatedAt: null` y `recency: null`.
++
+ #### Variación de 30 días (`change`, `changeUsd`, `changePercent`, `windowLabel`)
+ 
+ `change` mide el precio de referencia contra la ventana de 30 días. No hay tabla
+@@ -1186,21 +1291,65 @@ curl 'http://localhost:3001/api/collections/$ID/items?sort=number' \
+ 
+ **Semántica de `quantity`**: "agregar N copias **más**". Si ya existe un item
+ con el mismo `(collectionId, cardId, variant, condition)` — hay un
+-`@@unique` compuesto — se le **incrementa** `quantity` en vez de crear otra fila. Hay
+-handling de la carrera por el `P2002` (dos requests idénticos simultáneos).
++`@@unique` compuesto — se le **incrementa** `quantity` en vez de crear otra fila.
++`INSERT ... ON CONFLICT DO UPDATE` resuelve la carrera de dos altas simultáneas
++sin intentar consultar dentro de una transacción PostgreSQL abortada. Conserva
++las notas existentes y solo abre la marca de intercambio si el alta envía `true`.
++
++Para escrituras cuyo resultado pudo perderse, el cliente puede enviar
++`Idempotency-Key: <UUID>` (idealmente un UUID generado una sola vez por intento).
++La clave queda vinculada al usuario y al hash de colección + payload normalizado.
++El header pasa por DTO + `ValidationPipe` y se normaliza a minúsculas: cambiar
++mayúsculas del UUID no crea otro intento. Una clave vacía o headers duplicados
++concatenados se rechazan; no se convierten en una llamada sin protección.
++Dentro de 30 días, repetir la misma clave y payload devuelve el ítem sin volver a
++incrementar; la misma clave con otro payload responde `409`. Dos claves distintas
++siguen siendo dos altas deliberadas. El guardado del ítem y del registro de clave
++es atómico. Las llamadas antiguas sin header conservan la semántica actual.
++La respuesta sigue siendo `CollectionItemDto`; `quantity` refleja el total actual
++del ítem, por lo que el cliente acredita el delta enviado por su operación y no
++usa ese total para deducir cuánto sumó el intento. El replay devuelve el estado
++actual del ítem (también sus atributos/notas), no un snapshot de la respuesta
++original. No vuelve a aplicar notas ni la marca de intercambio del payload.
++
++Después de 30 días, la clave persistida funciona como tombstone: devuelve `410`
++y no vuelve a escribir. Al llegar un reintento vencido se borra el ID del
++resultado y quedan la clave, el hash de payload y el vencimiento para impedir que
++un replay antiguo vuelva a sumar.
++Si el ítem se eliminó antes de repetir, también devuelve `410` indicando que la
++operación ya se había confirmado. El cliente debe conservar la misma clave para
++resolver un intento incierto; una nueva alta deliberada usa otra.
+ 
+ Además, encola un refresco de precio en background (`enqueueRefresh`), por eso
+ el `price` de la respuesta puede venir `null` aunque la carta tenga precio.
++Si la cola o la consulta de precio falla después del commit, la respuesta conserva
++el éxito del alta y puede devolver `price: null`; el precio no decide si se guardó.
++
++Para FE-01, una respuesta válida `201` del intento o su replay acredita la
++operación original. Persistí esa confirmación y el retiro de partes juntos en el
++draft. Una falla de red, aborto, cuerpo inválido o `5xx` mantiene el intento
++incierto, con cuenta/destino, clave y payload originales bloqueados. Un `409` no
++autoriza otra clave: puede señalar datos distintos o una resolución pendiente.
++Un `410` prueba que esa clave ya tuvo una escritura confirmada, pero no permite
++reconstruir el estado actual o reponer un ítem eliminado: no volver a sumar.
++Una colección eliminada responde `404`; eso no niega un commit anterior.
++Una respuesta de validación/autorización/ownership acredita que **esa solicitud**
++no escribió, sin resolver por sí sola un intento anterior cuyo resultado se perdió.
++Para una nueva alta deliberada, usá otra clave únicamente por acción explícita.
+ 
+ | Error | Cuándo |
+ |---|---|
+ | `400` | `variant`/`condition` inválidos |
+ | `404 Colección no encontrada: <id>` | No es del usuario |
+ | `404 Carta no encontrada: <cardId>` | El cardId no está en el catálogo |
++| `409` | Clave ya usada con otro payload o solicitud concurrente aún sin resolución |
++| `410` | Venció la ventana segura de 30 días o se eliminó el ítem ya confirmado |
++| `400` | `Idempotency-Key` no es UUID válido |
+ 
+ ```bash
+ curl -X POST http://localhost:3001/api/collections/$ID/items \
+   -H "Authorization: Bearer $TOKEN" -H 'content-type: application/json' \
++  -H 'Idempotency-Key: 4b2db49b-6ea0-4f04-9f3a-17eddfbc0434' \
+   -d '{"cardId":"base1-4","variant":"holofoil","condition":"NM","quantity":2}'
+ ```
+ 
+@@ -1334,13 +1483,38 @@ interface ShareLinkDto {
+ interface SharedCollectionDto {   // GET /s/:slug
+   ownerDisplayName: string;
+   collectionName: string;         // "Todas las colecciones" si no es una sola
+-  items: CollectionItemDto[];     // máx. 500
+-  stats: CollectionStatsDto;
++  items: PublicSharedItemDto[];   // máx. 500 grupos, orden addedAt DESC, id ASC
++  stats: PublicShareStatsDto;     // scope completo, no se limita a los 500 visibles
+   truncated: boolean;             // había más de 500
+   sharedAt: string;
+ }
++
++interface PublicSharedItemDto {
++  card: CardDto;                  // datos públicos del catálogo
++  variant: CardVariant;
++  condition: CardCondition;
++  quantity: number;
++  price: null | {
++    market: number | null; currency: string; provider: string | null;
++    source: string; fetchedAt: string;
++  };
++}
++
++interface PublicShareStatsDto {
++  totalGroups: number; totalCards: number; uniqueCards: number;
++  duplicateCards: number; setsCount: number;
++  totalValueUsd: number | null; pricedGroups: number; cardsMissingPrice: number;
++}
+ ```
+ 
++`totalCards` suma copias; `duplicateCards` cuenta grupos con quantity > 1.
++`totalValueUsd` es 0 para un scope vacío, `null` si hay grupos sin ninguna
++referencia, y un subtotal si la cobertura es parcial. `pricedGroups` y
++`cardsMissingPrice` siempre suman `totalGroups`. El límite es de filas/grupos,
++sin paginación; los agregados describen todas las colecciones del enlace.
++El scope "todas" es dinámico: nuevas colecciones e items del dueño aparecen al
++consultar mientras el enlace siga vigente.
++
+ ### `POST /api/share`
+ 
+ **201 Created.** Body `CreateShareDto`: `collectionId?` (`@MaxLength(64)`; vacío
+@@ -1390,8 +1564,12 @@ idempotente) e invalida la caché. `404` si no es suyo.
+ 
+ ### `GET /api/s/:slug`
+ 
+-**Público, sin Bearer.** Devuelve `SharedCollectionDto`. El payload completo se
+-cachea en Redis bajo `share:<slug>` por 5 minutos.
++**Público, sin Bearer.** Devuelve `SharedCollectionDto` con
++`Cache-Control: no-store`. El servicio comprueba en PostgreSQL que el link siga
++activo y que `expiresAt` sea posterior al instante de consulta antes de cada
++lectura de Redis. El payload se cachea hasta 5 minutos bajo el namespace
++`share:public-v2:<provider>:<slug>`; no lee keys legacy. El TTL se limita al
++vencimiento y no se escribe si ya no queda un segundo entero.
+ 
+ Cada hit incrementa `viewCount` con un `updateMany` atómico sin await (fire and
+ forget): **la respuesta devuelve el valor de `viewCount` desactualizado** (de
+@@ -1781,6 +1959,6 @@ ni certifica edición/acabado. Ver [evaluación DINOv2 puro](../../docs/evaluati
+ 
+ ## `GET /api/portfolio`
+ 
+-Autenticado. Devuelve `PortfolioDto`: `totalCards`, `unpricedCards`, `valueUsd` (nulo cuando todas las cartas carecen de precio), `history` (`date`, `valueUsd`, `totalCards`, `unpricedCards`) y `topCards` (hasta cinco posiciones por carta/variante ordenadas por precio unitario, con nombre, set, miniatura, cantidad y valores unitario y total). Sólo incluye colecciones del usuario autenticado y cotizaciones locales bajo la misma política de `/collections`. No realiza requests externos.
++Autenticado. Devuelve `PortfolioDto`: `totalCards`, `unpricedCards`, `valueUsd` (nulo cuando todas las cartas carecen de precio), `history` (`date`, `valueUsd`, `totalCards`, `unpricedCards`) y `topCards` (hasta cinco posiciones por carta/variante ordenadas por precio unitario, con nombre, set, miniatura, cantidad y valores unitario y total). `valuation` es el importe canónico con cobertura por copias y recencia evaluada. Cada punto de `history` trae `valuation` derivada de sus propios contadores con `evaluatedAt:null`/`recency:null`; cada top card trae `reference` de la misma fila seleccionada, con proveedor/mercado/moneda/consulta y los cuatro campos de metadata. Sólo incluye colecciones del usuario autenticado y cotizaciones locales bajo la misma política de `/collections`. No realiza requests externos.
+ 
+ Consultar registra o actualiza una observación diaria UTC del valor agregado en `portfolio_snapshots`. Devuelve hasta 365 observaciones; no inventa días previos ni días sin consulta. Al eliminar el usuario, sus observaciones se eliminan en cascada. Los tipos del contrato se mantienen en `portfolio.service.ts` y `frontend/types/api.ts`.
+diff --git a/backend/docs/database.md b/backend/docs/database.md
+index dabfcb4..83dd33b 100644
+--- a/backend/docs/database.md
++++ b/backend/docs/database.md
+@@ -1,6 +1,6 @@
+ # Base de datos — modelo, migraciones y patrones de query
+ 
+-> Los 10 modelos de Prisma, qué hace cada migración, la convención de nombres
++> Los 11 modelos de Prisma, qué hace cada migración, la convención de nombres
+ > (tablas snake_case, columnas camelCase), los índices que **no** están en el
+ > schema y los patrones de query que se repiten en todo el código.
+ > Requisito previo: [`../../AGENTS.md`](../../AGENTS.md) §3.2 y §3.5.
+@@ -30,12 +30,12 @@ crudo con `$queryRaw`, `$executeRaw` o en `psql`.
+ 
+ | | |
+ |---|---|
+-| Tablas | `users`, `refresh_tokens`, `card_sets`, `cards`, `card_prices`, `collections`, `collection_items`, `share_links`, `scan_jobs`, `friendships` |
++| Tablas | `users`, `refresh_tokens`, `card_sets`, `cards`, `card_prices`, `collections`, `collection_items`, `collection_item_add_operations`, `share_links`, `scan_jobs`, `friendships` |
+ | Columnas | `camelCase` siempre: `userId`, `setId`, `tokenHash`, `isActive`, `fetchedAt`, `rawJson` |
+ | PK de catálogo | el id de pokemontcg.io en texto: `cards.id = 'base1-4'`, `card_sets.id = 'base1'` |
+ | PK del resto | `uuid()` |
+ 
+-## Los 10 modelos
++## Los 11 modelos
+ 
+ ### User (`users`)
+ 
+@@ -47,13 +47,14 @@ Cuenta, sesión y preferencias.
+ | `email` | `String @unique` | se guarda normalizado a minúsculas en `register`/`login` |
+ | `username` | `String @unique` | `/^[a-zA-Z0-9_]{3,20}$/` |
+ | `passwordHash` | `String` | argon2id. **Nunca** en un `select` de salida |
++| `authVersion` | `Int @default(0)` | cambia al resetear clave; los JWT deben coincidir con esta versión |
+ | `displayName` | `String` | |
+ | `avatarUrl` | `String?` | |
+ | `preferredCurrency` | `String? @default("USD")` | `'USD'` \| `'ARS'` |
+ | `preferredRateType` | `String? @default("blue")` | `'blue'` \| `'oficial'` |
+ | `createdAt` / `updatedAt` | `DateTime` | |
+ 
+-Relaciones: `refreshTokens`, `collections`, `shareLinks`, `scanJobs`, y las dos
++Relaciones: `refreshTokens`, `passwordRecoveryTokens`, `collections`, `shareLinks`, `scanJobs`, y las dos
+ líneas de amistad `friendshipRequests` / `friendshipReceives` (que son la misma
+ tabla `friendships` vista desde los dos lados).
+ 
+@@ -71,11 +72,25 @@ Una fila por sesión emitida.
+ | `deviceInfo` | `String?` | el cliente lo manda en refresh/register |
+ | `expiresAt` | `DateTime` | `JWT_REFRESH_TTL_DAYS` (30) días |
+ | `revokedAt` | `DateTime?` | `null` = vigente. Base de la rotación y del detection de reuso |
++| `issuedAuthVersion` | `Int @default(0)` | versión de usuario al emitir la sesión; refresh de una versión vieja no revoca sesiones nuevas |
+ | `createdAt` | `DateTime` | |
+ 
+ Índices: `tokenHash` (unique), `userId`, `expiresAt`. Las filas revocadas
+ **no se borran**: son la evidencia que permite detectar reutilización.
+ 
++### PasswordRecoveryToken y RecoveryRateLimitHit
++
++`password_recovery_tokens` persiste el SHA-256 de un token aleatorio de 32 bytes,
++su vencimiento, versión de autenticación y marcas de uso/revocación. Un usuario
++puede mantener hasta tres tokens activos; el cuarto pedido no expulsa ninguno.
++Resetear contraseña, consumir el token, revocar otros tokens y refresh e
++incrementar `authVersion` ocurre en una transacción con lock de `users`.
++
++`recovery_rate_limit_hits` guarda ventanas compartidas en PostgreSQL. `keyHash`
++es HMAC-SHA-256 de IP o identificador; no guarda emails ni IPs en claro. Los
++registros se podan al cumplir una hora en cada admisión; el limitador no depende
++de Redis ni de estado sólo local.
++
+ ### CardSet (`card_sets`)
+ 
+ Espejo de los sets de pokemontcg.io. 176 filas hoy.
+@@ -191,11 +206,35 @@ Una fila por combinación `(carta, variante, condición)`; la cantidad vive acá
+ | `addedAt` / `updatedAt` | `DateTime` | |
+ 
+ **`@@unique([collectionId, cardId, variant, condition])`**: es lo que permite
+-"agregar N copias más" con un `quantity: { increment: n }` en vez de duplicar
+-filas, y obliga a manejar el `P2002` en las carreras.
++"agregar N copias más" sin duplicar filas. El alta usa
++`INSERT ... ON CONFLICT DO UPDATE` para incrementar cantidades en las carreras
++sin abortar la transacción. Conserva las notas de una fila ya existente y abre
++`isForTrade` con un OR, sin cerrar una marca anterior.
+ 
+ Índices: el unique compuesto, `collectionId`, `cardId`.
+ 
++### CollectionItemAddOperation (`collection_item_add_operations`)
++
++Registro de idempotencia del `POST /collections/:id/items` cuando se envía
++`Idempotency-Key`. La clave primaria `(userId, key)` serializa requests
++concurrentes del mismo usuario e intento; `payloadHash` rechaza reutilizarla con
++otro destino o payload. `resultItemId` permite reconstruir la respuesta sin
++guardar notas ni otros campos del ítem. `expiresAt` define 30 días para repetir
++la operación; al vencer, el registro queda como tombstone y responde 410 para
++evitar que un replay antiguo vuelva a incrementar cantidades. La fila se borra
++al eliminar la cuenta (`onDelete: Cascade`).
++
++La escritura del registro, el incremento/creación de `collection_items` y el ID
++del resultado comparten una transacción. Los requests sin clave no pasan por esta
++tabla y mantienen el incremento aditivo actual.
++El UUID se canonicaliza a minúsculas. Una colisión de clave se recupera fuera de
++la transacción abortada y vuelve a comprobar ownership antes de leer el resultado.
++No hay limpieza por edad: borrar claves vencidas permitiría que una operación
++antigua vuelva a sumar. Al reintentar una clave vencida, se limpia `resultItemId`
++y se conserva el tombstone; borrar el ítem o la colección tampoco borra la clave.
++Solo eliminar la cuenta elimina sus registros. Los registros no contienen fotos,
++notas, emails ni el payload; `payloadHash` contiene su hash SHA-256.
++
+ ### ShareLink (`share_links`)
+ 
+ | Campo | Tipo | Notas |
+diff --git a/backend/docs/gotchas.md b/backend/docs/gotchas.md
+index 6d10895..1922c47 100644
+--- a/backend/docs/gotchas.md
++++ b/backend/docs/gotchas.md
+@@ -52,6 +52,9 @@
+ 33. [Un rate limit en memoria es un rate limit por proceso](#33-un-rate-limit-en-memoria-es-un-rate-limit-por-proceso)
+ 34. [Un `null` de Redis puede ser "todavía no conectó"](#34-un-null-de-redis-puede-ser-todavía-no-conectó-y-en-un-script-de-migración-es-un-no-op-silencioso)
+ 35. [Podar `card_prices` por edad rompe el delta de 30 días, sin error](#35-podar-card_prices-por-edad-rompe-el-delta-de-30-días-sin-error)
++36. [Un alta aditiva incierta necesita conservar su `Idempotency-Key`](#36-un-alta-aditiva-incierta-necesita-conservar-su-idempotency-key)
++37. [Redis deja de recuperarse si el retryStrategy devuelve `null`](#37-redis-deja-de-recuperarse-si-el-retrystrategy-devuelve-null)
++38. [Los locks consultivos de PostgreSQL devuelven `void`](#38-los-locks-consultivos-de-postgresql-devuelven-void)
+ 
+ ---
+ 
+@@ -1309,6 +1312,67 @@ referencia del delta sobrevive" y pone 10 refreshes fuera de la ventana de
+ detalle: si la consolidación no deja un punto usable, el delta queda sin
+ referencia.
+ 
++## 36. Un alta aditiva incierta necesita conservar su `Idempotency-Key`
++
++`POST /collections/:id/items` suma cantidad. Si el cliente pierde la respuesta,
++repetir sin `Idempotency-Key` vuelve a sumar; una lectura posterior de cantidad
++no atribuye ese incremento cuando hubo otras ediciones. Para un intento incierto,
++el cliente conserva la misma clave UUID y el mismo payload por hasta 30 días.
++Usar otra clave representa una nueva alta intencional. El backend conserva un
++tombstone después del vencimiento para que una clave antigua nunca vuelva a
++escribir, así que no se debe reutilizar una clave para otra operación.
++
++La escritura y el registro de idempotencia comparten transacción. No agregar un
++job de limpieza que borre tombstones: permitiría que un replay demorado sume de
++nuevo. Ver [api.md](api.md) y [database.md](database.md) para el contrato.
++
++## 37. Redis deja de recuperarse si el `retryStrategy` devuelve `null`
++
++El cliente tenía `retryStrategy(times > 3) => null`. Cuando Redis arrancaba caído
++o se interrumpía por tiempo suficiente, ioredis terminaba el ciclo de conexión
++y la caché quedaba desconectada hasta reiniciar la API. El fallback seguía
++funcionando, pero no había recuperación automática.
++
++La estrategia ahora reintenta indefinidamente con esperas de 500 ms, 1 s, 2 s,
++4 s, 8 s y luego 15 s como máximo. `enableOfflineQueue: false` evita encolar
++comandos nuevos mientras está desconectado y `maxRetriesPerRequest: 1` conserva
++el límite por request. **Eso no alcanza para comandos ya enviados:** ioredis
++reenvía las respuestas pendientes por otro camino. Por eso también se configura
++`autoResendUnfulfilledCommands: false` y `commandTimeout: 3000`. El timeout
++limita tanto respuestas perdidas como un socket conectado que no responde; sin
++él, desactivar el replay puede dejar una promesa pendiente al recuperar. Un
++comando incierto puede haberse aplicado en Redis antes del corte: el cliente no
++lo repite automáticamente, pero tampoco puede afirmar que no se aplicó.
++
++Los eventos `close`, `reconnecting` y `end` actualizan el estado degradado;
++`ready` lo limpia. Los callbacks de la promesa inicial de `connect()` no cambian
++ese estado, porque pueden ejecutarse después de otro evento. El cierre del módulo
++desconecta sin esperar respuestas y cancela el timer de reconexión; **no quita
++los listeners internos de ioredis**, que resuelven/rechazan `connect()`. Los
++handlers propios ignoran callbacks tardíos durante shutdown, incluido `error`.
++Los avisos salen como máximo una vez por minuto por operación, sin URL, mensajes
++crudos, keys ni payloads; `lastErrorAt` se actualiza también en fallos suprimidos.
++
++La prueba de política usa un doble determinista; la misma suite usa ioredis real
++con sockets RESP propios para el comando en vuelo, blackhole y shutdown durante
++handshake, reconexión y conexión sana. El corte/restauración de Redis y el fallback
++PostgreSQL del consumidor se validan aparte con Redis aislado y una API que
++permanece viva. Un cache miss unitario no acredita ese fallback. No usar el Redis
++de desarrollo ni `FLUSHDB` para repetir estas pruebas.
++
++## 38. Los locks consultivos de PostgreSQL devuelven `void`
++
++`pg_advisory_xact_lock` devuelve `void`; Prisma 6 no puede deserializar ese
++resultado con `$queryRaw` y responde `P2010`. Ejecutá el `SELECT` parametrizado
++con `$executeRaw` para adquirir el lock sin intentar devolver la columna. No
++reemplacés `Prisma.sql` por concatenación de strings.
++
++La recuperación de cuenta usa locks consultivos en PostgreSQL para serializar
++las cuotas compartidas. El instante de conteo se lee con `clock_timestamp()`
++después de obtenerlos. Los hits de más de una hora se podan en la admisión; un
++429 de IP/global no agrega filas. Redis o una cuota local por proceso no son
++sustitutos de este control.
++
+ ## Cross-references
+ 
+ - [api.md](api.md) — los endpoints y sus formas
+diff --git a/backend/docs/testing.md b/backend/docs/testing.md
+index bed6088..0f51c34 100644
+--- a/backend/docs/testing.md
++++ b/backend/docs/testing.md
+@@ -11,19 +11,23 @@
+ | Runner | Vitest 4.1 (`vitest run`) |
+ | Config | `vitest.config.ts` (`**/*.spec.ts`) y `vitest.config.e2e.ts` (`**/*.e2e-spec.ts`) |
+ | Globals | `globals: true` + `types: ["vitest/globals", "node"]` en `tsconfig.json`: `describe`/`it`/`expect`/`vi` no se importan |
+-| Archivos | 19 `.spec.ts` · 1 `.e2e-spec.ts` |
+-| Tests | 320, ~45 s |
++| Archivos | 20 `.spec.ts` · 1 `.e2e-spec.ts` |
++| Tests | 325, ~45 s |
+ | Lint | oxlint type-aware corre sobre `src/` y `test/` |
+ 
+ | Spec | Qué cubre |
+ |---|---|
+-| `app.controller.spec.ts` | `GET /health`: sano, degradado, sin Redis configurado |
++| `app.controller.spec.ts` | `GET /health`: sano, degradado, sin Redis configurado; `GET /ready`: estados DB/scanner/Redis y códigos HTTP |
++| `readiness.http.spec.ts` | Nest + Supertest in-process: 200/503, `no-store`, throttler excluido, busy informativo y liveness conservada |
++| `readiness.service.spec.ts` | URL dedicada limitada, single-flight/deadline compartido, caché, shutdown, éxito tardío descartado y TCP blackhole sin DB |
++| `visual-identify.lifecycle.spec.ts` | warmup IPC, generaciones/backoff, idle death, timeout, cancelación, envíos fallidos, eventos tardíos, listeners estables y shutdown; branch real del worker con ONNX/índice simulados, sin embedding |
+ | `auth.service.spec.ts` | registro, login, hash del refresh, rotación, reuso, expiración, logout |
+ | `cards.service.spec.ts` | búsqueda con trigram, `getById` 404, `getCardWithPrices` con rate cacheado, `sort=price` global |
+-| `collections.service.spec.ts` | increment de `quantity`, ownership, stats, 409, cascadas, filtros, marca de intercambio del alta |
+-| `share.service.spec.ts` | slug, caché, 404 de enlace vencido, `truncated` |
++| `collections.service.spec.ts` | increment de `quantity`, replay con clave idempotente, concurrencia, vencimiento, ownership, stats, 409, cascadas, filtros, marca de intercambio del alta |
++| `share.service.spec.ts` | 21 casos: allowlist pública, 500 visibles con valor/cobertura de 522/523 grupos, market cero, grupos iguales entre colecciones, Redis en memoria con legacy/`DEL` fallido/`SET` tardío, TTL y vencimiento con reloj controlado, HTTP real `no-store` en 200/404 |
+ | `friends.service.spec.ts` | búsqueda, solicitudes, responder, 403/404, baja, bloqueo |
+ | `currency.service.spec.ts` | feature flag, caché 1 h, `stale` >48 h, DolarApi caído, valores saneados |
++| `redis.recovery.spec.ts` | retries permanentes con backoff acotado, estados de recuperación, fallback sin cola, logs sin URL y cierre de listeners |
+ | `tcgdex.provider.spec.ts` | mapeo de las 7 variantes, 404 con fallback de padding, retry de 503, parsing defensivo |
+ | `tcgdex-set-mapping.service.spec.ts` | matcheo por nombre / por ID, validación, miss marker, error de red sin marcar miss |
+ | `sync-prices.service.spec.ts` | refresh en vivo, TTL negativa, no borra previos ante fallo, frescura de 24 h, ritmo global |
+@@ -323,6 +327,33 @@ ni cuando testea el camino de éxito.
+ Eso fuerza el camino sin caché y verifica que **el service funciona igual**,
+ que es la propiedad que importa cuando Redis no está en producción.
+ 
++#### Recuperación después de un corte
++
++`redis.recovery.spec.ts` prueba el backoff permanente, las transiciones
++`close`/`reconnecting`/`ready`/`end`, las carreras con la promesa inicial de
++`connect()`, los cache misses sin comandos, los timestamps y los avisos acotados.
++Usa un doble determinista para controlar el orden de callbacks, y **ioredis real
++con un servidor RESP propio en un puerto loopback efímero** para observar replay
++de un `SET` cuya respuesta se perdió, un socket que no responde y shutdown con
++handshake/comando pendientes, reconexión y conexión sana. No omite esos casos si
++el socket no puede abrirse: una restricción del entorno debe registrarse como
++fallo de ejecución, sin acreditar la prueba. El servidor destruye sus sockets y
++cierra su listener en `afterEach`; no necesita Redis ni PostgreSQL compartidos.
++
++La cola offline y los comandos en vuelo son dos caminos distintos: probar un
++cache miss sin comandos no verifica `autoResendUnfulfilledCommands`. El límite de
++3 s por comando permite que una respuesta perdida termine incluso al recuperar
++la conexión con replay desactivado. Los tests no afirman que un comando enviado
++no se haya aplicado antes del corte, ni acreditan el fallback PostgreSQL.
++
++Para acreditar el corte/restitución sostenidos y el fallback real del consumidor,
++el ensayo integrado de BE-07 usa un contenedor Redis con puerto loopback y labels
++propios y mantiene vivo el mismo proceso de API; nunca apunta al Redis compartido
++ni usa `FLUSHDB`. Registrá el ID completo del contenedor, el puerto, el ownership
++del proceso y el cleanup. `redis.service.spec.ts` conserva la prueba de locks y
++WRONGTYPE contra Redis real: para la revisión/gate apuntalo al Redis propio y
++exigí cero omisiones.
++
+ ### Mockear dependencias de infraestructura
+ 
+ Cuando lo que se testea no necesita la dependencia, se reemplaza por un valor
+@@ -389,6 +420,37 @@ es la única forma de prenderlo y apagarlo.
+ 
+ ## E2E
+ 
++### Harness privado BE-05
++
++`test/password-recovery-harness.ts` se ejecuta sólo mediante
++`vitest.config.recovery-harness.ts`; queda fuera del glob normal para que la
++suite global no requiera un marcador ni una base vacía. El harness exige una
++base PostgreSQL loopback en puerto 55432 con nombre `pokemon_cards_be05_test_*`,
++un marcador de ownership preexistente y cero usuarios antes de iniciar. No crea
++el marcador ni altera bases compartidas. El adaptador de buzón es privado al
++test, limitado a dos destinatarios, 32 mensajes y leases de 120 s; teardown
++aborta entregas y libera esperas.
++
++El ensayo completo usa un clon aislado del TEST y tarda más de un minuto porque
++espera 60,1 s reales antes de una nueva admisión del mismo identificador. Las
++cuotas no se vacían para simular el paso del tiempo. Correrlo requiere configurar
++`DATABASE_URL_TEST`, `RECOVERY_IDENTIFIER_HMAC_KEY` sólo en el entorno del
++proceso y `BE05_OWNER_MARKER_PATH` apuntando al archivo marcador creado por el
++operador del clon; `BE05_EXPECTED_DATABASE` debe coincidir exactamente con el
++nombre de base. El guard confirma rol `pokemon`, cero usuarios preexistentes,
++marcador único y servidor HTTP enlazado sólo a `127.0.0.1`. No guardar esos
++valores en scripts, logs ni fixtures.
++
++```bash
++pnpm exec vitest run --config vitest.config.recovery-harness.ts
++```
++
++El harness valida respuestas/no-cache, errores de DTO y JSON malformado,
++cookies tras commit, hash-only y concurrencia, cuota IP, entrega sostenida hasta
++después de un reset, y que el token tardío falle consultando PostgreSQL. Para
++limpieza, verificar el marcador exacto antes de eliminar exclusivamente el
++clon propio.
++
+ `vitest.config.e2e.ts` corre `**/*.e2e-spec.ts` (no tiene
+ `fileParallelism: false` porque hoy hay un solo archivo).
+ 
+diff --git a/backend/prisma/schema.prisma b/backend/prisma/schema.prisma
+index 96694f9..b44325f 100644
+--- a/backend/prisma/schema.prisma
++++ b/backend/prisma/schema.prisma
+@@ -14,6 +14,7 @@ model User {
+   email        String  @unique
+   username     String  @unique
+   passwordHash String
++  authVersion  Int     @default(0)
+   displayName  String
+   avatarUrl    String?
+ 
+@@ -25,10 +26,12 @@ model User {
+   updatedAt DateTime @updatedAt
+ 
+   refreshTokens RefreshToken[]
++  passwordRecoveryTokens PasswordRecoveryToken[]
+   collections   Collection[]
+   shareLinks    ShareLink[]
+   scanJobs      ScanJob[]
+   portfolioSnapshots PortfolioSnapshot[]
++  collectionItemAddOperations CollectionItemAddOperation[]
+ 
+   // Fase 8: sistema de amigos. Cada Friendship es un par (requester, addressee)
+   // con un único estado; las dos relaciones inversas permiten consultar
+@@ -39,11 +42,35 @@ model User {
+   @@map("users")
+ }
+ 
++model PasswordRecoveryToken {
++  id                 String    @id @default(uuid())
++  userId             String
++  tokenHash          String    @unique
++  issuedAuthVersion  Int
++  expiresAt          DateTime
++  usedAt             DateTime?
++  revokedAt          DateTime?
++  createdAt          DateTime  @default(now())
++  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
++  @@index([userId, expiresAt])
++  @@map("password_recovery_tokens")
++}
++
++model RecoveryRateLimitHit {
++  id          String   @id @default(uuid())
++  scope       String
++  keyHash     String
++  occurredAt  DateTime @default(now())
++  @@index([scope, keyHash, occurredAt])
++  @@map("recovery_rate_limit_hits")
++}
++
+ model RefreshToken {
+   id         String    @id @default(uuid())
+   userId     String
+   tokenHash  String    @unique
+   deviceInfo String?
++  issuedAuthVersion Int @default(0)
+   expiresAt  DateTime
+   revokedAt  DateTime?
+   createdAt  DateTime  @default(now())
+@@ -218,6 +245,20 @@ model CollectionItem {
+   @@map("collection_items")
+ }
+ 
++model CollectionItemAddOperation {
++  userId      String
++  key         String
++  payloadHash String
++  resultItemId String?
++  expiresAt   DateTime
++  createdAt   DateTime @default(now())
++  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
++
++  @@id([userId, key])
++  @@index([expiresAt])
++  @@map("collection_item_add_operations")
++}
++
+ // ─── Compartir ───
+ 
+ model ShareLink {
+diff --git a/backend/src/common/guards/jwt-auth.guard.ts b/backend/src/common/guards/jwt-auth.guard.ts
+index 53b743a..cbe89b3 100644
+--- a/backend/src/common/guards/jwt-auth.guard.ts
++++ b/backend/src/common/guards/jwt-auth.guard.ts
+@@ -2,13 +2,16 @@ import {
+   CanActivate,
+   ExecutionContext,
+   Injectable,
++  ServiceUnavailableException,
+   UnauthorizedException,
+ } from '@nestjs/common';
+ import { Reflector } from '@nestjs/core';
+ import { JwtService } from '@nestjs/jwt';
++import { ConfigService } from '@nestjs/config';
+ import type { Request } from 'express';
+ import { IS_PUBLIC_KEY } from '../decorators/public.decorator.js';
+ import type { AccessTokenPayload, AuthUser } from '../types/auth-user.js';
++import { PrismaService } from '../../prisma/index.js';
+ 
+ type RequestWithUser = Request & { user?: AuthUser };
+ 
+@@ -17,6 +20,8 @@ export class JwtAuthGuard implements CanActivate {
+   constructor(
+     private readonly jwtService: JwtService,
+     private readonly reflector: Reflector,
++    private readonly prisma: PrismaService,
++    private readonly config: ConfigService,
+   ) {}
+ 
+   async canActivate(context: ExecutionContext): Promise<boolean> {
+@@ -34,11 +39,47 @@ export class JwtAuthGuard implements CanActivate {
+       throw new UnauthorizedException('Token de acceso requerido');
+     }
+ 
++    let payload: AccessTokenPayload;
+     try {
+-      request.user = await this.jwtService.verifyAsync<AccessTokenPayload>(token);
++      payload = await this.jwtService.verifyAsync<AccessTokenPayload>(token);
+     } catch {
+       throw new UnauthorizedException('Token de acceso inválido o expirado');
+     }
++    try {
++      if (typeof payload.sub !== 'string' || payload.sub.length === 0 ||
++          typeof payload.email !== 'string' || payload.email.length === 0 ||
++          typeof payload.iat !== 'number' || !Number.isSafeInteger(payload.iat) ||
++          typeof payload.exp !== 'number' || !Number.isSafeInteger(payload.exp) || payload.exp <= payload.iat ||
++          (payload.authVersion !== undefined && (!Number.isSafeInteger(payload.authVersion) || payload.authVersion < 0))) {
++        throw new UnauthorizedException('Token de acceso inválido o expirado');
++      }
++      const nowSeconds = Math.floor(Date.now() / 1000);
++      if (payload.iat > nowSeconds || payload.exp <= nowSeconds) {
++        throw new UnauthorizedException('Token de acceso inválido o expirado');
++      }
++      let current: { id: string; authVersion: number } | null;
++      try {
++        current = await this.prisma.user.findUnique({
++          where: { id: payload.sub }, select: { id: true, authVersion: true },
++        });
++      } catch {
++        throw new ServiceUnavailableException('No se pudo validar la sesión');
++      }
++      if (!current) throw new UnauthorizedException('Token de acceso inválido o expirado');
++      if (payload.authVersion === undefined) {
++        const cutoff = this.config.get<string>('JWT_LEGACY_CUTOFF');
++        const cutoffSeconds = cutoff ? Date.parse(cutoff) / 1000 : Number.NaN;
++        if (!Number.isFinite(cutoffSeconds) || payload.iat >= cutoffSeconds || current.authVersion !== 0) {
++          throw new UnauthorizedException('Token de acceso inválido o expirado');
++        }
++      } else if (!Number.isInteger(payload.authVersion) || payload.authVersion !== current.authVersion) {
++        throw new UnauthorizedException('Token de acceso inválido o expirado');
++      }
++      request.user = payload as AuthUser;
++    } catch (error) {
++      if (error instanceof UnauthorizedException || error instanceof ServiceUnavailableException) throw error;
++      throw new ServiceUnavailableException('No se pudo validar la sesión');
++    }
+ 
+     return true;
+   }
+diff --git a/backend/src/common/types/auth-user.ts b/backend/src/common/types/auth-user.ts
+index d0c3072..9bbf896 100644
+--- a/backend/src/common/types/auth-user.ts
++++ b/backend/src/common/types/auth-user.ts
+@@ -1,6 +1,7 @@
+ export interface AuthUser {
+   sub: string;
+   email: string;
++  authVersion?: number;
+ }
+ 
+ export interface AccessTokenPayload extends AuthUser {
+diff --git a/backend/src/modules/auth/auth.controller.ts b/backend/src/modules/auth/auth.controller.ts
+index b669254..d44c40b 100644
+--- a/backend/src/modules/auth/auth.controller.ts
++++ b/backend/src/modules/auth/auth.controller.ts
+@@ -2,11 +2,14 @@ import {
+   Body, Controller, HttpCode, Post, Req, Res, UnauthorizedException,
+ } from '@nestjs/common';
+ import { ConfigService } from '@nestjs/config';
+-import { Throttle } from '@nestjs/throttler';
++import { SkipThrottle, Throttle } from '@nestjs/throttler';
+ import type { Request, Response } from 'express';
+ import { Public } from '../../common/decorators/public.decorator.js';
+ import type { AuthResponseDto, AuthTokens } from '../../common/types/auth-user.js';
+ import { AuthService } from './auth.service.js';
++import { PasswordRecoveryService } from './password-recovery.service.js';
++import { PasswordRecoveryRequestDto } from './dto/password-recovery-request.dto.js';
++import { PasswordRecoveryDto } from './dto/password-recovery.dto.js';
+ import { BrowserSessionDto } from './dto/browser-session.dto.js';
+ import { LoginDto } from './dto/login.dto.js';
+ import { RegisterDto } from './dto/register.dto.js';
+@@ -19,6 +22,7 @@ import {
+ export class AuthController {
+   constructor(
+     private readonly authService: AuthService,
++    private readonly recoveryService: PasswordRecoveryService,
+     private readonly config: ConfigService,
+   ) {}
+ 
+@@ -33,6 +37,34 @@ export class AuthController {
+     return this.sendSession(response, await this.authService.register(dto));
+   }
+ 
++  @Public()
++  @SkipThrottle()
++  @HttpCode(202)
++  @Post('password-recovery-requests')
++  async requestPasswordRecovery(
++    @Body() dto: PasswordRecoveryRequestDto, @Req() request: Request,
++    @Res({ passthrough: true }) response: Response,
++  ): Promise<{ message: string }> {
++    assertSessionRequest(request, this.config);
++    this.setRecoveryNoStore(response);
++    return this.recoveryService.request(dto.email, request.ip ?? 'unknown');
++  }
++
++  @Public()
++  @SkipThrottle()
++  @HttpCode(200)
++  @Post('password-recoveries')
++  async recoverPassword(
++    @Body() dto: PasswordRecoveryDto, @Req() request: Request,
++    @Res({ passthrough: true }) response: Response,
++  ): Promise<{ success: true }> {
++    assertSessionRequest(request, this.config);
++    const result = await this.recoveryService.recover(dto.token, dto.newPassword, request.ip ?? 'unknown');
++    this.setRecoveryNoStore(response);
++    this.clearSessionCookie(response);
++    return result;
++  }
++
+   @Public()
+   @Throttle({ default: { limit: 5, ttl: 60_000 } })
+   @HttpCode(200)
+@@ -94,4 +126,10 @@ export class AuthController {
+   private clearSessionCookie(response: Response): void {
+     response.clearCookie(REFRESH_COOKIE, refreshCookieOptions(this.config));
+   }
++
++  private setRecoveryNoStore(response: Response): void {
++    response.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
++    response.setHeader('Pragma', 'no-cache');
++    response.setHeader('Expires', '0');
++  }
+ }
+diff --git a/backend/src/modules/auth/auth.module.ts b/backend/src/modules/auth/auth.module.ts
+index cd039a3..91fde4b 100644
+--- a/backend/src/modules/auth/auth.module.ts
++++ b/backend/src/modules/auth/auth.module.ts
+@@ -2,9 +2,13 @@ import { readJwtSecret } from './session-security.js';
+ import { Module } from '@nestjs/common';
+ import { ConfigService } from '@nestjs/config';
+ import { JwtModule, type JwtSignOptions } from '@nestjs/jwt';
++import { APP_FILTER } from '@nestjs/core';
+ import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard.js';
+ import { AuthController } from './auth.controller.js';
+ import { AuthService } from './auth.service.js';
++import { PasswordRecoveryService } from './password-recovery.service.js';
++import { RECOVERY_MAIL_PORT, UnavailableRecoveryMailPort } from './recovery-mail.port.js';
++import { RecoveryHttpFilter } from './recovery-http.filter.js';
+ import { RefreshJwtModule } from './refresh-jwt.module.js';
+ 
+ @Module({
+@@ -22,7 +26,11 @@ import { RefreshJwtModule } from './refresh-jwt.module.js';
+     RefreshJwtModule,
+   ],
+   controllers: [AuthController],
+-  providers: [AuthService, JwtAuthGuard],
++  providers: [
++    AuthService, PasswordRecoveryService, JwtAuthGuard,
++    { provide: RECOVERY_MAIL_PORT, useClass: UnavailableRecoveryMailPort },
++    { provide: APP_FILTER, useClass: RecoveryHttpFilter },
++  ],
+   exports: [AuthService, JwtAuthGuard],
+ })
+ export class AuthModule {}
+diff --git a/backend/src/modules/auth/auth.service.ts b/backend/src/modules/auth/auth.service.ts
+index f132f79..64e22d4 100644
+--- a/backend/src/modules/auth/auth.service.ts
++++ b/backend/src/modules/auth/auth.service.ts
+@@ -25,21 +25,9 @@ const USER_SELECT = {
+   preferredRateType: true,
+   createdAt: true,
+   updatedAt: true,
++  authVersion: true,
+ } as const;
+ 
+-type UserRecord = {
+-  id: string;
+-  email: string;
+-  passwordHash: string;
+-  username: string;
+-  displayName: string;
+-  avatarUrl: string | null;
+-  preferredCurrency: string | null;
+-  preferredRateType: string | null;
+-  createdAt: Date;
+-  updatedAt: Date;
+-};
+-
+ const GENERIC_CREDENTIALS_ERROR = 'Credenciales inválidas';
+ 
+ @Injectable()
+@@ -105,7 +93,14 @@ export class AuthService {
+       throw new UnauthorizedException(GENERIC_CREDENTIALS_ERROR);
+     }
+ 
+-    return this.issueSession(this.toPublicUser(user), session?.deviceInfo);
++    return this.prisma.$transaction(async (tx) => {
++      await tx.$queryRaw(Prisma.sql`SELECT id FROM users WHERE id = ${user.id} FOR UPDATE`);
++      const current = await tx.user.findUnique({ where: { id: user.id } });
++      if (!current || current.passwordHash !== user.passwordHash || current.authVersion !== user.authVersion) {
++        throw new UnauthorizedException(GENERIC_CREDENTIALS_ERROR);
++      }
++      return this.issueSession(current, session?.deviceInfo, tx);
++    });
+   }
+ 
+   async refresh(dto: RefreshSessionDto): Promise<AuthTokens> {
+@@ -121,10 +116,11 @@ export class AuthService {
+       await tx.$queryRaw(Prisma.sql`SELECT id FROM users WHERE id = ${owner.userId} FOR UPDATE`);
+       const stored = await tx.refreshToken.findUnique({
+         where: { tokenHash },
+-        select: { id: true, userId: true, revokedAt: true, expiresAt: true,
++        select: { id: true, userId: true, revokedAt: true, expiresAt: true, issuedAuthVersion: true,
+           user: { select: USER_SELECT } },
+       });
+       if (!stored) throw new UnauthorizedException('Refresh token inválido');
++      if (stored.issuedAuthVersion !== stored.user.authVersion) return null;
+       if (stored.revokedAt !== null) {
+         await tx.refreshToken.updateMany({
+           where: { userId: stored.userId, revokedAt: null },
+@@ -158,33 +154,28 @@ export class AuthService {
+   }
+ 
+   private async issueSession(
+-    user: PublicUser,
++    user: PublicUser & { authVersion: number },
+     deviceInfo?: string,
+     tx?: Prisma.TransactionClient,
+   ): Promise<AuthTokens> {
+-    const accessToken = await this.jwtService.signAsync({
+-      sub: user.id,
+-      email: user.email,
+-    });
+-
+-    const refreshToken = randomBytes(48).toString('base64url');
+-
+-    const persist = async (client: Prisma.TransactionClient) => client.refreshToken.create({
+-      data: {
+-        userId: user.id,
+-        tokenHash: this.hashToken(refreshToken),
+-        deviceInfo: deviceInfo ?? null,
+-        expiresAt: this.refreshTokenExpiry(),
+-      },
+-    });
+-
+-    if (tx) await persist(tx);
+-    else await this.prisma.$transaction(async (client) => {
++    const issue = async (client: Prisma.TransactionClient, current: PublicUser & { authVersion: number }): Promise<AuthTokens> => {
++      const accessToken = await this.jwtService.signAsync({ sub: current.id, email: current.email, authVersion: current.authVersion });
++      const refreshToken = randomBytes(48).toString('base64url');
++      await client.refreshToken.create({
++        data: {
++          userId: current.id, tokenHash: this.hashToken(refreshToken), deviceInfo: deviceInfo ?? null,
++          issuedAuthVersion: current.authVersion, expiresAt: this.refreshTokenExpiry(),
++        },
++      });
++      return { accessToken, refreshToken, user: this.toPublicUser(current) };
++    };
++    if (tx) return issue(tx, user);
++    return this.prisma.$transaction(async (client) => {
+       await client.$queryRaw(Prisma.sql`SELECT id FROM users WHERE id = ${user.id} FOR UPDATE`);
+-      await persist(client);
++      const current = await client.user.findUnique({ where: { id: user.id }, select: USER_SELECT });
++      if (!current || current.authVersion !== user.authVersion) throw new UnauthorizedException(GENERIC_CREDENTIALS_ERROR);
++      return issue(client, current);
+     });
+-
+-    return { accessToken, refreshToken, user };
+   }
+ 
+   private hashToken(token: string): string {
+@@ -195,8 +186,12 @@ export class AuthService {
+     return new Date(Date.now() + refreshTtlMs(this.configService));
+   }
+ 
+-  private toPublicUser(user: UserRecord): PublicUser {
+-    const { passwordHash: _passwordHash, ...publicUser } = user;
+-    return publicUser;
++  private toPublicUser(user: PublicUser & { authVersion: number }): PublicUser {
++    return {
++      id: user.id, email: user.email, username: user.username,
++      displayName: user.displayName, avatarUrl: user.avatarUrl,
++      preferredCurrency: user.preferredCurrency, preferredRateType: user.preferredRateType,
++      createdAt: user.createdAt, updatedAt: user.updatedAt,
++    };
+   }
+ }
+diff --git a/backend/test/auth-session.e2e-spec.ts b/backend/test/auth-session.e2e-spec.ts
+index 204cef1..e653906 100644
+--- a/backend/test/auth-session.e2e-spec.ts
++++ b/backend/test/auth-session.e2e-spec.ts
+@@ -5,21 +5,24 @@ import { JwtModule } from '@nestjs/jwt';
+ import { Test } from '@nestjs/testing';
+ import { PrismaClient } from '@prisma/client';
+ import request from 'supertest';
+-import type { App } from 'supertest/types';
+ import { AuthController } from '../src/modules/auth/auth.controller.js';
+ import { AuthService } from '../src/modules/auth/auth.service.js';
++import { PasswordRecoveryService } from '../src/modules/auth/password-recovery.service.js';
++import { RECOVERY_MAIL_PORT } from '../src/modules/auth/recovery-mail.port.js';
+ import { PrismaService } from '../src/prisma/index.js';
+ 
+ describe('sesión HTTP con cookie', () => {
+   const prisma = new PrismaClient();
+-  let app: INestApplication<App>;
++  let app: INestApplication<Parameters<typeof request>[0]>;
+   const email = 'cookie-security@test.local';
+   beforeAll(async () => {
+     const module = await Test.createTestingModule({
+       imports: [ConfigModule.forRoot({ isGlobal: true }),
+         JwtModule.register({ secret: 'test-session-security-secret', signOptions: { expiresIn: '15m' } })],
+       controllers: [AuthController],
+-      providers: [AuthService, { provide: PrismaService, useValue: prisma }],
++      providers: [AuthService, PasswordRecoveryService,
++        { provide: RECOVERY_MAIL_PORT, useValue: { available: false, caseGeneration: 0, deliver: async () => undefined } },
++        { provide: PrismaService, useValue: prisma }],
+     }).compile();
+     app = module.createNestApplication();
+     app.setGlobalPrefix('api');
+diff --git a/frontend/types/api.ts b/frontend/types/api.ts
+index 675f687..d13df07 100644
+--- a/frontend/types/api.ts
++++ b/frontend/types/api.ts
+@@ -74,7 +74,11 @@ export interface PriceDto {
+   currency: string; // 'USD'
+   source: string; // mercado/listing, p. ej. 'tcgplayer'
+   fetchedAt: string; // ISO 8601
+-  priceArs?: number | null; // presente cuando CURRENCY_ARS_ENABLED está activo
++  evaluatedAt?: string;
++  freshness?: PriceFreshness;
++  upstreamUpdatedAt?: string | null;
++  upstreamFreshness?: PriceFreshness;
++  priceArs?: number | { low: number | null; mid: number | null; high: number | null; market: number | null } | null; // presente cuando CURRENCY_ARS_ENABLED está activo
+   /**
+    * Variación contra la ventana de 30 días (B10).
+    *
+@@ -131,6 +135,17 @@ export interface PriceDto {
+   windowLabel?: string | null;
+ }
+ 
++export type PriceFreshness = 'fresh' | 'stale' | 'unknown';
++export type AggregateFreshness = PriceFreshness | 'mixed';
++export interface CopyCoverageDto { totalCopies: number; pricedCopies: number; unpricedCopies: number; coverageRatio: number | null }
++export interface PriceRecencyDto {
++  freshness: AggregateFreshness; freshCopies: number; staleCopies: number; unknownFreshnessCopies: number;
++  upstreamFreshness: AggregateFreshness; oldestFetchedAt: string | null; newestFetchedAt: string | null;
++}
++export interface ValueAggregateDto {
++  amount: number | null; currency: 'USD'; evaluatedAt: string | null; coverage: CopyCoverageDto; recency: PriceRecencyDto | null;
++}
++
+ /** Variación de precio de una ventana. Espeja `PriceChangeDto` del backend. */
+ export interface PriceChangeDto {
+   usd: number;
+@@ -162,6 +177,10 @@ export interface PriceHistoryPointDto {
+   low: number | null;
+   mid: number | null;
+   high: number | null;
++  evaluatedAt?: string;
++  freshness?: PriceFreshness;
++  upstreamUpdatedAt?: string | null;
++  upstreamFreshness?: PriceFreshness;
+ }
+ 
+ /**
+@@ -260,14 +279,46 @@ export interface AuthResponseDto {
+   user: UserDto;
+ }
+ 
++export interface PasswordRecoveryRequestDto {
++  email: string;
++}
++
++export interface PasswordRecoveryAcceptedDto {
++  message: string;
++}
++
++export interface PasswordRecoveryDto {
++  token: string;
++  newPassword: string;
++}
++
++export interface PasswordRecoverySuccessDto {
++  success: true;
++}
++
++export type RecoveryErrorCode =
++  | 'INPUT_INVALID'
++  | 'SESSION_REQUEST_FORBIDDEN'
++  | 'RECOVERY_RATE_LIMITED'
++  | 'RECOVERY_UNAVAILABLE'
++  | 'RECOVERY_LINK_INVALID';
++
++export interface RecoveryErrorDto {
++  statusCode: 400 | 403 | 429 | 500 | 503;
++  code: RecoveryErrorCode;
++  message: string;
++  fields?: Record<string, string>;
++}
++
+ // ─── Colecciones ───
+ export interface PortfolioDto {
+   totalCards: number;
+   unpricedCards: number;
+   valueUsd: number | null;
+-  history: { date: string; valueUsd: number | null; totalCards: number; unpricedCards: number }[];
++  valuation?: ValueAggregateDto;
++  history: { date: string; valueUsd: number | null; totalCards: number; unpricedCards: number; valuation?: ValueAggregateDto }[];
+   topCards: { cardId: string; name: string; imageSmall: string; setName: string; number: string;
+-    variant: string; quantity: number; marketUsd: number; valueUsd: number }[];
++    variant: string; quantity: number; marketUsd: number; valueUsd: number; reference?: Omit<PriceDto, 'cardId' | 'variant' | 'market' | 'low' | 'mid' | 'high' | 'isStale' | 'priceArs' | 'change' | 'changeUsd' | 'changePercent' | 'windowLabel'> }[];
+ }
+ 
+ /**
+@@ -291,6 +342,7 @@ export interface CollectionDto {
+   uniqueCount: number;
+   duplicateCount: number;
+   totalValueUsd: number;
++  valuation?: ValueAggregateDto;
+   totalValueArs: number | null;
+   /**
+    * Hasta 4 miniaturas para el collage. Viene en `GET /collections`,
+@@ -322,6 +374,7 @@ export interface CollectionStatsDto {
+   setsCount: number;
+   totalValueUsd: number;
+   totalValueArs: number | null;
++  valuation?: ValueAggregateDto;
+ }
+ 
+ /** Carta visual seleccionada y sus precios; modelo de sesión del navegador. */
+@@ -346,8 +399,43 @@ export interface ShareLinkDto {
+ export interface SharedCollectionDto {
+   ownerDisplayName: string;
+   collectionName: string;
+-  items: CollectionItemDto[];
+-  stats: CollectionStatsDto;
++  items: PublicSharedItemDto[];
++  stats: PublicShareStatsDto;
++  truncated: boolean;
++  sharedAt: string;
++}
++
++/** Vista de solo lectura: excluye identidad y estado del grupo de inventario. */
++export interface PublicSharedItemDto {
++  card: CardDto;
++  variant: CardVariant;
++  condition: CardCondition;
++  quantity: number;
++  price: PublicReferencePriceDto | null;
++}
++
++export interface PublicReferencePriceDto {
++  market: number | null;
++  currency: string;
++  provider: string | null;
++  source: string;
++  fetchedAt: string;
++  evaluatedAt?: string;
++  freshness?: PriceFreshness;
++  upstreamUpdatedAt?: string | null;
++  upstreamFreshness?: PriceFreshness;
++}
++
++export interface PublicShareStatsDto {
++  totalGroups: number;
++  totalCards: number;
++  uniqueCards: number;
++  duplicateCards: number;
++  setsCount: number;
++  totalValueUsd: number | null;
++  pricedGroups: number;
++  cardsMissingPrice: number;
++  valuation?: ValueAggregateDto;
+ }
+ 
+ // ─── Progreso por set ───
+@@ -425,3 +513,22 @@ export interface VisualIdentifyResponseDto {
+   inferenceMs: number;
+   totalMs: number;
+ }
++
++/** Estado operacional para probes de infraestructura; no lo consume la UI. */
++export interface ReadinessResponseDto {
++  status: 'ready' | 'not_ready';
++  degraded: boolean;
++  detail: {
++    database: { state: 'ready' | 'unavailable' };
++    scanner: {
++      state:
++        | 'disabled'
++        | 'initializing'
++        | 'ready'
++        | 'unavailable'
++        | 'incompatible';
++      busy: boolean;
++    };
++    redis: { state: 'disabled' | 'ready' | 'degraded' };
++  };
++}

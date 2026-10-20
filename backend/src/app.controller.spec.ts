@@ -1,6 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AppController } from './app.controller.js';
 import { RedisService, type RedisStatus } from './redis/redis.service.js';
+import { ReadinessService } from './readiness.service.js';
+import { VisualIdentifyService } from './modules/cards/visual-identify.service.js';
 
 const SANO: RedisStatus = {
   configured: true,
@@ -12,11 +14,26 @@ const SANO: RedisStatus = {
 describe('AppController', () => {
   let appController: AppController;
 
-  const build = async (redis: RedisStatus): Promise<void> => {
+  const build = async (
+    redis: RedisStatus,
+    database: 'ready' | 'unavailable' = 'ready',
+    scanner: 'disabled' | 'initializing' | 'ready' | 'unavailable' | 'incompatible' = 'disabled',
+  ): Promise<void> => {
     const app: TestingModule = await Test.createTestingModule({
       controllers: [AppController],
-      providers: [{ provide: RedisService, useValue: { status: () => redis } }],
-    }).compile();
+      providers: [
+        { provide: RedisService, useValue: { status: () => redis } },
+        {
+          provide: ReadinessService,
+          useValue: { databaseState: vi.fn().mockResolvedValue(database) },
+        },
+        {
+          provide: VisualIdentifyService,
+          useValue: { readinessStatus: () => ({ state: scanner, busy: false }) },
+        },
+      ],
+    })
+      .compile();
 
     appController = app.get<AppController>(AppController);
   };
@@ -56,6 +73,62 @@ describe('AppController', () => {
       const response = appController.health();
       expect(response.detail.redis.configured).toBe(false);
       expect(response.detail.redis.degradedSince).toBeNull();
+    });
+  });
+
+  describe('ready', () => {
+    it('responde 200 si DB está lista y el scanner está deshabilitado', async () => {
+      await build({ ...SANO, configured: false, available: false }, 'ready', 'disabled');
+      const setStatus = vi.fn();
+      const response = { status: setStatus } as unknown as import('express').Response;
+
+      await expect(appController.ready(response)).resolves.toEqual({
+        status: 'ready',
+        degraded: false,
+        detail: {
+          database: { state: 'ready' },
+          scanner: { state: 'disabled', busy: false },
+          redis: { state: 'disabled' },
+        },
+      });
+      expect(setStatus).toHaveBeenCalledWith(200);
+    });
+
+    it.each([
+      ['DB caída', 'unavailable', 'disabled'],
+      ['scanner inicializando', 'ready', 'initializing'],
+      ['scanner incompatible', 'ready', 'incompatible'],
+    ] as const)('responde 503 con estado seguro cuando %s', async (_label, database, scanner) => {
+      await build(SANO, database, scanner);
+      const setStatus = vi.fn();
+      const response = { status: setStatus } as unknown as import('express').Response;
+
+      const body = await appController.ready(response);
+
+      expect(setStatus).toHaveBeenCalledWith(503);
+      expect(body.status).toBe('not_ready');
+      expect(JSON.stringify(body)).not.toMatch(/path|secret|password|stack|error/i);
+    });
+
+    it('Redis degradado informa degradación sin retirar readiness', async () => {
+      await build(
+        {
+          configured: true,
+          available: false,
+          degradedSince: '2026-10-07T00:00:00.000Z',
+          lastErrorAt: '2026-10-07T00:00:01.000Z',
+        },
+        'ready',
+        'ready',
+      );
+      const setStatus = vi.fn();
+      const response = { status: setStatus } as unknown as import('express').Response;
+
+      const body = await appController.ready(response);
+
+      expect(setStatus).toHaveBeenCalledWith(200);
+      expect(body.degraded).toBe(true);
+      expect(body.detail.redis.state).toBe('degraded');
     });
   });
 });

@@ -1,0 +1,50 @@
+{
+  "atUtc": "2026-10-12T03:32:12.058960+00:00",
+  "status": "accepted locally by root",
+  "step": "INF-03 inventory/30-day retention and integrated suppression restore",
+  "globalStandardCheck": {
+    "command": "pnpm run stop then pnpm run check",
+    "runs": 1,
+    "exitCode": 0,
+    "passed": 1075,
+    "skipped": 0,
+    "counts": [
+      466,
+      6,
+      562,
+      13,
+      15,
+      13
+    ],
+    "lintTypesNestNextTurbopack": true
+  },
+  "focusedCases": {
+    "backend": 16,
+    "inventoryAndRetention": 13,
+    "compiledRestoreCliPreSQL": 3,
+    "overlapWithGlobal": true
+  },
+  "integratedControls": 40,
+  "positiveScreenshots": 2,
+  "timeSimulatedAtExactly30Days": true,
+  "sourceAndCompiledOutputFilesIntactDuringRuntime": 1462,
+  "delegations": 2,
+  "productionBackupOperationAccredited": false,
+  "externalContact": false,
+  "QAResourcesCleaned": true,
+  "userInstanceIntentionallyAlive": true,
+  "state": {
+    "complete": 20,
+    "pending": 18,
+    "newIDsClosedThisStep": 0,
+    "INF03": "local implementation expanded; off-host and real operation pending"
+  },
+  "evidenceDirectory": "INF-03-retencion-evidencia",
+  "rootFinalVerification": {
+    "artifactHashes": 45,
+    "sourceCopiesStillCurrent": 16,
+    "reportLocalLinks": 21,
+    "allVerified": true,
+    "agentsCompleted": true
+  }
+}

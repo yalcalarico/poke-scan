@@ -1,0 +1,43 @@
+[
+  {
+    "id": "runtime-ownership-before-fixture",
+    "pass": true
+  },
+  {
+    "id": "owned-auth-empty-before-factory",
+    "pass": true,
+    "removedOwnCopiedUsers": 5
+  },
+  {
+    "id": "factory-inert-until-listener",
+    "pass": true
+  },
+  {
+    "id": "listener-before-payload",
+    "pass": true
+  },
+  {
+    "id": "ssr-status-headers",
+    "pass": true
+  },
+  {
+    "id": "ssr-robots-native-inert",
+    "pass": true
+  },
+  {
+    "id": "sw-real-activation-purge",
+    "pass": true
+  },
+  {
+    "id": "sw-online-network-not-cached",
+    "pass": true
+  },
+  {
+    "id": "sw-controlled-real",
+    "pass": true
+  },
+  {
+    "id": "sw-offline-never-replay-recovery",
+    "pass": true
+  }
+]

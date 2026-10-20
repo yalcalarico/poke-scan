@@ -1,0 +1,5 @@
+{
+  "path": "/api/auth/login",
+  "status": 401,
+  "message": "Credenciales inv\u00e1lidas"
+}

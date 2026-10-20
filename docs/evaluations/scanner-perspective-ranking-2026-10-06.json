@@ -1,0 +1,161 @@
+{
+  "evaluatedAt": "2026-10-06T16:21:41.555Z",
+  "scope": "Cinco originales existentes preparados a 1280 por sharp y lógica frontend anterior/actual, DINOv2 real en service aislado. No navegador; rank 0=fuera del top-8. Muestra de desarrollo, sin garantía de precisión general.",
+  "rows": [
+    {
+      "cardId": "me55c-106",
+      "before": {
+        "rank": 2,
+        "ids": [
+          "dp6-49",
+          "me55c-106",
+          "ex11-44",
+          "ecard3-146",
+          "pl2-85",
+          "ex15-17",
+          "dp6-34",
+          "ex15-93"
+        ],
+        "rectified": false
+      },
+      "after": {
+        "rank": 1,
+        "ids": [
+          "me55c-106",
+          "ecard3-146",
+          "pl2-85",
+          "dp6-49",
+          "ex11-44",
+          "ex13-50",
+          "neo1-26",
+          "ecard1-9"
+        ],
+        "rectified": true
+      }
+    },
+    {
+      "cardId": "me55-23",
+      "before": {
+        "rank": 4,
+        "ids": [
+          "mcd19-11",
+          "base3-29",
+          "neo4-51",
+          "me55-23",
+          "ex11-44",
+          "neo4-40",
+          "base2-51",
+          "dp7-44"
+        ],
+        "rectified": false
+      },
+      "after": {
+        "rank": 1,
+        "ids": [
+          "me55-23",
+          "base3-29",
+          "ex16-48",
+          "swsh2-61",
+          "mcd19-11",
+          "me55-34",
+          "base3-14",
+          "ex10-77"
+        ],
+        "rectified": true
+      }
+    },
+    {
+      "cardId": "me55-92",
+      "before": {
+        "rank": 0,
+        "ids": [
+          "swshp-SWSH023",
+          "swsh5-96",
+          "pl3-2",
+          "xy5-55",
+          "swsh9-44",
+          "sv8pt5-50",
+          "ex10-54",
+          "neo4-24"
+        ],
+        "rectified": false
+      },
+      "after": {
+        "rank": 1,
+        "ids": [
+          "me55-92",
+          "xy5-55",
+          "swshp-SWSH023",
+          "me2pt5-84",
+          "swsh5-96",
+          "cel25-15",
+          "me1-87",
+          "xy8-21"
+        ],
+        "rectified": true
+      }
+    },
+    {
+      "cardId": "me55-137",
+      "before": {
+        "rank": 1,
+        "ids": [
+          "me55-137",
+          "swsh2-33",
+          "rsv10pt5-103",
+          "ex10-86",
+          "sv8pt5-149",
+          "sm7-84",
+          "pl3-3",
+          "xy4-43"
+        ],
+        "rectified": false
+      },
+      "after": {
+        "rank": 1,
+        "ids": [
+          "me55-137",
+          "swsh2-33",
+          "rsv10pt5-103",
+          "me2pt5-234",
+          "sv8pt5-149",
+          "me1-146",
+          "xy4-43",
+          "pl3-3"
+        ],
+        "rectified": true
+      }
+    },
+    {
+      "cardId": "me55-145",
+      "before": {
+        "rank": 1,
+        "ids": [
+          "me55-145",
+          "swsh4-11",
+          "swsh8-216",
+          "swsh12-114",
+          "swsh3-78",
+          "swshp-SWSH080",
+          "swsh12-103",
+          "swsh45sv-SV084"
+        ],
+        "rectified": false
+      },
+      "after": {
+        "rank": 1,
+        "ids": [
+          "me55-145",
+          "me55-132",
+          "me1-133",
+          "swsh10-176",
+          "sv3-198",
+          "me55-133",
+          "sv8pt5-149",
+          "me2pt5-290"
+        ],
+        "rectified": true
+      }
+    }
+  ]
+}

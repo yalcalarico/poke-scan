@@ -1,0 +1,49 @@
+{
+  "acceptedBy": "/root",
+  "task": "Eliminar topes globales TCGCSV y continuar recorrido con saltos por24h/build",
+  "standardCheck": {
+    "command": "pnpm run check",
+    "passed": 1238,
+    "skipped": 0,
+    "lintTypesAndBuilds": "green;Nest+NextTurbopack"
+  },
+  "focusedPassed": 63,
+  "compiledOwnConsumerControls": 24,
+  "ownResourcesCleaned": true,
+  "devMigrations": 15,
+  "newMigration": false,
+  "manualDevStateChanges": false,
+  "priorInventoryHistoryAndMappingsUnchanged": true,
+  "recentFilesSkipped": 40,
+  "newGroupsPublishedAtCut": 19,
+  "csvQuotedCardsAtCut": 6907,
+  "rawCLIProof": "540 requests;49 groups;sin tope global",
+  "sourceHashes": 9,
+  "artifactHashes": 16,
+  "liveInstance": {
+    "api": {
+      "listenerPid": 38535,
+      "wrapper": {
+        "pid": 38524,
+        "parent": 38523,
+        "role": "local-user-request-api",
+        "port": 3001
+      },
+      "port": 3001
+    },
+    "next": {
+      "listenerPid": 38549,
+      "wrapper": {
+        "pid": 38538,
+        "parent": 38537,
+        "role": "local-user-request-next",
+        "port": 3000
+      },
+      "port": 3000
+    }
+  },
+  "agentsSpawnedThisCorrection": 0,
+  "automation": "PAUSED;2hours;unchanged",
+  "overallIDs": "20/38;unchanged",
+  "acceptedAtUtc": "2026-10-16T00:34:27.974628+00:00"
+}

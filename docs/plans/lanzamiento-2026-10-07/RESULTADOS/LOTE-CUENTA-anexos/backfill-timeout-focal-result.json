@@ -1,0 +1,18 @@
+{
+  "command": [
+    "pnpm",
+    "--dir",
+    "backend",
+    "exec",
+    "vitest",
+    "run",
+    "src/jobs/price-backfill.service.spec.ts",
+    "-t",
+    "respeta el l\u00edmite de la corrida"
+  ],
+  "exitCode": 0,
+  "startedAtUtc": "2026-10-10T14:03:57.861681+00:00",
+  "finishedAtUtc": "2026-10-10T14:03:58.768759+00:00",
+  "logRedactedAtSource": true,
+  "environmentScope": "owned DB for DATABASE_URL and DATABASE_URL_TEST, owned loopback Redis; public API loopback build value; global defaults intact"
+}

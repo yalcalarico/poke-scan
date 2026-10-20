@@ -1,0 +1,62 @@
+{
+  "checks": [
+    {
+      "name": "Standalone HTML file opens with no external dependencies",
+      "passed": true
+    },
+    {
+      "name": "All six steps reflow 390px light",
+      "passed": true
+    },
+    {
+      "name": "All six steps reflow 390px dark",
+      "passed": true
+    },
+    {
+      "name": "All six steps reflow 1280px light",
+      "passed": true
+    },
+    {
+      "name": "All six steps reflow 1280px dark",
+      "passed": true
+    },
+    {
+      "name": "Real collection blocked until policy and consent declared",
+      "passed": true
+    },
+    {
+      "name": "Consented session enables neutral interview, stores input as text",
+      "passed": true
+    },
+    {
+      "name": "Paired timing 30 percent and contradictory success blocked",
+      "passed": true
+    },
+    {
+      "name": "First explanation locked before rubric; edit resets coding",
+      "passed": true
+    },
+    {
+      "name": "Prompted correct answer does not count as spontaneous comprehension",
+      "passed": true
+    },
+    {
+      "name": "D28 exact lower inclusive upper exclusive, maturity after 35d",
+      "passed": true
+    },
+    {
+      "name": "JSON exports blank values and provenance without fabricated zero or success",
+      "passed": true
+    },
+    {
+      "name": "CSV preserves data and neutralizes spreadsheet formula injection",
+      "passed": true
+    },
+    {
+      "name": "JSON roundtrip resumes safe plain text and original response state",
+      "passed": true
+    }
+  ],
+  "errors": [],
+  "failure": "The input did not match the regular expression /No se pudo importar/. Input:\n\n'Registro importado. Revisá versión, consentimiento y acuerdo antes de continuar.'\n"
+}

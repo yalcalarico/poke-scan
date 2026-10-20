@@ -154,6 +154,24 @@ describe('PriceBackfillService', () => {
     expect(result.enqueued).toBe(1);
   });
 
+  it('reintenta los fallos con backoff vencido y reinicia los intentos', async () => {
+    const id = `${TEST_CARD_PREFIX}fallida-vencida`;
+    await makeCard(id);
+    await prismaClient.priceRefreshJob.create({ data: {
+      cardId: id, status: 'failed', attempts: 5,
+      availableAt: new Date(Date.now() - 60_000), completedAt: new Date(Date.now() - 60_000),
+      lastError: 'error temporal',
+    } });
+
+    const result = await service.enqueueStale({ limit: 10, cardIds: [id] });
+    const job = await prismaClient.priceRefreshJob.findUniqueOrThrow({ where: { cardId: id } });
+
+    expect(result.enqueued).toBe(1);
+    expect(job.status).toBe('pending');
+    expect(job.attempts).toBe(0);
+    expect(job.lastError).toBeNull();
+  });
+
   it('una fila de otra fuente no cuenta como precio vigente, y no se re-encola en loop', async () => {
     const id = `${TEST_CARD_PREFIX}legacy`;
     await makeCard(id);
@@ -201,7 +219,7 @@ describe('PriceBackfillService', () => {
   });
 
   it('avanza hacia las más viejas, no siempre las mismas', async () => {
-    // Sin esto, un lote de 300 sobre 20.670 cartas reprocesaría las mismas 300
+    // Sin esto, un lote pequeño sobre el catálogo completo reprocesaría las mismas 300
     // para siempre y el backfill no avanzaría nunca.
     const vieja = `${TEST_CARD_PREFIX}vieja`;
     const nueva = `${TEST_CARD_PREFIX}nueva`;
@@ -230,7 +248,7 @@ describe('PriceBackfillService', () => {
     await prismaClient.priceRefreshJob.createMany({
       data: [
         { id: 'bf-pending', cardId: pendiente, status: 'pending' },
-        { id: 'bf-failed', cardId: fallida, status: 'failed' },
+        { id: 'bf-failed', cardId: fallida, status: 'failed', availableAt: new Date(now.getTime() + DAY_MS) },
         {
           id: 'bf-negative-fresh',
           cardId: negativaReciente,
@@ -241,7 +259,7 @@ describe('PriceBackfillService', () => {
           id: 'bf-negative-old',
           cardId: negativaVieja,
           status: 'completed',
-          completedAt: new Date(now.getTime() - 7 * 60 * 60 * 1000),
+          completedAt: new Date(now.getTime() - 25 * 60 * 60 * 1000),
         },
       ],
     });
@@ -320,16 +338,16 @@ describe('PriceBackfillService', () => {
     // del catálogo copiado y no queremos dejar un job real pendiente en la base
     // de tests. Este camino comprueba que la query no tira y encuentra un
     // candidato global.
-    const enqueued: string[] = [];
+    const enqueued: string[][] = [];
     const unscoped = new PriceBackfillService(
       prismaClient as unknown as PrismaService,
-      { enqueue: (cardId: string) => enqueued.push(cardId) } as unknown as PriceQueueService,
+      { enqueueMany: async (cardIds: string[]) => { enqueued.push(cardIds); return cardIds.length; } } as unknown as PriceQueueService,
       provider,
     );
     const result = await unscoped.enqueueStale({ limit: 1 });
     expect(result.enqueued).toBe(1);
     expect(result.pending).toBe(total);
     expect(enqueued).toHaveLength(1);
-    expect(enqueued[0]).toBeTruthy();
+    expect(enqueued[0]).toHaveLength(1);
   });
 });

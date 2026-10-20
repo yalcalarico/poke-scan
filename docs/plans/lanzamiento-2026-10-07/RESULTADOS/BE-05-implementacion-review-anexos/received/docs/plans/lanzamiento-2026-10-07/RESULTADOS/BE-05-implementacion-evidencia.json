@@ -1,0 +1,72 @@
+{
+  "feature": "BE-05",
+  "status": "implementation_complete_review_pending",
+  "generatedAt": "2026-10-09",
+  "mailDelivery": {
+    "productionAdapter": "unavailable_by_default",
+    "externalAccountRequiredForHarness": false,
+    "rawSecretStoredOutsideMemory": false,
+    "debugEndpoint": false,
+    "smtp": false
+  },
+  "verification": {
+    "prismaValidate": "passed",
+    "prismaGenerate": "passed",
+    "migrationDeploy": "owned_clone_only",
+    "jwtGuardAndAuthService": { "passed": 14, "failed": 0 },
+    "authSessionE2e": { "passed": 2, "failed": 0 },
+    "privateRecoveryHarness": { "passed": 7, "failed": 0 },
+    "identifierCooldownWaitMs": 60100,
+    "deliverySuppressionAfterReset": "passed; authorization re-read PostgreSQL and persisted revokedAt",
+    "oxlintFocused": "passed",
+    "tscFocusedPaths": "no BE-05 diagnostics",
+    "tscFullBackend": "failed in out-of-scope sync-prices, tcgdex mapping, cards, redis, and app e2e files; failures not attributed to BE-05",
+    "globalCheck": "not_run_by_scope"
+  },
+  "ownershipAndCleanup": {
+    "ownedClone": "pokemon_cards_be05_test_20261009a",
+    "databaseRole": "pokemon",
+    "markerMatchedBeforeDrop": 1,
+    "markerRowsBeforeDrop": 1,
+    "ownedCloneUsersAfterTeardown": 0,
+    "ownedCloneRecoveryTokensAfterTeardown": 0,
+    "ownedCloneRateLimitHitsAfterTeardown": 0,
+    "ownedCloneRefreshTokensAfterTeardown": 0,
+    "ownedCloneDropped": true,
+    "markerFileRemoved": true,
+    "sourceTestDatabase": { "usersBefore": 2, "usersAfter": 2, "publicTablesBefore": 18, "publicTablesAfter": 18 },
+    "ownedRedisResources": 0,
+    "listeners3000Or3001AfterCleanup": 0
+  },
+  "baselinePreservation": {
+    "source501AndBaselineCopies": "/private/tmp/be05-baseline-20261009/",
+    "workspaceWasDirtyBeforeImplementation": true,
+    "resetStashStageCommit": false
+  },
+  "sha256": {
+    "backend/src/common/guards/jwt-auth.guard.ts": "da17f2e14468bf5a82bc73ab2058291227392756584834e9fdf5cc2330531510",
+    "backend/src/common/guards/jwt-auth.guard.spec.ts": "5ffddb32f6d1bb650d1d8806965078ee44ccd6132b6304ab3055270c309c5e88",
+    "backend/src/common/types/auth-user.ts": "6d0f622990785513f98a50ccfb92aa6a528fa2f30de3b1d17bf92972b066c3c6",
+    "backend/src/modules/auth/auth.controller.ts": "ab89051e4756e05fd28daa1c09c13b5bab698fdfd25a3e76f3fcab220f944944",
+    "backend/src/modules/auth/auth.module.ts": "e631033085a9a1d5dfb4051ead4dadd3e967db0e50efb54be1498ae5870c9bd5",
+    "backend/src/modules/auth/auth.service.ts": "22c8b7ae65be24d65f59eaf70cf1d72989396fca08a367fb933b8f8cade7e3f0",
+    "backend/src/modules/auth/dto/password-recovery-request.dto.ts": "dd3247c7ae5e30a8f7e1d48b9acf432a523c9d5b946d81086e87be8f0f8e44ac",
+    "backend/src/modules/auth/dto/password-recovery.dto.ts": "65adb89ef273d0167ed9321095c0353133860e89c6f3598f189a5bd7dbac2837",
+    "backend/src/modules/auth/password-recovery.service.ts": "6e982f5f956814f5ea2360ee8ade564d19d31d245ed5cfee171c3d492600fe1a",
+    "backend/src/modules/auth/recovery-errors.ts": "f5d0303392541f66ca41205c63f44d47899b172e7b81d43cc9a010baa7fccc36",
+    "backend/src/modules/auth/recovery-http.filter.ts": "c650c1bf99d9878c26785d86bd146b418ce1a662ad6a9d0fc2cb0c5c14993bdf",
+    "backend/src/modules/auth/recovery-mail.port.ts": "163be69baa8319b47174398568ad807c1f6364a445b39147d8eb457cb7a51cab",
+    "backend/prisma/schema.prisma": "b1408d00b5bd869ac0786788fca1e390ee041470d7730cd4871c7d2b9609602b",
+    "backend/prisma/migrations/20261009190000_add_password_recovery/migration.sql": "e6a8a5f3173fbed2a95781ab485bdf2b2e88370ebc5bd69a14499fa12b88fe9a",
+    "backend/prisma/migrations/20261009200500_add_refresh_auth_version/migration.sql": "bf956cee9f07ab20023a7275233339e2cfd27af55fbc3b12f4da35e4a3f9b425",
+    "backend/test/auth-session.e2e-spec.ts": "4a7d331b76ebe71c015e2f4f19191c3262b1daf95af877b4b2c3768c19c2206b",
+    "backend/test/password-recovery-harness.ts": "22bda8139a808f7989fbfca2bb0268fb58a2d4a0d1201a59d35510bc7613b188",
+    "backend/vitest.config.recovery-harness.ts": "de45e692aa8d82c245c90760de15162bf81b047a40d4a9a5860c4d1ef80cd23f",
+    "frontend/types/api.ts": "25dda206f3c0dbe470cd03d31b14b394254f0fe8c440d4d1f5022ad46c2bc2c5",
+    "backend/docs/api.md": "3d6319c9b2b9ecaf346b8037b4d6456df3da30637133e3cd6f82de73b095ebbc",
+    "backend/docs/database.md": "df8ff9e8b75806af1bc94bb054ec5629cf643375efa108f26e17bfb4d389386d",
+    "backend/docs/testing.md": "52a58bea0bf3bf586491c01d656f00282f3a0194bb97927d1b75bde4215f5b98",
+    "backend/docs/gotchas.md": "f34b8eb93afa086344174d952f57677141665bc1efa388c4a273594965299011",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-implementacion.md": "3aa9d2839a2697c6976530d7d4be7ab50f766a7be042e111adb22e89a4c6a3f8"
+  }
+}

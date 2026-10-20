@@ -1,0 +1,11 @@
+{
+  "passed": 4,
+  "cases": [
+    "Cronómetro real, exportación bloqueada en curso y finalización sin certificar éxito",
+    "Fecha imposible rechazada sin perder el registro actual",
+    "Contraste de placeholder AA claro",
+    "Contraste de placeholder AA oscuro"
+  ],
+  "syntheticDataOnly": true,
+  "noScreenshots": true
+}

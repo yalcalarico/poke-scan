@@ -1,0 +1,16 @@
+{
+  "command": [
+    "pnpm",
+    "--dir",
+    "frontend",
+    "exec",
+    "vitest",
+    "run",
+    "lib/api/api-client.test.ts"
+  ],
+  "exitCode": 0,
+  "startedAtUtc": "2026-10-10T14:42:55.652409+00:00",
+  "finishedAtUtc": "2026-10-10T14:42:56.236843+00:00",
+  "logRedactedAtSource": true,
+  "environmentScope": "owned DB for DATABASE_URL and DATABASE_URL_TEST, owned loopback Redis; public API loopback build value; global defaults intact"
+}

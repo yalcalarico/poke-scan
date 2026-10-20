@@ -3,6 +3,8 @@
 import { cva, type VariantProps } from 'class-variance-authority';
 
 import { useCurrency } from '@/hooks/use-currency';
+import { AnimatedNumber } from '@/components/visual-preview/effects';
+import { useVisualPreview } from '@/components/visual-preview/visual-preview';
 import { cn } from '@/lib/cn';
 
 /**
@@ -80,10 +82,13 @@ export function Money({
   ...props
 }: MoneyProps) {
   const { formatMoney } = useCurrency();
+  const visual = useVisualPreview();
 
   return (
     <span {...props} className={cn(moneyVariants({ tone, size }), className)}>
-      {formatMoney(usd)}
+      {visual && typeof usd === 'number' && Number.isFinite(usd)
+        ? <AnimatedNumber value={usd} format={formatMoney} />
+        : formatMoney(usd)}
     </span>
   );
 }

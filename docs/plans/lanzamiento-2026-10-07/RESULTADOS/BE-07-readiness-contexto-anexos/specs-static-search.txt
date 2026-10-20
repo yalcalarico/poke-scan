@@ -1,0 +1,113 @@
+backend/src/modules/share/share.service.spec.ts:691:    await new Promise((resolve) => setTimeout(resolve, 25));
+backend/src/modules/currency/currency.service.spec.ts:8:const REDIS_URL = process.env.REDIS_URL ?? 'redis://localhost:6379';
+backend/src/modules/currency/currency.service.spec.ts:50:  const originalFlag = process.env[FEATURE_FLAG_ENV];
+backend/src/modules/currency/currency.service.spec.ts:51:  const originalFetch = globalThis.fetch;
+backend/src/modules/currency/currency.service.spec.ts:72:      await new Promise((resolve) => setTimeout(resolve, 100));
+backend/src/modules/currency/currency.service.spec.ts:91:    globalThis.fetch = originalFetch;
+backend/src/modules/currency/currency.service.spec.ts:92:    process.env[FEATURE_FLAG_ENV] = originalFlag;
+backend/src/modules/currency/currency.service.spec.ts:100:    process.env[FEATURE_FLAG_ENV] = 'true';
+backend/src/modules/currency/currency.service.spec.ts:102:    globalThis.fetch = vi.fn(async () => dolarApiResponse()) as unknown as typeof fetch;
+backend/src/modules/currency/currency.service.spec.ts:106:    globalThis.fetch = originalFetch;
+backend/src/modules/currency/currency.service.spec.ts:111:      process.env[FEATURE_FLAG_ENV] = 'false';
+backend/src/modules/currency/currency.service.spec.ts:115:      expect(globalThis.fetch).not.toHaveBeenCalled();
+backend/src/modules/currency/currency.service.spec.ts:119:      delete process.env[FEATURE_FLAG_ENV];
+backend/src/modules/currency/currency.service.spec.ts:124:      process.env[FEATURE_FLAG_ENV] = 'false';
+backend/src/modules/currency/currency.service.spec.ts:132:      process.env[FEATURE_FLAG_ENV] = 'false';
+backend/src/modules/currency/currency.service.spec.ts:151:      expect(globalThis.fetch).not.toHaveBeenCalled();
+backend/src/modules/currency/currency.service.spec.ts:194:      globalThis.fetch = failingFetch();
+backend/src/modules/currency/currency.service.spec.ts:202:      globalThis.fetch = vi.fn(async () =>
+backend/src/modules/currency/currency.service.spec.ts:212:      globalThis.fetch = vi.fn(async () =>
+backend/src/modules/currency/currency.service.spec.ts:236:      globalThis.fetch = failingFetch();
+backend/src/modules/currency/currency.service.spec.ts:245:      globalThis.fetch = failingFetch();
+backend/src/modules/currency/currency.service.spec.ts:257:      globalThis.fetch = vi.fn(async () =>
+backend/src/modules/currency/currency.service.spec.ts:267:      globalThis.fetch = vi.fn(async () => dolarApiResponse({ venta: 'mucho' })) as unknown as typeof fetch;
+backend/src/modules/currency/currency.service.spec.ts:275:      globalThis.fetch = vi.fn(async () => dolarApiResponse({ venta: 0 })) as unknown as typeof fetch;
+backend/src/modules/currency/currency.service.spec.ts:283:      globalThis.fetch = vi.fn(async () =>
+backend/src/modules/currency/currency.service.spec.ts:305:      expect(globalThis.fetch).toHaveBeenCalledTimes(1);
+backend/src/modules/currency/currency.service.spec.ts:326:      expect(globalThis.fetch).not.toHaveBeenCalled();
+backend/src/modules/currency/currency.service.spec.ts:339:      globalThis.fetch = bothFetch();
+backend/src/modules/currency/currency.service.spec.ts:352:      globalThis.fetch = bothFetch();
+backend/src/modules/currency/currency.service.spec.ts:361:      globalThis.fetch = vi.fn(async (url: string) => {
+backend/src/modules/currency/currency.service.spec.ts:375:      globalThis.fetch = vi.fn(async (url: string) => {
+backend/src/modules/currency/currency.service.spec.ts:390:      globalThis.fetch = vi.fn(async (url: string) => {
+backend/src/modules/currency/currency.service.spec.ts:404:      globalThis.fetch = vi.fn(async (url: string) => {
+backend/src/modules/currency/currency.service.spec.ts:418:      globalThis.fetch = failingFetch();
+backend/src/readiness.service.spec.ts:1:import { createServer, type Socket } from 'node:net';
+backend/src/readiness.service.spec.ts:158:    const server = createServer((socket) => {
+backend/src/readiness.service.spec.ts:163:      server.listen(0, '127.0.0.1', resolve),
+backend/src/readiness.service.spec.ts:169:    const previous = process.env.DATABASE_URL;
+backend/src/readiness.service.spec.ts:170:    process.env.DATABASE_URL = `postgresql://probe:probe@127.0.0.1:${address.port}/pokemon_cards_test`;
+backend/src/readiness.service.spec.ts:183:      await new Promise<void>((resolve) => server.close(() => resolve()));
+backend/src/readiness.service.spec.ts:184:      if (previous === undefined) delete process.env.DATABASE_URL;
+backend/src/readiness.service.spec.ts:185:      else process.env.DATABASE_URL = previous;
+backend/src/modules/auth/session-security.spec.ts:27:    vi.stubEnv('JWT_SECRET', undefined);
+backend/src/modules/auth/session-security.spec.ts:44:    expect(() => assertSessionRequest(request(undefined, ''), cfg)).toThrow(ForbiddenException);
+backend/src/modules/auth/session-security.spec.ts:46:      expect(() => assertSessionRequest(request(origin), cfg)).toThrow(ForbiddenException);
+backend/src/modules/auth/session-security.spec.ts:48:    expect(() => assertSessionRequest(request('https://app.example.test'), cfg)).not.toThrow();
+backend/src/modules/auth/session-security.spec.ts:49:    expect(() => assertSessionRequest(request(), cfg)).not.toThrow();
+backend/src/modules/auth/session-security.spec.ts:54:    expect(readRefreshCookie(request(undefined, '1', `other=1; pcs.refreshToken=${token}`))).toBe(token);
+backend/src/modules/auth/session-security.spec.ts:56:      expect(() => readRefreshCookie(request(undefined, '1', cookie))).toThrow(UnauthorizedException);
+backend/src/modules/auth/session-security.spec.ts:65:    expect(() => assertSessionRequest(request('https://192.168.1.45:3100'), cfg)).not.toThrow();
+backend/src/modules/auth/session-security.spec.ts:67:      expect(() => assertSessionRequest(request(origin), cfg)).toThrow(ForbiddenException);
+backend/src/modules/auth/session-security.spec.ts:69:    expect(() => assertSessionRequest(request('https://192.168.1.45:3100', ''), cfg)).toThrow(ForbiddenException);
+backend/src/modules/providers/tcgdex.provider.spec.ts:15:    vi.stubGlobal('fetch', fetchMock);
+backend/src/redis/redis.recovery.spec.ts:1:import { createServer, type Server, type Socket } from 'node:net';
+backend/src/redis/redis.recovery.spec.ts:12:vi.mock('ioredis', async () => {
+backend/src/redis/redis.recovery.spec.ts:98:    warn: vi.spyOn(logger, 'warn').mockImplementation(() => {}),
+backend/src/redis/redis.recovery.spec.ts:99:    log: vi.spyOn(logger, 'log').mockImplementation(() => {}),
+backend/src/redis/redis.recovery.spec.ts:312:    await new Promise((resolve) => setTimeout(resolve, 10));
+backend/src/redis/redis.recovery.spec.ts:328:    server = createServer((socket) => {
+backend/src/redis/redis.recovery.spec.ts:359:      server.listen(0, '127.0.0.1', resolve);
+backend/src/redis/redis.recovery.spec.ts:373:    if (server.listening)
+backend/src/redis/redis.recovery.spec.ts:374:      await new Promise<void>((resolve) => server.close(() => resolve()));
+backend/src/redis/redis.recovery.spec.ts:385:    let timeout: ReturnType<typeof setTimeout> | undefined;
+backend/src/redis/redis.recovery.spec.ts:390:          timeout = setTimeout(
+backend/src/redis/redis.recovery.spec.ts:471:      await new Promise((resolve) => setTimeout(resolve, 600));
+backend/src/readiness.http.spec.ts:55:    const first = await request(app.getHttpServer())
+backend/src/readiness.http.spec.ts:69:    const second = await request(app.getHttpServer())
+backend/src/readiness.http.spec.ts:78:    const response = await request(app.getHttpServer())
+backend/src/readiness.http.spec.ts:98:    const response = await request(app.getHttpServer())
+backend/src/readiness.http.spec.ts:119:    const response = await request(app.getHttpServer())
+backend/src/jobs/sync-prices.service.spec.ts:408:    await new Promise((resolve) => setTimeout(resolve, 20));
+backend/src/jobs/sync-prices.service.spec.ts:521:        await new Promise((resolve) => setTimeout(resolve, 150));
+backend/src/redis/redis.service.spec.ts:5:const REDIS_URL = process.env.REDIS_URL ?? 'redis://localhost:6379';
+backend/src/redis/redis.service.spec.ts:57:      await new Promise((resolve) => setTimeout(resolve, 100));
+backend/src/redis/redis.service.spec.ts:133:    await new Promise((resolve) => setTimeout(resolve, 1600));
+backend/src/redis/redis.service.spec.ts:159:  let warn: ReturnType<typeof vi.spyOn>;
+backend/src/redis/redis.service.spec.ts:185:      await new Promise((resolve) => setTimeout(resolve, 100));
+backend/src/redis/redis.service.spec.ts:209:    // RedisService también consulta process.env: aislar este caso del Redis del runner.
+backend/src/redis/redis.service.spec.ts:210:    const inheritedUrl = process.env.REDIS_URL;
+backend/src/redis/redis.service.spec.ts:212:    delete process.env.REDIS_URL;
+backend/src/redis/redis.service.spec.ts:223:        if (inheritedUrl === undefined) delete process.env.REDIS_URL;
+backend/src/redis/redis.service.spec.ts:224:        else process.env.REDIS_URL = inheritedUrl;
+backend/src/redis/redis.service.spec.ts:250:    warn = vi.spyOn(logger, 'warn');
+backend/src/redis/redis.service.spec.ts:274:    warn = vi.spyOn(logger, 'warn');
+backend/src/modules/cards/visual-identify.service.spec.ts:6:  const previous = process.env.SCANNER_VISUAL_ENABLED;
+backend/src/modules/cards/visual-identify.service.spec.ts:8:    if (previous === undefined) delete process.env.SCANNER_VISUAL_ENABLED;
+backend/src/modules/cards/visual-identify.service.spec.ts:9:    else process.env.SCANNER_VISUAL_ENABLED = previous;
+backend/src/modules/cards/visual-identify.service.spec.ts:12:    delete process.env.SCANNER_VISUAL_ENABLED;
+backend/src/modules/cards/visual-identify.service.spec.ts:34:    process.env.SCANNER_VISUAL_ENABLED = '1';
+backend/src/modules/cards/visual-identify.service.spec.ts:47:  const previous = process.env.SCANNER_VISUAL_ENABLED;
+backend/src/modules/cards/visual-identify.service.spec.ts:49:    if (previous === undefined) delete process.env.SCANNER_VISUAL_ENABLED;
+backend/src/modules/cards/visual-identify.service.spec.ts:50:    else process.env.SCANNER_VISUAL_ENABLED = previous;
+backend/src/modules/cards/visual-identify.service.spec.ts:53:    process.env.SCANNER_VISUAL_ENABLED = '1';
+backend/src/modules/cards/visual-identify.service.spec.ts:68:    process.env.SCANNER_VISUAL_ENABLED = '1';
+backend/src/modules/cards/visual-identify.lifecycle.spec.ts:6:vi.mock('node:child_process', () => ({ fork: vi.fn() }));
+backend/src/modules/cards/visual-identify.lifecycle.spec.ts:18:vi.mock('onnxruntime-node', () => ({
+backend/src/modules/cards/visual-identify.lifecycle.spec.ts:21:vi.mock('sharp', () => ({ default: warmupDependencies.sharp }));
+backend/src/modules/cards/visual-identify.lifecycle.spec.ts:22:vi.mock('../../../scripts/scanner-visual-engine.mjs', () => ({
+backend/src/modules/cards/visual-identify.lifecycle.spec.ts:25:vi.mock('../../../scripts/scanner-visual-index.mjs', () => ({
+backend/src/modules/cards/visual-identify.lifecycle.spec.ts:53:    Object.defineProperty(process, 'send', { configurable: true, value: sent });
+backend/src/modules/cards/visual-identify.lifecycle.spec.ts:54:    const registration = vi.spyOn(process, 'on');
+backend/src/modules/cards/visual-identify.lifecycle.spec.ts:69:      if (handler) process.off('message', handler);
+backend/src/modules/cards/visual-identify.lifecycle.spec.ts:70:      if (previousSend) Object.defineProperty(process, 'send', previousSend);
+backend/src/modules/cards/visual-identify.lifecycle.spec.ts:71:      else delete process.send;
+backend/src/modules/cards/visual-identify.lifecycle.spec.ts:139:  const previous = process.env.SCANNER_VISUAL_ENABLED;
+backend/src/modules/cards/visual-identify.lifecycle.spec.ts:143:    process.env.SCANNER_VISUAL_ENABLED = '1';
+backend/src/modules/cards/visual-identify.lifecycle.spec.ts:145:    vi.mocked(fork).mockImplementation(() => {
+backend/src/modules/cards/visual-identify.lifecycle.spec.ts:159:    if (previous === undefined) delete process.env.SCANNER_VISUAL_ENABLED;
+backend/src/modules/cards/visual-identify.lifecycle.spec.ts:160:    else process.env.SCANNER_VISUAL_ENABLED = previous;
+backend/src/modules/cards/visual-identify.lifecycle.spec.ts:296:    process.env.SCANNER_VISUAL_ENABLED = 'false';
+backend/src/modules/cards/visual-identify.lifecycle.spec.ts:388:      vi.mocked(fork).mockImplementationOnce(() => {
+backend/src/modules/cards/visual-identify.lifecycle.spec.ts:427:    vi.mocked(fork).mockImplementationOnce(() => {
+backend/src/modules/cards/visual-identify.lifecycle.spec.ts:472:    process.env.SCANNER_VISUAL_ENABLED = '0';

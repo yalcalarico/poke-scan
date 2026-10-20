@@ -1,0 +1,30 @@
+{
+  "standardSourceUnchanged": true,
+  "standardCounts": {
+    "migrations": 11,
+    "users": 2,
+    "collections": 3,
+    "items": 2,
+    "shares": 1,
+    "cards": 20670,
+    "gin": 5,
+    "priced": 7
+  },
+  "sharedRedisHealthy": true,
+  "sharedRedisFullID": "f2d2ca0ad580fe8ca3e94a59b4b6d5a53d761036ba1d14e45b8543a978bbb15f",
+  "ownDatabaseAbsent": true,
+  "ownRedisRemovedByFullId": true,
+  "SQLConnectionsBeforeDrop": 0,
+  "markersAndFullIDsVerified": true,
+  "sharedCounts": {
+    "migrations": 13,
+    "users": 22,
+    "collections": 22,
+    "items": 69,
+    "shares": 13,
+    "cards": 20670,
+    "gin": 5
+  },
+  "sharedInventoryUnchanged": true,
+  "finishedAtUtc": "2026-10-11T16:16:47.899172+00:00"
+}

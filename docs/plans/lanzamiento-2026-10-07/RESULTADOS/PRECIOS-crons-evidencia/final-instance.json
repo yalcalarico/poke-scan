@@ -1,0 +1,257 @@
+{
+  "inventoryAndPriorPricesMappingsUnchanged": true,
+  "logicalTablesVerified": [
+    "users",
+    "collections",
+    "collection_items",
+    "share_links",
+    "cards",
+    "card_sets",
+    "card_prices",
+    "card_external_ids",
+    "card_set_external_ids"
+  ],
+  "ginUnchanged": true,
+  "threePriorGroupBudgetsUnchanged": true,
+  "controls": [
+    {
+      "provider": "tcgcsv",
+      "requestedGeneration": 1,
+      "handledGeneration": 1,
+      "lastHandledAt": "2026-10-14T00:37:30.629",
+      "heartbeatAt": "2026-10-14T00:40:50.004",
+      "schedulerEnabled": true,
+      "workerConfiguredEnabled": true,
+      "lockedBy": null,
+      "leaseUntil": null,
+      "nextCycleAt": "2026-10-14T00:38:30.629",
+      "lastError": null
+    },
+    {
+      "provider": "tcgdex",
+      "requestedGeneration": 2,
+      "handledGeneration": 2,
+      "lastHandledAt": "2026-10-14T00:38:25.157",
+      "heartbeatAt": "2026-10-14T00:40:50.001",
+      "schedulerEnabled": true,
+      "workerConfiguredEnabled": true,
+      "lockedBy": null,
+      "leaseUntil": null,
+      "nextCycleAt": "2026-10-14T00:39:25.157",
+      "lastError": null
+    }
+  ],
+  "coverage": [
+    {
+      "provider": "tcgcsv",
+      "cards": 2034,
+      "observations": 3199,
+      "latest_received": "2026-10-14T00:38:55.894",
+      "latest_feed": "2026-10-13T20:06:44"
+    },
+    {
+      "provider": "tcgdex",
+      "cards": 16940,
+      "observations": 29118,
+      "latest_received": "2026-10-14T00:37:43.294",
+      "latest_feed": null
+    }
+  ],
+  "newRealIngestionRuns": [
+    {
+      "groupId": 604,
+      "mappedCards": 94,
+      "unmappedCards": 8,
+      "observations": 94,
+      "publishedAt": "2026-10-14T00:37:20.902",
+      "feedPublishedAt": "2026-10-13T20:06:44"
+    },
+    {
+      "groupId": 605,
+      "mappedCards": 123,
+      "unmappedCards": 7,
+      "observations": 123,
+      "publishedAt": "2026-10-14T00:37:25.91",
+      "feedPublishedAt": "2026-10-13T20:06:44"
+    },
+    {
+      "groupId": 630,
+      "mappedCards": 32,
+      "unmappedCards": 30,
+      "observations": 32,
+      "publishedAt": "2026-10-14T00:37:30.905",
+      "feedPublishedAt": "2026-10-13T20:06:44"
+    },
+    {
+      "groupId": 635,
+      "mappedCards": 30,
+      "unmappedCards": 34,
+      "observations": 30,
+      "publishedAt": "2026-10-14T00:37:36.092",
+      "feedPublishedAt": "2026-10-13T20:06:44"
+    },
+    {
+      "groupId": 648,
+      "mappedCards": 18,
+      "unmappedCards": 0,
+      "observations": 18,
+      "publishedAt": "2026-10-14T00:37:40.761",
+      "feedPublishedAt": "2026-10-13T20:06:44"
+    },
+    {
+      "groupId": 1367,
+      "mappedCards": 105,
+      "unmappedCards": 15,
+      "observations": 198,
+      "publishedAt": "2026-10-14T00:37:45.877",
+      "feedPublishedAt": "2026-10-13T20:06:44"
+    },
+    {
+      "groupId": 1368,
+      "mappedCards": 123,
+      "unmappedCards": 1,
+      "observations": 242,
+      "publishedAt": "2026-10-14T00:37:50.949",
+      "feedPublishedAt": "2026-10-13T20:06:44"
+    },
+    {
+      "groupId": 1369,
+      "mappedCards": 84,
+      "unmappedCards": 22,
+      "observations": 160,
+      "publishedAt": "2026-10-14T00:37:55.895",
+      "feedPublishedAt": "2026-10-13T20:06:44"
+    },
+    {
+      "groupId": 1370,
+      "mappedCards": 70,
+      "unmappedCards": 35,
+      "observations": 138,
+      "publishedAt": "2026-10-14T00:38:01.051",
+      "feedPublishedAt": "2026-10-13T20:06:44"
+    },
+    {
+      "groupId": 1372,
+      "mappedCards": 91,
+      "unmappedCards": 91,
+      "observations": 161,
+      "publishedAt": "2026-10-14T00:38:05.658",
+      "feedPublishedAt": "2026-10-13T20:06:44"
+    },
+    {
+      "groupId": 1373,
+      "mappedCards": 46,
+      "unmappedCards": 37,
+      "observations": 47,
+      "publishedAt": "2026-10-14T00:38:11.098",
+      "feedPublishedAt": "2026-10-13T20:06:44"
+    },
+    {
+      "groupId": 1374,
+      "mappedCards": 106,
+      "unmappedCards": 4,
+      "observations": 202,
+      "publishedAt": "2026-10-14T00:38:15.649",
+      "feedPublishedAt": "2026-10-13T20:06:44"
+    },
+    {
+      "groupId": 1375,
+      "mappedCards": 81,
+      "unmappedCards": 84,
+      "observations": 156,
+      "publishedAt": "2026-10-14T00:38:20.932",
+      "feedPublishedAt": "2026-10-13T20:06:44"
+    },
+    {
+      "groupId": 1376,
+      "mappedCards": 100,
+      "unmappedCards": 0,
+      "observations": 187,
+      "publishedAt": "2026-10-14T00:38:25.921",
+      "feedPublishedAt": "2026-10-13T20:06:44"
+    },
+    {
+      "groupId": 1377,
+      "mappedCards": 97,
+      "unmappedCards": 0,
+      "observations": 184,
+      "publishedAt": "2026-10-14T00:38:31.128",
+      "feedPublishedAt": "2026-10-13T20:06:44"
+    },
+    {
+      "groupId": 1378,
+      "mappedCards": 89,
+      "unmappedCards": 4,
+      "observations": 171,
+      "publishedAt": "2026-10-14T00:38:35.639",
+      "feedPublishedAt": "2026-10-13T20:06:44"
+    },
+    {
+      "groupId": 1380,
+      "mappedCards": 131,
+      "unmappedCards": 1,
+      "observations": 260,
+      "publishedAt": "2026-10-14T00:38:45.919",
+      "feedPublishedAt": "2026-10-13T20:06:44"
+    },
+    {
+      "groupId": 1382,
+      "mappedCards": 63,
+      "unmappedCards": 59,
+      "observations": 122,
+      "publishedAt": "2026-10-14T00:38:50.946",
+      "feedPublishedAt": "2026-10-13T20:06:44"
+    },
+    {
+      "groupId": 1383,
+      "mappedCards": 103,
+      "unmappedCards": 5,
+      "observations": 192,
+      "publishedAt": "2026-10-14T00:38:55.894",
+      "feedPublishedAt": "2026-10-13T20:06:44"
+    }
+  ],
+  "discovery": {
+    "mappedSets": 143,
+    "missingSets": 33,
+    "groupsBuild": "2026-10-13T20:06:44",
+    "requestCount": 84,
+    "downloadCount": 20,
+    "nextCheckAt": "2026-10-14T00:47:30.025"
+  },
+  "realPublicConsumer": {
+    "cardId": "ex16-92",
+    "variant": "holofoil",
+    "market": 229.67,
+    "priceAndGraphObserved": true,
+    "noStore": true
+  },
+  "instance": {
+    "api": {
+      "listenerPid": 25649,
+      "wrapper": {
+        "pid": 25638,
+        "parent": 25637,
+        "role": "local-user-request-api",
+        "port": 3001
+      },
+      "port": 3001
+    },
+    "next": {
+      "listenerPid": 25662,
+      "wrapper": {
+        "pid": 25651,
+        "parent": 25650,
+        "role": "local-user-request-next",
+        "port": 3000
+      },
+      "port": 3000
+    }
+  },
+  "QAResources": [],
+  "intentionallyLive": [
+    "api",
+    "next"
+  ],
+  "finishedAtUtc": "2026-10-14T00:40:51.829608+00:00"
+}

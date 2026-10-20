@@ -1,0 +1,99 @@
+{
+  "fecha": "2026-10-09",
+  "document": "UX-04-cuenta.md",
+  "links": [
+    {
+      "target": "BE-05-contrato-borrador.md",
+      "exists": true,
+      "anchor_ok": true
+    },
+    {
+      "target": "BE-05-borrador-review.md",
+      "exists": true,
+      "anchor_ok": true
+    },
+    {
+      "target": "BE-05-borrador-aceptacion-root.json",
+      "exists": true,
+      "anchor_ok": true
+    },
+    {
+      "target": "../10-decisiones-y-contratos.md#dec-05--pro-y-piloto-pago",
+      "exists": true,
+      "anchor_ok": true
+    },
+    {
+      "target": "../../../../frontend/docs/design-system.md",
+      "exists": true,
+      "anchor_ok": true
+    },
+    {
+      "target": "../../../../frontend/docs/build-guide.md",
+      "exists": true,
+      "anchor_ok": true
+    },
+    {
+      "target": "../../../../frontend/docs/components.md",
+      "exists": true,
+      "anchor_ok": true
+    },
+    {
+      "target": "../../../../frontend/docs/routes.md",
+      "exists": true,
+      "anchor_ok": true
+    },
+    {
+      "target": "../../../../frontend/docs/gotchas.md",
+      "exists": true,
+      "anchor_ok": true
+    },
+    {
+      "target": "../../../../frontend/components/auth/auth-shell.tsx",
+      "exists": true,
+      "anchor_ok": true
+    },
+    {
+      "target": "../../../../frontend/components/auth/login-form.tsx",
+      "exists": true,
+      "anchor_ok": true
+    },
+    {
+      "target": "../../../../frontend/components/ui/field.tsx",
+      "exists": true,
+      "anchor_ok": true
+    },
+    {
+      "target": "../../../../frontend/components/ui/password-input.tsx",
+      "exists": true,
+      "anchor_ok": true
+    },
+    {
+      "target": "../../../../frontend/components/ui/alert.tsx",
+      "exists": true,
+      "anchor_ok": true
+    },
+    {
+      "target": "../../../../frontend/components/ui/button.tsx",
+      "exists": true,
+      "anchor_ok": true
+    },
+    {
+      "target": "../../../../frontend/hooks/use-auth.tsx",
+      "exists": true,
+      "anchor_ok": true
+    },
+    {
+      "target": "../../../../frontend/lib/api/token-storage.ts",
+      "exists": true,
+      "anchor_ok": true
+    },
+    {
+      "target": "evidencia-ux04-cuenta/",
+      "exists": true,
+      "anchor_ok": true
+    }
+  ],
+  "all_local_targets_exist": true,
+  "all_checked_anchors_resolve": true,
+  "limits": "Comprobación estática local; no semántica, browser ni runtime."
+}

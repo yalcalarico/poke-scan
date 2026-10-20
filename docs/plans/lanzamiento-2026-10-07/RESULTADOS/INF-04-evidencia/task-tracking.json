@@ -1,0 +1,12 @@
+{
+  "task": "INF-04 local",
+  "delegatedAssignments": 2,
+  "implementationOwner": "/root/inf04_monitor_luna",
+  "correctionCycles": 2,
+  "capacityEscalations": 0,
+  "centralAndRuntimeOwner": "/root",
+  "fullIDCloses": false,
+  "remainingAcceptance": "external uptime,host prolonged load and real costs/operator",
+  "nextStepRequiresHumanReply": true,
+  "finalCorrectionOwner": "/root"
+}

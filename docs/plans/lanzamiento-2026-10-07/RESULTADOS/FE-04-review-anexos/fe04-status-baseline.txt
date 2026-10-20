@@ -1,0 +1,199 @@
+ M backend/.dockerignore
+ M backend/Dockerfile
+ M backend/docs/api.md
+ M backend/docs/database.md
+ M backend/docs/gotchas.md
+ M backend/docs/pricing.md
+ M backend/docs/testing.md
+ M backend/package.json
+ M backend/prisma/schema.prisma
+ M backend/scripts/scanner-evaluate-current.mjs
+ M backend/scripts/scanner-visual-spike.mjs
+ M backend/scripts/scanner-visual-worker.mjs
+ M backend/src/app.controller.spec.ts
+ M backend/src/app.controller.ts
+ M backend/src/app.module.ts
+ M backend/src/common/guards/jwt-auth.guard.ts
+ M backend/src/common/sql/latest-price.ts
+ M backend/src/common/types/auth-user.ts
+ M backend/src/jobs/sync-prices.service.ts
+ M backend/src/modules/auth/auth.controller.ts
+ M backend/src/modules/auth/auth.module.ts
+ M backend/src/modules/auth/auth.service.spec.ts
+ M backend/src/modules/auth/auth.service.ts
+ M backend/src/modules/cards/cards.module.ts
+ M backend/src/modules/cards/cards.service.spec.ts
+ M backend/src/modules/cards/cards.service.ts
+ M backend/src/modules/cards/visual-identify.service.spec.ts
+ M backend/src/modules/cards/visual-identify.service.ts
+ M backend/src/modules/collections/collections.controller.ts
+ M backend/src/modules/collections/collections.service.spec.ts
+ M backend/src/modules/collections/collections.service.ts
+ M backend/src/modules/collections/portfolio.service.ts
+ M backend/src/modules/share/public-share.controller.ts
+ M backend/src/modules/share/share.service.spec.ts
+ M backend/src/modules/share/share.service.ts
+ M backend/src/redis/redis.service.spec.ts
+ M backend/src/redis/redis.service.ts
+ M backend/test/auth-session.e2e-spec.ts
+ M docs/evaluations/scanner-validation-protocol.md
+ M docs/evaluations/visual-indexer.md
+ M docs/plans/scanner-improvements.md
+ M frontend/.dockerignore
+ M frontend/Dockerfile
+ M frontend/app/(app)/escanear/page.tsx
+ M frontend/app/share/[slug]/page.tsx
+ M frontend/components/collections/__tests__/collection-card.test.tsx
+ M frontend/components/collections/__tests__/portfolio-overview.test.tsx
+ M frontend/components/collections/collection-card.tsx
+ M frontend/components/collections/collection-detail.tsx
+ M frontend/components/collections/collection-item-details.tsx
+ M frontend/components/collections/collection-summary.tsx
+ M frontend/components/collections/item-sheet.tsx
+ M frontend/components/collections/portfolio-overview.tsx
+ M frontend/components/layout/plain-shell.tsx
+ M frontend/components/prices/__tests__/card-price-section.test.tsx
+ M frontend/components/prices/__tests__/price-history.test.tsx
+ M frontend/components/prices/card-price-section.tsx
+ M frontend/components/prices/index.ts
+ M frontend/components/prices/price-delta.tsx
+ M frontend/components/prices/price-hero.tsx
+ M frontend/components/prices/price-history.tsx
+ M frontend/components/prices/price-table.tsx
+ M frontend/components/scanner/__tests__/organize-sheet.test.tsx
+ M frontend/components/scanner/__tests__/scan-page-gallery.test.tsx
+ M frontend/components/scanner/__tests__/session-storage.test.ts
+ M frontend/components/scanner/organize-sheet.tsx
+ M frontend/components/scanner/scan-match-sheet.tsx
+ M frontend/components/scanner/session-storage.ts
+ M frontend/components/scanner/types.ts
+ M frontend/components/share/public-card-grid.tsx
+ M frontend/components/share/public-collection-view.tsx
+ M frontend/components/share/share-link-card.tsx
+ M frontend/components/share/share-link-creator.tsx
+ M frontend/components/share/share-link-status.ts
+ M frontend/components/share/share-links-section.tsx
+ M frontend/components/ui/__tests__/sheet.test.tsx
+ M frontend/components/ui/sheet.tsx
+ M frontend/docs/api-client.md
+ M frontend/docs/components.md
+ M frontend/docs/portfolio.md
+ M frontend/docs/scanner.md
+ M frontend/lib/__tests__/service-worker-routing.test.ts
+ M frontend/lib/api/api-client.test.ts
+ M frontend/lib/api/api-client.ts
+ M frontend/lib/api/cards.ts
+ M frontend/lib/api/collections.ts
+ M frontend/lib/api/schema.ts
+ M frontend/lib/api/share.ts
+ M frontend/lib/scanner/__tests__/capture-review.test.ts
+ M frontend/lib/scanner/capture-review.ts
+ M frontend/lib/scanner/preprocess.ts
+ M frontend/lib/scanner/visual-photo.ts
+ M frontend/next.config.ts
+ M frontend/public/sw.js
+ M frontend/types/api.ts
+?? .srl
+?? :memory:.ses
+?? backend/:memory:.ses
+?? backend/prisma/migrations/20261007090000_collection_item_add_idempotency/
+?? backend/prisma/migrations/20261009190000_add_password_recovery/
+?? backend/prisma/migrations/20261009200500_add_refresh_auth_version/
+?? backend/scripts/catalog-price-order-smoke.mjs
+?? backend/scripts/scanner-evaluation-metrics.mjs
+?? backend/scripts/scanner-evaluation-metrics.test.mjs
+?? backend/scripts/scanner-http-cancel-smoke.mjs
+?? backend/scripts/scanner-index-failures-smoke.mjs
+?? backend/scripts/scanner-index-resume-smoke.mjs
+?? backend/scripts/scanner-load-smoke.mjs
+?? backend/scripts/scanner-reference-cache.mjs
+?? backend/scripts/scanner-reference-cache.test.mjs
+?? backend/scripts/scanner-soak-smoke.mjs
+?? backend/scripts/scanner-stability-smoke.mjs
+?? backend/src/common/guards/jwt-auth.guard.spec.ts
+?? backend/src/common/price-metadata.spec.ts
+?? backend/src/common/price-metadata.ts
+?? backend/src/jobs/sync-prices.cache.spec.ts
+?? backend/src/modules/auth/dto/password-recovery-request.dto.ts
+?? backend/src/modules/auth/dto/password-recovery.dto.ts
+?? backend/src/modules/auth/password-recovery.service.spec.ts
+?? backend/src/modules/auth/password-recovery.service.ts
+?? backend/src/modules/auth/recovery-errors.ts
+?? backend/src/modules/auth/recovery-http.filter.ts
+?? backend/src/modules/auth/recovery-json.guard.ts
+?? backend/src/modules/auth/recovery-mail.port.ts
+?? backend/src/modules/cards/visual-identify.lifecycle.spec.ts
+?? backend/src/modules/collections/add-item-headers.decorator.ts
+?? backend/src/modules/collections/collections.idempotency-http.spec.ts
+?? backend/src/modules/collections/dto/add-item-headers.dto.ts
+?? backend/src/modules/collections/portfolio.service.spec.ts
+?? backend/src/readiness.http.spec.ts
+?? backend/src/readiness.service.spec.ts
+?? backend/src/readiness.service.ts
+?? backend/src/redis/redis.recovery.spec.ts
+?? backend/test/password-recovery-harness.ts
+?? backend/test/password-recovery-mail-harness.ts
+?? backend/vitest.config.recovery-harness.ts
+?? docs/evaluations/catalog-price-order-2026-10-06.json
+?? docs/evaluations/catalog-public-validation-2026-10-06.md
+?? docs/evaluations/dinov2-baseline-2026-10-06.json
+?? docs/evaluations/manifest-dinov2-development.json
+?? docs/evaluations/manifest-scanner-soak.json
+?? docs/evaluations/public-share-2026-10-06.json
+?? docs/evaluations/scanner-http-cancel-2026-10-06.json
+?? docs/evaluations/scanner-http-cancel-2026-10-06.md
+?? docs/evaluations/scanner-index-failures-2026-10-06.json
+?? docs/evaluations/scanner-index-failures-2026-10-06.md
+?? docs/evaluations/scanner-index-resume-2026-10-06.json
+?? docs/evaluations/scanner-index-resume-2026-10-06.md
+?? docs/evaluations/scanner-load-2026-10-06.json
+?? docs/evaluations/scanner-load-2026-10-06.md
+?? docs/evaluations/scanner-load-extended-2026-10-06.json
+?? docs/evaluations/scanner-load-http-2026-10-06.json
+?? docs/evaluations/scanner-perspective-2026-10-06.md
+?? docs/evaluations/scanner-perspective-originals-2026-10-06.json
+?? docs/evaluations/scanner-perspective-ranking-2026-10-06.json
+?? docs/evaluations/scanner-quality-2026-10-06.md
+?? docs/evaluations/scanner-quality-dark-2026-10-06.jpg
+?? docs/evaluations/scanner-quality-fixture-2026-10-06.json
+?? docs/evaluations/scanner-quality-light-2026-10-06.jpg
+?? docs/evaluations/scanner-soak-2026-10-06.json
+?? docs/evaluations/scanner-soak-2026-10-06.md
+?? docs/evaluations/scanner-stability-2026-10-06.json
+?? docs/evaluations/scanner-stability-2026-10-06.md
+?? docs/evaluations/scanner-step1-2026-10-06.md
+?? docs/evaluations/scanner-step2-2026-10-06.md
+?? docs/plans/lanzamiento-2026-10-07/
+?? frontend/components/collections/__tests__/collection-item-details.test.tsx
+?? frontend/components/prices/__tests__/price-evidence.test.tsx
+?? frontend/components/prices/price-evidence.tsx
+?? frontend/components/prices/valuation-metadata.tsx
+?? frontend/components/scanner/__tests__/capture-quality-notice.test.tsx
+?? frontend/components/scanner/__tests__/draft-fixture.ts
+?? frontend/components/scanner/__tests__/session-draft-safety.test.ts
+?? frontend/components/scanner/__tests__/session-draft.test.ts
+?? frontend/components/scanner/capture-quality-notice.tsx
+?? frontend/components/scanner/draft-card-search.tsx
+?? frontend/components/scanner/draft-selection-editor.tsx
+?? frontend/components/scanner/session-draft.ts
+?? frontend/components/share/__tests__/
+?? frontend/components/share/share-link-preview.tsx
+?? frontend/components/share/share-links-state.ts
+?? frontend/components/share/share-preview.ts
+?? frontend/lib/api/collections.idempotency.test.ts
+?? frontend/lib/api/schema.price-metadata.test.ts
+?? frontend/lib/api/schema.share.test.ts
+?? frontend/lib/prices/
+?? frontend/lib/scanner/__tests__/capture-quality.test.ts
+?? frontend/lib/scanner/__tests__/perspective.test.ts
+?? frontend/lib/scanner/capture-quality.ts
+?? frontend/lib/scanner/perspective.ts
+?? infra/
+?? scripts/inf03-app-flow.mjs
+?? scripts/inf03-app-flow.test.mjs
+?? scripts/inf03-backup.mjs
+?? scripts/inf03-common.mjs
+?? scripts/inf03-restore.mjs
+?? scripts/inf03-review-offline.mjs
+?? scripts/inf03-smoke.mjs
+?? scripts/infra/

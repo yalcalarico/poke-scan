@@ -1,0 +1,36 @@
+{
+  "initialAndLatestLogIdentical": true,
+  "diagnostics": [
+    [
+      "src/jobs/sync-prices.service.spec.ts(20,11)",
+      "TS2430"
+    ],
+    [
+      "src/jobs/tcgdex-set-mapping.service.spec.ts(10,11)",
+      "TS2430"
+    ],
+    [
+      "src/modules/cards/cards.service.spec.ts(201,53)",
+      "TS18048"
+    ],
+    [
+      "src/modules/cards/cards.service.spec.ts(433,42)",
+      "TS2322"
+    ],
+    [
+      "src/redis/redis.service.spec.ts(257,45)",
+      "TS7006"
+    ],
+    [
+      "src/redis/redis.service.spec.ts(284,45)",
+      "TS7006"
+    ],
+    [
+      "test/app.e2e-spec.ts(6,26)",
+      "TS2307"
+    ]
+  ],
+  "fullTypecheckGreen": false,
+  "baselineHistoricalExecuted": false,
+  "allDiagnosticSourcePathsOutsideScope": true
+}

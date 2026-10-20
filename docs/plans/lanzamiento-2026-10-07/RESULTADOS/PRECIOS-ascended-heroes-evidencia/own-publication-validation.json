@@ -1,0 +1,45 @@
+{
+  "runId": "cbb3965e-9d0a-4baa-8ced-bf9b9c75f536",
+  "mappedCards": 292,
+  "unmappedCards": 3,
+  "observations": 328,
+  "unmapped": [
+    {
+      "id": "me2pt5-183",
+      "name": "Boss's Orders",
+      "number": "183"
+    },
+    {
+      "id": "me2pt5-198",
+      "name": "Poké Pad",
+      "number": "198"
+    },
+    {
+      "id": "me2pt5-256",
+      "name": "Boss's Orders",
+      "number": "256"
+    }
+  ],
+  "publishedAt": "2026-10-14T00:00:33.971Z",
+  "feedPublishedAt": "2026-10-13T20:06:44.000Z",
+  "fetchedAt": "2026-10-13T23:53:27.577Z",
+  "nextContentDownloadNotBefore": "2026-10-14T23:53:26.660Z",
+  "untouchedInventoryAndPreviousPricesHashesMatch": true,
+  "classicJobUnchanged": true,
+  "dailyRealSnapshotsCaptured": true,
+  "providerMainPolicyUnchanged": true,
+  "remoteCallsInImporter": 0,
+  "job": [
+    {
+      "groupId": 24541,
+      "status": "completed",
+      "availableAt": "2026-10-14T23:53:26.660Z",
+      "lockedBy": null,
+      "leaseUntil": null,
+      "downloadStartedAt": "2026-10-13T23:53:26.660Z",
+      "publishedBuild": "2026-10-13T20:06:44.000Z",
+      "lastError": null,
+      "updatedAt": "2026-10-14T00:00:33.971Z"
+    }
+  ]
+}

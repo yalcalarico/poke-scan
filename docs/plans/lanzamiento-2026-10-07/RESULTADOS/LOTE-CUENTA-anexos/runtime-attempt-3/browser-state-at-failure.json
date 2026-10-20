@@ -1,0 +1,40 @@
+{
+  "path": "/recuperar",
+  "hashPresent": false,
+  "managerPresent": true,
+  "managerMode": "unavailable",
+  "tokenPresent": false,
+  "entry": 3,
+  "marker": "link",
+  "linkHeading": false,
+  "requestHeading": false,
+  "unavailableHeading": true,
+  "submitEnabled": false,
+  "scriptTag": true,
+  "historyEvents": [
+    {
+      "operation": "replaceState",
+      "hashPresent": false,
+      "mode": "request"
+    },
+    {
+      "event": "popstate",
+      "hashPresent": true,
+      "mode": "request"
+    },
+    {
+      "operation": "replaceState",
+      "hashPresent": false,
+      "marker": "link",
+      "mode": "request"
+    },
+    {
+      "event": "hashchange",
+      "hashPresent": false,
+      "marker": "link",
+      "mode": "link"
+    }
+  ],
+  "readyState": "complete",
+  "hashAtEnabled": false
+}

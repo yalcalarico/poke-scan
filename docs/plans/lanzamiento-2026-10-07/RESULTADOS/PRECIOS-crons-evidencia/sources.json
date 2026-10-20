@@ -1,0 +1,106 @@
+[
+  {
+    "path": "backend/docs/jobs.md",
+    "sha256": "d1e66cfaca988acb0f8df5e19f467482a5b4cd1e2de935206c84ebee769e868e"
+  },
+  {
+    "path": "backend/docs/pricing.md",
+    "sha256": "5e96e46bb8333aadde03578fcfe22e9c6cc348fd19cb8a1248721bbad0028c3d"
+  },
+  {
+    "path": "backend/package.json",
+    "sha256": "fd8d2b28cc29347d95053e78fb911c45a5d59f8bb056a103f13e50f47a0ff63d"
+  },
+  {
+    "path": "backend/prisma/migrations/20261014010000_tcgcsv_discovery/migration.sql",
+    "sha256": "b3792f393240de3853449716b55358e2e48865a2b64a4c75012f55beb75d1b2d"
+  },
+  {
+    "path": "backend/prisma/schema.prisma",
+    "sha256": "63200b0187518e3ebcf8d67027dd09f8d9234f30b33e2c9cbc5b0150f7188601"
+  },
+  {
+    "path": "backend/scripts/prices-control.mjs",
+    "sha256": "30f3c8c0264206bb3fc8d14661ace3609bf571fec1b20cd3fe5f285dcd84a7c5"
+  },
+  {
+    "path": "backend/scripts/prices-control.test.mjs",
+    "sha256": "3711acb4e7b3cfe55b1000348bab93c98281c3c767551bb384cae61f00d8e7fd"
+  },
+  {
+    "path": "backend/scripts/prices-sync.mjs",
+    "sha256": "9fbe29751692e2b634deee39e4c41a97a685f5e917f2d1da7b6028e0fe0f79c2"
+  },
+  {
+    "path": "backend/src/jobs/card-comparison.service.ts",
+    "sha256": "002c72dc80d12b2a9320d7870f28c8f2737b5a160231edd6a60c7d62f81f4e82"
+  },
+  {
+    "path": "backend/src/jobs/collection-comparison.service.spec.ts",
+    "sha256": "b4e818130a5b57c77054fc7e7a06e8ddc4ab01d4b4e7fdd7f0ad33d75ed148a5"
+  },
+  {
+    "path": "backend/src/jobs/jobs.module.ts",
+    "sha256": "6b8d98e17e8a288cbd744ca5cae3c12bca3702992714dfb5ab0b0fcc73cd6558"
+  },
+  {
+    "path": "backend/src/jobs/price-sync-cycles.spec.ts",
+    "sha256": "68fe92429a8b0460acc42b707dde5478e1e18715927a522c66490dfb8df11230"
+  },
+  {
+    "path": "backend/src/jobs/scheduled-jobs.service.ts",
+    "sha256": "a016f213c1b719e15883684c9c18903beca43909718d8631cfc51105ad44283f"
+  },
+  {
+    "path": "backend/src/jobs/tcgcsv/classic-identities.ts",
+    "sha256": "59b3d08f7259e5598503982fc90f362f445df6ed42384398e1abfa0009f6d273"
+  },
+  {
+    "path": "backend/src/jobs/tcgcsv/tcgcsv.adapter.spec.ts",
+    "sha256": "edb211faba75273abda84f7930093ebe9bec9e197b3d9a90ba4f92b7710a1559"
+  },
+  {
+    "path": "backend/src/jobs/tcgcsv/tcgcsv.adapter.ts",
+    "sha256": "d8fd292d439872afa897ea279306438ce432482f01d681705773051e68092212"
+  },
+  {
+    "path": "backend/src/jobs/tcgcsv/tcgcsv.client.spec.ts",
+    "sha256": "e6ca5b148a176485b0b16dd917c9c433990c31774989aecad0bbad9ddf259e84"
+  },
+  {
+    "path": "backend/src/jobs/tcgcsv/tcgcsv.client.ts",
+    "sha256": "4c7c7098cbedb51953e5617337f7e876d4faf8912cdcf73de54801bd7ec3768a"
+  },
+  {
+    "path": "backend/src/jobs/tcgcsv/tcgcsv.discovery-worker.spec.ts",
+    "sha256": "dc1ffd26c439206c2f7dcc794aba6db5e3425e5e350c5e9f8620e3c6b1d9b388"
+  },
+  {
+    "path": "backend/src/jobs/tcgcsv/tcgcsv.discovery.spec.ts",
+    "sha256": "f8a828feb7c36337f1f85ab694ae714f9246f903b03f2b683cd486202a4ec1cb"
+  },
+  {
+    "path": "backend/src/jobs/tcgcsv/tcgcsv.discovery.ts",
+    "sha256": "62a9cb27e76f0c217c6ef4d64a0b04befc6d830d018ba36d9d5bf69287b5ebf3"
+  },
+  {
+    "path": "backend/src/jobs/tcgcsv/tcgcsv.service.spec.ts",
+    "sha256": "0983b81029892b2bc182e4a770611d2d66e505cf0d52fc68c614e76ab0936817"
+  },
+  {
+    "path": "backend/src/jobs/tcgcsv/tcgcsv.service.ts",
+    "sha256": "776d133ab1779bf59910bf66ee9502744b642bfea2aeda63b68ec169f666e191"
+  },
+  {
+    "path": "docs/infra/PROMPT-mini-pc-cloudflare.md",
+    "sha256": "c7384b91413ad97b5e5144a007d1f192a70bb417ec4bb05b128ce907232ba791"
+  },
+  {
+    "path": "package.json",
+    "sha256": "a203077af2afcfed77aca8965ef62bf9c824b3b359654bebd1cf0b0f8a0fa799"
+  },
+  {
+    "path": "scripts/help.mjs",
+    "sha256": "ebff78c580aafbaf335fe52b86e65d3806e1ae4a674dbf95dd6c76dd4c556f72"
+  }
+]

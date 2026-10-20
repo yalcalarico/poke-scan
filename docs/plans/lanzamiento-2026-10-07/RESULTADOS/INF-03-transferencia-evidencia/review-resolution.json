@@ -1,0 +1,49 @@
+{
+  "agent": "/root/backup_transfer_review_sol",
+  "model": "gpt-6.1-sol",
+  "effort": "high",
+  "mode": "read-only static review; no tests/mutations",
+  "rootCorrections": [
+    {
+      "issue": "init demanded all authority directories empty",
+      "resolution": "Only destination must be empty; source dirs validated distinct/private",
+      "evidence": "initial-focal.log0pass5fail then corrected/final green"
+    },
+    {
+      "issue": "final download did not reject expiry",
+      "resolution": "Final current record/date revalidated and CLI post-close expiry check",
+      "evidence": "behavior-baseline.log6pass2fail -> corrected9/final12green"
+    },
+    {
+      "issue": "retirement did not anchor replaced payload/receipt identity",
+      "resolution": "Signed deleting/retired intent anchors dev/ino/ctime; per-unlink hash/identity/path guard; completed repeat0",
+      "evidence": "behavior-baseline.log; identical replacement regression finalgreen"
+    },
+    {
+      "issue": "root path not revalidated and quarantine parent/target could be substituted",
+      "resolution": "Canonical private chains and dev/ino checked per guard, before mutations, and at final download",
+      "evidence": "fs-baseline.log0pass2fail -> corrected9/final12green"
+    },
+    {
+      "issue": "failed destination open leaked source file descriptor",
+      "resolution": "Both file handles closed in independent finally, including failed open",
+      "evidence": "Static root code inspection; no claimed FD exhaustion reproduction"
+    }
+  ],
+  "otherChanges": [
+    "Strict command-specific flag parsing, duplicates/remote URL/modes/clock overrides rejected",
+    "CLI no success before close; transfer/inventory keys must differ in CLI",
+    "1000 object cap; bounded payload/receipt reads",
+    "Quarantine not automatically eligible, registered or retired by store command"
+  ],
+  "delegationsThisTask": 2,
+  "delegationCap": 4,
+  "runtimeAttempts": 2,
+  "runtimeCorrections": 1,
+  "limits": [
+    "Same-owner full-secret attackers/power loss/SIGKILL not accredited",
+    "Local capabilities are application guards not B2/OS credentials",
+    "Loss of originals still fails current inventory audit; no host-loss recovery fallback",
+    "External checkpoint freshness/custody not implemented"
+  ]
+}

@@ -1,0 +1,4 @@
+e448f1aa70e514d5dec0476efa76e7a4451c6ca475f5d242b9d50586a5686db4  backend/src/redis/redis.service.ts
+7b00dfd99803ba7e37719fa61ae2947d8d0d9b5d282bd8650e5d8c7189a989d4  backend/src/redis/redis.service.spec.ts
+d284cd40d0bd6b97b31d3e3765aacdeb81577d8b9cbde46c27d59c20b9dff0c4  backend/docs/gotchas.md
+49ee40e9d1a108e4f3a9698806c1a37a0ff13efe057f00cb6d180d2d9890be90  backend/docs/testing.md

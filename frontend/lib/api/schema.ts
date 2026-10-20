@@ -4,6 +4,8 @@ import type {
   CardDto,
   CardLocationDto,
   CardVariant,
+  CollectionDto,
+  PortfolioDto,
   CollectionItemDto,
   CollectionStatsDto,
   PriceChangeDto,
@@ -11,6 +13,11 @@ import type {
   PriceHistoryDto,
   PriceHistoryPointDto,
   PriceWindowChangeDto,
+  PublicReferencePriceDto,
+  ValueAggregateDto,
+  AggregateFreshness,
+  PublicShareStatsDto,
+  PublicSharedItemDto,
   SetDto,
 } from '@/types/api';
 
@@ -233,6 +240,8 @@ export function toPriceDto(raw: unknown): PriceDto | null {
   if (!isRecord(raw)) return null;
   const variant = toVariant(raw.variant);
   if (!variant) return null;
+  const metadata = toPriceMetadata(raw);
+  if (metadata === false) return null;
 
   return {
     cardId: str(raw.cardId) ?? '',
@@ -246,7 +255,8 @@ export function toPriceDto(raw: unknown): PriceDto | null {
     currency: str(raw.currency) ?? 'USD',
     source: str(raw.source) ?? '—',
     fetchedAt: str(raw.fetchedAt) ?? '',
-    priceArs: num(raw.priceArs),
+    ...(metadata || {}),
+    priceArs: toPriceArs(raw.priceArs),
     // Se conserva la distinción ausente/`null`: solo `GET /cards/:id/prices`
     // manda el campo, y el `PriceDelta` necesita saber si no vino o vino vacío.
     change: toPriceChange(raw.change),
@@ -257,6 +267,33 @@ export function toPriceDto(raw: unknown): PriceDto | null {
   };
 }
 
+function toPriceMetadata(raw: Record<string, unknown>): Partial<Pick<PriceDto, 'evaluatedAt' | 'freshness' | 'upstreamUpdatedAt' | 'upstreamFreshness'>> | false {
+  const keys = ['evaluatedAt', 'freshness', 'upstreamUpdatedAt', 'upstreamFreshness'] as const;
+  if (!keys.some((key) => key in raw)) return {};
+  const states = ['fresh', 'stale', 'unknown'];
+  if (typeof raw.evaluatedAt !== 'string' || !isPublicDate(raw.evaluatedAt) || !states.includes(String(raw.freshness)) ||
+      typeof raw.fetchedAt !== 'string' || (raw.freshness !== 'unknown' && !isPublicDate(raw.fetchedAt)) ||
+      !(raw.upstreamUpdatedAt === null || (typeof raw.upstreamUpdatedAt === 'string' && isPublicDate(raw.upstreamUpdatedAt))) ||
+      !states.includes(String(raw.upstreamFreshness))) return false;
+  if (raw.upstreamUpdatedAt === null && raw.upstreamFreshness !== 'unknown') return false;
+  if (typeof raw.upstreamUpdatedAt === 'string' && raw.upstreamFreshness === 'unknown') return false;
+  if (Date.parse(raw.fetchedAt) > Date.parse(raw.evaluatedAt) && raw.freshness !== 'unknown') return false;
+  if (typeof raw.upstreamUpdatedAt === 'string' && Date.parse(raw.upstreamUpdatedAt) > Date.parse(raw.evaluatedAt)) return false;
+  return { evaluatedAt: raw.evaluatedAt, freshness: raw.freshness as PriceDto['freshness'], upstreamUpdatedAt: raw.upstreamUpdatedAt as string | null,
+    upstreamFreshness: raw.upstreamFreshness as PriceDto['upstreamFreshness'] };
+}
+
+export function hasValidPriceMetadata(raw: unknown): boolean {
+  return !isRecord(raw) || toPriceMetadata(raw) !== false;
+}
+
+function toPriceArs(raw: unknown): PriceDto['priceArs'] {
+  if (!isRecord(raw)) return num(raw);
+  const fields = ['low', 'mid', 'high', 'market'] as const;
+  if (fields.some((key) => raw[key] !== null && num(raw[key]) === null)) return null;
+  return { low: num(raw.low), mid: num(raw.mid), high: num(raw.high), market: num(raw.market) };
+}
+
 /* ─── Histórico de precios ─── */
 
 /** `PriceHistoryPointDto` o `null`: un punto sin `date` no se puede ubicar. */
@@ -264,6 +301,8 @@ function toPriceHistoryPoint(raw: unknown): PriceHistoryPointDto | null {
   if (!isRecord(raw)) return null;
   const date = str(raw.date);
   if (!date) return null;
+  const metadata = toPriceMetadata(raw);
+  if (metadata === false) return null;
 
   return {
     date,
@@ -275,6 +314,7 @@ function toPriceHistoryPoint(raw: unknown): PriceHistoryPointDto | null {
     low: num(raw.low),
     mid: num(raw.mid),
     high: num(raw.high),
+    ...metadata,
   };
 }
 
@@ -300,6 +340,7 @@ export function toPriceHistory(raw: unknown): PriceHistoryDto | null {
 
   const points: PriceHistoryPointDto[] = [];
   for (const entry of Array.isArray(raw.points) ? raw.points : []) {
+    if (!hasValidPriceMetadata(entry)) return null;
     const point = toPriceHistoryPoint(entry);
     if (point) points.push(point);
   }
@@ -345,6 +386,58 @@ export function toPriceList(raw: unknown): PriceDto[] {
 
 /* ─── Colecciones ─── */
 
+/** Los campos legacy permanecen; un bloque nuevo presente se valida completo. */
+export function toCollectionDto(raw: unknown): CollectionDto | null {
+  if (!isRecord(raw) || !str(raw.id) || !str(raw.userId) || !str(raw.name) || typeof raw.isDefault !== 'boolean' ||
+      !str(raw.createdAt) || !Array.isArray(raw.cover)) return null;
+  const itemCount = num(raw.itemCount), uniqueCount = num(raw.uniqueCount), duplicateCount = num(raw.duplicateCount), totalValueUsd = num(raw.totalValueUsd);
+  if ([itemCount, uniqueCount, duplicateCount].some((v) => v === null || !Number.isSafeInteger(v) || v < 0) || totalValueUsd === null) return null;
+  const valuation = raw.valuation === undefined ? undefined : toValueAggregate(raw.valuation);
+  if (raw.valuation !== undefined && (!valuation || valuation.recency === null || valuation.coverage.totalCopies !== itemCount || (valuation.amount ?? 0) !== totalValueUsd)) return null;
+  const cover: CollectionDto['cover'] = [];
+  for (const entry of raw.cover) {
+    if (!isRecord(entry) || !str(entry.cardId) || typeof entry.imageSmall !== 'string') return null;
+    cover.push({ cardId: str(entry.cardId)!, imageSmall: entry.imageSmall });
+  }
+  return { id: str(raw.id)!, userId: str(raw.userId)!, name: str(raw.name)!, isDefault: raw.isDefault,
+    itemCount: itemCount!, uniqueCount: uniqueCount!, duplicateCount: duplicateCount!, totalValueUsd,
+    totalValueArs: num(raw.totalValueArs), cover, createdAt: str(raw.createdAt)!, ...(valuation ? { valuation } : {}) };
+}
+
+export function toPortfolioDto(raw: unknown): PortfolioDto | null {
+  if (!isRecord(raw) || !Array.isArray(raw.history) || !Array.isArray(raw.topCards)) return null;
+  const totalCards = num(raw.totalCards), unpricedCards = num(raw.unpricedCards), valueUsd = raw.valueUsd === null ? null : num(raw.valueUsd);
+  if ([totalCards, unpricedCards].some((v) => v === null || !Number.isSafeInteger(v) || v < 0) || unpricedCards! > totalCards! || (raw.valueUsd !== null && valueUsd === null)) return null;
+  const valuation = raw.valuation === undefined ? undefined : toValueAggregate(raw.valuation);
+  if (raw.valuation !== undefined && (!valuation || valuation.recency === null || valuation.amount !== valueUsd || valuation.coverage.totalCopies !== totalCards || valuation.coverage.unpricedCopies !== unpricedCards)) return null;
+  const history: PortfolioDto['history'] = [];
+  for (const entry of raw.history) {
+    if (!isRecord(entry) || typeof entry.date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(entry.date) || !isPublicDate(`${entry.date}T00:00:00.000Z`)) return null;
+    const total = num(entry.totalCards), unpriced = num(entry.unpricedCards), amount = entry.valueUsd === null ? null : num(entry.valueUsd);
+    if ([total, unpriced].some((v) => v === null || !Number.isSafeInteger(v) || v < 0) || unpriced! > total! || (entry.valueUsd !== null && amount === null)) return null;
+    const point = entry.valuation === undefined ? undefined : toValueAggregate(entry.valuation);
+    if (entry.valuation !== undefined && (!point || point.evaluatedAt !== null || point.recency !== null || point.amount !== amount || point.coverage.totalCopies !== total || point.coverage.unpricedCopies !== unpriced)) return null;
+    history.push({ date: entry.date, valueUsd: amount, totalCards: total!, unpricedCards: unpriced!, ...(point ? { valuation: point } : {}) });
+  }
+  const topCards: PortfolioDto['topCards'] = [];
+  for (const entry of raw.topCards) {
+    if (!isRecord(entry) || ['cardId', 'name', 'imageSmall', 'setName', 'number', 'variant'].some((key) => typeof entry[key] !== 'string')) return null;
+    const quantity = num(entry.quantity), marketUsd = num(entry.marketUsd), value = num(entry.valueUsd);
+    if (quantity === null || !Number.isSafeInteger(quantity) || quantity < 1 || marketUsd === null || marketUsd < 0 || value === null || value < 0) return null;
+    let reference: PortfolioDto['topCards'][number]['reference'];
+    if (entry.reference !== undefined) {
+      if (!isRecord(entry.reference)) return null;
+      const ref = entry.reference, metadata = toPriceMetadata(ref);
+      if (!str(ref.provider) || !str(ref.source) || !str(ref.currency) || typeof ref.fetchedAt !== 'string' || metadata === false || !('evaluatedAt' in metadata)) return null;
+      reference = { provider: str(ref.provider)!, source: str(ref.source)!, currency: str(ref.currency)!, fetchedAt: ref.fetchedAt, ...metadata };
+    }
+    topCards.push({ cardId: entry.cardId as string, name: entry.name as string, imageSmall: entry.imageSmall as string,
+      setName: entry.setName as string, number: entry.number as string, variant: entry.variant as string,
+      quantity, marketUsd, valueUsd: value, ...(reference ? { reference } : {}) });
+  }
+  return { totalCards: totalCards!, unpricedCards: unpricedCards!, valueUsd, history, topCards, ...(valuation ? { valuation } : {}) };
+}
+
 /** `CollectionItemDto` o `null`. */
 export function toCollectionItemDto(raw: unknown): CollectionItemDto | null {
   if (!isRecord(raw)) return null;
@@ -368,7 +461,7 @@ export function toCollectionItemDto(raw: unknown): CollectionItemDto | null {
   ) {
     return null;
   }
-
+  if (!hasValidPriceMetadata(raw.price)) return null;
   return {
     id,
     collectionId,
@@ -425,22 +518,24 @@ export function toCardLocation(raw: unknown): CardLocationDto | null {
 }
 
 /** `CollectionStatsDto` o `null`. */
-export function toCollectionStatsDto(raw: unknown): CollectionStatsDto | null {
+export function toCollectionStatsDto(raw: unknown): (CollectionStatsDto & { cardsMissingPrice?: number }) | null {
   if (!isRecord(raw)) return null;
   const totalCards = num(raw.totalCards);
   const uniqueCards = num(raw.uniqueCards);
   const duplicateCards = num(raw.duplicateCards);
   const setsCount = num(raw.setsCount);
   const totalValueUsd = num(raw.totalValueUsd);
+  const valuation = raw.valuation === undefined ? undefined : toValueAggregate(raw.valuation);
   if (
     totalCards === null ||
     uniqueCards === null ||
     duplicateCards === null ||
     setsCount === null ||
-    totalValueUsd === null
+    totalValueUsd === null || (raw.valuation !== undefined && !valuation)
   ) {
     return null;
   }
+  if (valuation && (valuation.coverage.totalCopies !== totalCards || (valuation.amount ?? 0) !== totalValueUsd || valuation.recency === null)) return null;
 
   return {
     totalCards,
@@ -448,9 +543,11 @@ export function toCollectionStatsDto(raw: unknown): CollectionStatsDto | null {
     duplicateCards,
     setsCount,
     totalValueUsd,
+    ...(valuation ? { valuation } : {}),
     // El espejo en pesos es opcional: el valor crudo siempre es USD y lo
     // convierte el cliente (§9.3). Ausente es lo mismo que `null`.
     totalValueArs: num(raw.totalValueArs),
+    ...(raw.cardsMissingPrice === undefined ? {} : { cardsMissingPrice: num(raw.cardsMissingPrice) ?? undefined }),
   };
 }
 
@@ -476,18 +573,154 @@ export function toPublicSharedCollection(raw: unknown): PublicSharedCollection |
 
   const ownerDisplayName = str(raw.ownerDisplayName);
   const collectionName = str(raw.collectionName);
-  const stats = toCollectionStatsDto(raw.stats);
+  const stats = toPublicShareStatsDto(raw.stats);
   const truncated = raw.truncated;
   const sharedAt = str(raw.sharedAt);
-  if (!ownerDisplayName || !collectionName || !stats || !sharedAt) return null;
+  if (!ownerDisplayName || !collectionName || !stats || !sharedAt || !isPublicDate(sharedAt)) return null;
   if (typeof truncated !== 'boolean') return null;
 
-  const items: CollectionItemDto[] = [];
+  const items: PublicSharedItemDto[] = [];
   for (const entry of raw.items) {
-    const item = toCollectionItemDto(entry);
+    const item = toPublicSharedItemDto(entry);
     if (!item) return null;
     items.push(item);
   }
 
   return { ownerDisplayName, collectionName, items, stats, truncated, sharedAt };
+}
+
+function toPublicShareStatsDto(raw: unknown): PublicShareStatsDto | null {
+  if (!isRecord(raw)) return null;
+  const totalGroups = num(raw.totalGroups);
+  const totalCards = num(raw.totalCards);
+  const uniqueCards = num(raw.uniqueCards);
+  const duplicateCards = num(raw.duplicateCards);
+  const setsCount = num(raw.setsCount);
+  const totalValueUsd = raw.totalValueUsd === null ? null : num(raw.totalValueUsd);
+  const pricedGroups = num(raw.pricedGroups);
+  const cardsMissingPrice = num(raw.cardsMissingPrice);
+  if (
+    [totalGroups, totalCards, uniqueCards, duplicateCards, setsCount, pricedGroups, cardsMissingPrice].some((v) => v === null || !Number.isSafeInteger(v) || v < 0) ||
+    (raw.totalValueUsd !== null && totalValueUsd === null) ||
+    (totalValueUsd === null && pricedGroups !== 0) ||
+    (totalGroups !== null && pricedGroups !== null && cardsMissingPrice !== null && totalGroups !== pricedGroups + cardsMissingPrice)
+  ) return null;
+  if (
+    totalCards! < totalGroups! + duplicateCards! || uniqueCards! > totalGroups! ||
+    duplicateCards! > totalGroups! || setsCount! > uniqueCards! ||
+    (totalGroups === 0 && (totalCards !== 0 || totalValueUsd !== 0)) ||
+    (totalGroups! > 0 && (uniqueCards === 0 || setsCount === 0 || (pricedGroups === 0 && totalValueUsd !== null))) ||
+    (totalValueUsd !== null && totalValueUsd < 0)
+  ) return null;
+  const valuation = raw.valuation === undefined ? undefined : toValueAggregate(raw.valuation);
+  if (raw.valuation !== undefined && !valuation) return null;
+  if (valuation && (valuation.coverage.totalCopies !== totalCards || valuation.amount !== totalValueUsd || valuation.recency === null)) return null;
+  return { totalGroups: totalGroups!, totalCards: totalCards!, uniqueCards: uniqueCards!, duplicateCards: duplicateCards!, setsCount: setsCount!, totalValueUsd, pricedGroups: pricedGroups!, cardsMissingPrice: cardsMissingPrice!, ...(valuation ? { valuation } : {}) };
+}
+
+function toValueAggregate(raw: unknown): ValueAggregateDto | null {
+  if (!isRecord(raw) || !isRecord(raw.coverage)) return null;
+  const { coverage } = raw;
+  const totalCopies = num(coverage.totalCopies), pricedCopies = num(coverage.pricedCopies), unpricedCopies = num(coverage.unpricedCopies);
+  const ratio = coverage.coverageRatio === null ? null : num(coverage.coverageRatio);
+  if ([totalCopies, pricedCopies, unpricedCopies].some((value) => value === null || !Number.isSafeInteger(value) || value < 0) ||
+      totalCopies !== pricedCopies! + unpricedCopies! || (ratio !== null && (ratio < 0 || ratio > 1)) ||
+      (totalCopies === 0 ? ratio !== null : ratio !== pricedCopies! / totalCopies!)) return null;
+  const amount = raw.amount === null ? null : num(raw.amount);
+  if (raw.amount !== null && (amount === null || amount < 0)) return null;
+  if ((totalCopies === 0 && amount !== 0) || (totalCopies! > 0 && pricedCopies === 0 && amount !== null) ||
+      (pricedCopies! > 0 && amount === null)) return null;
+  if (raw.currency !== 'USD' || !(raw.evaluatedAt === null || (typeof raw.evaluatedAt === 'string' && isPublicDate(raw.evaluatedAt)))) return null;
+  let recency: ValueAggregateDto['recency'] = null;
+  if (raw.recency !== null) {
+    if (!isRecord(raw.recency)) return null;
+    const r = raw.recency;
+    const validStates = ['fresh', 'stale', 'unknown', 'mixed'];
+    const fresh = num(r.freshCopies), stale = num(r.staleCopies), unknown = num(r.unknownFreshnessCopies);
+    if (!validStates.includes(String(r.freshness)) || !validStates.includes(String(r.upstreamFreshness)) ||
+        [fresh, stale, unknown].some((value) => value === null || !Number.isSafeInteger(value) || value < 0) || fresh! + stale! + unknown! !== pricedCopies ||
+        !(r.oldestFetchedAt === null || (typeof r.oldestFetchedAt === 'string' && isPublicDate(r.oldestFetchedAt))) ||
+        !(r.newestFetchedAt === null || (typeof r.newestFetchedAt === 'string' && isPublicDate(r.newestFetchedAt)))) return null;
+    const represented = [fresh! > 0, stale! > 0, unknown! > 0].filter(Boolean).length;
+    const expectedFreshness = represented === 0 ? 'unknown' : represented > 1 ? 'mixed' : fresh! > 0 ? 'fresh' : stale! > 0 ? 'stale' : 'unknown';
+    if (r.freshness !== expectedFreshness) return null;
+    if (typeof raw.evaluatedAt === 'string' && ((typeof r.oldestFetchedAt === 'string' && Date.parse(r.oldestFetchedAt) > Date.parse(raw.evaluatedAt)) ||
+        (typeof r.newestFetchedAt === 'string' && Date.parse(r.newestFetchedAt) > Date.parse(raw.evaluatedAt)) ||
+        (typeof r.oldestFetchedAt === 'string' && typeof r.newestFetchedAt === 'string' && Date.parse(r.oldestFetchedAt) > Date.parse(r.newestFetchedAt)))) return null;
+    recency = { freshness: r.freshness as AggregateFreshness,
+      freshCopies: fresh!, staleCopies: stale!, unknownFreshnessCopies: unknown!, upstreamFreshness: r.upstreamFreshness as AggregateFreshness,
+      oldestFetchedAt: r.oldestFetchedAt as string | null, newestFetchedAt: r.newestFetchedAt as string | null };
+  }
+  if ((raw.evaluatedAt === null) !== (recency === null)) return null;
+  return { amount, currency: 'USD', evaluatedAt: raw.evaluatedAt as string | null,
+    coverage: { totalCopies: totalCopies!, pricedCopies: pricedCopies!, unpricedCopies: unpricedCopies!, coverageRatio: ratio }, recency };
+}
+
+function isPublicDate(value: unknown): value is string {
+  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{3})?Z$/.test(value)) return false;
+  const date = new Date(value);
+  return Number.isFinite(date.getTime()) && date.toISOString() === (value.includes('.') ? value : value.replace('Z', '.000Z'));
+}
+
+function isNullablePublicString(value: unknown): value is string | null {
+  return value === null || typeof value === 'string';
+}
+
+/** El catálogo genérico tolera defaults; la respuesta pública exige el contrato completo. */
+function toPublicCardDto(raw: unknown): CardDto | null {
+  if (!isRecord(raw)) return null;
+  if (
+    ['id', 'name', 'supertype', 'number', 'setId', 'imageSmall', 'imageLarge'].some((key) => !str(raw[key])) ||
+    ['hp', 'rarity', 'artist'].some((key) => !isNullablePublicString(raw[key])) ||
+    ['subtypes', 'types'].some((key) => !Array.isArray(raw[key]) || !raw[key].every((entry: unknown) => typeof entry === 'string'))
+  ) return null;
+  const dto: CardDto = {
+    id: str(raw.id)!, name: str(raw.name)!, supertype: str(raw.supertype)!,
+    subtypes: strArray(raw.subtypes), hp: typeof raw.hp === 'string' ? raw.hp : null,
+    types: strArray(raw.types), number: str(raw.number)!,
+    rarity: typeof raw.rarity === 'string' ? raw.rarity : null,
+    artist: typeof raw.artist === 'string' ? raw.artist : null,
+    setId: str(raw.setId)!, imageSmall: str(raw.imageSmall)!, imageLarge: str(raw.imageLarge)!,
+  };
+  if (raw.set !== undefined) {
+    if (!isRecord(raw.set)) return null;
+    const set = raw.set;
+    if (
+      !str(set.id) || !str(set.name) ||
+      ['series', 'logoUrl', 'symbolUrl'].some((key) => !isNullablePublicString(set[key])) ||
+      ['printedTotal', 'total'].some((key) => set[key] !== null && (num(set[key]) === null || !Number.isSafeInteger(set[key]) || Number(set[key]) < 0)) ||
+      (set.releaseDate !== null && !isPublicDate(set.releaseDate))
+    ) return null;
+    dto.set = {
+      id: str(set.id)!, name: str(set.name)!,
+      series: typeof set.series === 'string' ? set.series : null,
+      printedTotal: num(set.printedTotal), total: num(set.total),
+      releaseDate: typeof set.releaseDate === 'string' ? set.releaseDate : null,
+      logoUrl: typeof set.logoUrl === 'string' ? set.logoUrl : null,
+      symbolUrl: typeof set.symbolUrl === 'string' ? set.symbolUrl : null,
+    };
+  }
+  return dto;
+}
+
+function toPublicSharedItemDto(raw: unknown): PublicSharedItemDto | null {
+  if (!isRecord(raw)) return null;
+  const card = toPublicCardDto(raw.card);
+  const variant = toVariant(raw.variant);
+  const condition = toCondition(raw.condition);
+  const quantity = num(raw.quantity);
+  if (!card || !variant || !condition || quantity === null || !Number.isInteger(quantity) || quantity < 1) return null;
+  let price: PublicReferencePriceDto | null = null;
+  if (raw.price !== null) {
+    if (!isRecord(raw.price)) return null;
+    const market = raw.price.market === null ? null : num(raw.price.market);
+    const currency = str(raw.price.currency);
+    const provider = raw.price.provider === null ? null : str(raw.price.provider);
+    const source = str(raw.price.source);
+    const fetchedAt = str(raw.price.fetchedAt);
+    const metadata = toPriceMetadata(raw.price);
+    if ((raw.price.market !== null && (market === null || market < 0)) || currency !== 'USD' || (provider === null && raw.price.provider !== null) || !source || !fetchedAt || !isPublicDate(fetchedAt) || metadata === false) return null;
+    price = { market, currency, provider, source, fetchedAt, ...metadata };
+  }
+  return { card, variant, condition, quantity, price };
 }

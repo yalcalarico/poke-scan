@@ -1,0 +1,74 @@
+[
+  {
+    "path": "product-sources.json",
+    "sha256": "084673e4a0a626171c75d886ec424a99bd758e860023257d0d5d5cdb8d65f7f8"
+  },
+  {
+    "path": "shared-check-receipt.json",
+    "sha256": "9fc57126dd1c8ec363c755112f723294e1412b171d4a0e2e51b917e69e9e3563"
+  },
+  {
+    "path": "acceptance.json",
+    "sha256": "0f13914963eaf256f72a8a2a5a431710e86c80ddfccb9e113ff8b06354a544cc"
+  },
+  {
+    "path": "validation-context.json",
+    "sha256": "0fcceeec43d0c9cb4b92dba6d90eeb1ee13b672249a626a5a55ee953b6d81bdf"
+  },
+  {
+    "path": "cleanup.json",
+    "sha256": "5fcd62dd6323a2585ad98ef43c25c8ee8fafaf95a01ccde5c61f77f3b982eb47"
+  },
+  {
+    "path": "shared-check-output-partial.log",
+    "sha256": "4da0b1974ff60973a3284b97fe6aecb112a5ba6e2de71f52e1465d5396955d0e"
+  },
+  {
+    "path": "browser.json",
+    "sha256": "fe012ab4f71bd4b32272a146aef25a3de74c0c003c3f5d2cdbb2522449a110a1"
+  },
+  {
+    "path": "attempt2/results.json",
+    "sha256": "028ac002fe77006530277e5c4efcbe4e9e80614bca3485f4338b40b0958673ae"
+  },
+  {
+    "path": "attempt2/cleanup.json",
+    "sha256": "5fcd62dd6323a2585ad98ef43c25c8ee8fafaf95a01ccde5c61f77f3b982eb47"
+  },
+  {
+    "path": "attempt2/check.log",
+    "sha256": "ba18db6a7943d21a9cbf5fdf52125771f7a8b5169816010927abe71e1c7c26e4"
+  },
+  {
+    "path": "attempt3/results.json",
+    "sha256": "55127285a7e28a736c4506236afdcc89fa6e71a307b6401c4715372c9c4448a3"
+  },
+  {
+    "path": "attempt3/cleanup.json",
+    "sha256": "5fcd62dd6323a2585ad98ef43c25c8ee8fafaf95a01ccde5c61f77f3b982eb47"
+  },
+  {
+    "path": "attempt3/check.log",
+    "sha256": "0d24f6c78ad86724950d065fb4bdde891145693d664914f42caf3001e8477778"
+  },
+  {
+    "path": "attempt3/focused.log",
+    "sha256": "69d52f516c5dd6650692e1632ad6824afb714b5415fd309d24c561ebc72ea720"
+  },
+  {
+    "path": "attempt1/results.json",
+    "sha256": "fb65e73411a926cdbbbee609757f3c7ade098cee6f4b7e960a0146740790de9c"
+  },
+  {
+    "path": "attempt1/cleanup.json",
+    "sha256": "5fcd62dd6323a2585ad98ef43c25c8ee8fafaf95a01ccde5c61f77f3b982eb47"
+  },
+  {
+    "path": "attempt1/check.log",
+    "sha256": "dfc91bf71f1cd45f60559189ad8a7c1d3a7936c70eede8ac783a1e3f5cb13dac"
+  },
+  {
+    "path": "attempt1/focused.log",
+    "sha256": "af6eac7e5442590ea7a98b0a8a6de0bb46bc06a3bdc871379a8473bf43194be5"
+  }
+]

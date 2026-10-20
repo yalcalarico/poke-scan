@@ -1,0 +1,6 @@
+{
+  "priorTmp": "/private/tmp/cuenta-gate-3aaf105723d3",
+  "newTmp": "/private/tmp/cuenta-gate-a4b26947b392",
+  "reason": "observed ownclone auth differences; historical timeout cause unresolved",
+  "noSourceOrTimeoutAltered": true
+}

@@ -1,0 +1,51 @@
+{
+  "checkedAtUtc": "2026-10-09T18:07:14.442326+00:00",
+  "scope": "Artefactos propios documentales; excluye autorreferencia del manifiesto",
+  "artifacts": [
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/UX-04-cuenta.md",
+      "sha256": "d652eced63e071a909cdc1ceb3ed97a30b57e440b80f28b726d8b3627c8a560a",
+      "bytes": 20679
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/UX-04-review.md",
+      "sha256": "ae9ed98de5a24d0b548102c5df9fb7b9160936419075906e20e9153b7a61cbe6",
+      "bytes": 4639
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/evidencia-ux04-cuenta-review/UX-04-cuenta-recibido.md",
+      "sha256": "c366aabfcfd8de2d304e84b95c8bb5e3e16ca67e96b1354c1f8b713551aab335",
+      "bytes": 14303
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/evidencia-ux04-cuenta-review/baseline-review.json",
+      "sha256": "666b7864e87ab1188e0541dfd1eefdec3fa4683734d3fadfc6804a9b6a7329c1",
+      "bytes": 5592
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/evidencia-ux04-cuenta-review/baseline-selectivo-recibido.json",
+      "sha256": "a546607296ba6ce1b76fe59c37896057bab33364db276ec827b1774cd01bec89",
+      "bytes": 4044
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/evidencia-ux04-cuenta-review/correcciones.diff",
+      "sha256": "9c5de5f1dabdafec81e493ebf4fc0084b773fa20e5bc90887679df43de6100b1",
+      "bytes": 29014
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/evidencia-ux04-cuenta-review/verificacion-estatica-recibida.json",
+      "sha256": "47726403b4e0c1dba7efa2b80ba54c3d757a59f4eace8948e08494972e95db4d",
+      "bytes": 2383
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/evidencia-ux04-cuenta-review/verificacion.json",
+      "sha256": "71a4c887b5f1aa8699b726233bd8ad993429e3459a4b157a2f7cd4f5b4e5894f",
+      "bytes": 20836
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/evidencia-ux04-cuenta-review/verificar-documentos.py",
+      "sha256": "dd5b2eafb23e4f7911be72f8fd5a250d9e6eff800c2989afdbe6367d20d43779",
+      "bytes": 8394
+    }
+  ]
+}

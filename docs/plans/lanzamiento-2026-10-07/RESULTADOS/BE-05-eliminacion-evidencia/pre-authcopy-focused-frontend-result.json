@@ -1,0 +1,33 @@
+{
+  "purpose": "Account deletion and restore local validation",
+  "records": [
+    {
+      "phase": "stop",
+      "command": [
+        "pnpm",
+        "run",
+        "stop"
+      ],
+      "exitCode": 0,
+      "startedAtUtc": "2026-10-11T23:08:33.917958+00:00",
+      "finishedAtUtc": "2026-10-11T23:08:34.170266+00:00"
+    },
+    {
+      "phase": "focused-frontend",
+      "command": [
+        "pnpm",
+        "--dir",
+        "frontend",
+        "exec",
+        "vitest",
+        "run",
+        "lib/api/account-deletion.test.ts",
+        "components/auth/account-deletion-experience.test.tsx",
+        "lib/__tests__/service-worker-routing.test.ts"
+      ],
+      "exitCode": 0,
+      "startedAtUtc": "2026-10-11T23:08:34.170676+00:00",
+      "finishedAtUtc": "2026-10-11T23:08:35.815142+00:00"
+    }
+  ]
+}

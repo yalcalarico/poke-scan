@@ -1,0 +1,1916 @@
+{
+  "evaluatedAt": "2026-10-06T14:37:11.193Z",
+  "scope": "Carga local acotada sobre service compilado y DINOv2 reales. Una foto repetida; sin HTTP/auth/red/camara/DB. RSS observado al finalizar cada rafaga, no pico continuo. Sin certificacion de estabilidad prolongada.",
+  "productionReady": false,
+  "photoHash": "697d693c9691f90c96e9e6698e18fa25a3516e224708a569793d048116309af6",
+  "groups": [
+    {
+      "concurrency": 1,
+      "rounds": 10,
+      "requests": 10,
+      "accepted": 10,
+      "busy": 0,
+      "rejectionRate": 0,
+      "elapsedMs": 1102.715,
+      "acceptedPerSecond": 9.06852631913051,
+      "successTiming": {
+        "n": 10,
+        "p50": 106.54508399999986,
+        "p95": 112.92599999999993,
+        "p99": 112.92599999999993
+      },
+      "busyTiming": {
+        "n": 0,
+        "p50": null,
+        "p95": null,
+        "p99": null
+      }
+    },
+    {
+      "concurrency": 2,
+      "rounds": 10,
+      "requests": 20,
+      "accepted": 10,
+      "busy": 10,
+      "rejectionRate": 0.5,
+      "elapsedMs": 1090.0692910000002,
+      "acceptedPerSecond": 9.173728755193414,
+      "successTiming": {
+        "n": 10,
+        "p50": 106.00374999999985,
+        "p95": 108.78458300000011,
+        "p99": 108.78458300000011
+      },
+      "busyTiming": {
+        "n": 10,
+        "p50": 0.08695799999986775,
+        "p95": 0.30070800000021336,
+        "p99": 0.30070800000021336
+      }
+    },
+    {
+      "concurrency": 4,
+      "rounds": 10,
+      "requests": 40,
+      "accepted": 10,
+      "busy": 30,
+      "rejectionRate": 0.75,
+      "elapsedMs": 1103.0973750000003,
+      "acceptedPerSecond": 9.065382827150684,
+      "successTiming": {
+        "n": 10,
+        "p50": 107.12533299999996,
+        "p95": 115.07004200000029,
+        "p99": 115.07004200000029
+      },
+      "busyTiming": {
+        "n": 30,
+        "p50": 0.020041000000674103,
+        "p95": 0.0906249999998181,
+        "p99": 0.12324999999964348
+      }
+    },
+    {
+      "concurrency": 8,
+      "rounds": 10,
+      "requests": 80,
+      "accepted": 10,
+      "busy": 70,
+      "rejectionRate": 0.875,
+      "elapsedMs": 1084.897959,
+      "acceptedPerSecond": 9.217456735947275,
+      "successTiming": {
+        "n": 10,
+        "p50": 105.28354099999979,
+        "p95": 107.6680409999999,
+        "p99": 107.6680409999999
+      },
+      "busyTiming": {
+        "n": 70,
+        "p50": 0.03374999999959982,
+        "p95": 0.09195799999997689,
+        "p99": 0.13012499999967986
+      }
+    }
+  ],
+  "coldTiming": {
+    "n": 1,
+    "p50": 1768.529875,
+    "p95": 1768.529875,
+    "p99": 1768.529875
+  },
+  "warmTiming": {
+    "n": 41,
+    "p50": 106.35841699999992,
+    "p95": 112.92599999999993,
+    "p99": 115.07004200000029
+  },
+  "resources": [
+    {
+      "concurrency": 1,
+      "round": -1,
+      "workerRssKiB": 303056,
+      "parentRssBytes": 94355456,
+      "listeners": {
+        "message": 0,
+        "exit": 1,
+        "error": 1,
+        "disconnect": 1
+      }
+    },
+    {
+      "concurrency": 1,
+      "round": 0,
+      "workerRssKiB": 320400,
+      "parentRssBytes": 102006784,
+      "listeners": {
+        "message": 0,
+        "exit": 1,
+        "error": 1,
+        "disconnect": 1
+      }
+    },
+    {
+      "concurrency": 1,
+      "round": 1,
+      "workerRssKiB": 329200,
+      "parentRssBytes": 108724224,
+      "listeners": {
+        "message": 0,
+        "exit": 1,
+        "error": 1,
+        "disconnect": 1
+      }
+    },
+    {
+      "concurrency": 1,
+      "round": 2,
+      "workerRssKiB": 314368,
+      "parentRssBytes": 106201088,
+      "listeners": {
+        "message": 0,
+        "exit": 1,
+        "error": 1,
+        "disconnect": 1
+      }
+    },
+    {
+      "concurrency": 1,
+      "round": 3,
+      "workerRssKiB": 319376,
+      "parentRssBytes": 110854144,
+      "listeners": {
+        "message": 0,
+        "exit": 1,
+        "error": 1,
+        "disconnect": 1
+      }
+    },
+    {
+      "concurrency": 1,
+      "round": 4,
+      "workerRssKiB": 322208,
+      "parentRssBytes": 106790912,
+      "listeners": {
+        "message": 0,
+        "exit": 1,
+        "error": 1,
+        "disconnect": 1
+      }
+    },
+    {
+      "concurrency": 1,
+      "round": 5,
+      "workerRssKiB": 328976,
+      "parentRssBytes": 110870528,
+      "listeners": {
+        "message": 0,
+        "exit": 1,
+        "error": 1,
+        "disconnect": 1
+      }
+    },
+    {
+      "concurrency": 1,
+      "round": 6,
+      "workerRssKiB": 336848,
+      "parentRssBytes": 106807296,
+      "listeners": {
+        "message": 0,
+        "exit": 1,
+        "error": 1,
+        "disconnect": 1
+      }
+    },
+    {
+      "concurrency": 1,
+      "round": 7,
+      "workerRssKiB": 345936,
+      "parentRssBytes": 110936064,
+      "listeners": {
+        "message": 0,
+        "exit": 1,
+        "error": 1,
+        "disconnect": 1
+      }
+    },
+    {
+      "concurrency": 1,
+      "round": 8,
+      "workerRssKiB": 350560,
+      "parentRssBytes": 106905600,
+      "listeners": {
+        "message": 0,
+        "exit": 1,
+        "error": 1,
+        "disconnect": 1
+      }
+    },
+    {
+      "concurrency": 1,
+      "round": 9,
+      "workerRssKiB": 349776,
+      "parentRssBytes": 110968832,
+      "listeners": {
+        "message": 0,
+        "exit": 1,
+        "error": 1,
+        "disconnect": 1
+      }
+    },
+    {
+      "concurrency": 2,
+      "round": 0,
+      "workerRssKiB": 352960,
+      "parentRssBytes": 106987520,
+      "listeners": {
+        "message": 0,
+        "exit": 1,
+        "error": 1,
+        "disconnect": 1
+      }
+    },
+    {
+      "concurrency": 2,
+      "round": 1,
+      "workerRssKiB": 356128,
+      "parentRssBytes": 111050752,
+      "listeners": {
+        "message": 0,
+        "exit": 1,
+        "error": 1,
+        "disconnect": 1
+      }
+    },
+    {
+      "concurrency": 2,
+      "round": 2,
+      "workerRssKiB": 361632,
+      "parentRssBytes": 106987520,
+      "listeners": {
+        "message": 0,
+        "exit": 1,
+        "error": 1,
+        "disconnect": 1
+      }
+    },
+    {
+      "concurrency": 2,
+      "round": 3,
+      "workerRssKiB": 362832,
+      "parentRssBytes": 111050752,
+      "listeners": {
+        "message": 0,
+        "exit": 1,
+        "error": 1,
+        "disconnect": 1
+      }
+    },
+    {
+      "concurrency": 2,
+      "round": 4,
+      "workerRssKiB": 362192,
+      "parentRssBytes": 107184128,
+      "listeners": {
+        "message": 0,
+        "exit": 1,
+        "error": 1,
+        "disconnect": 1
+      }
+    },
+    {
+      "concurrency": 2,
+      "round": 5,
+      "workerRssKiB": 365360,
+      "parentRssBytes": 111247360,
+      "listeners": {
+        "message": 0,
+        "exit": 1,
+        "error": 1,
+        "disconnect": 1
+      }
+    },
+    {
+      "concurrency": 2,
+      "round": 6,
+      "workerRssKiB": 368496,
+      "parentRssBytes": 107184128,
+      "listeners": {
+        "message": 0,
+        "exit": 1,
+        "error": 1,
+        "disconnect": 1
+      }
+    },
+    {
+      "concurrency": 2,
+      "round": 7,
+      "workerRssKiB": 374128,
+      "parentRssBytes": 111247360,
+      "listeners": {
+        "message": 0,
+        "exit": 1,
+        "error": 1,
+        "disconnect": 1
+      }
+    },
+    {
+      "concurrency": 2,
+      "round": 8,
+      "workerRssKiB": 375296,
+      "parentRssBytes": 105168896,
+      "listeners": {
+        "message": 0,
+        "exit": 1,
+        "error": 1,
+        "disconnect": 1
+      }
+    },
+    {
+      "concurrency": 2,
+      "round": 9,
+      "workerRssKiB": 374464,
+      "parentRssBytes": 111263744,
+      "listeners": {
+        "message": 0,
+        "exit": 1,
+        "error": 1,
+        "disconnect": 1
+      }
+    },
+    {
+      "concurrency": 4,
+      "round": 0,
+      "workerRssKiB": 332512,
+      "parentRssBytes": 107200512,
+      "listeners": {
+        "message": 0,
+        "exit": 1,
+        "error": 1,
+        "disconnect": 1
+      }
+    },
+    {
+      "concurrency": 4,
+      "round": 1,
+      "workerRssKiB": 334736,
+      "parentRssBytes": 111263744,
+      "listeners": {
+        "message": 0,
+        "exit": 1,
+        "error": 1,
+        "disconnect": 1
+      }
+    },
+    {
+      "concurrency": 4,
+      "round": 2,
+      "workerRssKiB": 336896,
+      "parentRssBytes": 107200512,
+      "listeners": {
+        "message": 0,
+        "exit": 1,
+        "error": 1,
+        "disconnect": 1
+      }
+    },
+    {
+      "concurrency": 4,
+      "round": 3,
+      "workerRssKiB": 338928,
+      "parentRssBytes": 111263744,
+      "listeners": {
+        "message": 0,
+        "exit": 1,
+        "error": 1,
+        "disconnect": 1
+      }
+    },
+    {
+      "concurrency": 4,
+      "round": 4,
+      "workerRssKiB": 343312,
+      "parentRssBytes": 107200512,
+      "listeners": {
+        "message": 0,
+        "exit": 1,
+        "error": 1,
+        "disconnect": 1
+      }
+    },
+    {
+      "concurrency": 4,
+      "round": 5,
+      "workerRssKiB": 343392,
+      "parentRssBytes": 111263744,
+      "listeners": {
+        "message": 0,
+        "exit": 1,
+        "error": 1,
+        "disconnect": 1
+      }
+    },
+    {
+      "concurrency": 4,
+      "round": 6,
+      "workerRssKiB": 341408,
+      "parentRssBytes": 107200512,
+      "listeners": {
+        "message": 0,
+        "exit": 1,
+        "error": 1,
+        "disconnect": 1
+      }
+    },
+    {
+      "concurrency": 4,
+      "round": 7,
+      "workerRssKiB": 343392,
+      "parentRssBytes": 109248512,
+      "listeners": {
+        "message": 0,
+        "exit": 1,
+        "error": 1,
+        "disconnect": 1
+      }
+    },
+    {
+      "concurrency": 4,
+      "round": 8,
+      "workerRssKiB": 345408,
+      "parentRssBytes": 101220352,
+      "listeners": {
+        "message": 0,
+        "exit": 1,
+        "error": 1,
+        "disconnect": 1
+      }
+    },
+    {
+      "concurrency": 4,
+      "round": 9,
+      "workerRssKiB": 349728,
+      "parentRssBytes": 105283584,
+      "listeners": {
+        "message": 0,
+        "exit": 1,
+        "error": 1,
+        "disconnect": 1
+      }
+    },
+    {
+      "concurrency": 8,
+      "round": 0,
+      "workerRssKiB": 347744,
+      "parentRssBytes": 105283584,
+      "listeners": {
+        "message": 0,
+        "exit": 1,
+        "error": 1,
+        "disconnect": 1
+      }
+    },
+    {
+      "concurrency": 8,
+      "round": 1,
+      "workerRssKiB": 349728,
+      "parentRssBytes": 105283584,
+      "listeners": {
+        "message": 0,
+        "exit": 1,
+        "error": 1,
+        "disconnect": 1
+      }
+    },
+    {
+      "concurrency": 8,
+      "round": 2,
+      "workerRssKiB": 351712,
+      "parentRssBytes": 105283584,
+      "listeners": {
+        "message": 0,
+        "exit": 1,
+        "error": 1,
+        "disconnect": 1
+      }
+    },
+    {
+      "concurrency": 8,
+      "round": 3,
+      "workerRssKiB": 356032,
+      "parentRssBytes": 105283584,
+      "listeners": {
+        "message": 0,
+        "exit": 1,
+        "error": 1,
+        "disconnect": 1
+      }
+    },
+    {
+      "concurrency": 8,
+      "round": 4,
+      "workerRssKiB": 356048,
+      "parentRssBytes": 105283584,
+      "listeners": {
+        "message": 0,
+        "exit": 1,
+        "error": 1,
+        "disconnect": 1
+      }
+    },
+    {
+      "concurrency": 8,
+      "round": 5,
+      "workerRssKiB": 358032,
+      "parentRssBytes": 105283584,
+      "listeners": {
+        "message": 0,
+        "exit": 1,
+        "error": 1,
+        "disconnect": 1
+      }
+    },
+    {
+      "concurrency": 8,
+      "round": 6,
+      "workerRssKiB": 360048,
+      "parentRssBytes": 105283584,
+      "listeners": {
+        "message": 0,
+        "exit": 1,
+        "error": 1,
+        "disconnect": 1
+      }
+    },
+    {
+      "concurrency": 8,
+      "round": 7,
+      "workerRssKiB": 364368,
+      "parentRssBytes": 103251968,
+      "listeners": {
+        "message": 0,
+        "exit": 1,
+        "error": 1,
+        "disconnect": 1
+      }
+    },
+    {
+      "concurrency": 8,
+      "round": 8,
+      "workerRssKiB": 364416,
+      "parentRssBytes": 105283584,
+      "listeners": {
+        "message": 0,
+        "exit": 1,
+        "error": 1,
+        "disconnect": 1
+      }
+    },
+    {
+      "concurrency": 8,
+      "round": 9,
+      "workerRssKiB": 362432,
+      "parentRssBytes": 105283584,
+      "listeners": {
+        "message": 0,
+        "exit": 1,
+        "error": 1,
+        "disconnect": 1
+      }
+    },
+    {
+      "concurrency": 1,
+      "round": -2,
+      "workerRssKiB": 364480,
+      "parentRssBytes": 105283584,
+      "listeners": {
+        "message": 0,
+        "exit": 1,
+        "error": 1,
+        "disconnect": 1
+      }
+    }
+  ],
+  "rows": [
+    {
+      "concurrency": 1,
+      "round": -1,
+      "ok": true,
+      "cold": true,
+      "latencyMs": 1768.529875,
+      "inferenceMs": 83.59833300000014,
+      "indexVersion": "9d89a62b919f5a489428a92b965ec6bf98f982a7a0f36abd5d36c2611808ebca",
+      "references": 20670
+    },
+    {
+      "concurrency": 1,
+      "round": 0,
+      "ok": true,
+      "cold": false,
+      "latencyMs": 112.92599999999993,
+      "inferenceMs": 72.58541600000012,
+      "indexVersion": "9d89a62b919f5a489428a92b965ec6bf98f982a7a0f36abd5d36c2611808ebca",
+      "references": 20670
+    },
+    {
+      "concurrency": 1,
+      "round": 1,
+      "ok": true,
+      "cold": false,
+      "latencyMs": 109.60783399999991,
+      "inferenceMs": 71.74974999999995,
+      "indexVersion": "9d89a62b919f5a489428a92b965ec6bf98f982a7a0f36abd5d36c2611808ebca",
+      "references": 20670
+    },
+    {
+      "concurrency": 1,
+      "round": 2,
+      "ok": true,
+      "cold": false,
+      "latencyMs": 106.54508399999986,
+      "inferenceMs": 71.65587499999992,
+      "indexVersion": "9d89a62b919f5a489428a92b965ec6bf98f982a7a0f36abd5d36c2611808ebca",
+      "references": 20670
+    },
+    {
+      "concurrency": 1,
+      "round": 3,
+      "ok": true,
+      "cold": false,
+      "latencyMs": 106.97650000000021,
+      "inferenceMs": 71.58558300000004,
+      "indexVersion": "9d89a62b919f5a489428a92b965ec6bf98f982a7a0f36abd5d36c2611808ebca",
+      "references": 20670
+    },
+    {
+      "concurrency": 1,
+      "round": 4,
+      "ok": true,
+      "cold": false,
+      "latencyMs": 106.911791,
+      "inferenceMs": 72.03041600000006,
+      "indexVersion": "9d89a62b919f5a489428a92b965ec6bf98f982a7a0f36abd5d36c2611808ebca",
+      "references": 20670
+    },
+    {
+      "concurrency": 1,
+      "round": 5,
+      "ok": true,
+      "cold": false,
+      "latencyMs": 109.96016700000018,
+      "inferenceMs": 74.02533300000005,
+      "indexVersion": "9d89a62b919f5a489428a92b965ec6bf98f982a7a0f36abd5d36c2611808ebca",
+      "references": 20670
+    },
+    {
+      "concurrency": 1,
+      "round": 6,
+      "ok": true,
+      "cold": false,
+      "latencyMs": 105.5389580000001,
+      "inferenceMs": 70.60208300000022,
+      "indexVersion": "9d89a62b919f5a489428a92b965ec6bf98f982a7a0f36abd5d36c2611808ebca",
+      "references": 20670
+    },
+    {
+      "concurrency": 1,
+      "round": 7,
+      "ok": true,
+      "cold": false,
+      "latencyMs": 104.5029169999998,
+      "inferenceMs": 70.96349999999984,
+      "indexVersion": "9d89a62b919f5a489428a92b965ec6bf98f982a7a0f36abd5d36c2611808ebca",
+      "references": 20670
+    },
+    {
+      "concurrency": 1,
+      "round": 8,
+      "ok": true,
+      "cold": false,
+      "latencyMs": 106.05999999999995,
+      "inferenceMs": 71.81912499999999,
+      "indexVersion": "9d89a62b919f5a489428a92b965ec6bf98f982a7a0f36abd5d36c2611808ebca",
+      "references": 20670
+    },
+    {
+      "concurrency": 1,
+      "round": 9,
+      "ok": true,
+      "cold": false,
+      "latencyMs": 106.35841699999992,
+      "inferenceMs": 71.47445799999969,
+      "indexVersion": "9d89a62b919f5a489428a92b965ec6bf98f982a7a0f36abd5d36c2611808ebca",
+      "references": 20670
+    },
+    {
+      "concurrency": 2,
+      "round": 0,
+      "ok": true,
+      "cold": false,
+      "latencyMs": 106.70962499999996,
+      "inferenceMs": 70.77354100000002,
+      "indexVersion": "9d89a62b919f5a489428a92b965ec6bf98f982a7a0f36abd5d36c2611808ebca",
+      "references": 20670
+    },
+    {
+      "concurrency": 2,
+      "round": 0,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.30070800000021336
+    },
+    {
+      "concurrency": 2,
+      "round": 1,
+      "ok": true,
+      "cold": false,
+      "latencyMs": 103.80862500000012,
+      "inferenceMs": 69.94737500000019,
+      "indexVersion": "9d89a62b919f5a489428a92b965ec6bf98f982a7a0f36abd5d36c2611808ebca",
+      "references": 20670
+    },
+    {
+      "concurrency": 2,
+      "round": 1,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.08424999999988358
+    },
+    {
+      "concurrency": 2,
+      "round": 2,
+      "ok": true,
+      "cold": false,
+      "latencyMs": 104.1106249999998,
+      "inferenceMs": 71.2712919999999,
+      "indexVersion": "9d89a62b919f5a489428a92b965ec6bf98f982a7a0f36abd5d36c2611808ebca",
+      "references": 20670
+    },
+    {
+      "concurrency": 2,
+      "round": 2,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.06141600000000835
+    },
+    {
+      "concurrency": 2,
+      "round": 3,
+      "ok": true,
+      "cold": false,
+      "latencyMs": 107.73370799999975,
+      "inferenceMs": 73.11195799999996,
+      "indexVersion": "9d89a62b919f5a489428a92b965ec6bf98f982a7a0f36abd5d36c2611808ebca",
+      "references": 20670
+    },
+    {
+      "concurrency": 2,
+      "round": 3,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.06679100000019389
+    },
+    {
+      "concurrency": 2,
+      "round": 4,
+      "ok": true,
+      "cold": false,
+      "latencyMs": 107.93945799999983,
+      "inferenceMs": 71.75416700000005,
+      "indexVersion": "9d89a62b919f5a489428a92b965ec6bf98f982a7a0f36abd5d36c2611808ebca",
+      "references": 20670
+    },
+    {
+      "concurrency": 2,
+      "round": 4,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.14525000000003274
+    },
+    {
+      "concurrency": 2,
+      "round": 5,
+      "ok": true,
+      "cold": false,
+      "latencyMs": 104.98649999999998,
+      "inferenceMs": 71.65933300000006,
+      "indexVersion": "9d89a62b919f5a489428a92b965ec6bf98f982a7a0f36abd5d36c2611808ebca",
+      "references": 20670
+    },
+    {
+      "concurrency": 2,
+      "round": 5,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.08695799999986775
+    },
+    {
+      "concurrency": 2,
+      "round": 6,
+      "ok": true,
+      "cold": false,
+      "latencyMs": 106.00374999999985,
+      "inferenceMs": 71.6583340000002,
+      "indexVersion": "9d89a62b919f5a489428a92b965ec6bf98f982a7a0f36abd5d36c2611808ebca",
+      "references": 20670
+    },
+    {
+      "concurrency": 2,
+      "round": 6,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.10099999999965803
+    },
+    {
+      "concurrency": 2,
+      "round": 7,
+      "ok": true,
+      "cold": false,
+      "latencyMs": 107.55616700000019,
+      "inferenceMs": 73.41070900000022,
+      "indexVersion": "9d89a62b919f5a489428a92b965ec6bf98f982a7a0f36abd5d36c2611808ebca",
+      "references": 20670
+    },
+    {
+      "concurrency": 2,
+      "round": 7,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.058540999999877386
+    },
+    {
+      "concurrency": 2,
+      "round": 8,
+      "ok": true,
+      "cold": false,
+      "latencyMs": 108.78458300000011,
+      "inferenceMs": 72.25345800000014,
+      "indexVersion": "9d89a62b919f5a489428a92b965ec6bf98f982a7a0f36abd5d36c2611808ebca",
+      "references": 20670
+    },
+    {
+      "concurrency": 2,
+      "round": 8,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.20083299999987503
+    },
+    {
+      "concurrency": 2,
+      "round": 9,
+      "ok": true,
+      "cold": false,
+      "latencyMs": 105.85491700000011,
+      "inferenceMs": 71.41883300000018,
+      "indexVersion": "9d89a62b919f5a489428a92b965ec6bf98f982a7a0f36abd5d36c2611808ebca",
+      "references": 20670
+    },
+    {
+      "concurrency": 2,
+      "round": 9,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.09837500000003274
+    },
+    {
+      "concurrency": 4,
+      "round": 0,
+      "ok": true,
+      "cold": false,
+      "latencyMs": 115.07004200000029,
+      "inferenceMs": 73.51833299999998,
+      "indexVersion": "9d89a62b919f5a489428a92b965ec6bf98f982a7a0f36abd5d36c2611808ebca",
+      "references": 20670
+    },
+    {
+      "concurrency": 4,
+      "round": 0,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.06641599999966274
+    },
+    {
+      "concurrency": 4,
+      "round": 0,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.019790999999713677
+    },
+    {
+      "concurrency": 4,
+      "round": 0,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.015166999999564723
+    },
+    {
+      "concurrency": 4,
+      "round": 1,
+      "ok": true,
+      "cold": false,
+      "latencyMs": 114.47724999999991,
+      "inferenceMs": 70.76637500000015,
+      "indexVersion": "9d89a62b919f5a489428a92b965ec6bf98f982a7a0f36abd5d36c2611808ebca",
+      "references": 20670
+    },
+    {
+      "concurrency": 4,
+      "round": 1,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.060583999999835214
+    },
+    {
+      "concurrency": 4,
+      "round": 1,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.019583999999667867
+    },
+    {
+      "concurrency": 4,
+      "round": 1,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.014959000000089873
+    },
+    {
+      "concurrency": 4,
+      "round": 2,
+      "ok": true,
+      "cold": false,
+      "latencyMs": 107.3852910000005,
+      "inferenceMs": 71.75195799999983,
+      "indexVersion": "9d89a62b919f5a489428a92b965ec6bf98f982a7a0f36abd5d36c2611808ebca",
+      "references": 20670
+    },
+    {
+      "concurrency": 4,
+      "round": 2,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.0527090000005046
+    },
+    {
+      "concurrency": 4,
+      "round": 2,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.01945900000009715
+    },
+    {
+      "concurrency": 4,
+      "round": 2,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.015000000000327418
+    },
+    {
+      "concurrency": 4,
+      "round": 3,
+      "ok": true,
+      "cold": false,
+      "latencyMs": 107.12533299999996,
+      "inferenceMs": 71.47425000000021,
+      "indexVersion": "9d89a62b919f5a489428a92b965ec6bf98f982a7a0f36abd5d36c2611808ebca",
+      "references": 20670
+    },
+    {
+      "concurrency": 4,
+      "round": 3,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.12324999999964348
+    },
+    {
+      "concurrency": 4,
+      "round": 3,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.03720900000007532
+    },
+    {
+      "concurrency": 4,
+      "round": 3,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.01391700000021956
+    },
+    {
+      "concurrency": 4,
+      "round": 4,
+      "ok": true,
+      "cold": false,
+      "latencyMs": 103.11191599999984,
+      "inferenceMs": 70.21729200000027,
+      "indexVersion": "9d89a62b919f5a489428a92b965ec6bf98f982a7a0f36abd5d36c2611808ebca",
+      "references": 20670
+    },
+    {
+      "concurrency": 4,
+      "round": 4,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.05758400000013353
+    },
+    {
+      "concurrency": 4,
+      "round": 4,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.020041000000674103
+    },
+    {
+      "concurrency": 4,
+      "round": 4,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.015542000000095868
+    },
+    {
+      "concurrency": 4,
+      "round": 5,
+      "ok": true,
+      "cold": false,
+      "latencyMs": 103.96854100000019,
+      "inferenceMs": 70.60275000000001,
+      "indexVersion": "9d89a62b919f5a489428a92b965ec6bf98f982a7a0f36abd5d36c2611808ebca",
+      "references": 20670
+    },
+    {
+      "concurrency": 4,
+      "round": 5,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.059333000000151515
+    },
+    {
+      "concurrency": 4,
+      "round": 5,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.01954200000000128
+    },
+    {
+      "concurrency": 4,
+      "round": 5,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.015124999999898137
+    },
+    {
+      "concurrency": 4,
+      "round": 6,
+      "ok": true,
+      "cold": false,
+      "latencyMs": 104.24495800000022,
+      "inferenceMs": 70.47770799999944,
+      "indexVersion": "9d89a62b919f5a489428a92b965ec6bf98f982a7a0f36abd5d36c2611808ebca",
+      "references": 20670
+    },
+    {
+      "concurrency": 4,
+      "round": 6,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.05345800000031886
+    },
+    {
+      "concurrency": 4,
+      "round": 6,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.01970900000014808
+    },
+    {
+      "concurrency": 4,
+      "round": 6,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.015167000000474218
+    },
+    {
+      "concurrency": 4,
+      "round": 7,
+      "ok": true,
+      "cold": false,
+      "latencyMs": 107.13499999999931,
+      "inferenceMs": 71.31074999999964,
+      "indexVersion": "9d89a62b919f5a489428a92b965ec6bf98f982a7a0f36abd5d36c2611808ebca",
+      "references": 20670
+    },
+    {
+      "concurrency": 4,
+      "round": 7,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.08137499999975262
+    },
+    {
+      "concurrency": 4,
+      "round": 7,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.032124999999723514
+    },
+    {
+      "concurrency": 4,
+      "round": 7,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.023250000000189175
+    },
+    {
+      "concurrency": 4,
+      "round": 8,
+      "ok": true,
+      "cold": false,
+      "latencyMs": 108.80133300000034,
+      "inferenceMs": 71.39620900000045,
+      "indexVersion": "9d89a62b919f5a489428a92b965ec6bf98f982a7a0f36abd5d36c2611808ebca",
+      "references": 20670
+    },
+    {
+      "concurrency": 4,
+      "round": 8,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.08904100000017934
+    },
+    {
+      "concurrency": 4,
+      "round": 8,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.02775000000019645
+    },
+    {
+      "concurrency": 4,
+      "round": 8,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.014749999999366992
+    },
+    {
+      "concurrency": 4,
+      "round": 9,
+      "ok": true,
+      "cold": false,
+      "latencyMs": 105.46537499999977,
+      "inferenceMs": 70.9989999999998,
+      "indexVersion": "9d89a62b919f5a489428a92b965ec6bf98f982a7a0f36abd5d36c2611808ebca",
+      "references": 20670
+    },
+    {
+      "concurrency": 4,
+      "round": 9,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.0906249999998181
+    },
+    {
+      "concurrency": 4,
+      "round": 9,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.0244170000005397
+    },
+    {
+      "concurrency": 4,
+      "round": 9,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.016916999999921245
+    },
+    {
+      "concurrency": 8,
+      "round": 0,
+      "ok": true,
+      "cold": false,
+      "latencyMs": 105.11970900000051,
+      "inferenceMs": 70.7407919999996,
+      "indexVersion": "9d89a62b919f5a489428a92b965ec6bf98f982a7a0f36abd5d36c2611808ebca",
+      "references": 20670
+    },
+    {
+      "concurrency": 8,
+      "round": 0,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.08774999999968713
+    },
+    {
+      "concurrency": 8,
+      "round": 0,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.04504099999940081
+    },
+    {
+      "concurrency": 8,
+      "round": 0,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.038832999999613094
+    },
+    {
+      "concurrency": 8,
+      "round": 0,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.03374999999959982
+    },
+    {
+      "concurrency": 8,
+      "round": 0,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.028749999999490683
+    },
+    {
+      "concurrency": 8,
+      "round": 0,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.023791999999957625
+    },
+    {
+      "concurrency": 8,
+      "round": 0,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.01904099999956088
+    },
+    {
+      "concurrency": 8,
+      "round": 1,
+      "ok": true,
+      "cold": false,
+      "latencyMs": 105.02558299999964,
+      "inferenceMs": 71.38937499999975,
+      "indexVersion": "9d89a62b919f5a489428a92b965ec6bf98f982a7a0f36abd5d36c2611808ebca",
+      "references": 20670
+    },
+    {
+      "concurrency": 8,
+      "round": 1,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.0794160000004922
+    },
+    {
+      "concurrency": 8,
+      "round": 1,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.040041000000201166
+    },
+    {
+      "concurrency": 8,
+      "round": 1,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.03499999999985448
+    },
+    {
+      "concurrency": 8,
+      "round": 1,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.03058300000066083
+    },
+    {
+      "concurrency": 8,
+      "round": 1,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.02624999999989086
+    },
+    {
+      "concurrency": 8,
+      "round": 1,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.02208299999983865
+    },
+    {
+      "concurrency": 8,
+      "round": 1,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.017749999999978172
+    },
+    {
+      "concurrency": 8,
+      "round": 2,
+      "ok": true,
+      "cold": false,
+      "latencyMs": 107.24979100000019,
+      "inferenceMs": 71.29095799999959,
+      "indexVersion": "9d89a62b919f5a489428a92b965ec6bf98f982a7a0f36abd5d36c2611808ebca",
+      "references": 20670
+    },
+    {
+      "concurrency": 8,
+      "round": 2,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.13012499999967986
+    },
+    {
+      "concurrency": 8,
+      "round": 2,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.059333000000151515
+    },
+    {
+      "concurrency": 8,
+      "round": 2,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.04504200000064884
+    },
+    {
+      "concurrency": 8,
+      "round": 2,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.03837500000008731
+    },
+    {
+      "concurrency": 8,
+      "round": 2,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.032499999999345164
+    },
+    {
+      "concurrency": 8,
+      "round": 2,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.02733299999999872
+    },
+    {
+      "concurrency": 8,
+      "round": 2,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.022291000000222994
+    },
+    {
+      "concurrency": 8,
+      "round": 3,
+      "ok": true,
+      "cold": false,
+      "latencyMs": 105.28354099999979,
+      "inferenceMs": 71.07287500000075,
+      "indexVersion": "9d89a62b919f5a489428a92b965ec6bf98f982a7a0f36abd5d36c2611808ebca",
+      "references": 20670
+    },
+    {
+      "concurrency": 8,
+      "round": 3,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.07124999999996362
+    },
+    {
+      "concurrency": 8,
+      "round": 3,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.03908400000000256
+    },
+    {
+      "concurrency": 8,
+      "round": 3,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.03379199999926641
+    },
+    {
+      "concurrency": 8,
+      "round": 3,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.02920799999992596
+    },
+    {
+      "concurrency": 8,
+      "round": 3,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.024875000000065484
+    },
+    {
+      "concurrency": 8,
+      "round": 3,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.020541999999295513
+    },
+    {
+      "concurrency": 8,
+      "round": 3,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.016417000000728876
+    },
+    {
+      "concurrency": 8,
+      "round": 4,
+      "ok": true,
+      "cold": false,
+      "latencyMs": 104.73420799999985,
+      "inferenceMs": 71.10933300000033,
+      "indexVersion": "9d89a62b919f5a489428a92b965ec6bf98f982a7a0f36abd5d36c2611808ebca",
+      "references": 20670
+    },
+    {
+      "concurrency": 8,
+      "round": 4,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.08308300000044255
+    },
+    {
+      "concurrency": 8,
+      "round": 4,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.044667000000117696
+    },
+    {
+      "concurrency": 8,
+      "round": 4,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.03879099999994651
+    },
+    {
+      "concurrency": 8,
+      "round": 4,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.03379099999983737
+    },
+    {
+      "concurrency": 8,
+      "round": 4,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.029083999999784282
+    },
+    {
+      "concurrency": 8,
+      "round": 4,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.024500000000443833
+    },
+    {
+      "concurrency": 8,
+      "round": 4,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.020042000000103144
+    },
+    {
+      "concurrency": 8,
+      "round": 5,
+      "ok": true,
+      "cold": false,
+      "latencyMs": 107.6680409999999,
+      "inferenceMs": 71.36179100000027,
+      "indexVersion": "9d89a62b919f5a489428a92b965ec6bf98f982a7a0f36abd5d36c2611808ebca",
+      "references": 20670
+    },
+    {
+      "concurrency": 8,
+      "round": 5,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.09195799999997689
+    },
+    {
+      "concurrency": 8,
+      "round": 5,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.04487500000050204
+    },
+    {
+      "concurrency": 8,
+      "round": 5,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.03891699999985576
+    },
+    {
+      "concurrency": 8,
+      "round": 5,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.03416599999945902
+    },
+    {
+      "concurrency": 8,
+      "round": 5,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.02945799999997689
+    },
+    {
+      "concurrency": 8,
+      "round": 5,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.024666000000252097
+    },
+    {
+      "concurrency": 8,
+      "round": 5,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.020209000000249944
+    },
+    {
+      "concurrency": 8,
+      "round": 6,
+      "ok": true,
+      "cold": false,
+      "latencyMs": 107.32104100000015,
+      "inferenceMs": 72.42458299999998,
+      "indexVersion": "9d89a62b919f5a489428a92b965ec6bf98f982a7a0f36abd5d36c2611808ebca",
+      "references": 20670
+    },
+    {
+      "concurrency": 8,
+      "round": 6,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.0884169999999358
+    },
+    {
+      "concurrency": 8,
+      "round": 6,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.04383299999972223
+    },
+    {
+      "concurrency": 8,
+      "round": 6,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.03770799999983865
+    },
+    {
+      "concurrency": 8,
+      "round": 6,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.03270799999972951
+    },
+    {
+      "concurrency": 8,
+      "round": 6,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.028250000000298314
+    },
+    {
+      "concurrency": 8,
+      "round": 6,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.02387500000077125
+    },
+    {
+      "concurrency": 8,
+      "round": 6,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.019500000000334694
+    },
+    {
+      "concurrency": 8,
+      "round": 7,
+      "ok": true,
+      "cold": false,
+      "latencyMs": 105.98441699999967,
+      "inferenceMs": 71.32408399999986,
+      "indexVersion": "9d89a62b919f5a489428a92b965ec6bf98f982a7a0f36abd5d36c2611808ebca",
+      "references": 20670
+    },
+    {
+      "concurrency": 8,
+      "round": 7,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.09199999999964348
+    },
+    {
+      "concurrency": 8,
+      "round": 7,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.043166000000383065
+    },
+    {
+      "concurrency": 8,
+      "round": 7,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.037333000000217
+    },
+    {
+      "concurrency": 8,
+      "round": 7,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.03279199999997218
+    },
+    {
+      "concurrency": 8,
+      "round": 7,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.028374999999869033
+    },
+    {
+      "concurrency": 8,
+      "round": 7,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.023999999999432475
+    },
+    {
+      "concurrency": 8,
+      "round": 7,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.019624999999905413
+    },
+    {
+      "concurrency": 8,
+      "round": 8,
+      "ok": true,
+      "cold": false,
+      "latencyMs": 106.25737500000014,
+      "inferenceMs": 71.05083299999933,
+      "indexVersion": "9d89a62b919f5a489428a92b965ec6bf98f982a7a0f36abd5d36c2611808ebca",
+      "references": 20670
+    },
+    {
+      "concurrency": 8,
+      "round": 8,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.12941699999919365
+    },
+    {
+      "concurrency": 8,
+      "round": 8,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.08795900000041001
+    },
+    {
+      "concurrency": 8,
+      "round": 8,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.050750000000334694
+    },
+    {
+      "concurrency": 8,
+      "round": 8,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.03604100000029575
+    },
+    {
+      "concurrency": 8,
+      "round": 8,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.029875000000174623
+    },
+    {
+      "concurrency": 8,
+      "round": 8,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.025042000000212283
+    },
+    {
+      "concurrency": 8,
+      "round": 8,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.020459000000300875
+    },
+    {
+      "concurrency": 8,
+      "round": 9,
+      "ok": true,
+      "cold": false,
+      "latencyMs": 104.79858399999921,
+      "inferenceMs": 71.38908399999946,
+      "indexVersion": "9d89a62b919f5a489428a92b965ec6bf98f982a7a0f36abd5d36c2611808ebca",
+      "references": 20670
+    },
+    {
+      "concurrency": 8,
+      "round": 9,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.08862500000032014
+    },
+    {
+      "concurrency": 8,
+      "round": 9,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.046332999999322055
+    },
+    {
+      "concurrency": 8,
+      "round": 9,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.03991700000005949
+    },
+    {
+      "concurrency": 8,
+      "round": 9,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.034583999999995285
+    },
+    {
+      "concurrency": 8,
+      "round": 9,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.029500000000552973
+    },
+    {
+      "concurrency": 8,
+      "round": 9,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.02454200000011042
+    },
+    {
+      "concurrency": 8,
+      "round": 9,
+      "ok": false,
+      "status": 503,
+      "reason": "busy",
+      "latencyMs": 0.01970900000014808
+    },
+    {
+      "concurrency": 1,
+      "round": -2,
+      "ok": true,
+      "cold": false,
+      "latencyMs": 105.35270800000035,
+      "inferenceMs": 71.1792089999999,
+      "indexVersion": "9d89a62b919f5a489428a92b965ec6bf98f982a7a0f36abd5d36c2611808ebca",
+      "references": 20670
+    }
+  ]
+}

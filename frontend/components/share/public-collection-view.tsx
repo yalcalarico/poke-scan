@@ -2,34 +2,38 @@ import Link from 'next/link';
 import { Layers, Plus, Search, Sparkles } from 'lucide-react';
 
 import { InstallCta } from '@/components/share/install-cta';
+import { ValuationMetadata } from '@/components/prices/valuation-metadata';
 import { PublicCardGrid } from '@/components/share/public-card-grid';
 import { Alert, Avatar, EmptyState, Stat, StatGrid, buttonVariants } from '@/components/ui';
 import { cn } from '@/lib/cn';
 import { formatDate, formatPrice, pluralize } from '@/lib/format';
 import type { PublicSharedCollection } from '@/lib/api/share';
-import type { CollectionStatsDto } from '@/types/api';
+import type { PublicShareStatsDto } from '@/types/api';
 
-/**
- * Máximo de ítems que el backend manda en `/s/:slug`. Está duplicado del
- * backend a propósito: la constante `MAX_PUBLIC_ITEMS` de `share.service.ts` no
- * es exportable por el contrato, y el aviso del banner necesita el número para
- * decir "acá hay 500 de 700", no "hay más".
- */
+/** Máximo de grupos que el endpoint público entrega por enlace. */
 export const MAX_PUBLIC_ITEMS = 500;
 
 export interface PublicCollectionViewProps {
   data: PublicSharedCollection;
 }
 
-function CollectionSummary({ stats }: { stats: CollectionStatsDto }) {
+function CollectionSummary({ stats }: { stats: PublicShareStatsDto }) {
+  const valuation = stats.valuation;
   return (
-    <StatGrid columns={5}>
-      <Stat label="Cartas" value={stats.totalCards} />
-      <Stat label="Únicas" value={stats.uniqueCards} />
-      <Stat label="Duplicadas" value={stats.duplicateCards} />
-      <Stat label="Sets" value={stats.setsCount} />
-      <Stat label="Valor total" value={formatPrice(stats.totalValueUsd, 'USD')} tone="positive" />
-    </StatGrid>
+    <div className="flex flex-col gap-2">
+      <StatGrid columns={3}>
+        <Stat label="Grupos" value={stats.totalGroups} />
+        <Stat label="Copias" value={stats.totalCards} />
+        <Stat label="Cartas únicas" value={stats.uniqueCards} />
+        <Stat label="Grupos con duplicadas" value={stats.duplicateCards} />
+        <Stat label="Sets" value={stats.setsCount} />
+        <Stat label="Referencia USD" value={formatPrice(valuation?.amount, 'USD')} tone={valuation?.amount == null ? 'default' : 'positive'} />
+      </StatGrid>
+      <ValuationMetadata valuation={valuation} />
+      <p className="text-caption text-tertiary">
+        Referencias internacionales en USD por variante, sin ajuste por condición. No son precios de venta.
+      </p>
+    </div>
   );
 }
 
@@ -40,9 +44,8 @@ function CollectionSummary({ stats }: { stats: CollectionStatsDto }) {
  * **El precio se formatea en USD siempre**, aunque el visitante tenga la
  * preferencia en ARS: `useCurrency()` es un client component y la conversión se
  * hace en el cliente, así que meterlo acá obligaría a la página entera a ser
- * client y a perder el `revalidate` de 60 s. Un valor que se calcula en el
- * servidor y se cachea es un valor en la moneda de referencia del catálogo; el
- * `Stat` lo declara y no promete otra cosa.
+ * client. La respuesta se solicita sin caché para respetar la vigencia del
+ * enlace.
  */
 export function PublicCollectionView({ data }: PublicCollectionViewProps) {
   const { ownerDisplayName, collectionName, items, stats, truncated, sharedAt } = data;
@@ -99,17 +102,18 @@ export function PublicCollectionView({ data }: PublicCollectionViewProps) {
         */}
         {truncated ? (
           <Alert tone="warning" title="Esta colección está truncada">
-            Tiene más de {MAX_PUBLIC_ITEMS} cartas: abajo van las primeras {MAX_PUBLIC_ITEMS}.
-          </Alert>
-        ) : null}
+            Mostramos {items.length} de {stats.totalGroups} grupos. El valor y la cobertura incluyen toda la colección.
+        </Alert>
+      ) : null}
+      {truncated ? <p className="text-caption text-tertiary">Hasta 500 grupos visibles. Las copias cotizadas del resumen corresponden al alcance completo.</p> : null}
 
         <section aria-labelledby="cartas-compartidas" className="flex flex-col gap-4">
           <h2 id="cartas-compartidas" className="flex flex-wrap items-center gap-2 text-h2 text-primary">
             <Layers aria-hidden="true" focusable="false" strokeWidth={1.75} className="h-5 w-5" />
             Cartas
             <span className="text-body text-tertiary tabular-nums">
-              {items.length}{' '}
-              {pluralize(items.length, 'carta mostrada', 'cartas mostradas')}
+              {items.length} de {stats.totalGroups}{' '}
+              {pluralize(stats.totalGroups, 'grupo de cartas', 'grupos de cartas')}
             </span>
           </h2>
 

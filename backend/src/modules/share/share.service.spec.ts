@@ -1,4 +1,4 @@
-import { NotFoundException } from '@nestjs/common';
+import { type INestApplication, NotFoundException } from '@nestjs/common';
 import { Test, type TestingModule } from '@nestjs/testing';
 import { Prisma, PrismaClient } from '@prisma/client';
 import { PrismaService } from '../../prisma/index.js';
@@ -9,7 +9,8 @@ import { AddItemDto } from '../collections/dto/add-item.dto.js';
 import { CreateCollectionDto } from '../collections/dto/create-collection.dto.js';
 import { CreateShareDto } from './dto/create-share.dto.js';
 import { UpdateShareDto } from './dto/update-share.dto.js';
-import { ShareService } from './share.service.js';
+import { ShareService, type SharedCollectionDto } from './share.service.js';
+import { PublicShareController } from './public-share.controller.js';
 
 const TEST_CARD_PREFIX = 'test-share-';
 const TEST_CARD_ID = `${TEST_CARD_PREFIX}primary`;
@@ -20,6 +21,23 @@ const PRICE_PROVIDER_STUB = {
   id: 'tcgdex',
   defaultSource: 'tcgplayer',
   defaultCurrency: 'USD',
+};
+const cachedJson = new Map<string, string>();
+const readCached = async (key: string): Promise<SharedCollectionDto | null> => {
+  const json = cachedJson.get(key);
+  return json ? JSON.parse(json) as SharedCollectionDto : null;
+};
+const writeCached = async (key: string, value: unknown, _ttl?: number): Promise<void> => {
+  cachedJson.set(key, JSON.stringify(value));
+};
+const deleteCached = async (key: string): Promise<void> => { cachedJson.delete(key); };
+const redisStub = {
+  isAvailable: () => true,
+  get: vi.fn(async () => null),
+  getJson: vi.fn(readCached),
+  set: vi.fn(async () => undefined),
+  setJson: vi.fn(writeCached),
+  del: vi.fn(deleteCached),
 };
 
 const addItem = (cardId: string, dto: Partial<AddItemDto> = {}): AddItemDto =>
@@ -34,6 +52,8 @@ const updateShare = (dto: Partial<UpdateShareDto>): UpdateShareDto =>
 describe('ShareService', () => {
   const prismaClient = new PrismaClient();
   let moduleRef: TestingModule;
+  let app: INestApplication;
+  let baseUrl: string;
   let service: ShareService;
   let collections: CollectionsService;
   let userA: string;
@@ -42,42 +62,41 @@ describe('ShareService', () => {
 
   beforeAll(async () => {
     moduleRef = await Test.createTestingModule({
+      controllers: [PublicShareController],
       providers: [
         ShareService,
         CollectionsService,
         { provide: PrismaService, useValue: prismaClient },
         { provide: PRICE_PROVIDER, useValue: PRICE_PROVIDER_STUB },
-        // Sin Redis en los tests: el service tiene que degradar a "sin caché".
-        {
-          provide: RedisService,
-          useValue: {
-            isAvailable: () => false,
-            get: async () => null,
-            getJson: async () => null,
-            set: async () => undefined,
-            setJson: async () => undefined,
-            del: async () => undefined,
-          },
-        },
+        // Caché en memoria: permite forzar hits/carreras sin tocar Redis real.
+        { provide: RedisService, useValue: redisStub },
       ],
     }).compile();
 
     service = moduleRef.get(ShareService);
     collections = moduleRef.get(CollectionsService);
+    app = moduleRef.createNestApplication();
+    app.setGlobalPrefix('api');
+    await app.listen(0, '127.0.0.1');
+    baseUrl = await app.getUrl();
   });
 
   afterAll(async () => {
+    await prismaClient.user.deleteMany({ where: { email: { in: [TEST_EMAIL_A, TEST_EMAIL_B] } } });
     await prismaClient.card.deleteMany({
       where: { id: { startsWith: TEST_CARD_PREFIX } },
     });
+    await app.close();
     await prismaClient.$disconnect();
-    await moduleRef.close();
   });
 
   beforeEach(async () => {
-    await prismaClient.user.deleteMany({
-      where: { email: { endsWith: '@test.local' } },
-    });
+    vi.clearAllMocks();
+    cachedJson.clear();
+    redisStub.getJson.mockReset().mockImplementation(readCached);
+    redisStub.setJson.mockReset().mockImplementation(writeCached);
+    redisStub.del.mockReset().mockImplementation(deleteCached);
+    await prismaClient.user.deleteMany({ where: { email: { in: [TEST_EMAIL_A, TEST_EMAIL_B] } } });
     await prismaClient.card.deleteMany({
       where: { id: { startsWith: TEST_CARD_PREFIX } },
     });
@@ -135,6 +154,11 @@ describe('ShareService', () => {
         fetchedAt: new Date('2024-01-01T00:00:00.000Z'),
       },
     });
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.restoreAllMocks();
   });
 
   async function createUser(email: string, username: string, displayName: string) {
@@ -310,8 +334,16 @@ describe('ShareService', () => {
     expect(shared.stats.duplicateCards).toBe(1);
     expect(shared.stats.setsCount).toBe(1);
     expect(shared.stats.totalValueUsd).toBeCloseTo(20, 2); // 10 * 2
-    expect(shared.stats.totalValueArs).toBeNull();
+    expect(shared.stats.totalGroups).toBe(2);
+    expect(shared.stats.pricedGroups).toBe(1);
     expect(shared.stats.cardsMissingPrice).toBe(1);
+    expect(shared.stats.valuation.coverage.totalCopies).toBe(shared.stats.totalCards);
+    expect(Object.keys(shared.items[0]!).sort()).toEqual(
+      ['card', 'condition', 'price', 'quantity', 'variant'].sort(),
+    );
+    expect(Object.keys(pikachu.price!).sort()).toEqual(
+      ['currency', 'evaluatedAt', 'fetchedAt', 'freshness', 'market', 'provider', 'source', 'upstreamFreshness', 'upstreamUpdatedAt'].sort(),
+    );
 
     // ─── Evidencia explícita de no filtrar datos privados ───
     const serialized = JSON.stringify(shared);
@@ -332,6 +364,31 @@ describe('ShareService', () => {
     });
   });
 
+
+  it('BE-04 usa un reloj para items y total, conserva caché evaluada y clasifica futuro sin rejuvenecer', async () => {
+    const now = new Date('2026-10-08T12:00:00.000Z');
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(now);
+    const collection = await createCollection(userA, 'Metadatos');
+    await collections.addItem(userA, collection.id, addItem(TEST_CARD_ID, { quantity: 2 }));
+    await collections.addItem(userA, collection.id, addItem(TEST_CARD_2_ID, { quantity: 3 }));
+    await prismaClient.cardPrice.createMany({ data: [
+      { cardId: TEST_CARD_ID, variant: 'normal', market: 0, provider: 'tcgdex', source: 'tcgplayer', currency: 'USD', fetchedAt: now },
+      { cardId: TEST_CARD_2_ID, variant: 'normal', market: 4, provider: 'tcgdex', source: 'tcgplayer', currency: 'USD', fetchedAt: new Date(now.getTime() + 1) },
+    ] });
+    const link = await service.create(userA, createShare({ collectionId: collection.id }));
+    const result = await service.getPublic(link.slug);
+    expect(result.stats.valuation).toMatchObject({ amount: 12, evaluatedAt: now.toISOString(), coverage: { totalCopies: 5, pricedCopies: 5, unpricedCopies: 0, coverageRatio: 1 },
+      recency: { freshness: 'mixed', freshCopies: 2, staleCopies: 0, unknownFreshnessCopies: 3, oldestFetchedAt: now.toISOString(), newestFetchedAt: now.toISOString() } });
+    expect(result.items.every((item) => item.price?.evaluatedAt === result.stats.valuation.evaluatedAt)).toBe(true);
+    expect(result.items.find((item) => item.card.id === TEST_CARD_2_ID)?.price?.freshness).toBe('unknown');
+    expect(Object.keys(result.items[0]!.price!).sort()).toEqual(['currency', 'evaluatedAt', 'fetchedAt', 'freshness', 'market', 'provider', 'source', 'upstreamFreshness', 'upstreamUpdatedAt'].sort());
+    vi.setSystemTime(new Date(now.getTime() + 86400000));
+    const cached = await service.getPublic(link.slug);
+    expect(cached.stats.valuation).toEqual(result.stats.valuation);
+    expect(cached.items).toEqual(result.items);
+  });
+
   it('getPublic de un slug inexistente o revocado da 404', async () => {
     await expect(service.getPublic('noexiste00')).rejects.toBeInstanceOf(
       NotFoundException,
@@ -348,6 +405,64 @@ describe('ShareService', () => {
     );
   });
 
+  it('valida vigencia antes del hit Redis y usa solo el namespace público versionado', async () => {
+    const link = await service.create(userA, createShare());
+    const activePayload = await service.getPublic(link.slug);
+    expect(redisStub.getJson).toHaveBeenLastCalledWith(`share:public-v2:tcgdex:${link.slug}`);
+
+    redisStub.getJson.mockResolvedValueOnce(activePayload);
+    await expect(service.getPublic(link.slug)).resolves.toBe(activePayload);
+    redisStub.del.mockRejectedValueOnce(new Error('Redis temporalmente caído'));
+    await service.revoke(userA, link.id);
+    const callsBefore = redisStub.getJson.mock.calls.length;
+    await expect(service.getPublic(link.slug)).rejects.toBeInstanceOf(NotFoundException);
+    expect(redisStub.getJson).toHaveBeenCalledTimes(callsBefore);
+  });
+
+  it('no lee payloads legacy privados y bloquea caché caliente tras desactivar aunque falle DEL', async () => {
+    const collection = await createCollection(userA, 'Privacidad');
+    await collections.addItem(userA, collection.id, addItem(TEST_CARD_ID, { notes: 'SECRETO-BE01' }));
+    const link = await service.create(userA, createShare({ collectionId: collection.id }));
+    const legacyKey = `share:tcgdex:${link.slug}`;
+    cachedJson.set(legacyKey, JSON.stringify({ items: [{ notes: 'SECRETO-LEGACY', collectionId: collection.id }] }));
+    const result = await service.getPublic(link.slug);
+    expect(JSON.stringify(result)).not.toContain('SECRETO');
+    expect(redisStub.getJson.mock.calls.map(([key]) => key)).toEqual([`share:public-v2:tcgdex:${link.slug}`]);
+    expect(cachedJson.has(legacyKey)).toBe(true);
+    expect(await service.getPublic(link.slug)).toEqual(result);
+    redisStub.del.mockRejectedValueOnce(new Error('DEL falló'));
+    await service.update(userA, link.id, updateShare({ isActive: false }));
+    expect(cachedJson.has(`share:public-v2:tcgdex:${link.slug}`)).toBe(true);
+    const callsBefore = redisStub.getJson.mock.calls.length;
+    await expect(service.getPublic(link.slug)).rejects.toThrow('Este enlace no está disponible');
+    expect(redisStub.getJson).toHaveBeenCalledTimes(callsBefore);
+  });
+
+  it('un SET tardío tras revocar no habilita una consulta pública nueva', async () => {
+    const collection = await createCollection(userA, 'Carrera de caché');
+    await collections.addItem(userA, collection.id, addItem(TEST_CARD_ID));
+    const link = await service.create(userA, createShare({ collectionId: collection.id }));
+    let signalReached!: () => void;
+    let releaseRead!: () => void;
+    const reachedRead = new Promise<void>((resolve) => { signalReached = resolve; });
+    const readGate = new Promise<void>((resolve) => { releaseRead = resolve; });
+    redisStub.getJson.mockImplementationOnce(async () => {
+      signalReached();
+      await readGate;
+      return null;
+    });
+
+    const inFlight = service.getPublic(link.slug);
+    await reachedRead;
+    await service.revoke(userA, link.id);
+    releaseRead();
+    await expect(inFlight).resolves.toMatchObject({ items: [{ card: { id: TEST_CARD_ID } }] });
+    expect(cachedJson.has(`share:public-v2:tcgdex:${link.slug}`)).toBe(true);
+    const readsBefore = redisStub.getJson.mock.calls.length;
+    await expect(service.getPublic(link.slug)).rejects.toBeInstanceOf(NotFoundException);
+    expect(redisStub.getJson).toHaveBeenCalledTimes(readsBefore);
+  });
+
   it('getPublic de un link con expiresAt en el pasado da 404', async () => {
     const link = await service.create(userA, createShare({ expiresInDays: 1 }));
     await prismaClient.shareLink.update({
@@ -361,6 +476,155 @@ describe('ShareService', () => {
     await expect(service.getPublic(link.slug)).rejects.toThrow(
       'Este enlace no está disponible',
     );
+  });
+
+  it('el borde expiresAt exacto también es no disponible aunque Redis esté caliente', async () => {
+    const link = await service.create(userA, createShare());
+    const now = new Date('2026-10-07T12:00:00.000Z');
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(now);
+    await service.getPublic(link.slug);
+    await prismaClient.shareLink.update({ where: { id: link.id }, data: { expiresAt: new Date() } });
+    const readsBefore = redisStub.getJson.mock.calls.length;
+    await expect(service.getPublic(link.slug)).rejects.toBeInstanceOf(NotFoundException);
+    expect(redisStub.getJson).toHaveBeenCalledTimes(readsBefore);
+  });
+
+  it('valor de referencia distingue scope vacío y grupos sin precio', async () => {
+    const emptyLink = await service.create(userA, createShare());
+    const empty = await service.getPublic(emptyLink.slug);
+    expect(empty.stats).toMatchObject({ totalGroups: 0, totalValueUsd: 0, pricedGroups: 0, cardsMissingPrice: 0 });
+
+    const collection = await createCollection(userA, 'Sin cotización');
+    await collections.addItem(userA, collection.id, addItem(TEST_CARD_2_ID));
+    const link = await service.create(userA, createShare({ collectionId: collection.id }));
+    const populated = await service.getPublic(link.slug);
+    expect(populated.stats).toMatchObject({ totalGroups: 1, totalValueUsd: null, pricedGroups: 0, cardsMissingPrice: 1 });
+  });
+
+  it('market cero es conocido y dos grupos iguales en colecciones distintas se conservan', async () => {
+    const first = await createCollection(userA, 'Primera');
+    const second = await createCollection(userA, 'Segunda');
+    await collections.addItem(userA, first.id, addItem(TEST_CARD_2_ID));
+    await collections.addItem(userA, second.id, addItem(TEST_CARD_2_ID, { quantity: 2 }));
+    await prismaClient.cardPrice.createMany({ data: [
+      { cardId: TEST_CARD_2_ID, variant: 'normal', market: new Prisma.Decimal(0), provider: 'tcgdex', source: 'tcgplayer', currency: 'USD', fetchedAt: new Date('2026-01-01T00:00:00.000Z') },
+      { cardId: TEST_CARD_2_ID, variant: 'normal', market: new Prisma.Decimal(99), provider: 'otro', source: 'tcgplayer', currency: 'USD', fetchedAt: new Date('2026-02-01T00:00:00.000Z') },
+      { cardId: TEST_CARD_2_ID, variant: 'normal', market: new Prisma.Decimal(99), provider: 'tcgdex', source: 'otro', currency: 'USD', fetchedAt: new Date('2026-02-01T00:00:00.000Z') },
+      { cardId: TEST_CARD_2_ID, variant: 'normal', market: new Prisma.Decimal(99), provider: 'tcgdex', source: 'tcgplayer', currency: 'ARS', fetchedAt: new Date('2026-02-01T00:00:00.000Z') },
+    ] });
+    const link = await service.create(userA, createShare());
+    const result = await service.getPublic(link.slug);
+    expect(result.items).toHaveLength(2);
+    expect(result.items.map((item) => item.quantity).sort((a, b) => a - b)).toEqual([1, 2]);
+    expect(result.items.every((item) => item.card.id === TEST_CARD_2_ID && item.variant === 'normal' && item.condition === 'NM' && item.price?.market === 0)).toBe(true);
+    expect(result.stats).toMatchObject({ totalGroups: 2, totalCards: 3, uniqueCards: 1, duplicateCards: 1, setsCount: 1, totalValueUsd: 0, pricedGroups: 2, cardsMissingPrice: 0,
+      valuation: { amount: 0, coverage: { totalCopies: 3, pricedCopies: 3, unpricedCopies: 0, coverageRatio: 1 }, recency: { freshness: 'stale', staleCopies: 3, unknownFreshnessCopies: 0 } } });
+  });
+
+  it('agrega valor/cobertura fuera de los 500 visibles y preserva grupos idénticos entre colecciones', async () => {
+    const collection = await createCollection(userA, 'Más de quinientos grupos');
+    const second = await createCollection(userA, 'Mismo grupo');
+    const foreign = await createCollection(userB, 'Fuera del alcance');
+    const variants = ['normal', 'holofoil', 'reverseHolofoil', 'firstEditionNormal', 'firstEditionHolofoil', 'firstEdition', 'unlimited', 'unlimitedHolofoil'];
+    const conditions = ['NM', 'LP', 'MP', 'HP', 'DM'];
+    const ids = Array.from({ length: 13 }, (_, i) => `${TEST_CARD_PREFIX}bulk-${i}`);
+    await prismaClient.card.createMany({
+      data: ids.map((id) => ({
+        id, name: 'Bulk card', supertype: 'Pokémon', subtypes: [], types: [], number: String(id),
+        setId, imageSmall: 'https://example.test/bulk.png', imageLarge: 'https://example.test/bulk.png', rawJson: {},
+      })),
+    });
+    await prismaClient.collectionItem.createMany({
+      data: ids.flatMap((cardId) => variants.flatMap((variant) => conditions.map((condition) => ({
+        collectionId: collection.id, cardId, variant, condition, quantity: 1, addedAt: new Date('2026-02-01T00:00:00.000Z'),
+      })))),
+    });
+    await prismaClient.collectionItem.createMany({ data: [
+      { collectionId: collection.id, cardId: TEST_CARD_ID, quantity: 3, addedAt: new Date('2026-01-01T00:00:00.000Z') },
+      { collectionId: second.id, cardId: TEST_CARD_ID, quantity: 4, addedAt: new Date('2026-01-01T00:00:00.000Z') },
+      { collectionId: collection.id, cardId: TEST_CARD_2_ID, quantity: 2, addedAt: new Date('2026-01-01T00:00:00.000Z') },
+      { collectionId: foreign.id, cardId: TEST_CARD_ID, quantity: 99 },
+    ] });
+    await prismaClient.cardPrice.create({ data: {
+      cardId: TEST_CARD_2_ID, variant: 'normal', market: new Prisma.Decimal(0), provider: 'tcgdex', source: 'tcgplayer', currency: 'USD',
+    } });
+    const link = await service.create(userA, createShare({ collectionId: collection.id }));
+    const result = await service.getPublic(link.slug);
+    expect(result.items).toHaveLength(500);
+    expect(result.truncated).toBe(true);
+    expect(result.items.every((item) => item.price === null)).toBe(true);
+    expect(result.stats).toMatchObject({ totalGroups: 522, totalCards: 525, uniqueCards: 15, duplicateCards: 2, setsCount: 1, pricedGroups: 2, cardsMissingPrice: 520, totalValueUsd: 30,
+      valuation: { coverage: { totalCopies: 525, pricedCopies: 5, unpricedCopies: 520 } } });
+    const globalLink = await service.create(userA, createShare());
+    const global = await service.getPublic(globalLink.slug);
+    expect(global.stats).toMatchObject({ totalGroups: 523, totalCards: 529, uniqueCards: 15, duplicateCards: 3, setsCount: 1, pricedGroups: 3, cardsMissingPrice: 520, totalValueUsd: 70,
+      valuation: { coverage: { totalCopies: 529, pricedCopies: 9, unpricedCopies: 520 } } });
+    const smallLink = await service.create(userA, createShare({ collectionId: second.id }));
+    expect((await service.getPublic(smallLink.slug)).items).toMatchObject([{ card: { id: TEST_CARD_ID }, variant: 'normal', condition: 'NM', quantity: 4 }]);
+  });
+
+  it('omite Redis SET si queda menos de un segundo de vigencia', async () => {
+    const link = await service.create(userA, createShare());
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date('2026-10-07T12:00:00.000Z'));
+    await prismaClient.shareLink.update({
+      where: { id: link.id },
+      data: { expiresAt: new Date(Date.now() + 900) },
+    });
+    const before = redisStub.setJson.mock.calls.length;
+    await service.getPublic(link.slug);
+    expect(redisStub.setJson).toHaveBeenCalledTimes(before);
+  });
+
+  it('calcula TTL al escribir, con máximo 300, y no cachea si el enlace vence durante la lectura', async () => {
+    const now = new Date('2026-10-07T12:00:00.000Z');
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(now);
+    const unlimited = await service.create(userA, createShare());
+    await service.getPublic(unlimited.slug);
+    expect(redisStub.setJson).toHaveBeenLastCalledWith(`share:public-v2:tcgdex:${unlimited.slug}`, expect.any(Object), 300);
+
+    const expiring = await service.create(userA, createShare());
+    await prismaClient.shareLink.update({ where: { id: expiring.id }, data: { expiresAt: new Date(now.getTime() + 12_900) } });
+    redisStub.getJson.mockImplementationOnce(async () => {
+      vi.setSystemTime(now.getTime() + 1_200);
+      return null;
+    });
+    await service.getPublic(expiring.slug);
+    expect(redisStub.setJson).toHaveBeenLastCalledWith(`share:public-v2:tcgdex:${expiring.slug}`, expect.any(Object), 11);
+
+    const duringLoad = await service.create(userA, createShare());
+    await prismaClient.shareLink.update({ where: { id: duringLoad.id }, data: { expiresAt: new Date(now.getTime() + 2_000) } });
+    redisStub.getJson.mockImplementationOnce(async () => {
+      vi.setSystemTime(now.getTime() + 2_000);
+      return null;
+    });
+    const writesBefore = redisStub.setJson.mock.calls.length;
+    await expect(service.getPublic(duringLoad.slug)).resolves.toMatchObject({ items: [] });
+    expect(redisStub.setJson).toHaveBeenCalledTimes(writesBefore);
+    await expect(service.getPublic(duringLoad.slug)).rejects.toThrow('Este enlace no está disponible');
+  });
+
+  it('HTTP real devuelve no-store tanto en 200 como en 404 genérico con Redis caliente', async () => {
+    const collection = await createCollection(userA, 'HTTP público');
+    await collections.addItem(userA, collection.id, addItem(TEST_CARD_ID, { notes: 'SECRETO-HTTP' }));
+    const link = await service.create(userA, createShare({ collectionId: collection.id }));
+    const active = await fetch(`${baseUrl}/api/s/${link.slug}`);
+    expect(active.status).toBe(200);
+    expect(active.headers.get('cache-control')).toBe('no-store');
+    const body = await active.json() as SharedCollectionDto;
+    expect(body.items).toHaveLength(1);
+    expect(JSON.stringify(body)).not.toContain('SECRETO-HTTP');
+    expect(cachedJson.has(`share:public-v2:tcgdex:${link.slug}`)).toBe(true);
+    redisStub.del.mockRejectedValueOnce(new Error('DEL HTTP falló'));
+    await service.revoke(userA, link.id);
+    for (const slug of [link.slug, 'inexistente']) {
+      const missing = await fetch(`${baseUrl}/api/s/${slug}`);
+      expect(missing.status).toBe(404);
+      expect(missing.headers.get('cache-control')).toBe('no-store');
+      expect(await missing.json()).toMatchObject({ message: 'Este enlace no está disponible' });
+    }
   });
 
   it('collectionId null agrega los items de TODAS las colecciones', async () => {

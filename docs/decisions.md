@@ -51,25 +51,27 @@ nuevo, no aparece hasta el próximo sync. Aceptado: son semanas, no minutos.
 
 ---
 
-## 3. Precios bajo demanda, no precargados
+## 3. Precios bajo demanda y ciclos diarios por alcance
 
-**Contexto:** con 20.670 cartas, precargar todos los precios son 20.670
-requests contra un presupuesto de 1.000/día. Imposible.
+**Contexto histórico:** el catálogo y el precio se separaron cuando los datos de
+pokemontcg.io dejaron de ofrecer precios útiles. Su cuota de catálogo no es la
+cuota de TCGdex ni TCGCSV.
 
-**Elegido:** los precios se piden **solo cuando hacen falta** y se cachean en
-dos capas: Redis 1 h (rápido) y Postgres 24 h (persistente, con histórico
-append-only).
+**Elegido actualmente:** Redis 1 h y PostgreSQL con histórico/procedencia, cola
+persistente para consultas interactivas y registro de sets diarios habilitados
+(semilla curada y sets de colecciones). TCGdex planifica 03:15 UTC y TCGCSV
+21:00 UTC; ambos reanudan cada 15 min con API/flags activos.
 
-**Por qué:** un usuario típico tiene decenas de cartas, no 20.670. Pedir solo
-lo que mira usa una fracción del presupuesto.
+TCGCSV compara una referencia TCGplayer USD separada, sin promedio ni sustitución
+del proveedor activo. Validar build/fecha y una descarga por archivo cada 24 h;
+no hay antiguos topes globales de sets/requests. Ver [jobs](../backend/docs/jobs.md)
+y [precios](../backend/docs/pricing.md).
 
-**Regla de 24 h:** un precio más viejo de 24 h se vuelve a pedir. Es un balance
-entre frescura y rate limit: TCGPlayer actualiza a diario, así que más rápido
-que eso es tirar requests.
-
-**Consecuencia conocida:** una carta recién agregada tarda ~2 s en tener precio,
-y hasta entonces cuenta como $0 en el total. La UI lo maneja con skeleton y
-un indicador "Actualizando precio…".
+**Consecuencia:** los precios pueden demorar o faltar. Vacío es 0; desconocido
+es null; un total parcial conserva importe conocido y advierte cobertura. No
+tratar una carta sin precio como si su valor demostrado fuera cero ni prometer
+cotización en dos segundos. Las gráficas guardan observaciones, huecos y cambios
+de composición; no inventar días históricos.
 
 ---
 
@@ -91,9 +93,14 @@ alta confirmada. Fire-and-forget mantiene el alta en 54 ms.
 
 DINOv2 es el único método de reconocimiento desde el 2026-10-03. El cliente encuadra y envía el recorte a la API autenticada, que ejecuta un modelo ONNX local y consulta el índice. La foto se procesa sin almacenarse. Se requiere conexión.
 
-## 6. Verificación geométrica del dibujo
+## 6. Ranking DINOv2 sin verificación ORB
 
-El índice recupera candidatos visuales; ORB y homografía RANSAC corroboran detalles y pueden reordenarlos. La similitud coseno no equivale a certeza. Reflejos, reimpresiones y acabados siguen requiriendo revisión.
+La verificación ORB/RANSAC fue retirada. La API ordena los ocho candidatos por
+similitud coseno DINOv2, sin volver a abrir imágenes de referencia. La geometría
+del recorte de galería vive en cliente y no equivale a corroborar identidad en
+backend. Reflejos, reimpresiones y acabados requieren revisión; similitud no es
+probabilidad ni certeza. Ver [escáner](../frontend/docs/scanner.md) y
+[contraste vigente](evaluations/scanner-baseline-contrast-2026-10-20.md).
 
 ## 7. Primera predicción por defecto
 

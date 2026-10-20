@@ -1,10 +1,12 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Check, Copy } from 'lucide-react';
 
 import { useCopyToClipboard } from '@/components/share/use-copy-to-clipboard';
 import { useShareUrl } from '@/components/share/use-share-url';
+import { ShareLinkPreview, type SharePreviewState } from '@/components/share/share-link-preview';
+import { estimatedExpiration, formatExpiration, loadSharePreviewItem, sampleCollection, type SharePreviewItem } from '@/components/share/share-preview';
 import {
   Alert,
   Button,
@@ -16,8 +18,9 @@ import {
   useFieldA11y,
 } from '@/components/ui';
 import { ApiError } from '@/lib/api/api-client';
-import { listCollections } from '@/lib/api/collections';
+import { listCollections, listItems } from '@/lib/api/collections';
 import { createShareLink, type ShareLink } from '@/lib/api/share';
+import { useAuth } from '@/hooks/use-auth';
 import type { CollectionDto } from '@/types/api';
 
 /** Centinela de "compartir todo", no un `''`: un valor vacío no es un valor de `Select`. */
@@ -49,7 +52,13 @@ export interface ShareLinkCreatorProps {
  * Referencia histórica: el creator anterior usaba un modal centrado y dos
  * `<select>` nativos (uno de ellos con un `<option>` por colección, sin buscador).
  */
-export function ShareLinkCreator({ open, onClose, onCreated, initialCollectionId }: ShareLinkCreatorProps) {
+export function ShareLinkCreator(props: ShareLinkCreatorProps) {
+  const { user, isAuthenticated } = useAuth();
+  return props.open && isAuthenticated && user?.id ? <ShareLinkCreatorForAccount key={user?.id ?? 'no-session'} {...props} /> : null;
+}
+
+function ShareLinkCreatorForAccount({ open, onClose, onCreated, initialCollectionId }: ShareLinkCreatorProps) {
+  const { user } = useAuth();
   const shareUrl = useShareUrl();
   const copy = useCopyToClipboard();
 
@@ -64,9 +73,55 @@ export function ShareLinkCreator({ open, onClose, onCreated, initialCollectionId
   const [isCreating, setIsCreating] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [created, setCreated] = useState<ShareLink | null>(null);
+  const createInFlight = useRef(false);
+  const mounted = useRef(true);
+  useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
+  const [previewForId, setPreviewForId] = useState<string | null>(null);
+  const [previewState, setPreviewState] = useState<SharePreviewState>('loading');
+  const [previewItem, setPreviewItem] = useState<SharePreviewItem | null>(null);
+  const [previewError, setPreviewError] = useState<string | null>(null);
+  const [previewReloadToken, setPreviewReloadToken] = useState(0);
 
   const collectionField = useFieldA11y({ id: 'share-creator-collection' });
   const expirationField = useFieldA11y({ id: 'share-creator-expiration' });
+  const previewCollection = useMemo(
+    () => sampleCollection(collections, collection),
+    [collections, collection],
+  );
+
+  useEffect(() => {
+    if (!open || state !== 'ready') return;
+    if (!previewCollection) return;
+
+    const controller = new AbortController();
+    queueMicrotask(() => {
+      if (controller.signal.aborted) return;
+      setPreviewForId(previewCollection.id);
+      setPreviewState('loading');
+      setPreviewItem(null);
+      setPreviewError(null);
+    });
+
+    void loadSharePreviewItem(previewCollection.id, controller.signal, listItems)
+      .then((item) => {
+        if (controller.signal.aborted) return;
+        if (!item) {
+          setPreviewState('empty');
+          return;
+        }
+        setPreviewItem(item);
+        setPreviewState('ready');
+      })
+      .catch((caught: unknown) => {
+        if (controller.signal.aborted) return;
+        setPreviewError(
+          caught instanceof ApiError ? caught.message : 'La vista previa sigue disponible; podés reintentar la muestra.',
+        );
+        setPreviewState('error');
+      });
+
+    return () => controller.abort();
+  }, [open, state, previewCollection, previewReloadToken]);
 
   useEffect(() => {
     if (!open) return;
@@ -80,6 +135,9 @@ export function ShareLinkCreator({ open, onClose, onCreated, initialCollectionId
       setCreated(null);
       setCollection(initialCollectionId ?? ALL_COLLECTIONS);
       setExpiration('never');
+      setPreviewState('loading');
+      setPreviewItem(null);
+      setPreviewReloadToken(0);
     });
 
     const load = async () => {
@@ -104,6 +162,8 @@ export function ShareLinkCreator({ open, onClose, onCreated, initialCollectionId
   }, [open, reloadToken, initialCollectionId]);
 
   const handleSubmit = useCallback(async () => {
+    if (createInFlight.current || !user?.id || state !== 'ready' || (collection !== ALL_COLLECTIONS && !collections.some((entry) => entry.id === collection))) return;
+    createInFlight.current = true;
     setIsCreating(true);
     setSubmitError(null);
     try {
@@ -111,27 +171,44 @@ export function ShareLinkCreator({ open, onClose, onCreated, initialCollectionId
         collectionId: collection === ALL_COLLECTIONS ? undefined : collection,
         expiresInDays: expiration === 'never' ? undefined : Number(expiration),
       });
+      if (!mounted.current) return;
       setCreated(link);
       onCreated(link);
     } catch (caught) {
+      if (!mounted.current) return;
       // Igual que en la tarjeta: el error queda en el `Alert` del formulario,
       // que es donde el usuario está mirando, y el toast es para el éxito.
       setSubmitError(
         caught instanceof ApiError ? caught.message : 'No pudimos crear el enlace.',
       );
     } finally {
-      setIsCreating(false);
+      createInFlight.current = false;
+      if (mounted.current) setIsCreating(false);
     }
-  }, [collection, expiration, onCreated]);
+  }, [collection, expiration, onCreated, collections, state, user?.id]);
 
   const createdUrl = created ? shareUrl(created.slug) : '';
+  const expirationText = created
+    ? created.expiresAt
+      ? `Vence ${formatExpiration(created.expiresAt)} (hora local).`
+      : 'Sin vencimiento: sigue activo hasta que lo desactives o revoques.'
+    : expiration === 'never'
+      ? 'Sin vencimiento: el enlace sigue activo hasta que lo desactives o revoques.'
+      : `Vencimiento estimado: ${estimatedExpiration(Number(expiration))} (hora local). El servidor confirma la fecha al crear.`;
+  const collectionTitle = collection === ALL_COLLECTIONS
+    ? 'Todas las colecciones'
+    : collections.find((entry) => entry.id === collection)?.name ?? 'Colección';
+  const visiblePreviewState = !previewCollection ? 'empty'
+    : previewForId === previewCollection.id ? previewState : 'loading';
+  const scopeValid = collection === ALL_COLLECTIONS || collections.some((entry) => entry.id === collection);
+  const closeWhenIdle = () => { if (!createInFlight.current) onClose(); };
 
   return (
     <Sheet
       open={open}
-      onClose={onClose}
+      onClose={closeWhenIdle}
       title="Crear enlace"
-      subtitle="Cualquiera con el link puede ver la colección, sin crear una cuenta."
+      subtitle="Revisá qué se muestra antes de crear el enlace."
       footer={
         created ? (
           <Button fullWidth onClick={onClose}>
@@ -143,6 +220,7 @@ export function ShareLinkCreator({ open, onClose, onCreated, initialCollectionId
               className="flex-1"
               loading={isCreating}
               pendingLabel="Creando…"
+              disabled={!scopeValid || !user?.id}
               onClick={handleSubmit}
             >
               Crear enlace
@@ -157,12 +235,15 @@ export function ShareLinkCreator({ open, onClose, onCreated, initialCollectionId
       {created ? (
         <div className="flex flex-col gap-3">
           <Alert tone="success" title="Listo" size="sm">
-            Mandalo por donde quieras. Podés desactivarlo o revocarlo cuando quieras desde Ajustes.
+            Mandalo por donde quieras. Podés desactivarlo desde Ajustes; una persona que ya lo abrió puede conservar lo que vio o guardó.
           </Alert>
 
           <p className="select-all break-all rounded-control bg-surface-2 px-3 py-2.5 font-mono text-caption text-secondary">
             {createdUrl}
           </p>
+          <Alert tone="neutral" size="sm" title="Vigencia">
+            {expirationText}
+          </Alert>
 
           <Button
             variant="secondary"
@@ -203,30 +284,14 @@ export function ShareLinkCreator({ open, onClose, onCreated, initialCollectionId
 
       {!created && state === 'ready' ? (
         <div className="flex flex-col gap-4">
-          {/*
-            El nombre del `Select` sale del `<label>` del `Field` por
-            `aria-labelledby`, no de un `aria-label` con el mismo texto: un
-            `<button>` —que es el trigger del listbox— no lo nombra un
-            `<label htmlFor>`, y duplicar el texto en dos lugares es la forma
-            segura de que se queden desincronizados. La descripción sí la trae
-            el `Select` ahora, así que el hint "Elegí una colección o compartí
-            todas." también se anuncia.
-
-            Las dos props explícitas son redundantes con lo que el `Field` ya
-            inyecta —y dan el mismo valor, porque `useFieldA11y` y el `Field`
-            derivan los ids del mismo `id`—, pero no entran en conflicto: el
-            `cloneElement` del `Field` reemplaza la prop, no la agrega, así que
-            el atributo sale una sola vez. Se dejan escritas porque el `hint` de
-            este `Field` es un caso donde conviene ser explícito: el `Select` lo
-            anuncia como descripción y es fácil que alguien lo lea como
-            decorativo y lo saque de acá.
-          */}
-          <Field label="Colección" hint="Elegí una colección o compartí todas." {...collectionField}>
+          {/* Field aporta el nombre y la descripción accesibles del selector. */}
+          <Field label="Colección" hint="Elegí una colección o compartí todas." error={!scopeValid ? 'Esta colección ya no está disponible. Elegí otra o compartí todas.' : undefined} {...collectionField}>
             <Select
               id={collectionField.id}
               aria-labelledby={collectionField.labelId}
               aria-describedby={collectionField.describedBy}
               value={collection}
+              disabled={isCreating}
               onChange={setCollection}
               options={[
                 { value: ALL_COLLECTIONS, label: 'Todas mis colecciones' },
@@ -241,7 +306,7 @@ export function ShareLinkCreator({ open, onClose, onCreated, initialCollectionId
 
           <Field
             label="Expiración"
-            hint="Si no querés que lasts para siempre, ponéle una fecha."
+            hint="Elegí cuánto tiempo estará disponible el enlace."
             {...expirationField}
           >
             <Select
@@ -249,6 +314,7 @@ export function ShareLinkCreator({ open, onClose, onCreated, initialCollectionId
               aria-labelledby={expirationField.labelId}
               aria-describedby={expirationField.describedBy}
               value={expiration}
+              disabled={isCreating}
               onChange={setExpiration}
               options={EXPIRATION_OPTIONS.map((option) => ({
                 value: option.value,
@@ -266,9 +332,22 @@ export function ShareLinkCreator({ open, onClose, onCreated, initialCollectionId
           {created === null && collections.length === 0 ? (
             <p className="flex items-center gap-2 text-caption text-tertiary">
               <Check aria-hidden="true" focusable="false" strokeWidth={1.75} className="h-4 w-4" />
-              Todavía no tenés colecciones: se van a compartir todas.
+              Hoy no hay colecciones. El enlace compartirá todas las colecciones, incluso las que agregues después.
             </p>
           ) : null}
+
+          <ShareLinkPreview
+            ownerName={user?.displayName ?? 'Tu perfil'}
+            title={collectionTitle}
+            sampleCollectionName={previewCollection?.name ?? null}
+            state={visiblePreviewState}
+            item={previewForId === previewCollection?.id ? previewItem : null}
+            error={previewError}
+            allScope={collection === ALL_COLLECTIONS}
+            hasCollections={collections.length > 0}
+            expirationText={expirationText}
+            onRetry={() => setPreviewReloadToken((token) => token + 1)}
+          />
         </div>
       ) : null}
     </Sheet>

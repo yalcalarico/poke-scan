@@ -1,0 +1,768 @@
+{
+  "pid": 14199,
+  "node": "v22.20.0",
+  "events": [
+    {
+      "n": 0,
+      "ns": "693892122557791",
+      "event": "server-listen-call",
+      "server": 1,
+      "listening": false,
+      "connections": 0
+    },
+    {
+      "n": 1,
+      "ns": "693892125027458",
+      "event": "server-listening",
+      "server": 1,
+      "address": {
+        "address": "::",
+        "family": "IPv6",
+        "port": 58707
+      }
+    },
+    {
+      "n": 2,
+      "ns": "693892126547500",
+      "event": "client-request",
+      "request": 2,
+      "agentKeepAlive": false,
+      "host": "127.0.0.1",
+      "path": "/api/ready"
+    },
+    {
+      "n": 3,
+      "ns": "693892127544833",
+      "event": "socket-observe",
+      "socket": 3,
+      "role": "client",
+      "connecting": true
+    },
+    {
+      "n": 4,
+      "ns": "693892127554916",
+      "event": "client-socket",
+      "request": 2,
+      "socket": 3,
+      "reused": false
+    },
+    {
+      "n": 5,
+      "ns": "693892130376166",
+      "event": "socket-observe",
+      "socket": 4,
+      "role": "server",
+      "connecting": false
+    },
+    {
+      "n": 6,
+      "ns": "693892130529041",
+      "event": "server-connection",
+      "server": 1,
+      "socket": 4,
+      "local": 58707,
+      "remote": 58708
+    },
+    {
+      "n": 7,
+      "ns": "693892130657833",
+      "event": "socket-connect",
+      "socket": 3,
+      "role": "client",
+      "local": 58708,
+      "remote": 58707,
+      "destroyed": false
+    },
+    {
+      "n": 8,
+      "ns": "693892134992125",
+      "event": "server-request",
+      "server": 1,
+      "socket": 4,
+      "method": "GET",
+      "url": "/api/ready"
+    },
+    {
+      "n": 9,
+      "ns": "693892136943500",
+      "event": "response-finish",
+      "server": 1,
+      "socket": 4,
+      "status": 200
+    },
+    {
+      "n": 10,
+      "ns": "693892137915791",
+      "event": "socket-destroy",
+      "socket": 4,
+      "stack": "Error: \n    at Socket.net.Socket.destroy (file:///private/tmp/be07-readiness-diagnostico-sol-20261009/socket-observer-buffered.mjs:18:92)\n    at Object.onceWrapper (node:events:633:28)\n    at Socket.emit (node:events:519:28)\n    at finish (node:internal/streams/writable:955:10)\n    at processTicksAndRejections (node:internal/process/task_queues:90:21)",
+      "destroyed": false
+    },
+    {
+      "n": 11,
+      "ns": "693892138121791",
+      "event": "socket-close",
+      "socket": 4,
+      "role": "server",
+      "hadError": false,
+      "remote": 58708,
+      "destroyed": true
+    },
+    {
+      "n": 12,
+      "ns": "693892138402041",
+      "event": "client-response",
+      "request": 2,
+      "status": 200,
+      "connection": "close"
+    },
+    {
+      "n": 13,
+      "ns": "693892139816875",
+      "event": "server-close-call",
+      "server": 1,
+      "listening": true,
+      "connections": 0,
+      "stack": "Error: \n    at Server.http.Server.close (file:///private/tmp/be07-readiness-diagnostico-sol-20261009/socket-observer-buffered.mjs:35:156)\n    at finish (/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/backend/node_modules/.pnpm/supertest@7.3.0/node_modules/supertest/lib/test.js:201:25)\n    at Test.Request.callback (/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/backend/node_modules/.pnpm/superagent@10.4.1/node_modules/superagent/lib/node/index.js:1091:12)\n    at /Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/backend/node_modules/.pnpm/superagent@10.4.1/node_modules/superagent/lib/node/index.js:1409:18\n    at IncomingMessage.<anonymous> (/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/backend/node_modules/.pnpm/superagent@10.4.1/node_modules/superagent/lib/node/parsers/json.js:26:7)\n    at IncomingMessage.emit (node:events:531:35)\n    at endReadableNT (node:internal/streams/readable:1698:12)\n    at processTicksAndRejections (node:internal/process/task_queues:90:21)"
+    },
+    {
+      "n": 14,
+      "ns": "693892139944708",
+      "event": "server-close",
+      "server": 1,
+      "listening": false
+    },
+    {
+      "n": 15,
+      "ns": "693892140864000",
+      "event": "server-listen-call",
+      "server": 1,
+      "listening": false,
+      "connections": 0
+    },
+    {
+      "n": 16,
+      "ns": "693892141159916",
+      "event": "server-listening",
+      "server": 1,
+      "address": {
+        "address": "::",
+        "family": "IPv6",
+        "port": 58709
+      }
+    },
+    {
+      "n": 17,
+      "ns": "693892141456166",
+      "event": "client-request",
+      "request": 5,
+      "agentKeepAlive": false,
+      "host": "127.0.0.1",
+      "path": "/api/ready"
+    },
+    {
+      "n": 18,
+      "ns": "693892141641875",
+      "event": "socket-observe",
+      "socket": 6,
+      "role": "client",
+      "connecting": true
+    },
+    {
+      "n": 19,
+      "ns": "693892141646125",
+      "event": "client-socket",
+      "request": 5,
+      "socket": 6,
+      "reused": false
+    },
+    {
+      "n": 20,
+      "ns": "693892141747250",
+      "event": "socket-destroy",
+      "socket": 3,
+      "stack": "Error: \n    at Socket.net.Socket.destroy (file:///private/tmp/be07-readiness-diagnostico-sol-20261009/socket-observer-buffered.mjs:18:92)\n    at Object.onceWrapper (node:events:633:28)\n    at Socket.emit (node:events:519:28)\n    at finish (node:internal/streams/writable:955:10)\n    at processTicksAndRejections (node:internal/process/task_queues:90:21)",
+      "destroyed": false
+    },
+    {
+      "n": 21,
+      "ns": "693892141892500",
+      "event": "client-close",
+      "request": 2
+    },
+    {
+      "n": 22,
+      "ns": "693892141909041",
+      "event": "socket-close",
+      "socket": 3,
+      "role": "client",
+      "hadError": false,
+      "remote": 58707,
+      "destroyed": true
+    },
+    {
+      "n": 23,
+      "ns": "693892142114083",
+      "event": "socket-observe",
+      "socket": 7,
+      "role": "server",
+      "connecting": false
+    },
+    {
+      "n": 24,
+      "ns": "693892142135541",
+      "event": "server-connection",
+      "server": 1,
+      "socket": 7,
+      "local": 58709,
+      "remote": 58710
+    },
+    {
+      "n": 25,
+      "ns": "693892142165291",
+      "event": "socket-connect",
+      "socket": 6,
+      "role": "client",
+      "local": 58710,
+      "remote": 58709,
+      "destroyed": false
+    },
+    {
+      "n": 26,
+      "ns": "693892142599000",
+      "event": "server-request",
+      "server": 1,
+      "socket": 7,
+      "method": "GET",
+      "url": "/api/ready"
+    },
+    {
+      "n": 27,
+      "ns": "693892142926000",
+      "event": "response-finish",
+      "server": 1,
+      "socket": 7,
+      "status": 200
+    },
+    {
+      "n": 28,
+      "ns": "693892143113416",
+      "event": "socket-destroy",
+      "socket": 7,
+      "stack": "Error: \n    at Socket.net.Socket.destroy (file:///private/tmp/be07-readiness-diagnostico-sol-20261009/socket-observer-buffered.mjs:18:92)\n    at Object.onceWrapper (node:events:633:28)\n    at Socket.emit (node:events:519:28)\n    at finish (node:internal/streams/writable:955:10)\n    at processTicksAndRejections (node:internal/process/task_queues:90:21)",
+      "destroyed": false
+    },
+    {
+      "n": 29,
+      "ns": "693892143152250",
+      "event": "socket-close",
+      "socket": 7,
+      "role": "server",
+      "hadError": false,
+      "remote": 58710,
+      "destroyed": true
+    },
+    {
+      "n": 30,
+      "ns": "693892143263416",
+      "event": "client-response",
+      "request": 5,
+      "status": 200,
+      "connection": "close"
+    },
+    {
+      "n": 31,
+      "ns": "693892143549291",
+      "event": "server-close-call",
+      "server": 1,
+      "listening": true,
+      "connections": 0,
+      "stack": "Error: \n    at Server.http.Server.close (file:///private/tmp/be07-readiness-diagnostico-sol-20261009/socket-observer-buffered.mjs:35:156)\n    at finish (/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/backend/node_modules/.pnpm/supertest@7.3.0/node_modules/supertest/lib/test.js:201:25)\n    at Test.Request.callback (/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/backend/node_modules/.pnpm/superagent@10.4.1/node_modules/superagent/lib/node/index.js:1091:12)\n    at /Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/backend/node_modules/.pnpm/superagent@10.4.1/node_modules/superagent/lib/node/index.js:1409:18\n    at IncomingMessage.<anonymous> (/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/backend/node_modules/.pnpm/superagent@10.4.1/node_modules/superagent/lib/node/parsers/json.js:26:7)\n    at IncomingMessage.emit (node:events:531:35)\n    at endReadableNT (node:internal/streams/readable:1698:12)\n    at processTicksAndRejections (node:internal/process/task_queues:90:21)"
+    },
+    {
+      "n": 32,
+      "ns": "693892143591041",
+      "event": "server-close",
+      "server": 1,
+      "listening": false
+    },
+    {
+      "n": 33,
+      "ns": "693892143954750",
+      "event": "server-listen-call",
+      "server": 1,
+      "listening": false,
+      "connections": 0
+    },
+    {
+      "n": 34,
+      "ns": "693892144190458",
+      "event": "server-listening",
+      "server": 1,
+      "address": {
+        "address": "::",
+        "family": "IPv6",
+        "port": 58711
+      }
+    },
+    {
+      "n": 35,
+      "ns": "693892144341875",
+      "event": "client-request",
+      "request": 8,
+      "agentKeepAlive": false,
+      "host": "127.0.0.1",
+      "path": "/api/ready"
+    },
+    {
+      "n": 36,
+      "ns": "693892144497916",
+      "event": "socket-observe",
+      "socket": 9,
+      "role": "client",
+      "connecting": true
+    },
+    {
+      "n": 37,
+      "ns": "693892144503875",
+      "event": "client-socket",
+      "request": 8,
+      "socket": 9,
+      "reused": false
+    },
+    {
+      "n": 38,
+      "ns": "693892144725583",
+      "event": "socket-destroy",
+      "socket": 6,
+      "stack": "Error: \n    at Socket.net.Socket.destroy (file:///private/tmp/be07-readiness-diagnostico-sol-20261009/socket-observer-buffered.mjs:18:92)\n    at Object.onceWrapper (node:events:633:28)\n    at Socket.emit (node:events:519:28)\n    at finish (node:internal/streams/writable:955:10)\n    at processTicksAndRejections (node:internal/process/task_queues:90:21)",
+      "destroyed": false
+    },
+    {
+      "n": 39,
+      "ns": "693892144760916",
+      "event": "client-close",
+      "request": 5
+    },
+    {
+      "n": 40,
+      "ns": "693892144771125",
+      "event": "socket-close",
+      "socket": 6,
+      "role": "client",
+      "hadError": false,
+      "remote": 58709,
+      "destroyed": true
+    },
+    {
+      "n": 41,
+      "ns": "693892144979125",
+      "event": "socket-observe",
+      "socket": 10,
+      "role": "server",
+      "connecting": false
+    },
+    {
+      "n": 42,
+      "ns": "693892144994458",
+      "event": "server-connection",
+      "server": 1,
+      "socket": 10,
+      "local": 58711,
+      "remote": 58712
+    },
+    {
+      "n": 43,
+      "ns": "693892145024458",
+      "event": "socket-connect",
+      "socket": 9,
+      "role": "client",
+      "local": 58712,
+      "remote": 58711,
+      "destroyed": false
+    },
+    {
+      "n": 44,
+      "ns": "693892145247333",
+      "event": "server-request",
+      "server": 1,
+      "socket": 10,
+      "method": "GET",
+      "url": "/api/ready"
+    },
+    {
+      "n": 45,
+      "ns": "693892145519416",
+      "event": "response-finish",
+      "server": 1,
+      "socket": 10,
+      "status": 503
+    },
+    {
+      "n": 46,
+      "ns": "693892145654416",
+      "event": "socket-destroy",
+      "socket": 10,
+      "stack": "Error: \n    at Socket.net.Socket.destroy (file:///private/tmp/be07-readiness-diagnostico-sol-20261009/socket-observer-buffered.mjs:18:92)\n    at Object.onceWrapper (node:events:633:28)\n    at Socket.emit (node:events:519:28)\n    at finish (node:internal/streams/writable:955:10)\n    at processTicksAndRejections (node:internal/process/task_queues:90:21)",
+      "destroyed": false
+    },
+    {
+      "n": 47,
+      "ns": "693892145687083",
+      "event": "socket-close",
+      "socket": 10,
+      "role": "server",
+      "hadError": false,
+      "remote": 58712,
+      "destroyed": true
+    },
+    {
+      "n": 48,
+      "ns": "693892145728375",
+      "event": "client-response",
+      "request": 8,
+      "status": 503,
+      "connection": "close"
+    },
+    {
+      "n": 49,
+      "ns": "693892145936000",
+      "event": "server-close-call",
+      "server": 1,
+      "listening": true,
+      "connections": 0,
+      "stack": "Error: \n    at Server.http.Server.close (file:///private/tmp/be07-readiness-diagnostico-sol-20261009/socket-observer-buffered.mjs:35:156)\n    at finish (/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/backend/node_modules/.pnpm/supertest@7.3.0/node_modules/supertest/lib/test.js:201:25)\n    at Test.Request.callback (/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/backend/node_modules/.pnpm/superagent@10.4.1/node_modules/superagent/lib/node/index.js:1101:3)\n    at /Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/backend/node_modules/.pnpm/superagent@10.4.1/node_modules/superagent/lib/node/index.js:1409:18\n    at IncomingMessage.<anonymous> (/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/backend/node_modules/.pnpm/superagent@10.4.1/node_modules/superagent/lib/node/parsers/json.js:26:7)\n    at IncomingMessage.emit (node:events:531:35)\n    at endReadableNT (node:internal/streams/readable:1698:12)\n    at processTicksAndRejections (node:internal/process/task_queues:90:21)"
+    },
+    {
+      "n": 50,
+      "ns": "693892145985708",
+      "event": "server-close",
+      "server": 1,
+      "listening": false
+    },
+    {
+      "n": 51,
+      "ns": "693892146648375",
+      "event": "server-listen-call",
+      "server": 1,
+      "listening": false,
+      "connections": 0
+    },
+    {
+      "n": 52,
+      "ns": "693892146846416",
+      "event": "server-listening",
+      "server": 1,
+      "address": {
+        "address": "::",
+        "family": "IPv6",
+        "port": 58713
+      }
+    },
+    {
+      "n": 53,
+      "ns": "693892147047416",
+      "event": "client-request",
+      "request": 11,
+      "agentKeepAlive": false,
+      "host": "127.0.0.1",
+      "path": "/api/health"
+    },
+    {
+      "n": 54,
+      "ns": "693892147247000",
+      "event": "socket-observe",
+      "socket": 12,
+      "role": "client",
+      "connecting": true
+    },
+    {
+      "n": 55,
+      "ns": "693892147250875",
+      "event": "client-socket",
+      "request": 11,
+      "socket": 12,
+      "reused": false
+    },
+    {
+      "n": 56,
+      "ns": "693892147347791",
+      "event": "socket-destroy",
+      "socket": 9,
+      "stack": "Error: \n    at Socket.net.Socket.destroy (file:///private/tmp/be07-readiness-diagnostico-sol-20261009/socket-observer-buffered.mjs:18:92)\n    at Object.onceWrapper (node:events:633:28)\n    at Socket.emit (node:events:519:28)\n    at finish (node:internal/streams/writable:955:10)\n    at processTicksAndRejections (node:internal/process/task_queues:90:21)",
+      "destroyed": false
+    },
+    {
+      "n": 57,
+      "ns": "693892147382875",
+      "event": "client-close",
+      "request": 8
+    },
+    {
+      "n": 58,
+      "ns": "693892147397166",
+      "event": "socket-close",
+      "socket": 9,
+      "role": "client",
+      "hadError": false,
+      "remote": 58711,
+      "destroyed": true
+    },
+    {
+      "n": 59,
+      "ns": "693892147565916",
+      "event": "socket-observe",
+      "socket": 13,
+      "role": "server",
+      "connecting": false
+    },
+    {
+      "n": 60,
+      "ns": "693892147584375",
+      "event": "server-connection",
+      "server": 1,
+      "socket": 13,
+      "local": 58713,
+      "remote": 58714
+    },
+    {
+      "n": 61,
+      "ns": "693892147614666",
+      "event": "socket-connect",
+      "socket": 12,
+      "role": "client",
+      "local": 58714,
+      "remote": 58713,
+      "destroyed": false
+    },
+    {
+      "n": 62,
+      "ns": "693892147831958",
+      "event": "server-request",
+      "server": 1,
+      "socket": 13,
+      "method": "GET",
+      "url": "/api/health"
+    },
+    {
+      "n": 63,
+      "ns": "693892151006166",
+      "event": "response-finish",
+      "server": 1,
+      "socket": 13,
+      "status": 200
+    },
+    {
+      "n": 64,
+      "ns": "693892151154416",
+      "event": "socket-destroy",
+      "socket": 13,
+      "stack": "Error: \n    at Socket.net.Socket.destroy (file:///private/tmp/be07-readiness-diagnostico-sol-20261009/socket-observer-buffered.mjs:18:92)\n    at Object.onceWrapper (node:events:633:28)\n    at Socket.emit (node:events:519:28)\n    at finish (node:internal/streams/writable:955:10)\n    at processTicksAndRejections (node:internal/process/task_queues:90:21)",
+      "destroyed": false
+    },
+    {
+      "n": 65,
+      "ns": "693892151202250",
+      "event": "socket-close",
+      "socket": 13,
+      "role": "server",
+      "hadError": false,
+      "remote": 58714,
+      "destroyed": true
+    },
+    {
+      "n": 66,
+      "ns": "693892151335500",
+      "event": "client-response",
+      "request": 11,
+      "status": 200,
+      "connection": "close"
+    },
+    {
+      "n": 67,
+      "ns": "693892151653041",
+      "event": "server-close-call",
+      "server": 1,
+      "listening": true,
+      "connections": 0,
+      "stack": "Error: \n    at Server.http.Server.close (file:///private/tmp/be07-readiness-diagnostico-sol-20261009/socket-observer-buffered.mjs:35:156)\n    at finish (/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/backend/node_modules/.pnpm/supertest@7.3.0/node_modules/supertest/lib/test.js:201:25)\n    at Test.Request.callback (/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/backend/node_modules/.pnpm/superagent@10.4.1/node_modules/superagent/lib/node/index.js:1091:12)\n    at /Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/backend/node_modules/.pnpm/superagent@10.4.1/node_modules/superagent/lib/node/index.js:1409:18\n    at IncomingMessage.<anonymous> (/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/backend/node_modules/.pnpm/superagent@10.4.1/node_modules/superagent/lib/node/parsers/json.js:26:7)\n    at IncomingMessage.emit (node:events:531:35)\n    at endReadableNT (node:internal/streams/readable:1698:12)\n    at processTicksAndRejections (node:internal/process/task_queues:90:21)"
+    },
+    {
+      "n": 68,
+      "ns": "693892151705833",
+      "event": "server-close",
+      "server": 1,
+      "listening": false
+    },
+    {
+      "n": 69,
+      "ns": "693892151944583",
+      "event": "server-listen-call",
+      "server": 1,
+      "listening": false,
+      "connections": 0
+    },
+    {
+      "n": 70,
+      "ns": "693892152172583",
+      "event": "server-listening",
+      "server": 1,
+      "address": {
+        "address": "::",
+        "family": "IPv6",
+        "port": 58715
+      }
+    },
+    {
+      "n": 71,
+      "ns": "693892152301541",
+      "event": "client-request",
+      "request": 14,
+      "agentKeepAlive": false,
+      "host": "127.0.0.1",
+      "path": "/api/ready"
+    },
+    {
+      "n": 72,
+      "ns": "693892152503541",
+      "event": "socket-observe",
+      "socket": 15,
+      "role": "client",
+      "connecting": true
+    },
+    {
+      "n": 73,
+      "ns": "693892152507166",
+      "event": "client-socket",
+      "request": 14,
+      "socket": 15,
+      "reused": false
+    },
+    {
+      "n": 74,
+      "ns": "693892152580458",
+      "event": "socket-destroy",
+      "socket": 12,
+      "stack": "Error: \n    at Socket.net.Socket.destroy (file:///private/tmp/be07-readiness-diagnostico-sol-20261009/socket-observer-buffered.mjs:18:92)\n    at Object.onceWrapper (node:events:633:28)\n    at Socket.emit (node:events:519:28)\n    at finish (node:internal/streams/writable:955:10)\n    at processTicksAndRejections (node:internal/process/task_queues:90:21)",
+      "destroyed": false
+    },
+    {
+      "n": 75,
+      "ns": "693892152660708",
+      "event": "client-close",
+      "request": 11
+    },
+    {
+      "n": 76,
+      "ns": "693892152667250",
+      "event": "socket-close",
+      "socket": 12,
+      "role": "client",
+      "hadError": false,
+      "remote": 58713,
+      "destroyed": true
+    },
+    {
+      "n": 77,
+      "ns": "693892152714041",
+      "event": "socket-observe",
+      "socket": 16,
+      "role": "server",
+      "connecting": false
+    },
+    {
+      "n": 78,
+      "ns": "693892152724458",
+      "event": "server-connection",
+      "server": 1,
+      "socket": 16,
+      "local": 58715,
+      "remote": 58716
+    },
+    {
+      "n": 79,
+      "ns": "693892152740666",
+      "event": "socket-connect",
+      "socket": 15,
+      "role": "client",
+      "local": 58716,
+      "remote": 58715,
+      "destroyed": false
+    },
+    {
+      "n": 80,
+      "ns": "693892153001875",
+      "event": "server-request",
+      "server": 1,
+      "socket": 16,
+      "method": "GET",
+      "url": "/api/ready"
+    },
+    {
+      "n": 81,
+      "ns": "693892153494291",
+      "event": "response-finish",
+      "server": 1,
+      "socket": 16,
+      "status": 200
+    },
+    {
+      "n": 82,
+      "ns": "693892153635666",
+      "event": "socket-destroy",
+      "socket": 16,
+      "stack": "Error: \n    at Socket.net.Socket.destroy (file:///private/tmp/be07-readiness-diagnostico-sol-20261009/socket-observer-buffered.mjs:18:92)\n    at Object.onceWrapper (node:events:633:28)\n    at Socket.emit (node:events:519:28)\n    at finish (node:internal/streams/writable:955:10)\n    at processTicksAndRejections (node:internal/process/task_queues:90:21)",
+      "destroyed": false
+    },
+    {
+      "n": 83,
+      "ns": "693892153665958",
+      "event": "socket-close",
+      "socket": 16,
+      "role": "server",
+      "hadError": false,
+      "remote": 58716,
+      "destroyed": true
+    },
+    {
+      "n": 84,
+      "ns": "693892153795583",
+      "event": "client-response",
+      "request": 14,
+      "status": 200,
+      "connection": "close"
+    },
+    {
+      "n": 85,
+      "ns": "693892153955958",
+      "event": "server-close-call",
+      "server": 1,
+      "listening": true,
+      "connections": 0,
+      "stack": "Error: \n    at Server.http.Server.close (file:///private/tmp/be07-readiness-diagnostico-sol-20261009/socket-observer-buffered.mjs:35:156)\n    at finish (/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/backend/node_modules/.pnpm/supertest@7.3.0/node_modules/supertest/lib/test.js:201:25)\n    at Test.Request.callback (/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/backend/node_modules/.pnpm/superagent@10.4.1/node_modules/superagent/lib/node/index.js:1091:12)\n    at /Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/backend/node_modules/.pnpm/superagent@10.4.1/node_modules/superagent/lib/node/index.js:1409:18\n    at IncomingMessage.<anonymous> (/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/backend/node_modules/.pnpm/superagent@10.4.1/node_modules/superagent/lib/node/parsers/json.js:26:7)\n    at IncomingMessage.emit (node:events:531:35)\n    at endReadableNT (node:internal/streams/readable:1698:12)\n    at processTicksAndRejections (node:internal/process/task_queues:90:21)"
+    },
+    {
+      "n": 86,
+      "ns": "693892153985625",
+      "event": "server-close",
+      "server": 1,
+      "listening": false
+    },
+    {
+      "n": 87,
+      "ns": "693892154814083",
+      "event": "server-close-call",
+      "server": 1,
+      "listening": false,
+      "connections": 0,
+      "stack": "Error: \n    at Server.http.Server.close (file:///private/tmp/be07-readiness-diagnostico-sol-20261009/socket-observer-buffered.mjs:35:156)\n    at file:///Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/backend/node_modules/.pnpm/@nestjs+platform-express@12.1.0_@nestjs+common@12.1.0_class-transformer@0.5.1_class-val_0ba6559b1582586bacb67d1a7365cf27/node_modules/@nestjs/platform-express/adapters/express-adapter.js:157:55\n    at new Promise (<anonymous>)\n    at ExpressAdapter.close (file:///Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/backend/node_modules/.pnpm/@nestjs+platform-express@12.1.0_@nestjs+common@12.1.0_class-transformer@0.5.1_class-val_0ba6559b1582586bacb67d1a7365cf27/node_modules/@nestjs/platform-express/adapters/express-adapter.js:157:16)\n    at Proxy.dispose (file:///Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/backend/node_modules/.pnpm/@nestjs+core@12.1.0_@nestjs+common@12.1.0_class-transformer@0.5.1_class-validator@0.15._470e0a43d0242a02d4b5d876c5d0d26e/node_modules/@nestjs/core/nest-application.js:66:33)\n    at processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at Proxy.runShutdownSequence (file:///Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/backend/node_modules/.pnpm/@nestjs+core@12.1.0_@nestjs+common@12.1.0_class-transformer@0.5.1_class-validator@0.15._470e0a43d0242a02d4b5d876c5d0d26e/node_modules/@nestjs/core/nest-application-context.js:147:9)\n    at Proxy.close (file:///Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/backend/node_modules/.pnpm/@nestjs+core@12.1.0_@nestjs+common@12.1.0_class-transformer@0.5.1_class-validator@0.15._470e0a43d0242a02d4b5d876c5d0d26e/node_modules/@nestjs/core/nest-application-context.js:123:9)\n    at /Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/backend/src/readiness.http.spec.ts:51:5"
+    },
+    {
+      "n": 88,
+      "ns": "693892154824041",
+      "event": "server-close",
+      "server": 1,
+      "listening": false
+    }
+  ]
+}

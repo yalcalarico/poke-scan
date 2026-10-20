@@ -1,9 +1,9 @@
 # Providers — la frontera con la API externa
 
-> Hay **dos** fuentes detrás de tokens de inyección: `CARD_DATA_PROVIDER`
-> (catálogo, `PokemonTcgIoProvider`) y `PRICE_PROVIDER` (precios en vivo,
-> `TcgdexProvider`), con el `VARIANT_MAP` de tcgdex y la traducción de IDs de
-> set entre las dos.
+> Los tokens de inyección activos son `CARD_DATA_PROVIDER` (catálogo,
+> `PokemonTcgIoProvider`) y `PRICE_PROVIDER` (precios bajo demanda,
+> `TcgdexProvider`). TCGCSV tiene una ingestión separada de precios y
+> comparación histórica; Scrydex es una alternativa no implementada.
 
 ## Por qué existe un provider
 
@@ -11,13 +11,15 @@
 límites duros: **1.000 requests/día** y **30 requests/minuto**. De ahí salen
 decisiones de arquitectura en todo el proyecto, y la primera es: **ningún
 handler de request puede llamar a la API externa**. El catálogo ya está espejado
-en Postgres y los precios se piden bajo demanda y cacheados.
+en Postgres y los precios se piden bajo demanda y cacheados. TCGCSV aporta
+observaciones y comparación histórica mediante jobs separados; no comparte el
+binding del provider de precios bajo demanda.
 
 Si toda la app hablara con pokemontcg.io en cualquier parte, cambiar de fuente
 sería imposible sin reescribir el backend. El patrón `CardDataProvider` es esa
 costura.
 
-## Las dos fuentes y por qué están separadas
+## Catálogo y precios bajo demanda
 
 | | Catálogo | Precios |
 |---|---|---|
@@ -26,7 +28,9 @@ costura.
 | Fuente | `api.pokemontcg.io/v2` | `api.tcgdex.net/v2/en` |
 | Auth | ninguna (sin key) | ninguna |
 | Límite | 1.000/día · 30/min | sin límite publicado |
-| Qué trae | cartas, sets,etadata, imágenes | precios TCGPlayer (USD) + Cardmarket (EUR) |
+| Qué trae | cartas, sets, metadata e imágenes | precios TCGPlayer (USD) + Cardmarket (EUR) |
+
+TCGCSV también aporta ingestión de precios/observaciones y comparación histórica desde `src/jobs/tcgcsv/`; su habilitación y planificación se describen en [jobs.md](jobs.md) y [pricing.md](pricing.md). No está ligado al token `PRICE_PROVIDER` ni es un reemplazo de TCGdex.
 
 El split existe porque **el feed de precios de pokemontcg.io está congelado**
 (`updatedAt: "2023/03/27"`): los sets salidos después —toda la era Mega
@@ -443,15 +447,11 @@ intacto.
 
 ### Sobre Scrydex en particular
 
-Scrydex es el sucesor de pokemontcg.io (mismo equipo, **$29/mes sin free tier**,
-~160 requests/día con el plan más chico). Da API key, precios de más fuentes y
-sets de otros juegos, y además cubre `variants_detailed`-style: IDs de
-marketplace explícitos por variante, que es justamente lo que tcgdex todavia no
-resuelve bien (el bug de una carta regular mostrando el precio de su SAR).
+Scrydex está documentado como alternativa potencial para catálogo o precios, pero no hay adaptador ni binding implementado en este backend. Precios, límites, planes y capacidades comerciales cambian y deben verificarse con el proveedor antes de decidir una integración; esta guía no los trata como hechos vigentes.
 
-Si se migra **solo** el precio a Scrydex, el catálogo se queda en pokemontcg.io
-y no hay que mover ningún ID. Si además se migra el catálogo, es el trabajo de
-la opción 1/2/3 de arriba.
+Una eventual integración sólo de precios podría conservar el catálogo actual,
+pero requiere implementar y validar el adaptador, mappings, lecturas y pruebas
+indicados arriba. No hay hoy un binding de Scrydex que pueda activarse.
 
 ### Lo que NO hay que hacer
 

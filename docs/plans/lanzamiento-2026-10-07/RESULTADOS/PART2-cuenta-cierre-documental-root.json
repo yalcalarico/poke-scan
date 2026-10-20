@@ -1,0 +1,66 @@
+{
+  "checkedAtUtc": "2026-10-09T18:09:37.342452+00:00",
+  "scope": "Consolidación documental BE-05/UX-04 y contexto focal BE-07, sin tests/runtime/código",
+  "documentsChecked": 12,
+  "localLinkTargetsChecked": 293,
+  "missingLocalTargets": [],
+  "reviewArtifactHashesVerified": 18,
+  "intentionalCentralChangesSinceReviews": [
+    {
+      "baseline": "evidencia-be05-borrador-review",
+      "path": "docs/plans/lanzamiento-2026-10-07/02-backend.md"
+    },
+    {
+      "baseline": "evidencia-be05-borrador-review",
+      "path": "docs/plans/lanzamiento-2026-10-07/10-decisiones-y-contratos.md"
+    },
+    {
+      "baseline": "evidencia-be05-borrador-review",
+      "path": "docs/plans/lanzamiento-2026-10-07/03-ui-ux.md"
+    },
+    {
+      "baseline": "evidencia-ux04-cuenta-review",
+      "path": "docs/plans/lanzamiento-2026-10-07/03-ui-ux.md"
+    },
+    {
+      "baseline": "evidencia-ux04-cuenta-review",
+      "path": "docs/plans/lanzamiento-2026-10-07/10-decisiones-y-contratos.md"
+    }
+  ],
+  "unexpectedSourceChanges": [],
+  "status": "14/38 completos;24 pendientes. Preparación documental aceptada, gate BE-07 abierto. Reservas agentes liberadas.",
+  "centralHashes": [
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/REGISTRO-TAREAS.md",
+      "sha256": "e51e05d9a05c9684fbcfa2f1889a6e0aa9f0233c5b6b1c0f7796500da326059c"
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/STATUS-CHECKLIST.md",
+      "sha256": "b2e338b353846c582af18b4b73c0c1973d40af3f1e87ba9c35334f9fccd6358b"
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/02-backend.md",
+      "sha256": "b1a4e7a73f7a78925345104efd4dd6507428643539afb6689975f53d053459d4"
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/03-ui-ux.md",
+      "sha256": "b7355dfc0ef3034252cc447ab1f221e3ea6e9665c5bed0391744c0d06bc84733"
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/10-decisiones-y-contratos.md",
+      "sha256": "d53aec464b345266016c1070c70f72f2111be0b0cae96667b01537cebd52a17f"
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/11-orquestacion.md",
+      "sha256": "f4e06406d53514a1cca90d827837766a19dec3d52c2f9682c76280acf419ad93"
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/CONTEXTO-PART2.md",
+      "sha256": "f02e8a638274ce8b2dff81ff0a785a1de74614f6e9a5b45ec237c5ad706818df"
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/ORQUESTACION-ESTADO.md",
+      "sha256": "e8e437d326c4772565292e9bdfd031100edd7376c90174d57976474d45581189"
+    }
+  ]
+}

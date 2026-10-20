@@ -47,6 +47,22 @@ it('la foto subida usa DINOv2, suma el candidato elegido y libera la imagen orig
   fireEvent.click(screen.getByRole('button', { name: 'Descargar recorte' }));
   expect(mocks.download).toHaveBeenCalledWith(expect.objectContaining({ image: 'data:image/png;base64,YQ==', source: 'gallery', result: null }), 'image');
 });
+it('una advertencia orientativa no bloquea reconocer y queda fuera de la sesión persistida', async () => {
+  const quality = { schemaVersion: 1 as const, analysisWidth: 183, analysisHeight: 256, laplacianVariance: 10, brightFraction: 0, largestBrightRegionFraction: 0, warnings: ['blur'] as Array<'blur' | 'glare'> };
+  mocks.prepare.mockResolvedValue({ image: 'data:image/png;base64,YQ==', quality, source: { highResolutionSource: { close: mocks.close } } });
+  mocks.recognize.mockResolvedValue(selected('me55-59'));
+  render(<ScanPage />);
+  await screen.findByText('Sesión: 0');
+  upload();
+  await screen.findByText('Sesión: 1');
+  expect(screen.getByText(/Puede faltar enfoque/)).toBeInTheDocument();
+  expect(mocks.recognize).toHaveBeenCalledWith('data:image/png;base64,YQ==', expect.any(AbortSignal), expect.any(Function));
+  expect(JSON.stringify(sessionStorage)).not.toContain('laplacianVariance');
+  fireEvent.click(screen.getByRole('button', { name: 'Revisar última foto' }));
+  fireEvent.click(screen.getByText('¿No coincidió? Guardá el recorte'));
+  fireEvent.click(screen.getByRole('button', { name: 'Descargar diagnóstico' }));
+  expect(mocks.download).toHaveBeenCalledWith(expect.objectContaining({ quality }), 'diagnostic');
+});
 it('una respuesta cancelada no agrega una carta después de subir otra foto', async () => {
   mocks.prepare.mockResolvedValueOnce({ image: 'data:image/png;base64,Yg==', source: { highResolutionSource: { close: mocks.close } } });
   let finish: (value: ReturnType<typeof selected>) => void = () => {};

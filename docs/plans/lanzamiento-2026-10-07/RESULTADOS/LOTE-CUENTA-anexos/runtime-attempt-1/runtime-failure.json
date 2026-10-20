@@ -1,0 +1,9 @@
+{
+  "phase": "primary-real-flow",
+  "kind": "Error",
+  "gateId": null,
+  "stackFrames": [
+    "    at webLogin (/private/tmp/cuenta-gate-3aaf105723d3/runtime.mjs:29:193)",
+    "    at async file:///private/tmp/cuenta-gate-3aaf105723d3/runtime.mjs:45:112"
+  ]
+}

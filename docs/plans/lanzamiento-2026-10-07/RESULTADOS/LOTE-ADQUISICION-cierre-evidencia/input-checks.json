@@ -1,0 +1,55 @@
+{
+  "reviewFilesIdentical": [
+    {
+      "reviewSource": "frontend/app/(marketing)/opengraph-image.tsx",
+      "currentSource": "frontend/app/opengraph-image.tsx",
+      "identicalBytes": true,
+      "sha256": "3edeb5dd315e638e627bb210465f175db911787870c525171335cb5d64aef654"
+    },
+    {
+      "reviewSource": "frontend/app/(marketing)/page.tsx",
+      "currentSource": "frontend/app/(marketing)/page.tsx",
+      "identicalBytes": true,
+      "sha256": "a186669ea2efa2520de951273eb7e22a92a8086413fec2a74f204919a1d9b240"
+    },
+    {
+      "reviewSource": "frontend/app/(marketing)/faq/page.tsx",
+      "currentSource": "frontend/app/(marketing)/faq/page.tsx",
+      "identicalBytes": true,
+      "sha256": "b30e0cdbef7dc480c98d7499efb0aa4a155b93e542d34a974c76b9512685aaf0"
+    },
+    {
+      "reviewSource": "frontend/components/marketing/faq-section.tsx",
+      "currentSource": "frontend/components/marketing/faq-section.tsx",
+      "identicalBytes": true,
+      "sha256": "9fb7ec18d1d290aba4bf62d030e45ea2e2b9bfa12f7053b44b5517739d16c373"
+    },
+    {
+      "reviewSource": "frontend/components/marketing/landing-page.tsx",
+      "currentSource": "frontend/components/marketing/landing-page.tsx",
+      "identicalBytes": true,
+      "sha256": "43d5d5f084ae17edc25551caf201b39cf5ccfb36a8a5d615af1efabc4fa298d1"
+    },
+    {
+      "reviewSource": "frontend/components/marketing/__tests__/faq-section.test.tsx",
+      "currentSource": "frontend/components/marketing/__tests__/faq-section.test.tsx",
+      "identicalBytes": true,
+      "sha256": "90383ca2adb53d438467bf8471328055c2124bbe9d750422dc76d996b7afcd25"
+    },
+    {
+      "reviewSource": "frontend/lib/marketing/acquisition-metadata.ts",
+      "currentSource": "frontend/lib/marketing/acquisition-metadata.ts",
+      "identicalBytes": true,
+      "sha256": "3d526fc7ddd4593272792f628e32bb30d69d10a98e44ff32ecf5951bd18592b3"
+    },
+    {
+      "reviewSource": "frontend/lib/marketing/__tests__/acquisition-metadata.test.ts",
+      "currentSource": "frontend/lib/marketing/__tests__/acquisition-metadata.test.ts",
+      "identicalBytes": true,
+      "sha256": "9d79d47316f2b976b5163efd0bdcb49ca05d0eefe6dc8c1717aec7fbf9fcb4df"
+    }
+  ],
+  "priorAcceptanceHashesVerified": 33,
+  "reusedCheck": "LOCAL-APP-QA982; no new code since check",
+  "runtimeBaselineFiles": 1300
+}

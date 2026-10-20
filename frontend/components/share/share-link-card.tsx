@@ -1,9 +1,9 @@
 'use client';
 
-import { useCallback, useState } from 'react';
-import { Ban, Check, Copy, Link2 } from 'lucide-react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Ban, Check, Copy } from 'lucide-react';
 
-import { shareLinkStatus, type ShareLinkStatus } from '@/components/share/share-link-status';
+import { nextShareExpirationDelay, shareLinkStatus, type ShareLinkStatus } from '@/components/share/share-link-status';
 import { useCopyToClipboard } from '@/components/share/use-copy-to-clipboard';
 import { useShareUrl } from '@/components/share/use-share-url';
 import {
@@ -18,36 +18,26 @@ import {
 } from '@/components/ui';
 import { ApiError } from '@/lib/api/api-client';
 import { revokeShareLink, updateShareLink, type ShareLink } from '@/lib/api/share';
-import { formatDate, formatRelativeTime, pluralize } from '@/lib/format';
+import { formatRelativeTime, pluralize } from '@/lib/format';
+import { formatExpiration } from '@/components/share/share-preview';
 
 export interface ShareLinkCardProps {
   link: ShareLink;
-  /**
-   * `true` cuando este enlace lo revocó el usuario en esta sesión.
-   *
-   * El backend no lo distingue de "desactivado" —`DELETE /share/:id` y
-   * `PATCH { isActive: false }` escriben la misma columna—, así que esta es la
-   * única fuente que tenemos. Ver el comentario largo de
-   * `share-link-status.ts`.
-   */
-  revoked: boolean;
   onUpdated: (link: ShareLink) => void;
   /**
    * Solo el id: el `DELETE` no devuelve nada y el `isActive: false` lo aplica la
    * sección, que es la que tiene la copia del link en su estado.
    */
-  onRevoked: (id: string) => void;
+  onDeactivated: (id: string) => void;
 }
 
 /**
  * Una tarjeta de enlace público, con su estado y lo que se puede hacer con él.
  *
- * La acción habilitada **depende del estado**: un enlace revocado no ofrece
- * "Activar" ni "Revocar" (ya está revocado), y uno desactivado ofrece "Activar"
- * —que es la única forma de recuperarlo— y no "recuperar", porque recuperar no es
- * una operación, es activar.
+ * La fecha vencida tiene prioridad sobre `isActive`: activar no cambia la fecha
+ * ni vuelve elegible un enlace cuyo plazo ya terminó.
  */
-export function ShareLinkCard({ link, revoked, onUpdated, onRevoked }: ShareLinkCardProps) {
+export function ShareLinkCard({ link, onUpdated, onDeactivated }: ShareLinkCardProps) {
   const toast = useToast();
   const shareUrl = useShareUrl();
   const copy = useCopyToClipboard();
@@ -55,9 +45,18 @@ export function ShareLinkCard({ link, revoked, onUpdated, onRevoked }: ShareLink
   const [isToggling, setIsToggling] = useState(false);
   const [isRevoking, setIsRevoking] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [toggleError, setToggleError] = useState<string | null>(null);
+  const [revokeError, setRevokeError] = useState<string | null>(null);
+  const mutationInFlight = useRef(false);
 
-  const status: ShareLinkStatus = shareLinkStatus(link, { revoked });
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const delay = nextShareExpirationDelay([link]);
+    if (delay === null) return;
+    const timer = setTimeout(() => setNow(Date.now()), delay);
+    return () => clearTimeout(timer);
+  }, [link, now]);
+  const status: ShareLinkStatus = shareLinkStatus(link);
   const url = shareUrl(link.slug);
   const collectionLabel = link.collectionName ?? 'Todas mis colecciones';
 
@@ -66,8 +65,15 @@ export function ShareLinkCard({ link, revoked, onUpdated, onRevoked }: ShareLink
   }, [copy, url]);
 
   const handleToggle = useCallback(async () => {
+    if (mutationInFlight.current) return;
+    if (!shareLinkStatus(link).canToggle) {
+      setNow(Date.now());
+      setToggleError('El enlace venció. Creá otro con una nueva fecha.');
+      return;
+    }
+    mutationInFlight.current = true;
     setIsToggling(true);
-    setError(null);
+    setToggleError(null);
     try {
       const updated = await updateShareLink(link.id, { isActive: !link.isActive });
       onUpdated(updated);
@@ -77,28 +83,32 @@ export function ShareLinkCard({ link, revoked, onUpdated, onRevoked }: ShareLink
       // usuario está mirando (justo el botón que falló) y que no se cierra
       // solo. Un toast arriba y un aviso abajo es el mismo error dicho dos
       // veces.
-      setError(
+      setToggleError(
         caught instanceof ApiError ? caught.message : 'No pudimos cambiar el estado del enlace.',
       );
     } finally {
+      mutationInFlight.current = false;
       setIsToggling(false);
     }
-  }, [link.id, link.isActive, onUpdated, toast]);
+  }, [link, onUpdated, toast]);
 
   const handleRevoke = useCallback(async () => {
+    if (mutationInFlight.current) return;
+    mutationInFlight.current = true;
     setIsRevoking(true);
-    setError(null);
+    setRevokeError(null);
     try {
       await revokeShareLink(link.id);
       setIsConfirmOpen(false);
-      onRevoked(link.id);
-      toast.success('Enlace revocado. Ya no funciona para nadie.');
+      onDeactivated(link.id);
+      toast.success('Enlace desactivado. Podés volver a activarlo mientras no haya vencido.');
     } catch (caught) {
-      setError(caught instanceof ApiError ? caught.message : 'No pudimos revocar este enlace.');
+      setRevokeError(caught instanceof ApiError ? caught.message : 'No pudimos desactivar este enlace.');
     } finally {
+      mutationInFlight.current = false;
       setIsRevoking(false);
     }
-  }, [link.id, onRevoked, toast]);
+  }, [link.id, onDeactivated, toast]);
 
   return (
     <Surface
@@ -136,19 +146,21 @@ export function ShareLinkCard({ link, revoked, onUpdated, onRevoked }: ShareLink
           label="Vistas"
           value={`${link.viewCount} ${pluralize(link.viewCount, 'vez', 'veces')}`}
         />
-        <Stat label="Vence" value={link.expiresAt ? formatDate(link.expiresAt) : 'Nunca'} />
+        <Stat label="Vence" value={link.expiresAt ? formatExpiration(link.expiresAt) : 'Nunca'} />
       </StatGrid>
 
-      {error ? (
+      {toggleError ? (
         <Alert tone="error" size="sm" title="No pudimos actualizar el enlace">
-          {error}
+          {toggleError}
         </Alert>
       ) : null}
+
+      <p className="text-caption text-secondary">Desactivar no borra páginas ya abiertas, capturas ni copias guardadas.</p>
 
       {status.canToggle || status.canRevoke || status.canCopy ? (
         <div className="flex flex-wrap items-center gap-2">
           {status.canCopy ? (
-            <Button variant="secondary" size="sm" onClick={handleCopy}>
+            <Button variant="secondary" size="md" disabled={isToggling || isRevoking} onClick={handleCopy}>
               <Copy aria-hidden="true" focusable="false" strokeWidth={1.75} className="h-4 w-4" />
               Copiar
             </Button>
@@ -157,7 +169,8 @@ export function ShareLinkCard({ link, revoked, onUpdated, onRevoked }: ShareLink
           {status.canToggle ? (
             <Button
               variant="secondary"
-              size="sm"
+              size="md"
+              disabled={isRevoking}
               loading={isToggling}
               pendingLabel={status.toggleLabel === 'Activar' ? 'Activando…' : 'Desactivando…'}
               onClick={handleToggle}
@@ -170,7 +183,7 @@ export function ShareLinkCard({ link, revoked, onUpdated, onRevoked }: ShareLink
           ) : null}
 
           {status.canRevoke ? (
-            <Button variant="destructive" size="sm" onClick={() => setIsConfirmOpen(true)}>
+            <Button variant="destructive" size="md" disabled={isToggling || isRevoking} onClick={() => { setRevokeError(null); setIsConfirmOpen(true); }}>
               <Ban aria-hidden="true" focusable="false" strokeWidth={1.75} className="h-4 w-4" />
               Revocar
             </Button>
@@ -178,23 +191,22 @@ export function ShareLinkCard({ link, revoked, onUpdated, onRevoked }: ShareLink
         </div>
       ) : (
         <p className="flex items-center gap-2 text-caption text-tertiary">
-          <Link2 aria-hidden="true" focusable="false" strokeWidth={1.75} className="h-4 w-4" />
-          Este enlace no se puede volver a usar.
+          No hay acciones disponibles para este enlace.
         </p>
       )}
 
       <Sheet
         open={isConfirmOpen}
-        onClose={() => setIsConfirmOpen(false)}
-        title="Revocar el enlace"
-        subtitle="Deja de funcionar para cualquiera que lo tenga, y no se puede recuperar."
+        onClose={() => { if (!mutationInFlight.current) setIsConfirmOpen(false); }}
+        title="Desactivar el enlace"
+        subtitle="Deja de abrirse para nuevas visitas; podés volver a activarlo mientras no haya vencido."
         footer={
           <>
             <Button
               variant="destructive"
               className="flex-1"
               loading={isRevoking}
-              pendingLabel="Revocando…"
+              pendingLabel="Desactivando…"
               onClick={handleRevoke}
             >
               Revocar
@@ -202,7 +214,7 @@ export function ShareLinkCard({ link, revoked, onUpdated, onRevoked }: ShareLink
             <Button
               variant="secondary"
               className="flex-1"
-              disabled={isRevoking}
+              disabled={isRevoking || isToggling}
               onClick={() => setIsConfirmOpen(false)}
             >
               Cancelar
@@ -212,9 +224,21 @@ export function ShareLinkCard({ link, revoked, onUpdated, onRevoked }: ShareLink
       >
         <div className="flex flex-col gap-3">
           <p className="text-body text-secondary">
-            <span className="text-body-strong text-primary">{collectionLabel}</span> deja de ser
-            pública. Si te mandaron el link, hay que crear uno nuevo y volver a pasarlo.
+            <span className="text-body-strong text-primary">{collectionLabel}</span> dejará de
+            abrirse para nuevas visitas. Desactivar y revocar tienen el mismo efecto en este enlace:
+            mientras no haya vencido, podés volver a activarlo.
           </p>
+          <Alert tone="neutral" size="sm" title="No se pueden borrar copias ya vistas">
+            No podemos retractar páginas que ya están abiertas ni borrar capturas o copias que otras personas hayan guardado.
+          </Alert>
+          {revokeError ? (
+            <Alert tone="error" size="sm" title="No pudimos desactivar el enlace">
+              <div className="flex flex-col items-start gap-2">
+                <span>{revokeError}</span>
+                <Button variant="secondary" size="md" disabled={isRevoking} onClick={handleRevoke}>Reintentar</Button>
+              </div>
+            </Alert>
+          ) : null}
           <p className="select-all break-all rounded-control bg-surface-2 px-3 py-2 font-mono text-caption text-secondary">
             {url}
           </p>

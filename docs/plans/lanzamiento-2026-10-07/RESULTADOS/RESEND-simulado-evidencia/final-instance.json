@@ -1,0 +1,46 @@
+{
+  "url": "http://localhost:3000",
+  "scope": "Intentionally live habitual dev instance; compiled Nest/Next",
+  "statuses": {
+    "login": 200,
+    "health": 200,
+    "ready": 200,
+    "metricsDefault": 404,
+    "recoveryDisabled": 503
+  },
+  "processes": [
+    {
+      "role": "api",
+      "pid": 64068,
+      "parent": 64057,
+      "executable": "node",
+      "launcher": {
+        "pid": 64057,
+        "parent": 64056,
+        "role": "local-user-request-api",
+        "port": 3001
+      }
+    },
+    {
+      "role": "next",
+      "pid": 64082,
+      "parent": 64071,
+      "executable": "next-server (v16.3.6)",
+      "launcher": {
+        "pid": 64071,
+        "parent": 64070,
+        "role": "local-user-request-next",
+        "port": 3000
+      }
+    }
+  ],
+  "jobsCronsProvidersBlocked": true,
+  "recoveryExternalDisabled": true,
+  "metricsSecretUnset": true,
+  "ownQAPortsFree": [
+    56521,
+    56522
+  ],
+  "ownQAResourcesLive": 0,
+  "checkedAtUtc": "2026-10-11T22:11:14.606714+00:00"
+}

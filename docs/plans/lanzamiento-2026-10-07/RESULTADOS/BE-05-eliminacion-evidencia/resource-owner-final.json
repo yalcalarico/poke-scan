@@ -1,0 +1,37 @@
+{
+  "runId": "delete_82a3d2d6453c",
+  "owner": "/root",
+  "database": "delete_82a3d2d6453c_test",
+  "marker": "owner=/root;run=delete_82a3d2d6453c;source=DELETE-local-restore-standard-fixture",
+  "pgFullID": "18aa2f6937521ae010930ae98cbee45f2fa435b554c65cf90daaffba0c641ba8",
+  "sourceCounts": {
+    "migrations": 13,
+    "users": 22,
+    "collections": 22,
+    "items": 69,
+    "shares": 13,
+    "cards": 20670,
+    "gin": 5
+  },
+  "standardTestBefore": {
+    "migrations": 11,
+    "users": 2,
+    "collections": 3,
+    "items": 2,
+    "shares": 1,
+    "cards": 20670,
+    "gin": 5,
+    "priced": 7
+  },
+  "createdAtUtc": "2026-10-11T23:27:57.820834+00:00",
+  "liveResources": [],
+  "redis": {
+    "name": "delete_82a3d2d6453c-redis",
+    "id": "30c6534d711a151d14382d22d60cad6a4137b189c4f4742337a9cc134bc92b0e",
+    "port": 56541,
+    "label": "owner=/root;run=delete_82a3d2d6453c;source=DELETE-local-restore-standard-fixture"
+  },
+  "restoreDatabase": "delete_82a3d2d6453c_restore_test",
+  "restoreMarker": "owner=/root;run=delete_82a3d2d6453c;source=DELETE-local-restore-standard-fixture;role=restore-target",
+  "cleanedAtUtc": "2026-10-11T23:31:04.298935+00:00"
+}
