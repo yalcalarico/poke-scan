@@ -11,23 +11,22 @@
 
 ## Índice
 
-| Grupo | Endpoints |
+| Grupo | Referencia |
 |---|---|
-| [Salud](#salud) | 2 |
-| [Auth](#auth) | 8 |
-| [Usuarios](#usuarios) | 1 |
-| [Cartas y sets](#cartas-y-sets) | 7 |
-| [Colecciones](#colecciones) | 15 |
-| [Compartir](#compartir) | 6 |
-| [Moneda](#moneda) | 2 |
-| [Amigos](#amigos) | 7 |
-| [Jobs (admin)](#jobs-admin) | 3 |
-| [Métricas](#operación-privada) | 1 |
-| **Total** | **52** |
+| Salud | [Salud](#salud) |
+| Autenticación y baja de cuenta | [Auth](#auth) |
+| Usuarios | [Usuarios](#usuarios) |
+| Cartas, sets e historial de precios | [Cartas y sets](#cartas-y-sets) |
+| Colecciones e items | [Colecciones](#colecciones) |
+| Compartir | [Compartir](#compartir) |
+| Moneda | [Moneda](#moneda) |
+| Amigos | [Amigos](#amigos) |
+| Administración de sync y precios | [Jobs (admin)](#jobs-admin) |
+| Comparación de fuentes y series | [Comparaciones](#comparación-de-fuentes-y-series-usd) |
+| Métricas privadas | [Operación privada](#operación-privada) |
+| Portfolio | [`GET /api/portfolio`](#portfolio) |
 
-> El conteo sale de los decorators de ruta de los 13 controllers. Cuando se
-> agrega un endpoint hay que actualizar el número: el índice es la única forma de
-> detectar que la tabla quedó vieja.
+El índice enumera grupos y secciones para orientar la navegación; las rutas de cada sección y sus decorators son la referencia para el contrato vigente.
 
 ---
 
@@ -1860,8 +1859,7 @@ class RefreshPricesDto { cardIds: string[] }           // @ArrayNotEmpty(), @Arr
 ### `POST /api/jobs/sync-catalog`
 
 **202 Accepted** (`@HttpCode(202)`). Body `SyncCatalogDto`: `force?` (boolean).
-Si `force` no viene y existe la clave Redis `sync:cards:complete`, el job
-termina `skipped` sin gastar requests.
+Si `force` no viene y el estado PostgreSQL `sync_state` indica que el catálogo del proveedor ya está completo, el job termina `skipped` (hace una consulta de sondeo para conocer el total). El cursor reanudable y el flag de completitud viven en PostgreSQL; el lock que evita dos syncs simultáneos sigue usando Redis con TTL renovable.
 
 Crea un `ScanJob` y **devuelve de inmediato** (`void this.runSync(...)`): el
 sync corre en background. Poll con `GET /jobs/:id`.
@@ -1982,6 +1980,8 @@ del top devuelto. No hay ORB ni campos de geometría o verificación. El escaneo
 no abre imágenes de referencia: necesita modelo ONNX, metadata y vectores.
 No modifica pesos ni recalcula embeddings. La similitud no es una probabilidad
 ni certifica edición/acabado. Ver [evaluación DINOv2 puro](../../docs/evaluations/dinov2-only-2026-10-05.md).
+
+<a id="portfolio"></a>
 
 ## `GET /api/portfolio`
 

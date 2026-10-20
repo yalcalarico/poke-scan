@@ -1,6 +1,6 @@
 # Inventario de componentes
 
-27 primitivas en `components/ui/` y 13 carpetas alrededor. Este documento es el
+Primitivas en `components/ui/` y componentes de dominio alrededor. Este documento es el
 índice de **qué existe, qué hace y por qué está hecho así**. Para *cómo se
 construye* el sistema está [`design-system.md`](design-system.md) (tokens, reglas,
 anti-patrones) y para *cómo se trabaja acá* está
@@ -44,9 +44,10 @@ símbolo están citados, la afirmación es verificable con un grep.
 | `collections/` | lista, detalle, summary, sheets de ítem y de colección | `CollectionsScreen` / `CollectionDetailScreen` |
 | `set-progress/` | progreso por set y binder | `SetProgressScreen` |
 | `prices/` | `PriceHero`, `PriceDelta`, `PriceTable`, `CardPriceSection`, `PriceReferenceDetails`, `ValuationEvidence` | `CardPriceSection` |
-| `settings/` | identidad, apariencia, moneda, sesión, `RequireAuth` | `RequireAuth` + las 5 secciones |
+| `settings/` | identidad, apariencia, moneda, sesión, eliminación y `RequireAuth` | `RequireAuth` y secciones de ajustes |
 | `share/` | enlaces del usuario, vista pública, `InstallCta` | `PublicCollectionView` / `ShareLinksSection` |
-| `auth/` | `AuthShell`, `LoginForm`, `RegisterForm` | `AuthShell` |
+| `auth/` | login, registro, recuperación y eliminación de cuenta | `AuthShell`, `RecoveryExperience`, `AccountDeletionExperience` |
+| `visual-preview/` | apariencia V2 predeterminada, selector Clásica/Actual y navegación compatible | `VisualPreviewProvider` |
 | `home/` | inicio PWA: reanudación, mock y CTA de sesión | `app/(app)/inicio/page.tsx` (server) |
 | `marketing/` | landing pública, planes y FAQ | `app/(marketing)/page.tsx` (server) |
 | `brand/` | `AppMark` | `AppMark` |

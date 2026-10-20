@@ -1,3 +1,10 @@
+> **ARCHIVO HISTÓRICO — 20/10/2026.** Este diseño/plan fue sustituido o su ejecución
+> terminó. Se conserva en su ruta original para mantener enlaces y anchors.
+> Las instrucciones, checkboxes, conteos y afirmaciones del cuerpo describen su
+> momento; no son órdenes ni capacidades actuales. Referencia vigente:
+> [guía de reemplazo](../../frontend/docs/scanner.md) y [estado del proyecto](../estado-actual.md).
+> Los pendientes válidos se mantienen en el registro actual o el roadmap del escáner.
+
 # Card Scanner Pokémon: Plan de identificación visual
 
 Evolución de la app que ya existe. **No es un proyecto nuevo**: es agregar

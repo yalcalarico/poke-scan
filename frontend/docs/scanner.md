@@ -1,6 +1,6 @@
 # Escáner visual DINOv2
 
-Actualizado el 2026-10-03. DINOv2 es el único método de reconocimiento. Se retiraron la lectura de texto, su comparador, el motor del navegador y los endpoints de identificación por texto.
+Revisado el 2026-10-20. DINOv2 es el único método de reconocimiento. Se retiraron la lectura de texto, su comparador, el motor del navegador y los endpoints de identificación por texto.
 
 ## Rectificación de perspectiva de galería — 6 de octubre de 2026
 
@@ -25,8 +25,14 @@ todavía requieren validar fondos, fundas y reflejos con corpus amplio.
 
 Se verificó geometría con imágenes controladas y se compararon cinco fotos
 existentes preparadas en Node: 2/5 top-1 antes, 5/5 después. No equivale a
-certificar galería en navegador, cámara física ni precisión general. Evidencia
-en `docs/evaluations/scanner-perspective-2026-10-06.md`.
+certificar cámara física ni precisión general. Es el resultado histórico de
+ese pipeline: [evidencia del 6/10](../../docs/evaluations/scanner-perspective-2026-10-06.md).
+El [contraste del 20/10](../../docs/evaluations/scanner-baseline-contrast-2026-10-20.md)
+con decoder nativo da 3/5 top-1 y 5/5 top-8 antes/después del último parche;
+no reproduce exactamente aquel 5/5 ni demuestra la causa de la diferencia.
+La [corrección del 20/10](../../docs/evaluations/scanner-crop-fix-2026-10-20.md)
+acredita galería real y guardado aislado para el recorte reportado, que pasa del
+puesto 563 al 3 (Luxray todavía primero), sin certificar precisión general.
 
 ## Flujo de uso
 

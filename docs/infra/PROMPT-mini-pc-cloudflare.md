@@ -1,47 +1,54 @@
 # Prompt futuro — validar y configurar PokéScan en mini PC
 
-**Corrección15/10ARG — TCGCSV sin topes globales:** se retiraron40grupos/500requests y el lote de10; cada ciclo recorre todos los grupos elegibles y el worker descarga serialmente. Conservar last-updated/build, leases y al menos24h completas por archivo desde el fin de su lectura, incluso errores/reinicios; los contadores son informativos. El mismo comando `pnpm run prices:sync` continúa el backlog sin borrar lo importado. No resetear fechas de jobs ni descartar precios históricos durante una migración de equipo. Esta actualización reemplaza los topes conservadores de los checkpoints13/10 siguientes. Ejecución miniPC sigue diferida.
+Revisión: **20/10/2026**. **Preparación COMPLETADA; ejecución real diferida al final.**
+El usuario todavía no tiene el equipo. Este documento no inicia instalación,
+publicación ni cuentas, y no cierra INF-01/03/04 o SEO por preparación documental.
 
-**Crons de precios y comando aceptados localmente,13/10ARG:** migración aditiva `20261014010000_tcgcsv_discovery` aplicada y ensayada (dev15 migraciones al cierre; verificar las vigentes al ejecutar). TCGCSV descubre grupos cada diez minutos, compara `last-updated.txt`, prioriza pendientes en lotes de diez y conserva un archivo de precios por24h; presupuestos internos40grupos/500requests porventana24h. TCGdex encola300cartas cada hora al minuto13, con worker/gate2300ms. Configurar `PRICE_QUEUE_ENABLED=true`, `ENABLE_PRICE_BACKFILL_CRON=true`, `ENABLE_TCGCSV_INGESTION=true` después del gate propio y mantener los demás jobs según su autorización. Con API activa: `pnpm run prices:sync` pide ciclo y observa hasta10min; `pnpm run prices:status --watch` sólo observa; Ctrl+C cierra vista, no jobs.143/176sets asociados en catálogo actual, cobertura parcial y proveedores sin precio se informan. Migrar tablas de señales/descubrimiento, historial/leases/cuotas y registros sin resetear timestamps. Descargas reales locales ya acreditadas; no confundir fixtures con datos de mercado ni copiar helpers privados del Mac. Preparación miniPC completada; hardware/exposición siguen diferidos al final. [Validación local](../plans/lanzamiento-2026-10-07/RESULTADOS/PRECIOS-crons-validacion.md).
+- [x] Prompt, decisiones y preparación local entregados.
+- [x] Packaging, backups/restore, custodia, transferencia y calendario ensayados localmente.
+- [ ] Equipo real, compatibilidad/DINOv2, instalación, consumo y recuperación medidos.
+- [ ] Dominio/Tunnel/HTTPS, Resend/B2, custodia, monitoreo y operación reales.
 
-**Actualización13/10 — precios y gráficas ya implementados localmente:** incluir las migraciones vigentes (hoy14, sin hardcodear ese número para el futuro), tablas de ingesta/comparación y contratos del lote [PRECIOS](../plans/lanzamiento-2026-10-07/RESULTADOS/PRECIOS-comparacion-validacion.md). Para la ejecución futura de miniPC, revisar `ENABLE_TCGCSV_INGESTION` (grupos24722/24837, diario20:30UTC, presupuesto durable24h desde el último pull) y `ENABLE_COLLECTION_COMPARISON_CRON` (20:35UTC). Preservar cuota/leases/mapeos/runs, no reiniciar fechas para forzar descargas; snapshots y precios históricos deben viajar con PG y conservar cascadas privadas. Mantener TCGdex como política principal hasta una decisión distinta. No copiar las rutas privadas del guard/startup del Mac: configurar el entorno propio, límites/red y derechos de uso público/comercial antes de publicación. Primera carga real local14/10pendiente al escribir esto; no tomar fixtures ni capturas del ensayo como historial real. Preparación miniPC completada; implementación en hardware y exposición externa siguen DIFERIDAS al final.
+## Configuración de referencia al retomar
 
+| Tema | Decisión/implementación que debe conservarse |
+|---|---|
+| Hosting | Mini PC propia + Cloudflare Tunnel. El túnel no ejecuta DINOv2 ni asegura uptime del equipo. |
+| Correo | Resend Free previsto; adaptador simulado aceptado. Cuenta, dominio/remitente y envíos reales al final. [Guía](resend-recovery.md). |
+| Backups | Backblaze B2 previsto; identidad privada age en bóveda del dueño y recuperación cifrada separada. Máximo 30 días desde creación original. No renovar fecha al copiar/restaurar. |
+| Bajas/restore | Registro independiente de bajas; comprobar/aplicar antes de tráfico restaurado y fallar cerrado sin cobertura. Conservarlo hasta comprobar que no hay copias restaurables afectadas. |
+| TCGdex | Ciclo diario **03:15 UTC**, resumidor cada 15 min y recuperación al arrancar después del corte; cola y gate durable 2,3 s. `ENABLE_PRICE_BACKFILL_CRON` + `PRICE_QUEUE_ENABLED`. |
+| TCGCSV | Ciclo diario **21:00 UTC**, resumidor cada 15 min y discovery cada 10 min. `ENABLE_TCGCSV_INGESTION=true` tras el gate/autorización propios. Validar `last-updated.txt`/build y una descarga por archivo de precios cada 24 h. Sin antiguos topes 40 grupos/500 requests/lotes de diez; mantener serialización, leases, identidad segura y pausas 429. |
+| Alcance diario | `price_sync_sets`: semilla curada + sets de colecciones, prioridad/habilitación explícitas. No barrido horario del catálogo entero. |
+| Históricos | Migrar observaciones, controles diarios, señales, leases, cuotas por archivo, mappings y registro sin resetear fechas. No inventar días ausentes ni mezclar referencia activa y comparación. |
+| Comandos | Con API encendida: `pnpm run prices:sync`, `pnpm run prices:status --watch`, `pnpm run prices:sets`. Ctrl+C cierra la vista, no los jobs. |
 
-**Calendario local aceptado13/10:** [validación](../plans/lanzamiento-2026-10-07/RESULTADOS/INF-03-calendario-validacion.md),1146check/15integrados y cleanup. Reutilizar scripts/inf03-schedule y [procedimiento](../../infra/inf03/SCHEDULE.md); no reimplementar. Una pasada explícita/sin timer instalado; cadencia diaria sólo fixture, RPO/operación reales pendientes. Al retomar equipo final, acordar parámetros reales y medios de alerta/custodia antes de instalar un timer; no copiar claves ni recursos efímeros de QA.
+Aplicar las migraciones existentes según el repositorio del momento, con respaldo
+y ensayo propios; no fijar un número histórico de migraciones. El calendario,
+correo, bajas y demás jobs conservan sus flags y gates: copiar configuración de
+desarrollo no autoriza activar operación real.
 
-**Preparación COMPLETADA; ejecución diferida al final — 13/10/2026.** Por pedido del usuario, este paquete sale de la cola activa. «Completada» describe la preparación entregada, no una mini PC instalada o validada. No cerrar por esto los IDs INF-01/INF-03/INF-04 ni SEO con gates reales pendientes.
+## Entregas locales para reutilizar
 
-- [x] Prompt de diagnóstico/configuración y decisiones de hosting, correo, backups y custodia documentados.
-- [x] Paquete y custodia ensayados localmente, con límites de la evidencia registrados.
-- [ ] Ejecutar al final, cuando exista el equipo: compatibilidad/DINOv2, instalación, mediciones, operación y recuperación reales.
-- [ ] Dominio/Tunnel/HTTPS, B2/Resend, claves y monitoreo reales, con las autorizaciones aplicables.
+- [Runtime/packaging](../plans/lanzamiento-2026-10-07/RESULTADOS/INF-02-runtime-review.md),
+  [gate operación](../plans/lanzamiento-2026-10-07/RESULTADOS/LOTE-OPERACION-validacion.md)
+  y [paquete de custodia](../plans/lanzamiento-2026-10-07/RESULTADOS/INF-02-custodia-paquete-validacion.md).
+- [Retención](../plans/lanzamiento-2026-10-07/RESULTADOS/INF-03-retencion-validacion.md),
+  [custodia](../plans/lanzamiento-2026-10-07/RESULTADOS/INF-03-custodia-validacion.md),
+  [ack de bajas](../plans/lanzamiento-2026-10-07/RESULTADOS/INF-03-bajas-custodia-validacion.md),
+  [transferencia](../plans/lanzamiento-2026-10-07/RESULTADOS/INF-03-transferencia-validacion.md)
+  y [calendario](../plans/lanzamiento-2026-10-07/RESULTADOS/INF-03-calendario-validacion.md).
+- [Runbooks y scripts INF-03](../../infra/inf03/README.md),
+  [calendario](../../infra/inf03/SCHEDULE.md) y
+  [cierre de precios diarios](../plans/precios-diarios-priorizados-2026-10-18-estado.md).
 
-Continuar ahora los pasos locales disponibles; no volver a solicitar el equipo inexistente. La autorización de continuar no activa proveedores ni publicación.
+Los ensayos de Linux/ARM64 y dependencias cacheadas no acreditan full build frío
+desde cero, ABI del equipo final, B2/off-host, pérdida eléctrica ni uptime.
+No copiar claves, helpers privados ni recursos efímeros del Mac. El monitor local
+loopback no equivale a monitor externo. Las versiones anteriores del prompt están
+[archivadas completas](../archive/orchestration-2026-10-20/README.md).
 
-
-**Paquete de custodia probado localmente13/10:** [validación](../plans/lanzamiento-2026-10-07/RESULTADOS/INF-02-custodia-paquete-validacion.md). Targetcustody opt-in/código en /scripts read-only, contexto separado allowlist3mjs, namespace firmado preservado y guards contra recreate base.1131check/21controlesLinuxARM64 con dependencias cacheadas exactas y fuentes actuales; fullbuild desde cero offline bloqueado por downloadpnpm, no acreditado. Verificar instalación/ABI/equipo real al retomar; no inferir B2/offhost ni activar bajas reales. Preferencia sin capturas vigente.
-
-**Pasos pendientes al13/10,20/38IDs completos:** empaquetado local ampliado; todavía falta equipo real/configuración/DINOv2 y presupuesto; dominio/CloudflareTunnel/HTTPS y SEO público; B2/custodia/calendario/restore externos y Resend real; monitoreo/carga/uptime; beta con entrevistas/cartas consentidas/usabilidad/medición manual; contenido comercial/costos/licencias/privacidad y decisiones de oferta. Pro/pagos (FE-06/BE-08/UX-05) sólo tras validación y GO, y FE-05 automatización diferida por primera ronda manual. El calendario simulado ya está implementado y aceptado localmente; instalación de timer y operación reales se ejecutarán en la fase final.
-
-**Preferencia vigente del usuario,12/10:** validar con pruebas pertinentes al terminar cada implementación; no tomar ni enviar capturas de pantalla, traces ni videos. Entregar resultados breves y conservar logs/recibos sanitizados cuando sean necesarios. Continuar los pasos locales autorizados por el pedido del 13/10; conservar permisos reales para la fase final.
-
-**Bajas con confirmación local de custodia aceptadas12/10:** [implementación/ensayo](../plans/lanzamiento-2026-10-07/RESULTADOS/INF-03-bajas-custodia-validacion.md). Opt-in local-simulated publica/verifica/cierra antes de éxito HTTP y startup publica pendientes antes de replay. Requiere layout backend/dist + tres scripts comunes .mjs read-only; imagen backend-only aún no lo empaqueta. Reutilizar código validado, comprobar packaging/medios externos en fases autorizadas, sin inferir custodia física/B2/energía/rollback conjunto ni activar bajas reales automáticamente.
-
-**Custodia/host perdido simulados aceptados12/10:** [implementación y consumidor real](../plans/lanzamiento-2026-10-07/RESULTADOS/INF-03-custodia-validacion.md), runbook infra/inf03/CUSTODIA-RECUPERACION-LOCAL.md. Reconstruye originales ausentes desde objetos/metadatos/anchor lógico separados, conserva autoridad actual y fecha original, seguido por admisión/replay normal y verify antes del tráfico. No custodia física off-host, rollback conjunto ni ack de cada baja HTTP acreditados; verificar integración viva y medios reales en fase autorizada antes de operar. No relajar guards ni repetir gates intactos.
-
-**Transferencia local simulada aceptada12/10:** [adaptador y consumo real](../plans/lanzamiento-2026-10-07/RESULTADOS/INF-03-transferencia-validacion.md), instrucciones en infra/inf03/TRANSFER-LOCAL.md. Sólo filesystem marcado, cuarentena sin elegibilidad automática; no llamadas B2 ni recuperación si faltan originales. Implementar/verificar integración externa y custodia actual en fases autorizadas; no tomar la simulación como permiso real/copia off-host ni debilitar auditoría para recuperar disponibilidad.
-
-**Destino/custodio elegidos12/10:** Backblaze B2 para copias cifradas; dueño del proyecto custodiará la identidad privada age en bóveda y recuperación cifrada separadas. [Decisión](../plans/lanzamiento-2026-10-07/RESULTADOS/INF-03-destino-custodia.md). No volver a elegir proveedor/custodio al retomar; verificar sus medios concretos, cuenta, permisos y custodia vigente sin pedir secretos por chat. Cuenta, claves y operación siguen sin acreditar/activar.
-
-**Implementación local aceptada12/10:** [inventario/vencimiento/restore protegido](../plans/lanzamiento-2026-10-07/RESULTADOS/INF-03-retencion-validacion.md), scripts y guards vigentes en infra/inf03/README.md. Al configurar el equipo futuro, adaptar operación/custodia/calendario/off-host por fases; no inferir que están activos ni reutilizar claves/recursos efímeros de QA. No reimplementar ni repetir gates intactos.
-
-Preparado el 11/10/2026. El usuario todavía **no tiene la mini PC**. La modalidad elegida es mini PC propia + Cloudflare Tunnel; adquisición, equipo, dominio y operación continúan pendientes. Guardar este prompt no inicia ninguna ejecución ni publicación. Copiá el texto siguiente cuando tengas el equipo y quieras retomar.
-
-**Correo elegido posteriormente:** Resend Free; adaptador y ensayo local aceptados. Ver [guía](resend-recovery.md). Cuenta, dominio y envíos externos quedan para el final; no asumirlos configurados al retomar.
-
-**Backups decididos posteriormente:** máximo30d desde creación y registro independiente de bajas antes de habilitar tráfico restaurado; [decisión detallada](../plans/lanzamiento-2026-10-07/RESULTADOS/INF-03-retencion-supresiones.md). Verificar implementación/operación vigentes al retomar; no asumir que una política documental ya está instalada.
-
----
+## Prompt para usar cuando exista el equipo
 
 Actuá como responsable de infraestructura y QA de PokéScan. Ya elegí mini PC propia + Cloudflare Tunnel. Quiero validar el equipo real y preparar su configuración conservando la arquitectura del proyecto. Avanzá por etapas: completá la etapa autorizada, entregá evidencia, decime cuál sigue y preguntame si quiero continuar. Al activar este prompt empezá solamente por la etapa 1.
 
@@ -52,9 +59,9 @@ Datos disponibles al retomar (completar lo conocido; no pegar secretos):
 - Acceso autorizado al equipo: [local o mecanismo remoto disponible].
 - Red y operación: [conectividad, horario esperado, cortes/UPS y responsable].
 - Dominio y cuenta Cloudflare: [disponibles / pendientes].
-- Presupuesto y destino de backups fuera del equipo: [disponibles / pendientes].
+- Presupuesto, cuenta B2 y medios de custodia fuera del equipo: [disponibles / pendientes]. El destino B2 y el custodio (dueño) ya fueron elegidos.
 
-Leé primero AGENTS.md, docs/orquestacion-codex.md y los encabezados vigentes de docs/plans/lanzamiento-2026-10-07/{CONTEXTO-PART2.md,11-orquestacion.md,10-decisiones-y-contratos.md,REGISTRO-TAREAS.md,STATUS-CHECKLIST.md,RESULTADOS/ORQUESTACION-ESTADO.md}. Reutilizá INF-01-entorno.md, INF-02-runtime-review.md, LOTE-OPERACION-validacion.md, INF-03-local-review.md e INF-04-operacion.md en RESULTADOS/. Verificá las rutas y scripts vigentes; no des por existentes helpers temporales ni uses PIDs de recibos antiguos sin comprobarlos. Los hechos y permisos del momento mandan sobre este prompt.
+Leé primero AGENTS.md, docs/orquestacion-codex.md, docs/estado-actual.md y el registro/checklist/decisiones de docs/plans/lanzamiento-2026-10-07/. Los checkpoints anteriores están archivados y no son órdenes vigentes. Reutilizá INF-01-entorno.md, INF-02-runtime-review.md, LOTE-OPERACION-validacion.md, INF-03-local-review.md e INF-04-operacion.md en RESULTADOS/. Verificá las rutas y scripts vigentes; no des por existentes helpers temporales ni uses PIDs de recibos antiguos sin comprobarlos. Los hechos y permisos del momento mandan sobre este prompt.
 
 1. **Diagnóstico del equipo.** Inspeccioná sólo el equipo identificado y autorizado; no confundas la Mac de desarrollo con la mini PC. Comprobá CPU/arquitectura, RAM, disco, sistema/libc, runtime nativo y conectividad. Sin acceso, solicitá únicamente los datos imprescindibles. No instales, formatees ni publiques en esta etapa. Entregá compatibilidad probable, carencias y plan de validación; los tamaños históricos son hipótesis, no mínimos demostrados. Antes de continuar preguntame por la etapa 2.
 

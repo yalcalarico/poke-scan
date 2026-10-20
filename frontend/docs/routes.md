@@ -2,16 +2,16 @@
 
 **Apariencia predeterminada,20/10/2026:** el usuario eligió V2 tras probarla con el público. Las rutas normales de la app activan sus efectos sin parámetro; `visual=v2` y `/buscar-v2` siguen funcionando. La alternativa anterior se elige explícitamente con `visual=classic`, mediante el selector Clásica/Actual. Se retiró el menú duplicado V2: la navegación principal vuelve a sus cinco destinos. Contexto de búsqueda y datos compartidos se conservan; esta decisión reemplaza el carácter optativo de los checkpoints16/10 siguientes.
 
-Las 15 pantallas del frontend: quién las puede ver, si son Server o Client Component,
+Las pantallas del frontend (16 archivos `page.tsx` al 20/10/2026): quién las puede ver, si son Server o Client Component,
 de dónde sacan los datos y por qué están donde están. El detalle de los
 componentes está en [`components.md`](components.md); las reglas de estilo, en
 [`design-system.md`](design-system.md); el modo de trabajo, en
 [`build-guide.md`](build-guide.md).
 
-**No hay prefijo ni versión.** `/buscar` es `/buscar`: no hay `/v2/buscar`, y no
-queda ningún alias. Cuando la app se renombró, la URL pública **no** se movió, así
-que no hay dos direcciones para el mismo contenido y ningún `robots: noindex`
-haciendo de parche.
+**Un solo árbol de app, dos apariencias.** Las rutas habituales usan V2 por
+defecto; `visual=classic` elige Clásica y `visual=v2` sigue siendo compatible.
+`/buscar-v2` reutiliza `CatalogSearch`; no es otro catálogo ni otra sesión.
+La navegación principal conserva cinco destinos.
 
 > **Disclaimer sobre números de línea**: las referencias apuntan a **archivo +
 > símbolo + fragmento de código**, que es lo que no se mueve. Cuando el archivo y el
@@ -27,7 +27,7 @@ haciendo de parche.
 | `/faq` | `app/(marketing)/faq/` | Server | no | `page.tsx` | `FaqSection` |
 | `/inicio` | `app/(app)/inicio/` | Server | no | `page.tsx` | `HomeCta`, `ScanSessionResume` |
 | `/buscar` | `app/(app)/buscar/` | Server | no | `page.tsx` | `CatalogSearch` |
-| `/buscar-v2` | `app/(app)/buscar-v2/` | Server | no | `page.tsx` | el mismo `CatalogSearch`, vista experimental |
+| `/buscar-v2` | `app/(app)/buscar-v2/` | Server | no | `page.tsx` | el mismo `CatalogSearch`, entrada compatible de V2 |
 | `/carta/[id]` | `app/(app)/carta/[id]/` | Server async | no | `page.tsx` | `CardActions`, `CardPriceSection`, `CardComparisonPanel` |
 | `/escanear` | `app/(app)/escanear/` | **Client** | no | — (la página es client) | la página entera |
 | `/colecciones` | `app/(app)/colecciones/` | Server (finito) | degrada | `page.tsx` | `CollectionsScreen` |
@@ -68,13 +68,11 @@ Y las fronteras: `app/(app)/error.tsx`, `app/(auth)/error.tsx`,
 
 ## 1. Por qué no hay un prefijo de versión
 
-**Excepción visual autorizada, 16/10/2026:** `/buscar-v2` es una entrada de
-comparación que reutiliza la pantalla de búsqueda; no es otro árbol de app.
-Inicio, ficha de carta, colecciones y escaneo comparan la apariencia mediante
-`visual=v2`. El selector Actual/V2 conserva parámetros, identidad y contexto de
-regreso. El menú V2 ofrece cuatro accesos; los vínculos internos mantienen la
-vista elegida. La preferencia no se guarda globalmente ni cambia la sesión.
-La explicación histórica siguiente sigue aplicando a la arquitectura de la app.
+La apariencia actual es V2 por defecto desde el 20/10. El selector
+Clásica/Actual conserva parámetros, identidad y contexto de regreso. No hay menú
+V2 adicional. `visual=v2` y `/buscar-v2` se mantienen por compatibilidad; no
+crean un segundo árbol ni separan los datos. La explicación histórica siguiente
+se refiere al antiguo prefijo `/v2/*`, retirado con el rediseño de septiembre.
 
 Antes de que existiera este árbol, la app nueva convivía con la anterior bajo
 `/v2/*`, porque **Next no permite que dos route groups resuelvan el mismo path**:
@@ -84,8 +82,8 @@ es cambiar la URL de una de las dos, y cambiar la de la que estaba en producció
 significaba romper los links de `manifest.json`, del service worker y de todos los
 que se habían compartido.
 
-Hoy **no hay dos versiones que colisionen**, así que el prefijo no tiene razón de
-ser: `/buscar` es la pantalla nueva y nada más. `components/nav.ts` no tiene
+Hoy **no hay dos árboles que colisionen**: `/buscar` usa el catálogo común y
+`/buscar-v2` es su entrada visual compatible. `components/nav.ts` no tiene
 constante de base — los `href` de `NAV_ITEMS` son absolutos — así que agregar una
 pantalla es agregar un `page.tsx`, no editar una lista de prefijos.
 
@@ -115,7 +113,7 @@ app/
   (auth)/                 ← RAMA 3: sin BottomNav
     layout.tsx            ← <PlainShell>
     error.tsx
-    login/  registro/
+    login/  registro/  recuperar/  eliminar-cuenta/
   share/                  ← RAMA 4: sin BottomNav
     layout.tsx            ← <PlainShell>
     [slug]/
@@ -299,10 +297,10 @@ un error de tipeo.
 
 ## 5. Qué rutas requieren sesión
 
-**Ninguna bloquea el acceso en el server.** La sesión vive en el navegador
-(`sessionStorage`), así que el server no sabe si hay token. El patrón es el
-contrario del que uno esperaría: la ruta renderiza siempre y el componente cliente
-decide.
+**La autorización de datos la aplica la API.** El access token vive en memoria
+cliente y el refresh en cookie HttpOnly. Los componentes/guards esperan el
+bootstrap antes de pedir datos privados; renderizar el shell de una ruta no
+confirma sesión ni habilita acceso. Ver [cliente y sesión](api-client.md).
 
 - **`/ajustes`** es la única con un guard dedicado: `RequireAuth` hace
   `router.replace('/login')` cuando `isLoading` ya terminó y
@@ -312,7 +310,7 @@ decide.
   sin sesión renderiza un `EmptyState` con CTA a `/login`
   (`!isAuthLoading && !isAuthenticated`), y no dispara ningún fetch — el
   `useAsync` corta antes.
-- **`/colecciones`** distingue **cuatro** estados en vez de tres: `loading` ·
+- **`/colecciones`** distingue **cinco** estados: `loading` ·
   `error` · **no autenticado** · vacío · listo. El `IconButton` de "Nueva
   colección" en el header **no se renderiza** sin sesión (no sale `disabled`, no
   existe), y el estado vacío tiene su propio copy, porque "no hay nada que crear

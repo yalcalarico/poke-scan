@@ -1,6 +1,6 @@
 # Base de datos — modelo, migraciones y patrones de query
 
-> Los 11 modelos de Prisma, qué hace cada migración, la convención de nombres
+> Los modelos de Prisma, qué hace cada migración, la convención de nombres
 > (tablas snake_case, columnas camelCase), los índices que **no** están en el
 > schema y los patrones de query que se repiten en todo el código.
 > Requisito previo: [`../../AGENTS.md`](../../AGENTS.md) §3.2 y §3.5.
@@ -30,12 +30,46 @@ crudo con `$queryRaw`, `$executeRaw` o en `psql`.
 
 | | |
 |---|---|
-| Tablas | `users`, `refresh_tokens`, `card_sets`, `cards`, `card_prices`, `collections`, `collection_items`, `collection_item_add_operations`, `share_links`, `scan_jobs`, `friendships` |
+| Ejemplos de tablas | `users`, `refresh_tokens`, `card_sets`, `cards`, `card_prices`, `collections`, `collection_items`, `collection_item_add_operations`, `share_links`, `scan_jobs`, `friendships` |
 | Columnas | `camelCase` siempre: `userId`, `setId`, `tokenHash`, `isActive`, `fetchedAt`, `rawJson` |
 | PK de catálogo | el id de pokemontcg.io en texto: `cards.id = 'base1-4'`, `card_sets.id = 'base1'` |
 | PK del resto | `uuid()` |
 
-## Los 11 modelos
+## Modelos y tablas
+
+Inventario contrastado con [schema.prisma](../prisma/schema.prisma) el 20/10/2026.
+El schema y las migraciones son la autoridad; las secciones siguientes explican
+los modelos de dominio y no sustituyen el inventario completo.
+
+| Modelo | Tabla |
+|---|---|
+| `User` | `users` |
+| `PasswordRecoveryToken` | `password_recovery_tokens` |
+| `RecoveryRateLimitHit` | `recovery_rate_limit_hits` |
+| `RefreshToken` | `refresh_tokens` |
+| `CardSet` | `card_sets` |
+| `Card` | `cards` |
+| `CardPrice` | `card_prices` |
+| `CardExternalId` | `card_external_ids` |
+| `CardSetExternalId` | `card_set_external_ids` |
+| `Collection` | `collections` |
+| `PortfolioSnapshot` | `portfolio_snapshots` |
+| `CollectionItem` | `collection_items` |
+| `CollectionItemAddOperation` | `collection_item_add_operations` |
+| `ShareLink` | `share_links` |
+| `ScanJob` | `scan_jobs` |
+| `PriceRefreshJob` | `price_refresh_jobs` |
+| `ProviderRateLimit` | `provider_rate_limits` |
+| `SyncState` | `sync_state` |
+| `Friendship` | `friendships` |
+| `TcgcsvGroupJob` | `tcgcsv_group_jobs` |
+| `PriceSyncSet` | `price_sync_sets` |
+| `PriceSyncSetDay` | `price_sync_set_days` |
+| `PriceSyncCardDay` | `price_sync_card_days` |
+| `TcgcsvDiscoveryState` | `tcgcsv_discovery_state` |
+| `PriceSyncControl` | `price_sync_controls` |
+| `PriceIngestionRun` | `price_ingestion_runs` |
+| `CollectionComparisonSnapshot` | `collection_comparison_snapshots` |
 
 ### User (`users`)
 
@@ -301,27 +335,34 @@ estado vigente.
 
 | Migración | Qué hace |
 |---|---|
-| `20260925180500_init_users_and_catalog` | Las 9 tablas de la primera fase, sus índices y FKs. Es la que genera Prisma: si corrés `migrate dev` y agregás algo, esta se reescribe |
-| `20260925180600_add_pg_trgm` | **A mano.** `CREATE EXTENSION pg_trgm` + 2 índices GIN trigram sobre `cards.name` y `card_sets.name` |
-| `20260926010423_add_friendships` | `friendships` + 3 índices + 2 FKs, y **a mano** los 2 índices trigram de `users.username` y `users.displayName` |
+| [20260925180500_init_users_and_catalog](../prisma/migrations/20260925180500_init_users_and_catalog/migration.sql) | Esquema inicial de usuarios y catálogo. |
+| [20260925180600_add_pg_trgm](../prisma/migrations/20260925180600_add_pg_trgm/migration.sql) | Extensión pg_trgm e índices GIN manuales de cartas/sets. |
+| [20260926010423_add_friendships](../prisma/migrations/20260926010423_add_friendships/migration.sql) | Amistades e índices manuales de búsqueda de usuarios. |
+| [20260927120000_add_tcgdex_set_id](../prisma/migrations/20260927120000_add_tcgdex_set_id/migration.sql) | Mapping de sets TCGdex. |
+| [20260928160000_add_cards_artist_trgm](../prisma/migrations/20260928160000_add_cards_artist_trgm/migration.sql) | Índice GIN de artista. |
+| [20260929103000_add_card_sets_ptcgo_code](../prisma/migrations/20260929103000_add_card_sets_ptcgo_code/migration.sql) | Código PTCGO del set. |
+| [20260930180000_add_provider_identity_and_price_provenance](../prisma/migrations/20260930180000_add_provider_identity_and_price_provenance/migration.sql) | Identidad externa y procedencia de precios. |
+| [20260930204819_persistent_job_queue](../prisma/migrations/20260930204819_persistent_job_queue/migration.sql) | Cola persistente, gate de proveedor y cursor de sync. |
+| [20260930210000_job_queue_explicit_utc](../prisma/migrations/20260930210000_job_queue_explicit_utc/migration.sql) | Timestamps UTC explícitos en la cola. |
+| [20261005170000_portfolio_snapshots](../prisma/migrations/20261005170000_portfolio_snapshots/migration.sql) | Snapshots de portafolio. |
+| [20261007090000_collection_item_add_idempotency](../prisma/migrations/20261007090000_collection_item_add_idempotency/migration.sql) | Idempotencia de altas de ítems. |
+| [20261009190000_add_password_recovery](../prisma/migrations/20261009190000_add_password_recovery/migration.sql) | Recuperación de contraseña y ventanas de tasa. |
+| [20261009200500_add_refresh_auth_version](../prisma/migrations/20261009200500_add_refresh_auth_version/migration.sql) | Versión de autenticación al emitir refresh. |
+| [20261013203000_tcgcsv_comparison](../prisma/migrations/20261013203000_tcgcsv_comparison/migration.sql) | Ingesta TCGCSV y snapshots de comparación. |
+| [20261014010000_tcgcsv_discovery](../prisma/migrations/20261014010000_tcgcsv_discovery/migration.sql) | Descubrimiento durable de grupos. |
+| [20261018010000_price_sync_registry](../prisma/migrations/20261018010000_price_sync_registry/migration.sql) | Registro de sets y controles diarios de precios. |
 
-Las dos últimas mezclan SQL generado con SQL escrito a mano en el mismo archivo,
-justo para que los índices viajen con la migración.
+Las migraciones aplicadas son historia inmutable: no reescribir el esquema inicial
+para añadir cambios. Usar migraciones aditivas y `prisma migrate deploy` con
+respaldo/ensayo según el entorno. SQL manual preserva los índices que Prisma no
+modela.
 
-> ⚠️ **`prisma migrate dev` dropea los 4 índices trigram.** Prisma no modela
-> `gin_trgm_ops`, así que ve los `CREATE INDEX ... USING GIN (name gin_trgm_ops)`
-> como objetos desconocidos y los borra. Sin ellos, la búsqueda de cartas y de
-> usuarios cae a un **seq scan sobre 20.670 filas** y `identify` pasa de ~70 ms
-> a ~1 s. Si pasa, restaurá a mano:
->
-> ```sql
-> CREATE INDEX IF NOT EXISTS cards_name_trgm_idx ON cards USING GIN (name gin_trgm_ops);
-> CREATE INDEX IF NOT EXISTS card_sets_name_trgm_idx ON card_sets USING GIN (name gin_trgm_ops);
-> CREATE INDEX IF NOT EXISTS users_username_trgm_idx ON users USING GIN (username gin_trgm_ops);
-> CREATE INDEX IF NOT EXISTS users_display_name_trgm_idx ON users USING GIN ("displayName" gin_trgm_ops);
-> ```
->
-> Detalle en [gotchas.md](gotchas.md#2-prisma-migrate-dev-dropea-los-índices-trigram).
+> **No usar `prisma migrate dev` sobre bases con estos índices manuales.** La
+> detección de drift puede proponer eliminarlos. Hay cinco GIN trigram: nombre de
+> carta, artista, nombre de set, username y displayName. Las definiciones están
+> en las migraciones enlazadas; si falta alguno, restaurar desde su SQL original,
+> sin resetear la base. Su ausencia degrada búsqueda difusa; DINOv2 visual no usa
+> esos índices para reconocer.
 
 ## Índices y por qué existen
 

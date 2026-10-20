@@ -20,7 +20,7 @@
 | `sync-prices.service.ts` | Precios bajo demanda (ver [pricing.md](pricing.md)) |
 | `price-queue.service.ts` | La cola de refresco, en `price_refresh_jobs` |
 | `price-queue.worker.ts` | El loop que drena la cola |
-| `provider-rate.gate.ts` | El ritmo hacia el proveedor, compartido por proceso |
+| `provider-rate.gate.ts` | Gate de ritmo durable en `provider_rate_limits` (PostgreSQL), compartido entre instancias |
 | `card-prices-retention.service.ts` | Consolida y poda `card_prices`. **No corre solo**: es un script con dry run |
 | `tcgdex-set-mapping.service.ts` | Traduce nuestros set IDs a los de tcgdex |
 | `sync.constants.ts` | Los valores compartidos del sync |
@@ -355,47 +355,25 @@ grave.
 Que falle la reconciliación no impide arrancar: se loguea y sigue. La cola se
 vuelve a llenar sola con la próxima lectura.
 
-## No hay scheduler
+## Scheduler y ciclos automáticos
 
-`@nestjs/schedule` está en `package.json` y **no hay ningún `@Cron` en el
-proyecto**. El sync del catálogo es manual (`pnpm run sync` o el endpoint de
-admin) y el de precios es bajo demanda.
+`ScheduleModule.forRoot()` activa los `@Cron`. Los crons de precios planifican ciclos durables por proveedor; los registros diarios y la cola permiten reanudar el trabajo pendiente del día UTC actual. Un ciclo de TCGdex interrumpido se vuelve a planificar cada quince minutos. TCGCSV usa el mismo patrón de reanudación diaria y su discovery corre aparte.
 
-El motivo de no automatizar el sync de catálogo es de producto: la fuente externa
-es deprecada y las keys mueren el **1 de marzo de 2027**, así que un cron que la
-mantenga al día puede quedar viejo antes de necesitarse. Y el de precios ya no
-convive mal con la cola: la cola es persistente y el ritmo es global, así que un
-planificador ya no sería "dos planificadores sobre una cola que no persiste". Eso
-lo deja como decisión abierta, no como bloqueo técnico.
-
-
-## Los crons
-
-`ScheduleModule.forRoot()` en `app.module.ts` es lo que activa los `@Cron`.
-Estaba en `package.json` desde el principio y **no estaba en el módulo**: los
-decorators se registraban y no se ejecutaban nunca.
-
-| Job | Cada cuánto | Qué hace |
+| Job | Programación | Qué hace |
 |---|---|---|
-| `syncCatalogWeekly` | `7 4 * * 1` (lunes 04:07) | Corre el sync del catálogo con el **mismo lock** que el endpoint de admin |
-| `backfillPricesHourly` | `13 * * * *` | Recorre el catálogo y encola todas las cartas sin precio vigente del proveedor activo; la cola deduplica y el gate regula las consultas |
-| `prunePricesMonthly` | `23 3 1 * *` | Corre la política de retención con los defaults de producción |
+| `syncCatalogWeekly` | Lunes 04:07, zona del proceso | Arranca el sync semanal del catálogo mediante `CatalogSyncService`; el cursor reanudable está en PostgreSQL (`sync_state`), y el lock de exclusión del catálogo usa Redis con TTL renovable. |
+| `PriceSyncDailyService.runScheduledCycle` | Diario 03:15 UTC | Planifica los sets habilitados de TCGdex para el día UTC. |
+| `PriceSyncDailyService.resumeToday` | Cada 15 min | Recupera/planifica el trabajo pendiente de TCGdex para el día actual. |
+| `TcgcsvService` | Diario 21:00 UTC | Planifica los grupos habilitados de TCGCSV; cada 15 min reanuda el día actual. El discovery se ejecuta cada 10 min. |
+| `prunePricesMonthly` | Día 1, 03:23, zona del proceso | Consolida y poda precios según la política de retención. |
+| Comparación de colecciones | Diario 20:35 UTC | Captura series de comparación; ver la sección de comparación y `pricing.md`. |
 
-**Por qué el sync es semanal y no diario**: 83 requests contra un límite de 1.000
-por día. Diario serían 8,3 % de la cuota diaria en una tarea que el catálogo no
-necesita cada día, y la fuente es deprecada (las keys mueren el 1/3/2027).
+Los crons semanales/mensuales no declaran `timeZone`; verificar la zona del proceso
+al configurar operación. Los ciclos de precios/comparación sí fijan UTC.
 
-**Por qué el backfill horario recorre el catálogo entero**: el ritmo lo impone
-`ProviderRateGate` (26/min), no el cron. El catálogo actual de 20.670 cartas
-requiere unas 13,2 horas de llamadas seriales en el peor caso, con margen dentro
-del ciclo diario. El cron vuelve a recorrer las vencidas cada hora; la cola
-persistente deduplica trabajos en curso y un upsert por lote evita miles de
-escrituras individuales. Las respuestas sin precio se reintentan una vez por día;
-los errores agotados vuelven a la cola después de vencer su backoff.
+El control diario de proveedores y sus leases se guardan en PostgreSQL (`price_sync_controls`); el gate de tasa de TCGdex persiste en `provider_rate_limits`. Así, ticks repetidos o varias instancias no crean ciclos diarios duplicados ni reinician el ritmo. La reanudación cubre el día UTC en curso; una interrupción que cruza medianoche no reconstruye días anteriores.
 
-**El backfill encola, no pide precios.** Es lo que garantiza que compita en el
-mismo reloj que las lecturas públicas. Si llamara al proveedor tendría su propio
-reloj y duplicaría el ritmo en cuanto hubiera dos instancias.
+El límite de **1.000 requests/día y 30/min de pokemontcg.io** corresponde al catálogo, no a TCGdex ni TCGCSV. El backfill antiguo cada hora ya no existe: precios se planifican por proveedor y día, y la cola aplica deduplicación y consumo acotado.
 
 ### Los kill switches
 
@@ -558,22 +536,22 @@ cargadas ya, se saltea la importación salvo que le pases `--import`.
 qué devuelve la API real. Sirve para ver si pokemontcg.io está caído sin
 arrancar nada.
 
-## Ciclo de vida completo de una carga
+## Ciclo de vida completo de una carga (cursor durable en PostgreSQL)
 
 ```
 pnpm run db:sync
   │
   ├─ SyncCardsService.syncAll()
   │    ├─ SyncSetsService.syncAll(250)          1 request   → 176 sets
-  │    ├─ ¿redis sync:cards:complete?  ── sí ──→ 1 request, skipped: true
-  │    ├─ resumeFrom = redis sync:cards:lastPage ?? 0
+  │    ├─ ¿sync_state.isComplete?     ── sí ──→ 1 request, skipped: true
+  │    ├─ resumeFrom = sync_state.lastPage ?? 0
   │    ├─ getCardsPage(1, 250)                   1 request   → total = 20670
   │    └─ for page in 2..83:
   │         wait(2100)
   │         getCardsPage(page, 250)             1 request
   │         upsertBatch(250 cartas)              local
-  │         redis SET sync:cards:lastPage = N   checkpoint
-  │    └─ última página OK → redis SET sync:cards:complete = <ISO>
+  │         Postgres saveCards(N, totalPages)      checkpoint
+  │    └─ última página OK → Postgres sync_state.isComplete = true
   │
   └─ 20.670 cartas en `cards` (176 sets), cada una con su `rawJson`
 ```

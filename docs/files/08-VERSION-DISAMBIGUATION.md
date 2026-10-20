@@ -1,3 +1,10 @@
+> **ARCHIVO HISTÓRICO — 20/10/2026.** Este diseño/plan fue sustituido o su ejecución
+> terminó. Se conserva en su ruta original para mantener enlaces y anchors.
+> Las instrucciones, checkboxes, conteos y afirmaciones del cuerpo describen su
+> momento; no son órdenes ni capacidades actuales. Referencia vigente:
+> [guía de reemplazo](../plans/scanner-improvements.md) y [estado del proyecto](../estado-actual.md).
+> Los pendientes válidos se mantienen en el registro actual o el roadmap del escáner.
+
 # 08: Desambiguación de versión exacta (misma carta, distinto set/print)
 
 > Depende de `02-EMBEDDINGS-spike.md` habiendo pasado la puerta y de `identify()`

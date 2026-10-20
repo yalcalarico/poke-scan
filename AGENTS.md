@@ -43,24 +43,33 @@ otro lado en el mismo commit.
 
 ## 3. ⚠️ Restricciones críticas (romper estas rompe la app)
 
-### 3.1 Rate limit de la API externa — el límite más importante del proyecto
+### 3.1 Fuentes externas y límites separados
 
-La fuente de datos es **pokemontcg.io v2 sin API key** (la API está deprecada,
-ya no se dan keys nuevas).
+El catálogo local proviene de **pokemontcg.io v2 sin API key**. Los siguientes
+límites corresponden a ese proveedor de catálogo, no a los cronjobs de precios:
 
 | Límite | Valor |
 |---|---|
 | Requests por día | **1.000** |
 | Requests por minuto | **30** |
 
-De ahí salen decisiones de arquitectura en todo el código. **Nunca** llames a
-pokemontcg.io desde un handler de request público. El flujo permitido es:
+**Nunca** llames a pokemontcg.io ni a los proveedores de precios desde un
+handler público. El catálogo se consulta en PostgreSQL (sync manual/semanal).
 
-1. El catálogo de 20.670 cartas ya está **espejado en PostgreSQL** (sync manual/semanal).
-2. Los **precios se piden bajo demanda** y se cachean 2 capas (Redis 1 h + Postgres 24 h).
-3. Hay una **cola en background** con 2,3 s entre requests (~26/min).
+- **TCGdex** es la referencia activa de precios; Redis (1 h), PostgreSQL y cola
+  persistente evitan consultas repetidas. El gate durable conserva 2,3 s entre
+  requests de precios (~26/min), además de las pausas del proveedor.
+- **TCGCSV** alimenta una comparación separada de la misma referencia TCGplayer
+  USD; no se promedian ni se mezclan los proveedores en los totales activos.
+- Ambos tienen ciclos diarios sobre los sets habilitados en `price_sync_sets`
+  (semilla curada + sets de colecciones): TCGdex 03:15 UTC, TCGCSV 21:00 UTC,
+  con reanudación cada 15 min. Requieren la API y sus flags habilitados.
+- TCGCSV valida `last-updated.txt`/build y conserva una descarga por archivo
+  de precios cada 24 h; no tiene los antiguos topes internos de 40 sets/500
+  requests. Mantener identidad segura, ejecución serial y pausas 429/Retry-After.
 
-Si tocás algo que genere requests externos, respetá el throttling.
+Ver [jobs](backend/docs/jobs.md), [precios](backend/docs/pricing.md) y
+[fuentes](docs/data-sources.md). No inventar precios ni días históricos ausentes.
 
 ### 3.2 Puerto de Postgres: **55432**, no 5432
 
@@ -87,7 +96,7 @@ Prisma `@@map()` renombra la **tabla**, no las **columnas**. En SQL crudo:
 
 ```sql
 SELECT "cardId" FROM card_prices;   -- ✅
-SELECT "cardId" FROM card_prices;   -- ❌ "cardid" no existe
+SELECT cardId FROM card_prices;     -- ❌ "cardid" no existe
 ```
 
 Las tablas están en snake_case (`card_prices`, `collection_items`), las columnas
@@ -146,7 +155,7 @@ pnpm run verify:app      # con el stack arriba: chequeo de humo end-to-end
 
 ## 5. Verificar antes de dar algo por terminado
 
-Ningún cambio se considera terminado sin esto en verde:
+Los cambios de producto requieren este gate en verde al cerrar el lote:
 
 ```bash
 pnpm run check    # lint + typecheck + tests + build, todo proyecto
@@ -155,14 +164,21 @@ pnpm run check    # lint + typecheck + tests + build, todo proyecto
 Y si tocaste algo con impacto de datos, probá el flujo real contra el stack
 levantado (`pnpm run dev`), no solo los tests.
 
+Para cambios exclusivamente documentales, verificar enlaces, referencias y diff;
+no apagar la instancia ni repetir suites/builds verdes sin cambios de producto.
+
 ---
 
 ## 6. Documentación específica
 
+Entradas actuales: [índice documental](docs/README.md) y
+[estado del proyecto](docs/estado-actual.md). Los planes archivados y resultados
+fechados explican historia; no reemplazan las guías operativas ni permisos actuales.
+
 | Tema | Dónde |
 |---|---|
 | Sistema completo, flujo de datos | [`docs/architecture.md`](docs/architecture.md) |
-| Fuentes de datos, rate limits, migración a Scrydex | [`docs/data-sources.md`](docs/data-sources.md) |
+| Fuentes de catálogo/precios, límites y alternativas | [`docs/data-sources.md`](docs/data-sources.md) |
 | Decisiones de diseño y por qué | [`docs/decisions.md`](docs/decisions.md) |
 | **API** (endpoints, auth, formas) | [`backend/docs/api.md`](backend/docs/api.md) |
 | **Base de datos** (modelos, queries) | [`backend/docs/database.md`](backend/docs/database.md) |
@@ -208,7 +224,10 @@ levantado (`pnpm run dev`), no solo los tests.
 El rediseño de UI/UX **terminó y se activó de golpe** (el "flip", 2026-09-28). No
 hay dos apps, ni un prefijo de versión, ni una carpeta de "código viejo". El árbol
 es el que ves: design system con tokens y tema claro/oscuro, 27 primitivas en
-`components/ui/`, 13 rutas de página y una landing pública separada de la app PWA.
+`components/ui/` y una landing pública separada de la app PWA. La apariencia V2
+es predeterminada desde el 20/10; `visual=classic` permite elegir Clásica y
+`/buscar-v2` se conserva como entrada compatible al mismo catálogo. El inventario
+de pantallas está en `frontend/docs/routes.md`.
 
 **No existe la regla "no toques la v1"**, porque no hay v1. Lo que queda de ella es
 una regla de ubicación, que sí importa: si algo del rediseño necesitaba algo de la
@@ -275,12 +294,11 @@ verde** — el guard de colores es parte de eso.
 > `tsconfig.tsbuildinfo` stale, o un `next dev` corriendo que escribe los tipos de
 > ruta al mismo tiempo. Ver `frontend/docs/gotchas.md` §18.
 
-### Lo que quedó a medias
+### Integraciones de búsqueda y colecciones
 
-Tres capacidades que el backend **ya tiene** y cuya UI quedó con un honesto "esto
-todavía no funciona": el modo de búsqueda por número y artista (B1), el orden por
-precio (B2) y el filtro "para intercambio" server-side (B6). Ninguna bloquea una
-pantalla. Está en `frontend/docs/redesign-2026.md` §10.2.
+La UI ya consume búsqueda por número/artista, orden por precio y filtro
+server-side para intercambio. B1/B2/B6 son cierres históricos, no tareas abiertas.
+Los pendientes actuales se consultan en [estado del proyecto](docs/estado-actual.md).
 
 ## 9. Política de orquestación vigente — 11/10/2026
 
