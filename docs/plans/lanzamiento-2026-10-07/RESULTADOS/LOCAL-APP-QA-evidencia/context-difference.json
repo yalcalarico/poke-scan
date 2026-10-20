@@ -1,0 +1,8 @@
+{
+  "firstCheckSource": "dev QA clone",
+  "firstCheckPriced": 16940,
+  "standardSourcePriced": 7,
+  "standardSourceCards": 20670,
+  "newOwnedCloneMatchesSource": true,
+  "testsAndTimeoutsUnchanged": true
+}

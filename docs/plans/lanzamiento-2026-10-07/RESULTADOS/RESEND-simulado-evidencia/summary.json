@@ -1,0 +1,10 @@
+{
+  "scope": "Compiled Nest + Next + native HTTP Resend simulator + own PostgreSQL/Redis; no external sending",
+  "checks": 47,
+  "passed": true,
+  "mappedRequests": 8,
+  "externalRequests": 0,
+  "realProviderConfigured": false,
+  "realDeliverabilityAccredited": false,
+  "screenshotsSafe": true
+}

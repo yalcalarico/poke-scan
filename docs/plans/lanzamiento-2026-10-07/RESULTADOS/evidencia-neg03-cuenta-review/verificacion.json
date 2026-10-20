@@ -1,0 +1,3302 @@
+{
+  "reviewer": "Sol HIGH",
+  "captured_at": "2026-10-09T12:35:01.704563+00:00",
+  "dictamen": "Preparación documental independiente corregida y aceptada como entrada al borrador BE-05; ID NEG-03 y GO cobro pendientes.",
+  "links_count": 57,
+  "links": [
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/NEG-03-cuenta-requisitos.md",
+      "destination": "../10-decisiones-y-contratos.md#dec-05--pro-y-piloto-pago",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/NEG-03-cuenta-requisitos.md",
+      "destination": "evidencia-neg03-cuenta/baseline-selectiva.json",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/NEG-03-cuenta-requisitos.md",
+      "destination": "evidencia-neg03-cuenta-review/baseline-review.json",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/NEG-03-cuenta-requisitos.md",
+      "destination": "evidencia-neg03-cuenta-review/verificacion.json",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/NEG-03-cuenta-requisitos.md",
+      "destination": "../../../../backend/src/modules/auth/auth.controller.ts#L18",
+      "exists": true,
+      "anchor_exists": true,
+      "line": 18,
+      "line_content": "@Controller('auth')",
+      "context": [
+        {
+          "line": 17,
+          "text": ""
+        },
+        {
+          "line": 18,
+          "text": "@Controller('auth')"
+        },
+        {
+          "line": 19,
+          "text": "export class AuthController {"
+        },
+        {
+          "line": 20,
+          "text": "  constructor("
+        },
+        {
+          "line": 21,
+          "text": "    private readonly authService: AuthService,"
+        },
+        {
+          "line": 22,
+          "text": "    private readonly config: ConfigService,"
+        },
+        {
+          "line": 23,
+          "text": "  ) {}"
+        },
+        {
+          "line": 24,
+          "text": ""
+        },
+        {
+          "line": 25,
+          "text": "  @Public()"
+        },
+        {
+          "line": 26,
+          "text": "  @Throttle({ default: { limit: 5, ttl: 60_000 } })"
+        },
+        {
+          "line": 27,
+          "text": "  @Post('register')"
+        },
+        {
+          "line": 28,
+          "text": "  async register("
+        },
+        {
+          "line": 29,
+          "text": "    @Body() dto: RegisterDto, @Req() request: Request,"
+        },
+        {
+          "line": 30,
+          "text": "    @Res({ passthrough: true }) response: Response,"
+        },
+        {
+          "line": 31,
+          "text": "  ): Promise<AuthResponseDto> {"
+        },
+        {
+          "line": 32,
+          "text": "    assertSessionRequest(request, this.config);"
+        },
+        {
+          "line": 33,
+          "text": "    return this.sendSession(response, await this.authService.register(dto));"
+        }
+      ],
+      "semantic_review": "Contexto leído y contrastado manualmente con la afirmación; la línea existente sola no prueba comportamiento runtime."
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/NEG-03-cuenta-requisitos.md",
+      "destination": "../../../../backend/src/modules/auth/auth.service.ts#L88",
+      "exists": true,
+      "anchor_exists": true,
+      "line": 88,
+      "line_content": "  async login(",
+      "context": [
+        {
+          "line": 87,
+          "text": ""
+        },
+        {
+          "line": 88,
+          "text": "  async login("
+        },
+        {
+          "line": 89,
+          "text": "    dto: LoginDto,"
+        },
+        {
+          "line": 90,
+          "text": "    session?: Pick<RefreshSessionDto, 'deviceInfo'>,"
+        },
+        {
+          "line": 91,
+          "text": "  ): Promise<AuthTokens> {"
+        },
+        {
+          "line": 92,
+          "text": "    const email = dto.email.trim().toLowerCase();"
+        },
+        {
+          "line": 93,
+          "text": ""
+        },
+        {
+          "line": 94,
+          "text": "    const user = await this.prisma.user.findUnique({ where: { email } });"
+        },
+        {
+          "line": 95,
+          "text": ""
+        },
+        {
+          "line": 96,
+          "text": "    if (!user) {"
+        },
+        {
+          "line": 97,
+          "text": "      throw new UnauthorizedException(GENERIC_CREDENTIALS_ERROR);"
+        },
+        {
+          "line": 98,
+          "text": "    }"
+        },
+        {
+          "line": 99,
+          "text": ""
+        },
+        {
+          "line": 100,
+          "text": "    const validPassword = await argon2"
+        },
+        {
+          "line": 101,
+          "text": "      .verify(user.passwordHash, dto.password)"
+        },
+        {
+          "line": 102,
+          "text": "      .catch(() => false);"
+        },
+        {
+          "line": 103,
+          "text": ""
+        }
+      ],
+      "semantic_review": "Contexto leído y contrastado manualmente con la afirmación; la línea existente sola no prueba comportamiento runtime."
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/NEG-03-cuenta-requisitos.md",
+      "destination": "../../../../backend/src/modules/auth/session-security.ts#L43",
+      "exists": true,
+      "anchor_exists": true,
+      "line": 43,
+      "line_content": "export function assertSessionRequest(request: Request, config: ConfigService): void {",
+      "context": [
+        {
+          "line": 42,
+          "text": ""
+        },
+        {
+          "line": 43,
+          "text": "export function assertSessionRequest(request: Request, config: ConfigService): void {"
+        },
+        {
+          "line": 44,
+          "text": "  // Este header fuerza preflight: un formulario de otro sitio no puede crear,"
+        },
+        {
+          "line": 45,
+          "text": "  // renovar ni cerrar la sesión del browser. CORS solo admite los orígenes propios."
+        },
+        {
+          "line": 46,
+          "text": "  if (request.get('x-session-request') !== '1') {"
+        },
+        {
+          "line": 47,
+          "text": "    throw new ForbiddenException('Falta el encabezado de seguridad de la sesión');"
+        },
+        {
+          "line": 48,
+          "text": "  }"
+        },
+        {
+          "line": 49,
+          "text": "  const origin = request.get('origin');"
+        },
+        {
+          "line": 50,
+          "text": "  if (!origin) return;"
+        },
+        {
+          "line": 51,
+          "text": "  const allowed = (config.get<string>('CORS_ORIGINS') ||"
+        },
+        {
+          "line": 52,
+          "text": "    config.get<string>('FRONTEND_URL', 'http://localhost:3000'))"
+        },
+        {
+          "line": 53,
+          "text": "    .split(',').map((value) => value.trim()).filter(Boolean);"
+        },
+        {
+          "line": 54,
+          "text": "  if (config.get<string>('NODE_ENV') !== 'production') {"
+        },
+        {
+          "line": 55,
+          "text": "    allowed.push('http://127.0.0.1:3000', 'http://localhost:3002');"
+        },
+        {
+          "line": 56,
+          "text": "  }"
+        },
+        {
+          "line": 57,
+          "text": "  if (!allowed.includes(origin)) {"
+        },
+        {
+          "line": 58,
+          "text": "    throw new ForbiddenException('Origen de sesión no permitido');"
+        }
+      ],
+      "semantic_review": "Contexto leído y contrastado manualmente con la afirmación; la línea existente sola no prueba comportamiento runtime."
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/NEG-03-cuenta-requisitos.md",
+      "destination": "../../../../backend/src/modules/auth/auth.service.ts#L66",
+      "exists": true,
+      "anchor_exists": true,
+      "line": 66,
+      "line_content": "    if (existing) {",
+      "context": [
+        {
+          "line": 65,
+          "text": ""
+        },
+        {
+          "line": 66,
+          "text": "    if (existing) {"
+        },
+        {
+          "line": 67,
+          "text": "      if (existing.email === email) {"
+        },
+        {
+          "line": 68,
+          "text": "        throw new ConflictException('El email ya está registrado');"
+        },
+        {
+          "line": 69,
+          "text": "      }"
+        },
+        {
+          "line": 70,
+          "text": "      throw new ConflictException('El username ya está en uso');"
+        },
+        {
+          "line": 71,
+          "text": "    }"
+        },
+        {
+          "line": 72,
+          "text": ""
+        },
+        {
+          "line": 73,
+          "text": "    const passwordHash = await argon2.hash(dto.password);"
+        },
+        {
+          "line": 74,
+          "text": ""
+        },
+        {
+          "line": 75,
+          "text": "    const user = await this.prisma.user.create({"
+        },
+        {
+          "line": 76,
+          "text": "      data: {"
+        },
+        {
+          "line": 77,
+          "text": "        email,"
+        },
+        {
+          "line": 78,
+          "text": "        username: dto.username,"
+        },
+        {
+          "line": 79,
+          "text": "        displayName: dto.displayName,"
+        },
+        {
+          "line": 80,
+          "text": "        passwordHash,"
+        },
+        {
+          "line": 81,
+          "text": "      },"
+        }
+      ],
+      "semantic_review": "Contexto leído y contrastado manualmente con la afirmación; la línea existente sola no prueba comportamiento runtime."
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/NEG-03-cuenta-requisitos.md",
+      "destination": "../../../../backend/src/modules/auth/auth.service.ts#L111",
+      "exists": true,
+      "anchor_exists": true,
+      "line": 111,
+      "line_content": "  async refresh(dto: RefreshSessionDto): Promise<AuthTokens> {",
+      "context": [
+        {
+          "line": 110,
+          "text": ""
+        },
+        {
+          "line": 111,
+          "text": "  async refresh(dto: RefreshSessionDto): Promise<AuthTokens> {"
+        },
+        {
+          "line": 112,
+          "text": "    const tokenHash = this.hashToken(dto.refreshToken);"
+        },
+        {
+          "line": 113,
+          "text": "    const owner = await this.prisma.refreshToken.findUnique({"
+        },
+        {
+          "line": 114,
+          "text": "      where: { tokenHash }, select: { userId: true },"
+        },
+        {
+          "line": 115,
+          "text": "    });"
+        },
+        {
+          "line": 116,
+          "text": "    if (!owner) throw new UnauthorizedException('Refresh token inválido');"
+        },
+        {
+          "line": 117,
+          "text": ""
+        },
+        {
+          "line": 118,
+          "text": "    const result = await this.prisma.$transaction(async (tx) => {"
+        },
+        {
+          "line": 119,
+          "text": "      // El lock por usuario también ordena dos tokens distintos de la misma"
+        },
+        {
+          "line": 120,
+          "text": "      // cuenta: un reuso no puede revocar antes de que otra rotación guarde su hijo."
+        },
+        {
+          "line": 121,
+          "text": "      await tx.$queryRaw(Prisma.sql`SELECT id FROM users WHERE id = ${owner.userId} FOR UPDATE`);"
+        },
+        {
+          "line": 122,
+          "text": "      const stored = await tx.refreshToken.findUnique({"
+        },
+        {
+          "line": 123,
+          "text": "        where: { tokenHash },"
+        },
+        {
+          "line": 124,
+          "text": "        select: { id: true, userId: true, revokedAt: true, expiresAt: true,"
+        },
+        {
+          "line": 125,
+          "text": "          user: { select: USER_SELECT } },"
+        },
+        {
+          "line": 126,
+          "text": "      });"
+        }
+      ],
+      "semantic_review": "Contexto leído y contrastado manualmente con la afirmación; la línea existente sola no prueba comportamiento runtime."
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/NEG-03-cuenta-requisitos.md",
+      "destination": "../../../../backend/src/modules/auth/auth.service.ts#L150",
+      "exists": true,
+      "anchor_exists": true,
+      "line": 150,
+      "line_content": "  async logout(dto: RefreshSessionDto): Promise<{ success: true }> {",
+      "context": [
+        {
+          "line": 149,
+          "text": ""
+        },
+        {
+          "line": 150,
+          "text": "  async logout(dto: RefreshSessionDto): Promise<{ success: true }> {"
+        },
+        {
+          "line": 151,
+          "text": "    const tokenHash = this.hashToken(dto.refreshToken);"
+        },
+        {
+          "line": 152,
+          "text": ""
+        },
+        {
+          "line": 153,
+          "text": "    await this.prisma.refreshToken.updateMany({"
+        },
+        {
+          "line": 154,
+          "text": "      where: { tokenHash, revokedAt: null }, data: { revokedAt: new Date() },"
+        },
+        {
+          "line": 155,
+          "text": "    });"
+        },
+        {
+          "line": 156,
+          "text": ""
+        },
+        {
+          "line": 157,
+          "text": "    return { success: true };"
+        },
+        {
+          "line": 158,
+          "text": "  }"
+        },
+        {
+          "line": 159,
+          "text": ""
+        },
+        {
+          "line": 160,
+          "text": "  private async issueSession("
+        },
+        {
+          "line": 161,
+          "text": "    user: PublicUser,"
+        },
+        {
+          "line": 162,
+          "text": "    deviceInfo?: string,"
+        },
+        {
+          "line": 163,
+          "text": "    tx?: Prisma.TransactionClient,"
+        },
+        {
+          "line": 164,
+          "text": "  ): Promise<AuthTokens> {"
+        },
+        {
+          "line": 165,
+          "text": "    const accessToken = await this.jwtService.signAsync({"
+        }
+      ],
+      "semantic_review": "Contexto leído y contrastado manualmente con la afirmación; la línea existente sola no prueba comportamiento runtime."
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/NEG-03-cuenta-requisitos.md",
+      "destination": "../../../../backend/src/modules/auth/auth.service.ts#L170",
+      "exists": true,
+      "anchor_exists": true,
+      "line": 170,
+      "line_content": "    const refreshToken = randomBytes(48).toString('base64url');",
+      "context": [
+        {
+          "line": 169,
+          "text": ""
+        },
+        {
+          "line": 170,
+          "text": "    const refreshToken = randomBytes(48).toString('base64url');"
+        },
+        {
+          "line": 171,
+          "text": ""
+        },
+        {
+          "line": 172,
+          "text": "    const persist = async (client: Prisma.TransactionClient) => client.refreshToken.create({"
+        },
+        {
+          "line": 173,
+          "text": "      data: {"
+        },
+        {
+          "line": 174,
+          "text": "        userId: user.id,"
+        },
+        {
+          "line": 175,
+          "text": "        tokenHash: this.hashToken(refreshToken),"
+        },
+        {
+          "line": 176,
+          "text": "        deviceInfo: deviceInfo ?? null,"
+        },
+        {
+          "line": 177,
+          "text": "        expiresAt: this.refreshTokenExpiry(),"
+        },
+        {
+          "line": 178,
+          "text": "      },"
+        },
+        {
+          "line": 179,
+          "text": "    });"
+        },
+        {
+          "line": 180,
+          "text": ""
+        },
+        {
+          "line": 181,
+          "text": "    if (tx) await persist(tx);"
+        },
+        {
+          "line": 182,
+          "text": "    else await this.prisma.$transaction(async (client) => {"
+        },
+        {
+          "line": 183,
+          "text": "      await client.$queryRaw(Prisma.sql`SELECT id FROM users WHERE id = ${user.id} FOR UPDATE`);"
+        },
+        {
+          "line": 184,
+          "text": "      await persist(client);"
+        },
+        {
+          "line": 185,
+          "text": "    });"
+        }
+      ],
+      "semantic_review": "Contexto leído y contrastado manualmente con la afirmación; la línea existente sola no prueba comportamiento runtime."
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/NEG-03-cuenta-requisitos.md",
+      "destination": "../../../../backend/src/modules/auth/auth.service.ts#L191",
+      "exists": true,
+      "anchor_exists": true,
+      "line": 191,
+      "line_content": "    return createHash('sha256').update(token).digest('hex');",
+      "context": [
+        {
+          "line": 190,
+          "text": "  private hashToken(token: string): string {"
+        },
+        {
+          "line": 191,
+          "text": "    return createHash('sha256').update(token).digest('hex');"
+        },
+        {
+          "line": 192,
+          "text": "  }"
+        },
+        {
+          "line": 193,
+          "text": ""
+        },
+        {
+          "line": 194,
+          "text": "  private refreshTokenExpiry(): Date {"
+        },
+        {
+          "line": 195,
+          "text": "    return new Date(Date.now() + refreshTtlMs(this.configService));"
+        },
+        {
+          "line": 196,
+          "text": "  }"
+        },
+        {
+          "line": 197,
+          "text": ""
+        },
+        {
+          "line": 198,
+          "text": "  private toPublicUser(user: UserRecord): PublicUser {"
+        },
+        {
+          "line": 199,
+          "text": "    const { passwordHash: _passwordHash, ...publicUser } = user;"
+        },
+        {
+          "line": 200,
+          "text": "    return publicUser;"
+        },
+        {
+          "line": 201,
+          "text": "  }"
+        },
+        {
+          "line": 202,
+          "text": "}"
+        }
+      ],
+      "semantic_review": "Contexto leído y contrastado manualmente con la afirmación; la línea existente sola no prueba comportamiento runtime."
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/NEG-03-cuenta-requisitos.md",
+      "destination": "../../../../backend/src/modules/auth/auth.controller.ts#L95",
+      "exists": true,
+      "anchor_exists": true,
+      "line": 95,
+      "line_content": "    response.clearCookie(REFRESH_COOKIE, refreshCookieOptions(this.config));",
+      "context": [
+        {
+          "line": 94,
+          "text": "  private clearSessionCookie(response: Response): void {"
+        },
+        {
+          "line": 95,
+          "text": "    response.clearCookie(REFRESH_COOKIE, refreshCookieOptions(this.config));"
+        },
+        {
+          "line": 96,
+          "text": "  }"
+        },
+        {
+          "line": 97,
+          "text": "}"
+        }
+      ],
+      "semantic_review": "Contexto leído y contrastado manualmente con la afirmación; la línea existente sola no prueba comportamiento runtime."
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/NEG-03-cuenta-requisitos.md",
+      "destination": "../../../../backend/src/modules/auth/session-security.ts#L35",
+      "exists": true,
+      "anchor_exists": true,
+      "line": 35,
+      "line_content": "export function refreshTtlMs(config: ConfigService): number {",
+      "context": [
+        {
+          "line": 34,
+          "text": ""
+        },
+        {
+          "line": 35,
+          "text": "export function refreshTtlMs(config: ConfigService): number {"
+        },
+        {
+          "line": 36,
+          "text": "  const days = Number(config.get<string>('JWT_REFRESH_TTL_DAYS', '30'));"
+        },
+        {
+          "line": 37,
+          "text": "  if (!Number.isFinite(days) || days <= 0 || days > 365) {"
+        },
+        {
+          "line": 38,
+          "text": "    throw new Error('JWT_REFRESH_TTL_DAYS debe estar entre 0 y 365 días');"
+        },
+        {
+          "line": 39,
+          "text": "  }"
+        },
+        {
+          "line": 40,
+          "text": "  return days * 24 * 60 * 60 * 1000;"
+        },
+        {
+          "line": 41,
+          "text": "}"
+        },
+        {
+          "line": 42,
+          "text": ""
+        },
+        {
+          "line": 43,
+          "text": "export function assertSessionRequest(request: Request, config: ConfigService): void {"
+        },
+        {
+          "line": 44,
+          "text": "  // Este header fuerza preflight: un formulario de otro sitio no puede crear,"
+        },
+        {
+          "line": 45,
+          "text": "  // renovar ni cerrar la sesión del browser. CORS solo admite los orígenes propios."
+        },
+        {
+          "line": 46,
+          "text": "  if (request.get('x-session-request') !== '1') {"
+        },
+        {
+          "line": 47,
+          "text": "    throw new ForbiddenException('Falta el encabezado de seguridad de la sesión');"
+        },
+        {
+          "line": 48,
+          "text": "  }"
+        },
+        {
+          "line": 49,
+          "text": "  const origin = request.get('origin');"
+        },
+        {
+          "line": 50,
+          "text": "  if (!origin) return;"
+        }
+      ],
+      "semantic_review": "Contexto leído y contrastado manualmente con la afirmación; la línea existente sola no prueba comportamiento runtime."
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/NEG-03-cuenta-requisitos.md",
+      "destination": "../../../../docs/security.md#sesiones",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/NEG-03-cuenta-requisitos.md",
+      "destination": "../../../../backend/src/modules/auth/auth.service.ts#L165",
+      "exists": true,
+      "anchor_exists": true,
+      "line": 165,
+      "line_content": "    const accessToken = await this.jwtService.signAsync({",
+      "context": [
+        {
+          "line": 164,
+          "text": "  ): Promise<AuthTokens> {"
+        },
+        {
+          "line": 165,
+          "text": "    const accessToken = await this.jwtService.signAsync({"
+        },
+        {
+          "line": 166,
+          "text": "      sub: user.id,"
+        },
+        {
+          "line": 167,
+          "text": "      email: user.email,"
+        },
+        {
+          "line": 168,
+          "text": "    });"
+        },
+        {
+          "line": 169,
+          "text": ""
+        },
+        {
+          "line": 170,
+          "text": "    const refreshToken = randomBytes(48).toString('base64url');"
+        },
+        {
+          "line": 171,
+          "text": ""
+        },
+        {
+          "line": 172,
+          "text": "    const persist = async (client: Prisma.TransactionClient) => client.refreshToken.create({"
+        },
+        {
+          "line": 173,
+          "text": "      data: {"
+        },
+        {
+          "line": 174,
+          "text": "        userId: user.id,"
+        },
+        {
+          "line": 175,
+          "text": "        tokenHash: this.hashToken(refreshToken),"
+        },
+        {
+          "line": 176,
+          "text": "        deviceInfo: deviceInfo ?? null,"
+        },
+        {
+          "line": 177,
+          "text": "        expiresAt: this.refreshTokenExpiry(),"
+        },
+        {
+          "line": 178,
+          "text": "      },"
+        },
+        {
+          "line": 179,
+          "text": "    });"
+        },
+        {
+          "line": 180,
+          "text": ""
+        }
+      ],
+      "semantic_review": "Contexto leído y contrastado manualmente con la afirmación; la línea existente sola no prueba comportamiento runtime."
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/NEG-03-cuenta-requisitos.md",
+      "destination": "../../../../backend/src/modules/auth/auth.module.ts#L18",
+      "exists": true,
+      "anchor_exists": true,
+      "line": 18,
+      "line_content": "          expiresIn: configService.get<string>('JWT_ACCESS_TTL', '15m') as JwtSignOptions['expiresIn'],",
+      "context": [
+        {
+          "line": 17,
+          "text": "        signOptions: {"
+        },
+        {
+          "line": 18,
+          "text": "          expiresIn: configService.get<string>('JWT_ACCESS_TTL', '15m') as JwtSignOptions['expiresIn'],"
+        },
+        {
+          "line": 19,
+          "text": "        },"
+        },
+        {
+          "line": 20,
+          "text": "      }),"
+        },
+        {
+          "line": 21,
+          "text": "    }),"
+        },
+        {
+          "line": 22,
+          "text": "    RefreshJwtModule,"
+        },
+        {
+          "line": 23,
+          "text": "  ],"
+        },
+        {
+          "line": 24,
+          "text": "  controllers: [AuthController],"
+        },
+        {
+          "line": 25,
+          "text": "  providers: [AuthService, JwtAuthGuard],"
+        },
+        {
+          "line": 26,
+          "text": "  exports: [AuthService, JwtAuthGuard],"
+        },
+        {
+          "line": 27,
+          "text": "})"
+        },
+        {
+          "line": 28,
+          "text": "export class AuthModule {}"
+        }
+      ],
+      "semantic_review": "Contexto leído y contrastado manualmente con la afirmación; la línea existente sola no prueba comportamiento runtime."
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/NEG-03-cuenta-requisitos.md",
+      "destination": "../../../../backend/src/common/guards/jwt-auth.guard.ts#L38",
+      "exists": true,
+      "anchor_exists": true,
+      "line": 38,
+      "line_content": "      request.user = await this.jwtService.verifyAsync<AccessTokenPayload>(token);",
+      "context": [
+        {
+          "line": 37,
+          "text": "    try {"
+        },
+        {
+          "line": 38,
+          "text": "      request.user = await this.jwtService.verifyAsync<AccessTokenPayload>(token);"
+        },
+        {
+          "line": 39,
+          "text": "    } catch {"
+        },
+        {
+          "line": 40,
+          "text": "      throw new UnauthorizedException('Token de acceso inválido o expirado');"
+        },
+        {
+          "line": 41,
+          "text": "    }"
+        },
+        {
+          "line": 42,
+          "text": ""
+        },
+        {
+          "line": 43,
+          "text": "    return true;"
+        },
+        {
+          "line": 44,
+          "text": "  }"
+        },
+        {
+          "line": 45,
+          "text": ""
+        },
+        {
+          "line": 46,
+          "text": "  private extractToken(request: RequestWithUser): string | undefined {"
+        },
+        {
+          "line": 47,
+          "text": "    const header = request.headers.authorization;"
+        },
+        {
+          "line": 48,
+          "text": "    if (!header) return undefined;"
+        },
+        {
+          "line": 49,
+          "text": ""
+        },
+        {
+          "line": 50,
+          "text": "    const [type, value] = header.split(' ');"
+        },
+        {
+          "line": 51,
+          "text": "    if (type?.toLowerCase() !== 'bearer' || !value) return undefined;"
+        },
+        {
+          "line": 52,
+          "text": ""
+        },
+        {
+          "line": 53,
+          "text": "    return value.trim();"
+        }
+      ],
+      "semantic_review": "Contexto leído y contrastado manualmente con la afirmación; la línea existente sola no prueba comportamiento runtime."
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/NEG-03-cuenta-requisitos.md",
+      "destination": "../../../../backend/prisma/schema.prisma#L12",
+      "exists": true,
+      "anchor_exists": true,
+      "line": 12,
+      "line_content": "model User {",
+      "context": [
+        {
+          "line": 11,
+          "text": ""
+        },
+        {
+          "line": 12,
+          "text": "model User {"
+        },
+        {
+          "line": 13,
+          "text": "  id           String  @id @default(uuid())"
+        },
+        {
+          "line": 14,
+          "text": "  email        String  @unique"
+        },
+        {
+          "line": 15,
+          "text": "  username     String  @unique"
+        },
+        {
+          "line": 16,
+          "text": "  passwordHash String"
+        },
+        {
+          "line": 17,
+          "text": "  displayName  String"
+        },
+        {
+          "line": 18,
+          "text": "  avatarUrl    String?"
+        },
+        {
+          "line": 19,
+          "text": ""
+        },
+        {
+          "line": 20,
+          "text": "  // Moneda preferida (fase 7: precios en ARS)"
+        },
+        {
+          "line": 21,
+          "text": "  preferredCurrency String? @default(\"USD\") // 'USD' | 'ARS'"
+        },
+        {
+          "line": 22,
+          "text": "  preferredRateType String? @default(\"blue\") // 'blue' | 'oficial'"
+        },
+        {
+          "line": 23,
+          "text": ""
+        },
+        {
+          "line": 24,
+          "text": "  createdAt DateTime @default(now())"
+        },
+        {
+          "line": 25,
+          "text": "  updatedAt DateTime @updatedAt"
+        },
+        {
+          "line": 26,
+          "text": ""
+        },
+        {
+          "line": 27,
+          "text": "  refreshTokens RefreshToken[]"
+        }
+      ],
+      "semantic_review": "Contexto leído y contrastado manualmente con la afirmación; la línea existente sola no prueba comportamiento runtime."
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/NEG-03-cuenta-requisitos.md",
+      "destination": "../../../../backend/prisma/schema.prisma#L172",
+      "exists": true,
+      "anchor_exists": true,
+      "line": 172,
+      "line_content": "model Collection {",
+      "context": [
+        {
+          "line": 171,
+          "text": ""
+        },
+        {
+          "line": 172,
+          "text": "model Collection {"
+        },
+        {
+          "line": 173,
+          "text": "  id        String   @id @default(uuid())"
+        },
+        {
+          "line": 174,
+          "text": "  userId    String"
+        },
+        {
+          "line": 175,
+          "text": "  name      String"
+        },
+        {
+          "line": 176,
+          "text": "  isDefault Boolean  @default(false)"
+        },
+        {
+          "line": 177,
+          "text": "  createdAt DateTime @default(now())"
+        },
+        {
+          "line": 178,
+          "text": "  updatedAt DateTime @updatedAt"
+        },
+        {
+          "line": 179,
+          "text": ""
+        },
+        {
+          "line": 180,
+          "text": "  user       User             @relation(fields: [userId], references: [id], onDelete: Cascade)"
+        },
+        {
+          "line": 181,
+          "text": "  items      CollectionItem[]"
+        },
+        {
+          "line": 182,
+          "text": "  shareLinks ShareLink[]"
+        },
+        {
+          "line": 183,
+          "text": ""
+        },
+        {
+          "line": 184,
+          "text": "  @@index([userId])"
+        },
+        {
+          "line": 185,
+          "text": "  @@map(\"collections\")"
+        },
+        {
+          "line": 186,
+          "text": "}"
+        },
+        {
+          "line": 187,
+          "text": ""
+        }
+      ],
+      "semantic_review": "Contexto leído y contrastado manualmente con la afirmación; la línea existente sola no prueba comportamiento runtime."
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/NEG-03-cuenta-requisitos.md",
+      "destination": "../../../../backend/prisma/schema.prisma#L200",
+      "exists": true,
+      "anchor_exists": true,
+      "line": 200,
+      "line_content": "model CollectionItem {",
+      "context": [
+        {
+          "line": 199,
+          "text": ""
+        },
+        {
+          "line": 200,
+          "text": "model CollectionItem {"
+        },
+        {
+          "line": 201,
+          "text": "  id           String   @id @default(uuid())"
+        },
+        {
+          "line": 202,
+          "text": "  collectionId String"
+        },
+        {
+          "line": 203,
+          "text": "  cardId       String"
+        },
+        {
+          "line": 204,
+          "text": "  variant      String   @default(\"normal\")"
+        },
+        {
+          "line": 205,
+          "text": "  condition    String   @default(\"NM\") // NM | LP | MP | HP | DM"
+        },
+        {
+          "line": 206,
+          "text": "  quantity     Int      @default(1) // > 1 = duplicada"
+        },
+        {
+          "line": 207,
+          "text": "  isForTrade   Boolean  @default(false)"
+        },
+        {
+          "line": 208,
+          "text": "  notes        String?"
+        },
+        {
+          "line": 209,
+          "text": "  addedAt      DateTime @default(now())"
+        },
+        {
+          "line": 210,
+          "text": "  updatedAt    DateTime @updatedAt"
+        },
+        {
+          "line": 211,
+          "text": ""
+        },
+        {
+          "line": 212,
+          "text": "  collection Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)"
+        },
+        {
+          "line": 213,
+          "text": "  card       Card       @relation(fields: [cardId], references: [id], onDelete: Cascade)"
+        },
+        {
+          "line": 214,
+          "text": ""
+        },
+        {
+          "line": 215,
+          "text": "  // Evita filas duplicadas: el mismo increment de cantidad se resuelve en el service"
+        }
+      ],
+      "semantic_review": "Contexto leído y contrastado manualmente con la afirmación; la línea existente sola no prueba comportamiento runtime."
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/NEG-03-cuenta-requisitos.md",
+      "destination": "../../../../backend/prisma/schema.prisma#L238",
+      "exists": true,
+      "anchor_exists": true,
+      "line": 238,
+      "line_content": "model ShareLink {",
+      "context": [
+        {
+          "line": 237,
+          "text": ""
+        },
+        {
+          "line": 238,
+          "text": "model ShareLink {"
+        },
+        {
+          "line": 239,
+          "text": "  id           String    @id @default(uuid())"
+        },
+        {
+          "line": 240,
+          "text": "  userId       String"
+        },
+        {
+          "line": 241,
+          "text": "  collectionId String? // null = todas las colecciones del usuario"
+        },
+        {
+          "line": 242,
+          "text": "  slug         String    @unique"
+        },
+        {
+          "line": 243,
+          "text": "  isActive     Boolean   @default(true)"
+        },
+        {
+          "line": 244,
+          "text": "  viewCount    Int       @default(0)"
+        },
+        {
+          "line": 245,
+          "text": "  createdAt    DateTime  @default(now())"
+        },
+        {
+          "line": 246,
+          "text": "  expiresAt    DateTime?"
+        },
+        {
+          "line": 247,
+          "text": ""
+        },
+        {
+          "line": 248,
+          "text": "  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)"
+        },
+        {
+          "line": 249,
+          "text": "  collection Collection? @relation(fields: [collectionId], references: [id], onDelete: Cascade)"
+        },
+        {
+          "line": 250,
+          "text": ""
+        },
+        {
+          "line": 251,
+          "text": "  @@index([userId])"
+        },
+        {
+          "line": 252,
+          "text": "  @@map(\"share_links\")"
+        },
+        {
+          "line": 253,
+          "text": "}"
+        }
+      ],
+      "semantic_review": "Contexto leído y contrastado manualmente con la afirmación; la línea existente sola no prueba comportamiento runtime."
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/NEG-03-cuenta-requisitos.md",
+      "destination": "../../../../backend/prisma/schema.prisma#L256",
+      "exists": true,
+      "anchor_exists": true,
+      "line": 256,
+      "line_content": "model ScanJob {",
+      "context": [
+        {
+          "line": 255,
+          "text": "// ─── Tracking de jobs de sincronización ───"
+        },
+        {
+          "line": 256,
+          "text": "model ScanJob {"
+        },
+        {
+          "line": 257,
+          "text": "  id          String    @id @default(uuid())"
+        },
+        {
+          "line": 258,
+          "text": "  userId      String"
+        },
+        {
+          "line": 259,
+          "text": "  status      String    @default(\"pending\") // pending | running | completed | failed"
+        },
+        {
+          "line": 260,
+          "text": "  jobType     String    @default(\"sync-catalog\") // sync-catalog | refresh-prices"
+        },
+        {
+          "line": 261,
+          "text": "  processed   Int       @default(0)"
+        },
+        {
+          "line": 262,
+          "text": "  total       Int?"
+        },
+        {
+          "line": 263,
+          "text": "  lastError   String?"
+        },
+        {
+          "line": 264,
+          "text": "  startedAt   DateTime?"
+        },
+        {
+          "line": 265,
+          "text": "  completedAt DateTime?"
+        },
+        {
+          "line": 266,
+          "text": "  createdAt   DateTime  @default(now())"
+        },
+        {
+          "line": 267,
+          "text": ""
+        },
+        {
+          "line": 268,
+          "text": "  user User @relation(fields: [userId], references: [id], onDelete: Cascade)"
+        },
+        {
+          "line": 269,
+          "text": ""
+        },
+        {
+          "line": 270,
+          "text": "  @@index([status])"
+        },
+        {
+          "line": 271,
+          "text": "  @@map(\"scan_jobs\")"
+        }
+      ],
+      "semantic_review": "Contexto leído y contrastado manualmente con la afirmación; la línea existente sola no prueba comportamiento runtime."
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/NEG-03-cuenta-requisitos.md",
+      "destination": "../../../../backend/prisma/schema.prisma#L362",
+      "exists": true,
+      "anchor_exists": true,
+      "line": 362,
+      "line_content": "model Friendship {",
+      "context": [
+        {
+          "line": 361,
+          "text": "/// busca siempre en ambos sentidos para que el par tenga un único estado."
+        },
+        {
+          "line": 362,
+          "text": "model Friendship {"
+        },
+        {
+          "line": 363,
+          "text": "  id          String    @id @default(uuid())"
+        },
+        {
+          "line": 364,
+          "text": "  requesterId String"
+        },
+        {
+          "line": 365,
+          "text": "  addresseeId String"
+        },
+        {
+          "line": 366,
+          "text": "  status      String    @default(\"pending\") // pending | accepted | rejected | blocked"
+        },
+        {
+          "line": 367,
+          "text": "  createdAt   DateTime  @default(now())"
+        },
+        {
+          "line": 368,
+          "text": "  updatedAt   DateTime  @updatedAt"
+        },
+        {
+          "line": 369,
+          "text": "  respondedAt DateTime?"
+        },
+        {
+          "line": 370,
+          "text": ""
+        },
+        {
+          "line": 371,
+          "text": "  requester User @relation(\"FriendshipRequests\", fields: [requesterId], references: [id], onDelete: Cascade)"
+        },
+        {
+          "line": 372,
+          "text": "  addressee User @relation(\"FriendshipReceives\", fields: [addresseeId], references: [id], onDelete: Cascade)"
+        },
+        {
+          "line": 373,
+          "text": ""
+        },
+        {
+          "line": 374,
+          "text": "  @@unique([requesterId, addresseeId])"
+        },
+        {
+          "line": 375,
+          "text": "  @@index([addresseeId, status])"
+        },
+        {
+          "line": 376,
+          "text": "  @@index([requesterId, status])"
+        },
+        {
+          "line": 377,
+          "text": "  @@map(\"friendships\")"
+        }
+      ],
+      "semantic_review": "Contexto leído y contrastado manualmente con la afirmación; la línea existente sola no prueba comportamiento runtime."
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/NEG-03-cuenta-requisitos.md",
+      "destination": "../../../../backend/src/modules/share/share.service.ts#L242",
+      "exists": true,
+      "anchor_exists": true,
+      "line": 242,
+      "line_content": "  async revoke(userId: string, id: string): Promise<void> {",
+      "context": [
+        {
+          "line": 241,
+          "text": ""
+        },
+        {
+          "line": 242,
+          "text": "  async revoke(userId: string, id: string): Promise<void> {"
+        },
+        {
+          "line": 243,
+          "text": "    const link = await this.assertOwnership(userId, id);"
+        },
+        {
+          "line": 244,
+          "text": ""
+        },
+        {
+          "line": 245,
+          "text": "    // Idempotente: revocar dos veces no falla ni cambia nada observable."
+        },
+        {
+          "line": 246,
+          "text": "    await this.prisma.shareLink.updateMany({"
+        },
+        {
+          "line": 247,
+          "text": "      where: { id: link.id, isActive: true },"
+        },
+        {
+          "line": 248,
+          "text": "      data: { isActive: false },"
+        },
+        {
+          "line": 249,
+          "text": "    });"
+        },
+        {
+          "line": 250,
+          "text": "    await this.invalidateCache(link.slug);"
+        },
+        {
+          "line": 251,
+          "text": "  }"
+        },
+        {
+          "line": 252,
+          "text": ""
+        },
+        {
+          "line": 253,
+          "text": "  async update("
+        },
+        {
+          "line": 254,
+          "text": "    userId: string,"
+        },
+        {
+          "line": 255,
+          "text": "    id: string,"
+        },
+        {
+          "line": 256,
+          "text": "    dto: UpdateShareDto,"
+        },
+        {
+          "line": 257,
+          "text": "  ): Promise<ShareLinkDto> {"
+        }
+      ],
+      "semantic_review": "Contexto leído y contrastado manualmente con la afirmación; la línea existente sola no prueba comportamiento runtime."
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/NEG-03-cuenta-requisitos.md",
+      "destination": "../../../../backend/src/modules/share/share.service.ts#L293",
+      "exists": true,
+      "anchor_exists": true,
+      "line": 293,
+      "line_content": "  async getPublic(slug: string): Promise<SharedCollectionDto> {",
+      "context": [
+        {
+          "line": 292,
+          "text": ""
+        },
+        {
+          "line": 293,
+          "text": "  async getPublic(slug: string): Promise<SharedCollectionDto> {"
+        },
+        {
+          "line": 294,
+          "text": "    const link = await this.prisma.shareLink.findFirst({"
+        },
+        {
+          "line": 295,
+          "text": "      where: { slug, isActive: true, OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }] },"
+        },
+        {
+          "line": 296,
+          "text": "      include: SHARE_INCLUDE,"
+        },
+        {
+          "line": 297,
+          "text": "    });"
+        },
+        {
+          "line": 298,
+          "text": "    if (!link) {"
+        },
+        {
+          "line": 299,
+          "text": "      throw new NotFoundException('Este enlace no está disponible');"
+        },
+        {
+          "line": 300,
+          "text": "    }"
+        },
+        {
+          "line": 301,
+          "text": ""
+        },
+        {
+          "line": 302,
+          "text": "    const cacheKey = publicCacheKey(this.priceProvider.id, slug);"
+        },
+        {
+          "line": 303,
+          "text": "    const cached = await this.redis.getJson<SharedCollectionDto>(cacheKey);"
+        },
+        {
+          "line": 304,
+          "text": "    if (cached) {"
+        },
+        {
+          "line": 305,
+          "text": "      this.trackView(slug);"
+        },
+        {
+          "line": 306,
+          "text": "      return cached;"
+        },
+        {
+          "line": 307,
+          "text": "    }"
+        },
+        {
+          "line": 308,
+          "text": ""
+        }
+      ],
+      "semantic_review": "Contexto leído y contrastado manualmente con la afirmación; la línea existente sola no prueba comportamiento runtime."
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/NEG-03-cuenta-requisitos.md",
+      "destination": "../../../../backend/src/modules/share/public-share.controller.ts#L11",
+      "exists": true,
+      "anchor_exists": true,
+      "line": 11,
+      "line_content": "@Controller('s')",
+      "context": [
+        {
+          "line": 10,
+          "text": "// por condición, y solo lee precios guardados del proveedor activo."
+        },
+        {
+          "line": 11,
+          "text": "@Controller('s')"
+        },
+        {
+          "line": 12,
+          "text": "export class PublicShareController {"
+        },
+        {
+          "line": 13,
+          "text": "  constructor(private readonly shareService: ShareService) {}"
+        },
+        {
+          "line": 14,
+          "text": ""
+        },
+        {
+          "line": 15,
+          "text": "  @Public()"
+        },
+        {
+          "line": 16,
+          "text": "  @Get(':slug')"
+        },
+        {
+          "line": 17,
+          "text": "  async getShared("
+        },
+        {
+          "line": 18,
+          "text": "    @Param('slug') slug: string,"
+        },
+        {
+          "line": 19,
+          "text": "    @Res({ passthrough: true }) response: Response,"
+        },
+        {
+          "line": 20,
+          "text": "  ): Promise<SharedCollectionDto> {"
+        },
+        {
+          "line": 21,
+          "text": "    response.setHeader('Cache-Control', 'no-store');"
+        },
+        {
+          "line": 22,
+          "text": "    return this.shareService.getPublic(slug);"
+        },
+        {
+          "line": 23,
+          "text": "  }"
+        },
+        {
+          "line": 24,
+          "text": "}"
+        }
+      ],
+      "semantic_review": "Contexto leído y contrastado manualmente con la afirmación; la línea existente sola no prueba comportamiento runtime."
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/NEG-03-cuenta-requisitos.md",
+      "destination": "../../../../backend/src/modules/share/share.service.ts#L372",
+      "exists": true,
+      "anchor_exists": true,
+      "line": 372,
+      "line_content": "  private async invalidateCache(slug: string): Promise<void> {",
+      "context": [
+        {
+          "line": 371,
+          "text": ""
+        },
+        {
+          "line": 372,
+          "text": "  private async invalidateCache(slug: string): Promise<void> {"
+        },
+        {
+          "line": 373,
+          "text": "    try {"
+        },
+        {
+          "line": 374,
+          "text": "      await this.redis.del(publicCacheKey(this.priceProvider.id, slug));"
+        },
+        {
+          "line": 375,
+          "text": "    } catch (error) {"
+        },
+        {
+          "line": 376,
+          "text": "      this.logger.warn(`No se pudo invalidar caché pública de ${slug}: ${(error as Error).message}`);"
+        },
+        {
+          "line": 377,
+          "text": "    }"
+        },
+        {
+          "line": 378,
+          "text": "  }"
+        },
+        {
+          "line": 379,
+          "text": ""
+        },
+        {
+          "line": 380,
+          "text": "  private trackView(slug: string): void {"
+        },
+        {
+          "line": 381,
+          "text": "    // No bloquea la respuesta ni carga la fila: updateMany atómico."
+        },
+        {
+          "line": 382,
+          "text": "    void this.prisma.shareLink"
+        },
+        {
+          "line": 383,
+          "text": "      .updateMany({ where: { slug }, data: { viewCount: { increment: 1 } } })"
+        },
+        {
+          "line": 384,
+          "text": "      .catch((error: unknown) => {"
+        },
+        {
+          "line": 385,
+          "text": "        this.logger.warn("
+        },
+        {
+          "line": 386,
+          "text": "          `No se pudo incrementar viewCount de ${slug}: ${(error as Error).message}`,"
+        },
+        {
+          "line": 387,
+          "text": "        );"
+        }
+      ],
+      "semantic_review": "Contexto leído y contrastado manualmente con la afirmación; la línea existente sola no prueba comportamiento runtime."
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/NEG-03-cuenta-requisitos.md",
+      "destination": "../../../../backend/src/modules/share/share.service.ts#L454",
+      "exists": true,
+      "anchor_exists": true,
+      "line": 454,
+      "line_content": "  private cacheTtlSeconds(expiresAt: Date | null): number {",
+      "context": [
+        {
+          "line": 453,
+          "text": ""
+        },
+        {
+          "line": 454,
+          "text": "  private cacheTtlSeconds(expiresAt: Date | null): number {"
+        },
+        {
+          "line": 455,
+          "text": "    if (!expiresAt) return SHARE_CACHE_TTL_SECONDS;"
+        },
+        {
+          "line": 456,
+          "text": "    return Math.min(SHARE_CACHE_TTL_SECONDS, Math.floor((expiresAt.getTime() - Date.now()) / 1000));"
+        },
+        {
+          "line": 457,
+          "text": "  }"
+        },
+        {
+          "line": 458,
+          "text": ""
+        },
+        {
+          "line": 459,
+          "text": "  private async aggregatePublicStats(link: ShareWithRefs, evaluatedAt: Date): Promise<PublicShareStatsDto> {"
+        },
+        {
+          "line": 460,
+          "text": "    const scope = link.collectionId"
+        },
+        {
+          "line": 461,
+          "text": "      ? Prisma.sql`i.\"collectionId\" = ${link.collectionId}`"
+        },
+        {
+          "line": 462,
+          "text": "      : Prisma.sql`c.\"userId\" = ${link.userId}`;"
+        },
+        {
+          "line": 463,
+          "text": "    const rows = await this.prisma.$queryRaw<AggregateRow[]>(Prisma.sql`"
+        },
+        {
+          "line": 464,
+          "text": "      SELECT COUNT(*) AS \"totalGroups\","
+        },
+        {
+          "line": 465,
+          "text": "        COALESCE(SUM(i.quantity), 0) AS \"totalCards\","
+        },
+        {
+          "line": 466,
+          "text": "        COUNT(DISTINCT i.\"cardId\") AS \"uniqueCards\","
+        },
+        {
+          "line": 467,
+          "text": "        COUNT(*) FILTER (WHERE i.quantity > 1) AS \"duplicateCards\","
+        },
+        {
+          "line": 468,
+          "text": "        COUNT(DISTINCT cards.\"setId\") AS \"setsCount\","
+        },
+        {
+          "line": 469,
+          "text": "        COUNT(*) FILTER (WHERE lp.market IS NOT NULL) AS \"pricedGroups\","
+        }
+      ],
+      "semantic_review": "Contexto leído y contrastado manualmente con la afirmación; la línea existente sola no prueba comportamiento runtime."
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/NEG-03-cuenta-requisitos.md",
+      "destination": "../10-decisiones-y-contratos.md#dec-02--compartir-campos-totales-y-vigencia",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/NEG-03-cuenta-requisitos.md",
+      "destination": "../../../../frontend/app/share/[slug]/page.tsx#L24",
+      "exists": true,
+      "anchor_exists": true,
+      "line": 24,
+      "line_content": "const fetchSharedCollection = cache(async (slug: string): Promise<FetchResult> => {",
+      "context": [
+        {
+          "line": 23,
+          "text": " */"
+        },
+        {
+          "line": 24,
+          "text": "const fetchSharedCollection = cache(async (slug: string): Promise<FetchResult> => {"
+        },
+        {
+          "line": 25,
+          "text": "  let response: Response;"
+        },
+        {
+          "line": 26,
+          "text": "  try {"
+        },
+        {
+          "line": 27,
+          "text": "    response = await fetch(`${getApiBaseUrl()}/s/${encodeURIComponent(slug)}`, {"
+        },
+        {
+          "line": 28,
+          "text": "      headers: { Accept: 'application/json' },"
+        },
+        {
+          "line": 29,
+          "text": "      cache: 'no-store',"
+        },
+        {
+          "line": 30,
+          "text": "    });"
+        },
+        {
+          "line": 31,
+          "text": "  } catch {"
+        },
+        {
+          "line": 32,
+          "text": "    return { kind: 'error' };"
+        },
+        {
+          "line": 33,
+          "text": "  }"
+        },
+        {
+          "line": 34,
+          "text": ""
+        },
+        {
+          "line": 35,
+          "text": "  // 410 también: hoy el backend devuelve 404 para revocado y vencido, pero si"
+        },
+        {
+          "line": 36,
+          "text": "  // mañana los distingue, la 410 tiene que seguir significando \"no va a volver\"."
+        },
+        {
+          "line": 37,
+          "text": "  if (response.status === 404 || response.status === 410) return { kind: 'missing' };"
+        },
+        {
+          "line": 38,
+          "text": "  if (!response.ok) return { kind: 'error' };"
+        },
+        {
+          "line": 39,
+          "text": ""
+        }
+      ],
+      "semantic_review": "Contexto leído y contrastado manualmente con la afirmación; la línea existente sola no prueba comportamiento runtime."
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/NEG-03-cuenta-requisitos.md",
+      "destination": "../../../../frontend/app/share/[slug]/page.tsx#L50",
+      "exists": true,
+      "anchor_exists": true,
+      "line": 50,
+      "line_content": "  const result = await fetchSharedCollection(slug);",
+      "context": [
+        {
+          "line": 49,
+          "text": "  const { slug } = await params;"
+        },
+        {
+          "line": 50,
+          "text": "  const result = await fetchSharedCollection(slug);"
+        },
+        {
+          "line": 51,
+          "text": "  if (result.kind !== 'ok') {"
+        },
+        {
+          "line": 52,
+          "text": "    return {"
+        },
+        {
+          "line": 53,
+          "text": "      title: 'Colección compartida',"
+        },
+        {
+          "line": 54,
+          "text": "      robots: { index: false, follow: false },"
+        },
+        {
+          "line": 55,
+          "text": "    };"
+        },
+        {
+          "line": 56,
+          "text": "  }"
+        },
+        {
+          "line": 57,
+          "text": ""
+        },
+        {
+          "line": 58,
+          "text": "  const { collectionName, ownerDisplayName, stats } = result.data;"
+        },
+        {
+          "line": 59,
+          "text": ""
+        },
+        {
+          "line": 60,
+          "text": "  /*"
+        },
+        {
+          "line": 61,
+          "text": "   * Esto no es SEO: es el *unfurl* de WhatsApp, iMessage y Slack, que es donde"
+        },
+        {
+          "line": 62,
+          "text": "   * se abre de verdad un enlace compartido. Por eso el título lleva el nombre"
+        },
+        {
+          "line": 63,
+          "text": "   * de la colección y el del dueño, y la description el resumen con las cartas"
+        },
+        {
+          "line": 64,
+          "text": "   * y el valor: es lo único que se ve antes de entrar."
+        },
+        {
+          "line": 65,
+          "text": "   */"
+        }
+      ],
+      "semantic_review": "Contexto leído y contrastado manualmente con la afirmación; la línea existente sola no prueba comportamiento runtime."
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/NEG-03-cuenta-requisitos.md",
+      "destination": "../../../../frontend/public/sw.js#L40",
+      "exists": true,
+      "anchor_exists": true,
+      "line": 40,
+      "line_content": "const API_CACHEABLE = [/\\/api\\/cards(\\/|$)/, /\\/api\\/sets(\\/|$)/, /\\/api\\/search/];",
+      "context": [
+        {
+          "line": 39,
+          "text": "/** Rutas de API que si conviene tener offline (datos publicos, sin token). */"
+        },
+        {
+          "line": 40,
+          "text": "const API_CACHEABLE = [/\\/api\\/cards(\\/|$)/, /\\/api\\/sets(\\/|$)/, /\\/api\\/search/];"
+        },
+        {
+          "line": 41,
+          "text": ""
+        },
+        {
+          "line": 42,
+          "text": "/* -------------------------------------------------------------------------- */"
+        },
+        {
+          "line": 43,
+          "text": "/* install                                                                    */"
+        },
+        {
+          "line": 44,
+          "text": "/* -------------------------------------------------------------------------- */"
+        },
+        {
+          "line": 45,
+          "text": ""
+        },
+        {
+          "line": 46,
+          "text": "self.addEventListener('install', (event) => {"
+        },
+        {
+          "line": 47,
+          "text": "  event.waitUntil("
+        },
+        {
+          "line": 48,
+          "text": "    (async () => {"
+        },
+        {
+          "line": 49,
+          "text": "      const cache = await caches.open(SHELL_CACHE);"
+        },
+        {
+          "line": 50,
+          "text": "      // Uno por uno: un 404 en un asset no debe abortar todo el precache."
+        },
+        {
+          "line": 51,
+          "text": "      await Promise.all("
+        },
+        {
+          "line": 52,
+          "text": "        SHELL_ASSETS.map(async (url) => {"
+        },
+        {
+          "line": 53,
+          "text": "          try {"
+        },
+        {
+          "line": 54,
+          "text": "            const response = await fetch(url, { cache: 'reload' });"
+        },
+        {
+          "line": 55,
+          "text": "            if (response.ok || response.type === 'opaque') {"
+        }
+      ],
+      "semantic_review": "Contexto leído y contrastado manualmente con la afirmación; la línea existente sola no prueba comportamiento runtime."
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/NEG-03-cuenta-requisitos.md",
+      "destination": "../../../../frontend/public/sw.js#L139",
+      "exists": true,
+      "anchor_exists": true,
+      "line": 139,
+      "line_content": "      if (url.origin === self.location.origin && /^\\/share(?:\\/|$)/.test(url.pathname)) await cache.delete(request);",
+      "context": [
+        {
+          "line": 138,
+          "text": "      const url = new URL(request.url);"
+        },
+        {
+          "line": 139,
+          "text": "      if (url.origin === self.location.origin && /^\\/share(?:\\/|$)/.test(url.pathname)) await cache.delete(request);"
+        },
+        {
+          "line": 140,
+          "text": "    }));"
+        },
+        {
+          "line": 141,
+          "text": "  }));"
+        },
+        {
+          "line": 142,
+          "text": "}"
+        },
+        {
+          "line": 143,
+          "text": ""
+        },
+        {
+          "line": 144,
+          "text": "async function networkFirstNavigation(request) {"
+        },
+        {
+          "line": 145,
+          "text": "  try {"
+        },
+        {
+          "line": 146,
+          "text": "    const response = await fetch(request);"
+        },
+        {
+          "line": 147,
+          "text": "    if (response.ok) {"
+        },
+        {
+          "line": 148,
+          "text": "      const cache = await caches.open(SHELL_CACHE);"
+        },
+        {
+          "line": 149,
+          "text": "      cache.put(request, response.clone()).catch(() => {});"
+        },
+        {
+          "line": 150,
+          "text": "    }"
+        },
+        {
+          "line": 151,
+          "text": "    return response;"
+        },
+        {
+          "line": 152,
+          "text": "  } catch {"
+        },
+        {
+          "line": 153,
+          "text": "    const cached = await caches.match(request, { ignoreSearch: true });"
+        },
+        {
+          "line": 154,
+          "text": "    if (cached) return cached;"
+        }
+      ],
+      "semantic_review": "Contexto leído y contrastado manualmente con la afirmación; la línea existente sola no prueba comportamiento runtime."
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/NEG-03-cuenta-requisitos.md",
+      "destination": "../../../../frontend/public/sw.js#L222",
+      "exists": true,
+      "anchor_exists": true,
+      "line": 222,
+      "line_content": "  if (sameOrigin && /^\\/share(?:\\/|$)/.test(url.pathname)) return;",
+      "context": [
+        {
+          "line": 221,
+          "text": ""
+        },
+        {
+          "line": 222,
+          "text": "  if (sameOrigin && /^\\/share(?:\\/|$)/.test(url.pathname)) return;"
+        },
+        {
+          "line": 223,
+          "text": ""
+        },
+        {
+          "line": 224,
+          "text": "  if (request.mode === 'navigate') {"
+        },
+        {
+          "line": 225,
+          "text": "    event.respondWith(networkFirstNavigation(request));"
+        },
+        {
+          "line": 226,
+          "text": "    return;"
+        },
+        {
+          "line": 227,
+          "text": "  }"
+        },
+        {
+          "line": 228,
+          "text": ""
+        },
+        {
+          "line": 229,
+          "text": "  if (isImageRequest(url)) {"
+        },
+        {
+          "line": 230,
+          "text": "    event.respondWith("
+        },
+        {
+          "line": 231,
+          "text": "      cacheFirst(request, IMAGE_CACHE, { limit: IMAGE_CACHE_LIMIT }).catch("
+        },
+        {
+          "line": 232,
+          "text": "        () => Response.error(),"
+        },
+        {
+          "line": 233,
+          "text": "      ),"
+        },
+        {
+          "line": 234,
+          "text": "    );"
+        },
+        {
+          "line": 235,
+          "text": "    return;"
+        },
+        {
+          "line": 236,
+          "text": "  }"
+        },
+        {
+          "line": 237,
+          "text": ""
+        }
+      ],
+      "semantic_review": "Contexto leído y contrastado manualmente con la afirmación; la línea existente sola no prueba comportamiento runtime."
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/NEG-03-cuenta-requisitos.md",
+      "destination": "../../../../backend/prisma/schema.prisma#L256",
+      "exists": true,
+      "anchor_exists": true,
+      "line": 256,
+      "line_content": "model ScanJob {",
+      "context": [
+        {
+          "line": 255,
+          "text": "// ─── Tracking de jobs de sincronización ───"
+        },
+        {
+          "line": 256,
+          "text": "model ScanJob {"
+        },
+        {
+          "line": 257,
+          "text": "  id          String    @id @default(uuid())"
+        },
+        {
+          "line": 258,
+          "text": "  userId      String"
+        },
+        {
+          "line": 259,
+          "text": "  status      String    @default(\"pending\") // pending | running | completed | failed"
+        },
+        {
+          "line": 260,
+          "text": "  jobType     String    @default(\"sync-catalog\") // sync-catalog | refresh-prices"
+        },
+        {
+          "line": 261,
+          "text": "  processed   Int       @default(0)"
+        },
+        {
+          "line": 262,
+          "text": "  total       Int?"
+        },
+        {
+          "line": 263,
+          "text": "  lastError   String?"
+        },
+        {
+          "line": 264,
+          "text": "  startedAt   DateTime?"
+        },
+        {
+          "line": 265,
+          "text": "  completedAt DateTime?"
+        },
+        {
+          "line": 266,
+          "text": "  createdAt   DateTime  @default(now())"
+        },
+        {
+          "line": 267,
+          "text": ""
+        },
+        {
+          "line": 268,
+          "text": "  user User @relation(fields: [userId], references: [id], onDelete: Cascade)"
+        },
+        {
+          "line": 269,
+          "text": ""
+        },
+        {
+          "line": 270,
+          "text": "  @@index([status])"
+        },
+        {
+          "line": 271,
+          "text": "  @@map(\"scan_jobs\")"
+        }
+      ],
+      "semantic_review": "Contexto leído y contrastado manualmente con la afirmación; la línea existente sola no prueba comportamiento runtime."
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/NEG-03-cuenta-requisitos.md",
+      "destination": "../../../../backend/prisma/schema.prisma#L297",
+      "exists": true,
+      "anchor_exists": true,
+      "line": 297,
+      "line_content": "model PriceRefreshJob {",
+      "context": [
+        {
+          "line": 296,
+          "text": "/// arranque los `processing` que quedaron colgados."
+        },
+        {
+          "line": 297,
+          "text": "model PriceRefreshJob {"
+        },
+        {
+          "line": 298,
+          "text": "  id          String    @id @default(uuid())"
+        },
+        {
+          "line": 299,
+          "text": "  cardId      String    @unique"
+        },
+        {
+          "line": 300,
+          "text": "  status      String    @default(\"pending\") // pending | processing | completed | failed"
+        },
+        {
+          "line": 301,
+          "text": "  attempts    Int       @default(0)"
+        },
+        {
+          "line": 302,
+          "text": "  availableAt DateTime  @default(now())"
+        },
+        {
+          "line": 303,
+          "text": "  lastError   String?"
+        },
+        {
+          "line": 304,
+          "text": "  lockedBy    String?"
+        },
+        {
+          "line": 305,
+          "text": "  lockedAt    DateTime?"
+        },
+        {
+          "line": 306,
+          "text": "  completedAt DateTime?"
+        },
+        {
+          "line": 307,
+          "text": "  createdAt   DateTime  @default(now())"
+        },
+        {
+          "line": 308,
+          "text": "  updatedAt   DateTime  @updatedAt"
+        },
+        {
+          "line": 309,
+          "text": ""
+        },
+        {
+          "line": 310,
+          "text": "  // El claim ordena por `availableAt` entre filas `pending`: sin este índice es"
+        },
+        {
+          "line": 311,
+          "text": "  // un seq scan con `ORDER BY` + `LIMIT 1` sobre toda la tabla."
+        },
+        {
+          "line": 312,
+          "text": "  @@index([status, availableAt])"
+        }
+      ],
+      "semantic_review": "Contexto leído y contrastado manualmente con la afirmación; la línea existente sola no prueba comportamiento runtime."
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/NEG-03-cuenta-requisitos.md",
+      "destination": "../../../../backend/prisma/schema.prisma#L328",
+      "exists": true,
+      "anchor_exists": true,
+      "line": 328,
+      "line_content": "model ProviderRateLimit {",
+      "context": [
+        {
+          "line": 327,
+          "text": "/// cuota\" en cuanto haya dos instancias."
+        },
+        {
+          "line": 328,
+          "text": "model ProviderRateLimit {"
+        },
+        {
+          "line": 329,
+          "text": "  providerId   String   @id"
+        },
+        {
+          "line": 330,
+          "text": "  lastCalledAt DateTime"
+        },
+        {
+          "line": 331,
+          "text": "  updatedAt    DateTime @updatedAt"
+        },
+        {
+          "line": 332,
+          "text": ""
+        },
+        {
+          "line": 333,
+          "text": "  @@map(\"provider_rate_limits\")"
+        },
+        {
+          "line": 334,
+          "text": "}"
+        },
+        {
+          "line": 335,
+          "text": ""
+        },
+        {
+          "line": 336,
+          "text": "/// Cursor de los syncs de catálogo, por job **y** por proveedor."
+        },
+        {
+          "line": 337,
+          "text": "///"
+        },
+        {
+          "line": 338,
+          "text": "/// Antes eran dos claves Redis sin TTL (`sync:cards:lastPage`,"
+        },
+        {
+          "line": 339,
+          "text": "/// `sync:cards:complete`) con granularidad global: un `flushall` reiniciaba el"
+        },
+        {
+          "line": 340,
+          "text": "/// sync desde la página 1 y hacía re-traer las 83 páginas de un catálogo que ya"
+        },
+        {
+          "line": 341,
+          "text": "/// estaba completo."
+        },
+        {
+          "line": 342,
+          "text": "///"
+        },
+        {
+          "line": 343,
+          "text": "/// El id es composed (`<jobType>:<providerId>`) y no un `uuid`, porque la fila"
+        }
+      ],
+      "semantic_review": "Contexto leído y contrastado manualmente con la afirmación; la línea existente sola no prueba comportamiento runtime."
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/NEG-03-cuenta-requisitos.md",
+      "destination": "../../../../backend/prisma/schema.prisma#L347",
+      "exists": true,
+      "anchor_exists": true,
+      "line": 347,
+      "line_content": "model SyncState {",
+      "context": [
+        {
+          "line": 346,
+          "text": "/// comparte cursor con pokemontcg.io."
+        },
+        {
+          "line": 347,
+          "text": "model SyncState {"
+        },
+        {
+          "line": 348,
+          "text": "  id         String   @id // \"cards:pokemontcg.io\""
+        },
+        {
+          "line": 349,
+          "text": "  lastPage   Int      @default(0)"
+        },
+        {
+          "line": 350,
+          "text": "  totalPages Int?"
+        },
+        {
+          "line": 351,
+          "text": "  isComplete Boolean  @default(false)"
+        },
+        {
+          "line": 352,
+          "text": "  updatedAt  DateTime @updatedAt"
+        },
+        {
+          "line": 353,
+          "text": ""
+        },
+        {
+          "line": 354,
+          "text": "  @@map(\"sync_state\")"
+        },
+        {
+          "line": 355,
+          "text": "}"
+        },
+        {
+          "line": 356,
+          "text": ""
+        },
+        {
+          "line": 357,
+          "text": "// ─── Amigos (fase 8) ───"
+        },
+        {
+          "line": 358,
+          "text": ""
+        },
+        {
+          "line": 359,
+          "text": "/// Una fila por par (requester, addressee) orientado. El @@unique garantiza"
+        },
+        {
+          "line": 360,
+          "text": "/// que no haya dos filas del mismo par en el mismo sentido, y el service"
+        },
+        {
+          "line": 361,
+          "text": "/// busca siempre en ambos sentidos para que el par tenga un único estado."
+        },
+        {
+          "line": 362,
+          "text": "model Friendship {"
+        }
+      ],
+      "semantic_review": "Contexto leído y contrastado manualmente con la afirmación; la línea existente sola no prueba comportamiento runtime."
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/NEG-03-cuenta-requisitos.md",
+      "destination": "../../../../backend/src/modules/collections/collections.service.ts#L353",
+      "exists": true,
+      "anchor_exists": true,
+      "line": 353,
+      "line_content": "    const found = await this.prisma.collection.findFirst({",
+      "context": [
+        {
+          "line": 352,
+          "text": "  private async assertOwned(userId: string, collectionId: string): Promise<void> {"
+        },
+        {
+          "line": 353,
+          "text": "    const found = await this.prisma.collection.findFirst({"
+        },
+        {
+          "line": 354,
+          "text": "      where: { id: collectionId, userId },"
+        },
+        {
+          "line": 355,
+          "text": "      select: { id: true },"
+        },
+        {
+          "line": 356,
+          "text": "    });"
+        },
+        {
+          "line": 357,
+          "text": "    if (!found) throw new NotFoundException(`Colección no encontrada: ${collectionId}`);"
+        },
+        {
+          "line": 358,
+          "text": "  }"
+        },
+        {
+          "line": 359,
+          "text": ""
+        },
+        {
+          "line": 360,
+          "text": "  // ─── Colecciones ───"
+        },
+        {
+          "line": 361,
+          "text": ""
+        },
+        {
+          "line": 362,
+          "text": "  async create(userId: string, dto: CreateCollectionDto): Promise<CollectionDto> {"
+        },
+        {
+          "line": 363,
+          "text": "    return this.prisma.$transaction(async (tx) => {"
+        },
+        {
+          "line": 364,
+          "text": "      const existing = await tx.collection.count({ where: { userId } });"
+        },
+        {
+          "line": 365,
+          "text": "      const isFirst = existing === 0;"
+        },
+        {
+          "line": 366,
+          "text": "      // La primera colección del usuario siempre es la default."
+        },
+        {
+          "line": 367,
+          "text": "      const isDefault = isFirst || dto.isDefault === true;"
+        },
+        {
+          "line": 368,
+          "text": ""
+        }
+      ],
+      "semantic_review": "Contexto leído y contrastado manualmente con la afirmación; la línea existente sola no prueba comportamiento runtime."
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/NEG-03-cuenta-requisitos.md",
+      "destination": "../../../../backend/src/modules/share/share.service.ts#L337",
+      "exists": true,
+      "anchor_exists": true,
+      "line": 337,
+      "line_content": "  private async assertOwnership(",
+      "context": [
+        {
+          "line": 336,
+          "text": ""
+        },
+        {
+          "line": 337,
+          "text": "  private async assertOwnership("
+        },
+        {
+          "line": 338,
+          "text": "    userId: string,"
+        },
+        {
+          "line": 339,
+          "text": "    id: string,"
+        },
+        {
+          "line": 340,
+          "text": "  ): Promise<ShareWithRefs> {"
+        },
+        {
+          "line": 341,
+          "text": "    const link = await this.prisma.shareLink.findFirst({"
+        },
+        {
+          "line": 342,
+          "text": "      where: { id, userId },"
+        },
+        {
+          "line": 343,
+          "text": "      include: SHARE_INCLUDE,"
+        },
+        {
+          "line": 344,
+          "text": "    });"
+        },
+        {
+          "line": 345,
+          "text": "    if (!link) {"
+        },
+        {
+          "line": 346,
+          "text": "      throw new NotFoundException(`Enlace no encontrado: ${id}`);"
+        },
+        {
+          "line": 347,
+          "text": "    }"
+        },
+        {
+          "line": 348,
+          "text": "    return link;"
+        },
+        {
+          "line": 349,
+          "text": "  }"
+        },
+        {
+          "line": 350,
+          "text": ""
+        },
+        {
+          "line": 351,
+          "text": "  private async generateUniqueSlug(): Promise<string> {"
+        },
+        {
+          "line": 352,
+          "text": "    for (let attempt = 1; attempt <= SLUG_MAX_ATTEMPTS; attempt += 1) {"
+        }
+      ],
+      "semantic_review": "Contexto leído y contrastado manualmente con la afirmación; la línea existente sola no prueba comportamiento runtime."
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/NEG-03-cuenta-requisitos.md",
+      "destination": "../../../../frontend/docs/portfolio.md",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/NEG-03-cuenta-requisitos.md",
+      "destination": "../../../../frontend/docs/scanner.md#contrato-y-ranking",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/NEG-03-cuenta-requisitos.md",
+      "destination": "../../../../frontend/docs/scanner.md#descarga-voluntaria-para-revisar-errores",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/NEG-03-cuenta-requisitos.md",
+      "destination": "../../../../backend/src/modules/cards/visual-identify.controller.ts#L18",
+      "exists": true,
+      "anchor_exists": true,
+      "line": 18,
+      "line_content": "@Controller('cards')",
+      "context": [
+        {
+          "line": 17,
+          "text": ""
+        },
+        {
+          "line": 18,
+          "text": "@Controller('cards')"
+        },
+        {
+          "line": 19,
+          "text": "@UseGuards(JwtAuthGuard)"
+        },
+        {
+          "line": 20,
+          "text": "export class VisualIdentifyController {"
+        },
+        {
+          "line": 21,
+          "text": "  constructor("
+        },
+        {
+          "line": 22,
+          "text": "    private readonly visual: VisualIdentifyService,"
+        },
+        {
+          "line": 23,
+          "text": "    private readonly prisma: PrismaService,"
+        },
+        {
+          "line": 24,
+          "text": "  ) {}"
+        },
+        {
+          "line": 25,
+          "text": "  @Post('identify-visual')"
+        },
+        {
+          "line": 26,
+          "text": "  @HttpCode(200)"
+        },
+        {
+          "line": 27,
+          "text": "  async identify("
+        },
+        {
+          "line": 28,
+          "text": "    @Body() dto: VisualIdentifyDto,"
+        },
+        {
+          "line": 29,
+          "text": "    @Res({ passthrough: true }) response: Response,"
+        },
+        {
+          "line": 30,
+          "text": "  ): Promise<VisualIdentifyResponseDto> {"
+        },
+        {
+          "line": 31,
+          "text": "    const start = performance.now();"
+        },
+        {
+          "line": 32,
+          "text": "    response.setHeader('Cache-Control', 'no-store');"
+        },
+        {
+          "line": 33,
+          "text": "    const abort = new AbortController();"
+        }
+      ],
+      "semantic_review": "Contexto leído y contrastado manualmente con la afirmación; la línea existente sola no prueba comportamiento runtime."
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/NEG-03-cuenta-requisitos.md",
+      "destination": "INF-03-local-review.md#resultado-que-habilita-el-gate-integrado",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/NEG-03-cuenta-requisitos.md",
+      "destination": "../../../../infra/inf03/README.md",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/NEG-03-cuenta-requisitos.md",
+      "destination": "../10-decisiones-y-contratos.md#dec-04--medición-mínima",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/NEG-03-cuenta-requisitos.md",
+      "destination": "evidencia-neg03-cuenta-review/verificacion.json",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/NEG-03-cuenta-requisitos.md",
+      "destination": "NEG-03-cuenta-review.md",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/NEG-03-cuenta-review.md",
+      "destination": "NEG-03-cuenta-requisitos.md",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/NEG-03-cuenta-review.md",
+      "destination": "evidencia-neg03-cuenta-review/baseline-review.json",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/NEG-03-cuenta-review.md",
+      "destination": "evidencia-neg03-cuenta-review/NEG-03-cuenta-requisitos-recibido.md",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/NEG-03-cuenta-review.md",
+      "destination": "evidencia-neg03-cuenta-review/baseline-selectiva-recibido.json",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/NEG-03-cuenta-review.md",
+      "destination": "evidencia-neg03-cuenta-review/validacion-documental-recibido.json",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/NEG-03-cuenta-review.md",
+      "destination": "evidencia-neg03-cuenta-review/verificacion.json",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/NEG-03-cuenta-review.md",
+      "destination": "evidencia-neg03-cuenta-review/correcciones.diff",
+      "exists": true,
+      "anchor_exists": true
+    }
+  ],
+  "all_links_and_anchors_resolve": true,
+  "selective_source_hashes": [
+    {
+      "path": "AGENTS.md",
+      "before": "0a44196ce9194cafcd54094af02e90e73f0da0f693604d0876d97bf14ee30688",
+      "after": "0a44196ce9194cafcd54094af02e90e73f0da0f693604d0876d97bf14ee30688",
+      "unchanged": true
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/README.md",
+      "before": "24ec5dee918d19778b3a7bfd4187fecf1eff2e2f855ffdd2a26ed0843fc1eced",
+      "after": "24ec5dee918d19778b3a7bfd4187fecf1eff2e2f855ffdd2a26ed0843fc1eced",
+      "unchanged": true
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/08-negocio-monetizacion.md",
+      "before": "e396d76091248484fc57a4c8b0245f46e408b3527ecc1f74bb127f6639bf2e96",
+      "after": "e396d76091248484fc57a4c8b0245f46e408b3527ecc1f74bb127f6639bf2e96",
+      "unchanged": true
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/10-decisiones-y-contratos.md",
+      "before": "a040c6d51aa674adc7449b9dc683e1d1f5fa0cc6aaf0b6f2377991827a2ab6e5",
+      "after": "a040c6d51aa674adc7449b9dc683e1d1f5fa0cc6aaf0b6f2377991827a2ab6e5",
+      "unchanged": true
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/01-frontend.md",
+      "before": "ba1c7db23291d45b38d6352a3f5b1d5c0920459721d64f349bccb5592c3c8109",
+      "after": "ba1c7db23291d45b38d6352a3f5b1d5c0920459721d64f349bccb5592c3c8109",
+      "unchanged": true
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/02-backend.md",
+      "before": "eaa51a56f69f102605e0c7810379cae969135cc047686ebfcae9e14e7772e657",
+      "after": "eaa51a56f69f102605e0c7810379cae969135cc047686ebfcae9e14e7772e657",
+      "unchanged": true
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/03-ui-ux.md",
+      "before": "6fd798bbb2867c00e18ac53a689233105cd01b167bbdb4a8a73eea203ee04a19",
+      "after": "6fd798bbb2867c00e18ac53a689233105cd01b167bbdb4a8a73eea203ee04a19",
+      "unchanged": true
+    },
+    {
+      "path": "backend/src/modules/auth/auth.service.ts",
+      "before": "0a254e70b586234adb0273e5ab6f038e92629161c6aea305de6de87120dd7502",
+      "after": "0a254e70b586234adb0273e5ab6f038e92629161c6aea305de6de87120dd7502",
+      "unchanged": true
+    },
+    {
+      "path": "backend/src/modules/auth/auth.controller.ts",
+      "before": "6e1418e90f41739a7aaf6be807498caa46491fc92beef554ad58d9c8fa29a7c5",
+      "after": "6e1418e90f41739a7aaf6be807498caa46491fc92beef554ad58d9c8fa29a7c5",
+      "unchanged": true
+    },
+    {
+      "path": "backend/src/modules/auth/session-security.ts",
+      "before": "d2389954d9106d797fc19a2a7af9d88077ea740383cb5271056bafae2973aa99",
+      "after": "d2389954d9106d797fc19a2a7af9d88077ea740383cb5271056bafae2973aa99",
+      "unchanged": true
+    },
+    {
+      "path": "backend/prisma/schema.prisma",
+      "before": "aa1a08ba649e542444fd79e724e497d8304c469b33a1cc0966646e831e6b3624",
+      "after": "aa1a08ba649e542444fd79e724e497d8304c469b33a1cc0966646e831e6b3624",
+      "unchanged": true
+    },
+    {
+      "path": "backend/src/modules/share/share.service.ts",
+      "before": "306b6290135591dbdeee63b22b0d015eb44bed5fc640f8ce4eb056ff70fb8c62",
+      "after": "306b6290135591dbdeee63b22b0d015eb44bed5fc640f8ce4eb056ff70fb8c62",
+      "unchanged": true
+    },
+    {
+      "path": "backend/src/modules/share/public-share.controller.ts",
+      "before": "acf9b7ef58255bff779152981f94faca44b4b155ec8f9d10e621c5bc23a8d2ee",
+      "after": "acf9b7ef58255bff779152981f94faca44b4b155ec8f9d10e621c5bc23a8d2ee",
+      "unchanged": true
+    },
+    {
+      "path": "backend/docs/database.md",
+      "before": "b13f35f6425b5be03bb1b4517d6bd3957dbd1e8737f665306f585cdbb499d4fa",
+      "after": "b13f35f6425b5be03bb1b4517d6bd3957dbd1e8737f665306f585cdbb499d4fa",
+      "unchanged": true
+    },
+    {
+      "path": "docs/security.md",
+      "before": "77ca6e0ad62b3b100f6f6e2190e77cb708d5ad310bc546fcba9e331140b9af28",
+      "after": "77ca6e0ad62b3b100f6f6e2190e77cb708d5ad310bc546fcba9e331140b9af28",
+      "unchanged": true
+    },
+    {
+      "path": "docs/architecture.md",
+      "before": "2dcd7b86a7552648c3af37a24a84d9c4dfa77cb91967f98cb1d25528f2093072",
+      "after": "2dcd7b86a7552648c3af37a24a84d9c4dfa77cb91967f98cb1d25528f2093072",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/docs/scanner.md",
+      "before": "cd5646940492469583b428c1911a7f7820538742764abfb254b50f630adcbf52",
+      "after": "cd5646940492469583b428c1911a7f7820538742764abfb254b50f630adcbf52",
+      "unchanged": true
+    },
+    {
+      "path": "infra/inf03/README.md",
+      "before": "7176efc0c91de25d8d62932c7c252b89dac23fca5972763a222526a3896dbe90",
+      "after": "7176efc0c91de25d8d62932c7c252b89dac23fca5972763a222526a3896dbe90",
+      "unchanged": true
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-03-local-review.md",
+      "before": "ddaba3d7bdc6f4c897a19de675a8f800e4171caf58f486311109c678f3fd5d4c",
+      "after": "ddaba3d7bdc6f4c897a19de675a8f800e4171caf58f486311109c678f3fd5d4c",
+      "unchanged": true
+    },
+    {
+      "path": "backend/src/modules/auth/auth.module.ts",
+      "before": "a088b427e35b791b70c30aaf85e0e88cb4a91e1c1aafd93274da692f157387dc",
+      "after": "a088b427e35b791b70c30aaf85e0e88cb4a91e1c1aafd93274da692f157387dc",
+      "unchanged": true
+    },
+    {
+      "path": "backend/src/common/guards/jwt-auth.guard.ts",
+      "before": "ae56011d88cfeeba08eaf3df29b8314ad00dc2d0008fa0aa0a9cb439cbf41fc1",
+      "after": "ae56011d88cfeeba08eaf3df29b8314ad00dc2d0008fa0aa0a9cb439cbf41fc1",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/public/sw.js",
+      "before": "5647d8e6f5cb69511817b2ac00df6d5eaa4b906a8f6f7001ef59cbcbadb24503",
+      "after": "5647d8e6f5cb69511817b2ac00df6d5eaa4b906a8f6f7001ef59cbcbadb24503",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/docs/portfolio.md",
+      "before": "8e6b0ffb6becf29ad531e82608795cd4e5f3a0163cb274aec31e37db8c181816",
+      "after": "8e6b0ffb6becf29ad531e82608795cd4e5f3a0163cb274aec31e37db8c181816",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/app/share/[slug]/page.tsx",
+      "before": "a2c7b3dc3a1159a8deb7f505cbc7e271519c7b11610ae0042ec7bfb02fb34072",
+      "after": "a2c7b3dc3a1159a8deb7f505cbc7e271519c7b11610ae0042ec7bfb02fb34072",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/lib/api/api-client.ts",
+      "before": "2273f6f6adedaca136b7cf26925b01b2ea7cad34e44a7d3f6896b2f471d9225d",
+      "after": "2273f6f6adedaca136b7cf26925b01b2ea7cad34e44a7d3f6896b2f471d9225d",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/lib/api/auth.ts",
+      "before": "4eee2697a27eaba4aef33e9f6487aa7b2c84d49cc3b08f05d4272cfc01872e89",
+      "after": "4eee2697a27eaba4aef33e9f6487aa7b2c84d49cc3b08f05d4272cfc01872e89",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/lib/api/token-storage.ts",
+      "before": "ce7e03a78388c4c1743eebc7a5af362829a83283ded6188bab37d9440d21b6e0",
+      "after": "ce7e03a78388c4c1743eebc7a5af362829a83283ded6188bab37d9440d21b6e0",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/hooks/use-auth.tsx",
+      "before": "8e59872c612fc20d66f5503464b8ca83e7319f0876e75498297705cca7681745",
+      "after": "8e59872c612fc20d66f5503464b8ca83e7319f0876e75498297705cca7681745",
+      "unchanged": true
+    },
+    {
+      "path": "backend/src/modules/cards/visual-identify.controller.ts",
+      "before": "048474b4181fc585ed41369643bcc7c138e3a4a79b47546f38353b7a4af2b148",
+      "after": "048474b4181fc585ed41369643bcc7c138e3a4a79b47546f38353b7a4af2b148",
+      "unchanged": true
+    },
+    {
+      "path": "backend/src/modules/cards/visual-identify.service.ts",
+      "before": "e95d2f442ee4ff0be6ddc5eed6ebd7e53c8d8dda67aed2822402eb9f5d866416",
+      "after": "e95d2f442ee4ff0be6ddc5eed6ebd7e53c8d8dda67aed2822402eb9f5d866416",
+      "unchanged": true
+    },
+    {
+      "path": "backend/src/modules/collections/collections.service.ts",
+      "before": "a2d13f3c9ecbc88fbd9a8ab4e87bc2bcb0fdd6614af651aff18612f0f1ef2a19",
+      "after": "a2d13f3c9ecbc88fbd9a8ab4e87bc2bcb0fdd6614af651aff18612f0f1ef2a19",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/components/scanner/session-storage.ts",
+      "before": "e53a60992e18481e1b1d51ce5a20ca8fb34adcb180820f32dc7ac28709fbf6f2",
+      "after": "e53a60992e18481e1b1d51ce5a20ca8fb34adcb180820f32dc7ac28709fbf6f2",
+      "unchanged": true
+    }
+  ],
+  "all_selective_sources_unchanged": true,
+  "received_preservation": [
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/NEG-03-cuenta-requisitos.md",
+      "copy": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/evidencia-neg03-cuenta-review/NEG-03-cuenta-requisitos-recibido.md",
+      "copy_matches_received": true,
+      "original_unchanged": null
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/evidencia-neg03-cuenta/baseline-selectiva.json",
+      "copy": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/evidencia-neg03-cuenta-review/baseline-selectiva-recibido.json",
+      "copy_matches_received": true,
+      "original_unchanged": true
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/evidencia-neg03-cuenta/validacion-documental.json",
+      "copy": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/evidencia-neg03-cuenta-review/validacion-documental-recibido.json",
+      "copy_matches_received": true,
+      "original_unchanged": true
+    }
+  ],
+  "historical_baseline_comparison": [
+    {
+      "path": "AGENTS.md",
+      "historical_sha256": "0a44196ce9194cafcd54094af02e90e73f0da0f693604d0876d97bf14ee30688",
+      "current_sha256": "0a44196ce9194cafcd54094af02e90e73f0da0f693604d0876d97bf14ee30688",
+      "comparison_in_scope": true
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/README.md",
+      "historical_sha256": "24ec5dee918d19778b3a7bfd4187fecf1eff2e2f855ffdd2a26ed0843fc1eced",
+      "current_sha256": "24ec5dee918d19778b3a7bfd4187fecf1eff2e2f855ffdd2a26ed0843fc1eced",
+      "comparison_in_scope": true
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/08-negocio-monetizacion.md",
+      "historical_sha256": "e396d76091248484fc57a4c8b0245f46e408b3527ecc1f74bb127f6639bf2e96",
+      "current_sha256": "e396d76091248484fc57a4c8b0245f46e408b3527ecc1f74bb127f6639bf2e96",
+      "comparison_in_scope": true
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/10-decisiones-y-contratos.md",
+      "historical_sha256": "a040c6d51aa674adc7449b9dc683e1d1f5fa0cc6aaf0b6f2377991827a2ab6e5",
+      "current_sha256": "a040c6d51aa674adc7449b9dc683e1d1f5fa0cc6aaf0b6f2377991827a2ab6e5",
+      "comparison_in_scope": true
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/01-frontend.md",
+      "historical_sha256": "ba1c7db23291d45b38d6352a3f5b1d5c0920459721d64f349bccb5592c3c8109",
+      "current_sha256": "ba1c7db23291d45b38d6352a3f5b1d5c0920459721d64f349bccb5592c3c8109",
+      "comparison_in_scope": true
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/02-backend.md",
+      "historical_sha256": "eaa51a56f69f102605e0c7810379cae969135cc047686ebfcae9e14e7772e657",
+      "current_sha256": "eaa51a56f69f102605e0c7810379cae969135cc047686ebfcae9e14e7772e657",
+      "comparison_in_scope": true
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/03-ui-ux.md",
+      "historical_sha256": "6fd798bbb2867c00e18ac53a689233105cd01b167bbdb4a8a73eea203ee04a19",
+      "current_sha256": "6fd798bbb2867c00e18ac53a689233105cd01b167bbdb4a8a73eea203ee04a19",
+      "comparison_in_scope": true
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/REGISTRO-TAREAS.md",
+      "historical_sha256": "ace10303ea7d2ae6465b7d9f0ab0b1449ad68e3a68a7b037a1591e51ac98504a",
+      "current_sha256": null,
+      "comparison_in_scope": false
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/ORQUESTACION-ESTADO.md",
+      "historical_sha256": "df8a272aa5658256309158ecbf7981fb2a6c88645c13859d789a0b9986a2ecca",
+      "current_sha256": null,
+      "comparison_in_scope": false
+    },
+    {
+      "path": "backend/src/modules/auth/auth.service.ts",
+      "historical_sha256": "0a254e70b586234adb0273e5ab6f038e92629161c6aea305de6de87120dd7502",
+      "current_sha256": "0a254e70b586234adb0273e5ab6f038e92629161c6aea305de6de87120dd7502",
+      "comparison_in_scope": true
+    },
+    {
+      "path": "backend/src/modules/auth/auth.controller.ts",
+      "historical_sha256": "6e1418e90f41739a7aaf6be807498caa46491fc92beef554ad58d9c8fa29a7c5",
+      "current_sha256": "6e1418e90f41739a7aaf6be807498caa46491fc92beef554ad58d9c8fa29a7c5",
+      "comparison_in_scope": true
+    },
+    {
+      "path": "backend/src/modules/auth/session-security.ts",
+      "historical_sha256": "d2389954d9106d797fc19a2a7af9d88077ea740383cb5271056bafae2973aa99",
+      "current_sha256": "d2389954d9106d797fc19a2a7af9d88077ea740383cb5271056bafae2973aa99",
+      "comparison_in_scope": true
+    },
+    {
+      "path": "backend/prisma/schema.prisma",
+      "historical_sha256": "aa1a08ba649e542444fd79e724e497d8304c469b33a1cc0966646e831e6b3624",
+      "current_sha256": "aa1a08ba649e542444fd79e724e497d8304c469b33a1cc0966646e831e6b3624",
+      "comparison_in_scope": true
+    },
+    {
+      "path": "backend/src/modules/share/share.service.ts",
+      "historical_sha256": "306b6290135591dbdeee63b22b0d015eb44bed5fc640f8ce4eb056ff70fb8c62",
+      "current_sha256": "306b6290135591dbdeee63b22b0d015eb44bed5fc640f8ce4eb056ff70fb8c62",
+      "comparison_in_scope": true
+    },
+    {
+      "path": "backend/src/modules/share/public-share.controller.ts",
+      "historical_sha256": "acf9b7ef58255bff779152981f94faca44b4b155ec8f9d10e621c5bc23a8d2ee",
+      "current_sha256": "acf9b7ef58255bff779152981f94faca44b4b155ec8f9d10e621c5bc23a8d2ee",
+      "comparison_in_scope": true
+    },
+    {
+      "path": "backend/docs/database.md",
+      "historical_sha256": "b13f35f6425b5be03bb1b4517d6bd3957dbd1e8737f665306f585cdbb499d4fa",
+      "current_sha256": "b13f35f6425b5be03bb1b4517d6bd3957dbd1e8737f665306f585cdbb499d4fa",
+      "comparison_in_scope": true
+    },
+    {
+      "path": "docs/security.md",
+      "historical_sha256": "77ca6e0ad62b3b100f6f6e2190e77cb708d5ad310bc546fcba9e331140b9af28",
+      "current_sha256": "77ca6e0ad62b3b100f6f6e2190e77cb708d5ad310bc546fcba9e331140b9af28",
+      "comparison_in_scope": true
+    },
+    {
+      "path": "docs/architecture.md",
+      "historical_sha256": "2dcd7b86a7552648c3af37a24a84d9c4dfa77cb91967f98cb1d25528f2093072",
+      "current_sha256": "2dcd7b86a7552648c3af37a24a84d9c4dfa77cb91967f98cb1d25528f2093072",
+      "comparison_in_scope": true
+    },
+    {
+      "path": "frontend/docs/scanner.md",
+      "historical_sha256": "cd5646940492469583b428c1911a7f7820538742764abfb254b50f630adcbf52",
+      "current_sha256": "cd5646940492469583b428c1911a7f7820538742764abfb254b50f630adcbf52",
+      "comparison_in_scope": true
+    },
+    {
+      "path": "infra/inf03/README.md",
+      "historical_sha256": "7176efc0c91de25d8d62932c7c252b89dac23fca5972763a222526a3896dbe90",
+      "current_sha256": "7176efc0c91de25d8d62932c7c252b89dac23fca5972763a222526a3896dbe90",
+      "comparison_in_scope": true
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-03-local-review.md",
+      "historical_sha256": "ddaba3d7bdc6f4c897a19de675a8f800e4171caf58f486311109c678f3fd5d4c",
+      "current_sha256": "ddaba3d7bdc6f4c897a19de675a8f800e4171caf58f486311109c678f3fd5d4c",
+      "comparison_in_scope": true
+    }
+  ],
+  "historical_sources_count": 21,
+  "historical_links_count": 26,
+  "matrix_rows": {
+    "Postgres activo": true,
+    "Sesiones": true,
+    "Links y cachés": true,
+    "CSV/descargas": true,
+    "Logs/medición/correo": true,
+    "Backup/restore": true
+  },
+  "matrix_semantic_review": "Seis capas separadas. Estado activo y revocación no equivalen a borrar copias; catálogo/jobs compartidos quedan fuera. Política JWT, concurrencia, restore post-supresión y retención son criterios futuros, no resultados probados.",
+  "artifacts": [
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/NEG-03-cuenta-requisitos.md",
+      "sha256": "79365783583653359d4abcf9c682dfd9b06cf6def20158b5f23aeef914afe20b",
+      "bytes": 23869
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/NEG-03-cuenta-review.md",
+      "sha256": "775420f054f3edb318dc21ea4c8b43d4fc395437c29f45ec94eaca6876698ef1",
+      "bytes": 6737
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/evidencia-neg03-cuenta-review/baseline-review.json",
+      "sha256": "8060f38463a01a6d358572a4bb26da499fee061d5b22e438785c892f45d73786",
+      "bytes": 6987
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/evidencia-neg03-cuenta-review/correcciones.diff",
+      "sha256": "0f99774d982f6651ac65d730a06fb4e13f651035c223efb4f38d18030e9f5737",
+      "bytes": 32976
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/evidencia-neg03-cuenta-review/validar-documentos.py",
+      "sha256": "8bde886b3418f7d01b5d6305a4de4899b2bd2807e03595b7836a1e886143b5d4",
+      "bytes": 5416
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/evidencia-neg03-cuenta-review/NEG-03-cuenta-requisitos-recibido.md",
+      "sha256": "bbf2fbc0400adfb35e9d3fad5afae88135e53223a322d49e99e8e00d06c29e03",
+      "bytes": 15910
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/evidencia-neg03-cuenta-review/baseline-selectiva-recibido.json",
+      "sha256": "62c438c1ab12bdba624dbc6ff961a8bcfea95e5d8be165ca8bf04812ca9614ec",
+      "bytes": 5123
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/evidencia-neg03-cuenta-review/validacion-documental-recibido.json",
+      "sha256": "31df72ea5e4acd3de4cf352357a3e62e845b7e352c13bf3ce986ca52778f2522",
+      "bytes": 13353
+    }
+  ],
+  "excluded_from_stability_claim": [
+    "Redis implementation/specs",
+    "backend/docs/testing.md",
+    "backend/docs/gotchas.md",
+    "central registry and orchestration state",
+    "concurrent outputs"
+  ],
+  "not_run": [
+    "tests",
+    "build",
+    "pnpm run check",
+    "API",
+    "DB",
+    "Redis",
+    "runtime",
+    "browser",
+    "email",
+    "providers",
+    "contacts",
+    "deploy",
+    "payments"
+  ],
+  "reservation_released": true
+}

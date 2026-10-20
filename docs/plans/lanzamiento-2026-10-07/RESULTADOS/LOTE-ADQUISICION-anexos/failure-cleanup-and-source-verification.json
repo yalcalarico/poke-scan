@@ -1,0 +1,25 @@
+{
+  "atUtc": "2026-10-10T14:42:37.147583+00:00",
+  "sourceHashesVerified": 623,
+  "sourceFiles": 510,
+  "sourceOrReceiptChanges": [],
+  "portsFree": {
+    "3000": true,
+    "3001": true,
+    "56396": true
+  },
+  "runtimeStarted": false,
+  "buildReached": false,
+  "ownedRuntimeResources": [],
+  "check": {
+    "backend": 414,
+    "scripts": 13,
+    "e2e": 6,
+    "frontendPassed": 548,
+    "frontendFailed": 1,
+    "totalPassed": 981,
+    "totalFailed": 1,
+    "total": 982,
+    "skipped": 0
+  }
+}

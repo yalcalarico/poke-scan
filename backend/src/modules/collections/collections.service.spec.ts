@@ -1,7 +1,17 @@
-import { ConflictException, NotFoundException } from '@nestjs/common';
+import type { PriceProvider } from '../providers/card-provider.interface.js';
+import {
+  ConflictException,
+  type ExecutionContext,
+  GoneException,
+  NotFoundException,
+  ValidationPipe,
+} from '@nestjs/common';
 import { Test, type TestingModule } from '@nestjs/testing';
 import { Prisma, PrismaClient } from '@prisma/client';
 import { PrismaService } from '../../prisma/index.js';
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard.js';
+import { CollectionsController } from './collections.controller.js';
+import { SyncPricesService } from '../../jobs/sync-prices.service.js';
 import { PRICE_PROVIDER } from '../providers/card-provider.interface.js';
 import { PortfolioService } from './portfolio.service.js';
 import { CollectionsService } from './collections.service.js';
@@ -17,6 +27,8 @@ const TEST_CARD_NO_PRICE_ID = `${TEST_CARD_PREFIX}no-price`;
 // unknowable no se reemplaza por un `COUNT(cards)`.
 const TEST_SET_ID = `${TEST_CARD_PREFIX}set-sin-total`;
 const TEST_CARD_IN_UNKNOWN_SET_ID = `${TEST_CARD_PREFIX}in-set-sin-total`;
+const TEST_EMAIL_A = 'user-a@test.local';
+const TEST_EMAIL_B = 'user-b@test.local';
 const TEST_MARKET = new Prisma.Decimal('12.50');
 const DEFAULT_LIST_ITEMS = { page: 1, pageSize: 50 } as const;
 const PRICE_PROVIDER_STUB = {
@@ -53,6 +65,7 @@ describe('CollectionsService', () => {
   });
 
   afterAll(async () => {
+    await prismaClient.user.deleteMany({ where: { email: { in: [TEST_EMAIL_A, TEST_EMAIL_B] } } });
     // Solo se borran las cartas de prueba: el catálogo lo maneja el sync.
     await prismaClient.card.deleteMany({
       where: { id: { startsWith: TEST_CARD_PREFIX } },
@@ -68,7 +81,7 @@ describe('CollectionsService', () => {
 
   beforeEach(async () => {
     await prismaClient.user.deleteMany({
-      where: { email: { endsWith: '@test.local' } },
+      where: { email: { in: [TEST_EMAIL_A, TEST_EMAIL_B] } },
     });
     await prismaClient.card.deleteMany({
       where: { id: { startsWith: TEST_CARD_PREFIX } },
@@ -77,8 +90,8 @@ describe('CollectionsService', () => {
       where: { id: { startsWith: TEST_CARD_PREFIX } },
     });
 
-    userA = (await createUser('user-a@test.local', 'usera')).id;
-    userB = (await createUser('user-b@test.local', 'userb')).id;
+    userA = (await createUser(TEST_EMAIL_A, 'usera')).id;
+    userB = (await createUser(TEST_EMAIL_B, 'userb')).id;
 
     const set = await prismaClient.cardSet.findFirst({
       orderBy: { id: 'asc' },
@@ -301,6 +314,473 @@ describe('CollectionsService', () => {
       addItem(TEST_CARD_ID, { quantity: 3 }),
     );
     expect(third.quantity).toBe(5);
+  });
+
+  it('replay con la misma clave confirma el alta sin volver a sumar; otra clave suma intencionalmente', async () => {
+    const collection = await createCollection(userA);
+    const firstKey = '4b2db49b-6ea0-4f04-9f3a-17eddfbc0434';
+    const secondKey = 'd814ebc4-5fbb-4f1e-88df-8c2012e9e66e';
+    const payload = addItem(TEST_CARD_ID, { quantity: 2 });
+
+    const first = await service.addItem(
+      userA,
+      collection.id,
+      payload,
+      firstKey,
+    );
+    const replay = await service.addItem(
+      userA,
+      collection.id,
+      payload,
+      firstKey,
+    );
+    expect(replay.id).toBe(first.id);
+    expect(replay.quantity).toBe(2);
+
+    const deliberate = await service.addItem(
+      userA,
+      collection.id,
+      payload,
+      secondKey,
+    );
+    expect(deliberate.quantity).toBe(4);
+    expect(
+      await prismaClient.collectionItemAddOperation.count({
+        where: { userId: userA },
+      }),
+    ).toBe(2);
+  });
+
+  it('reproduce el doble incremento si se pierde la respuesta de un cliente antiguo sin clave', async () => {
+    const collection = await createCollection(userA);
+    const payload = addItem(TEST_CARD_ID, { quantity: 1 });
+
+    await service.addItem(userA, collection.id, payload); // La respuesta exitosa se pierde.
+    const retry = await service.addItem(userA, collection.id, payload);
+
+    expect(retry.quantity).toBe(2);
+  });
+
+  it('dos requests concurrentes con la misma clave aplican una sola vez', async () => {
+    const collection = await createCollection(userA);
+    const key = '0a16b7c0-2436-4c74-a936-909397196c40';
+    const payload = addItem(TEST_CARD_ID, { quantity: 3 });
+
+    const [first, replay] = await Promise.all([
+      service.addItem(userA, collection.id, payload, key),
+      service.addItem(userA, collection.id, payload, key),
+    ]);
+    expect(first.id).toBe(replay.id);
+    expect(first.quantity).toBe(3);
+    expect(replay.quantity).toBe(3);
+  });
+
+  it('dos claves distintas concurrentes sobre una combinación nueva confirman ambas altas', async () => {
+    const collection = await createCollection(userA);
+    let reads = 0;
+    let releaseReads: () => void = () => undefined;
+    const bothRead = new Promise<void>((resolve) => {
+      releaseReads = resolve;
+    });
+    const concurrentPrisma = prismaClient.$extends({
+      query: {
+        collectionItem: {
+          async findUnique({ args, query }) {
+            const result = await query(args);
+            if (args.where.collectionId_cardId_variant_condition) {
+              reads += 1;
+              if (reads === 2) releaseReads();
+              // Obliga a ambas transacciones a leer la combinación ausente antes del INSERT.
+              await bothRead;
+            }
+            return result;
+          },
+        },
+      },
+    });
+    const concurrentService = new CollectionsService(
+      concurrentPrisma as unknown as PrismaService,
+      moduleRef.get(PRICE_PROVIDER),
+    );
+    const [first, second] = await Promise.all([
+      concurrentService.addItem(
+        userA,
+        collection.id,
+        addItem(TEST_CARD_ID, { quantity: 2 }),
+        '3534a116-859d-4d42-bdb6-a0fd94fdd5f7',
+      ),
+      concurrentService.addItem(
+        userA,
+        collection.id,
+        addItem(TEST_CARD_ID, { quantity: 3, isForTrade: true }),
+        '6fd26e5c-90e0-4bb5-b68e-4a3f8b11b4d0',
+      ),
+    ]);
+    expect(first.id).toBe(second.id);
+    expect(
+      await prismaClient.collectionItem.findUnique({ where: { id: first.id } }),
+    ).toMatchObject({ quantity: 5, isForTrade: true });
+    expect(
+      await prismaClient.collectionItemAddOperation.count({
+        where: { userId: userA },
+      }),
+    ).toBe(2);
+  });
+
+  it('la misma clave con otro payload responde 409 y el replay sigue sujeto a ownership', async () => {
+    const own = await createCollection(userA);
+    const foreign = await createCollection(userB);
+    const key = 'b36bf62d-b8f7-48f8-a535-52d0cf9ccff2';
+    const payload = addItem(TEST_CARD_ID);
+
+    await service.addItem(userA, own.id, payload, key);
+    await expect(
+      service.addItem(
+        userA,
+        own.id,
+        addItem(TEST_CARD_ID, { quantity: 2 }),
+        key,
+      ),
+    ).rejects.toBeInstanceOf(ConflictException);
+    await expect(
+      service.addItem(userA, foreign.id, payload, key),
+    ).rejects.toBeInstanceOf(NotFoundException);
+    expect(
+      (
+        await prismaClient.collectionItem.findFirst({
+          where: { collectionId: own.id },
+        })
+      )?.quantity,
+    ).toBe(1);
+  });
+
+  it('una clave vencida queda bloqueada y no vuelve a incrementar', async () => {
+    const collection = await createCollection(userA);
+    const key = '48c42b43-4435-40a7-84ee-3fbb109c6d4c';
+    const payload = addItem(TEST_CARD_ID);
+    await service.addItem(userA, collection.id, payload, key);
+    await prismaClient.collectionItemAddOperation.update({
+      where: { userId_key: { userId: userA, key } },
+      data: { expiresAt: new Date(Date.now() - 1) },
+    });
+
+    await expect(
+      service.addItem(userA, collection.id, payload, key),
+    ).rejects.toBeInstanceOf(GoneException);
+    await expect(
+      service.addItem(userA, collection.id, payload, key),
+    ).rejects.toBeInstanceOf(GoneException);
+    expect(
+      await prismaClient.collectionItemAddOperation.findUnique({
+        where: { userId_key: { userId: userA, key } },
+      }),
+    ).toMatchObject({ resultItemId: null });
+    expect(
+      (
+        await prismaClient.collectionItem.findFirst({
+          where: { collectionId: collection.id },
+        })
+      )?.quantity,
+    ).toBe(1);
+  });
+
+  it('el replay devuelve el total editado, sin atribuirlo al delta original ni pisar notas/intercambio', async () => {
+    const collection = await createCollection(userA);
+    const key = '3189c26e-707a-4c24-abcb-8a130dff03aa';
+    const payload = addItem(TEST_CARD_ID, {
+      quantity: 2,
+      notes: 'nota original',
+      isForTrade: true,
+    });
+    const first = await service.addItem(
+      userA,
+      collection.id,
+      payload,
+      key.toUpperCase(),
+    );
+    await service.updateItem(
+      userA,
+      first.id,
+      updateItemDto({ quantity: 7, notes: 'nota editada', isForTrade: false }),
+    );
+    expect(
+      await service.addItem(userA, collection.id, payload, key),
+    ).toMatchObject({
+      id: first.id,
+      quantity: 7,
+      notes: 'nota editada',
+      isForTrade: false,
+    });
+    expect(
+      await prismaClient.collectionItemAddOperation.count({
+        where: { userId: userA },
+      }),
+    ).toBe(1);
+  });
+
+  it('la clave está particionada por usuario pero no se reutiliza en otra colección propia', async () => {
+    const own = await createCollection(userA);
+    const another = await createCollection(userA);
+    const otherUser = await createCollection(userB);
+    const key = 'e65effc4-8d84-431f-8bf0-52bf6f2f07d3';
+    const payload = addItem(TEST_CARD_ID);
+    await service.addItem(userA, own.id, payload, key);
+    await expect(
+      service.addItem(userA, another.id, payload, key),
+    ).rejects.toBeInstanceOf(ConflictException);
+    const independent = await service.addItem(
+      userB,
+      otherUser.id,
+      payload,
+      key,
+    );
+    expect(independent).toMatchObject({
+      collectionId: otherUser.id,
+      quantity: 1,
+    });
+    expect(
+      await prismaClient.collectionItem.count({
+        where: { collectionId: another.id },
+      }),
+    ).toBe(0);
+  });
+
+  it('el hash normaliza defaults pero distingue carta, variante, condición, notas y marca', async () => {
+    const collection = await createCollection(userA);
+    const key = '5180ea69-7244-484d-bfb1-d3b2cf7d3b4d';
+    const payload = addItem(TEST_CARD_ID);
+    await service.addItem(userA, collection.id, payload, key);
+    await expect(
+      service.addItem(
+        userA,
+        collection.id,
+        addItem(TEST_CARD_ID, {
+          variant: 'normal',
+          condition: 'NM',
+          quantity: 1,
+        }),
+        key,
+      ),
+    ).resolves.toMatchObject({ quantity: 1 });
+    for (const changed of [
+      addItem(TEST_CARD_NO_PRICE_ID),
+      addItem(TEST_CARD_ID, { variant: 'holofoil' }),
+      addItem(TEST_CARD_ID, { condition: 'LP' }),
+      addItem(TEST_CARD_ID, { notes: 'otra nota' }),
+      addItem(TEST_CARD_ID, { isForTrade: true }),
+    ]) {
+      await expect(
+        service.addItem(userA, collection.id, changed, key),
+      ).rejects.toBeInstanceOf(ConflictException);
+    }
+    expect(
+      await prismaClient.collectionItem.count({
+        where: { collectionId: collection.id },
+      }),
+    ).toBe(1);
+  });
+
+  it('eliminar y recrear el ítem no permite reaplicar una operación ya confirmada', async () => {
+    const collection = await createCollection(userA);
+    const key = 'c528be8a-9010-4402-b6d8-d3c60bf86ddf';
+    const payload = addItem(TEST_CARD_ID, { quantity: 2 });
+    const first = await service.addItem(userA, collection.id, payload, key);
+    await service.removeItem(userA, first.id);
+    await expect(
+      service.addItem(userA, collection.id, payload, key),
+    ).rejects.toBeInstanceOf(GoneException);
+    const recreated = await service.addItem(userA, collection.id, payload);
+    await expect(
+      service.addItem(userA, collection.id, payload, key),
+    ).rejects.toBeInstanceOf(GoneException);
+    expect(
+      await prismaClient.collectionItem.findUnique({
+        where: { id: recreated.id },
+      }),
+    ).toMatchObject({ quantity: 2 });
+    await service.remove(userA, collection.id);
+    await expect(
+      service.addItem(userA, collection.id, payload, key),
+    ).rejects.toBeInstanceOf(NotFoundException);
+    expect(
+      await prismaClient.collectionItemAddOperation.count({
+        where: { userId: userA, key },
+      }),
+    ).toBe(1);
+  });
+
+  it('un alta inválida revierte también el registro de idempotencia', async () => {
+    const collection = await createCollection(userA);
+    const key = 'e39c9d52-0870-41d7-99bb-d508f056eadf';
+    await expect(
+      service.addItem(
+        userA,
+        collection.id,
+        addItem('test-collections-inexistente'),
+        key,
+      ),
+    ).rejects.toBeInstanceOf(NotFoundException);
+    expect(
+      await prismaClient.collectionItemAddOperation.count({
+        where: { userId: userA, key },
+      }),
+    ).toBe(0);
+    await expect(
+      service.addItem(userA, collection.id, addItem(TEST_CARD_ID), key),
+    ).resolves.toMatchObject({ quantity: 1 });
+  });
+
+  it('dos payloads concurrentes con la misma clave confirman uno y rechazan el otro', async () => {
+    const collection = await createCollection(userA);
+    const key = '7e2ac928-d2a7-494d-a5bf-442329e795ac';
+    const outcomes = await Promise.allSettled(
+      [1, 3].map((quantity) =>
+        service.addItem(
+          userA,
+          collection.id,
+          addItem(TEST_CARD_ID, { quantity }),
+          key,
+        ),
+      ),
+    );
+    expect(
+      outcomes.filter((outcome) => outcome.status === 'fulfilled'),
+    ).toHaveLength(1);
+    const rejected = outcomes.find((outcome) => outcome.status === 'rejected');
+    expect(rejected?.reason).toBeInstanceOf(ConflictException);
+    const fulfilled = outcomes.find(
+      (outcome) => outcome.status === 'fulfilled',
+    );
+    expect(
+      await prismaClient.collectionItem.findFirst({
+        where: { collectionId: collection.id },
+      }),
+    ).toMatchObject({ quantity: fulfilled?.value.quantity });
+  });
+
+  it('un alta idempotente conserva notas existentes y solo abre la marca de intercambio', async () => {
+    const collection = await createCollection(userA);
+    const first = await service.addItem(
+      userA,
+      collection.id,
+      addItem(TEST_CARD_ID, { notes: 'conservar' }),
+    );
+    await service.addItem(
+      userA,
+      collection.id,
+      addItem(TEST_CARD_ID, { notes: 'no reemplazar', isForTrade: true }),
+      'a06750fb-c6c9-4b79-88c6-114f2fba3c55',
+    );
+    await service.addItem(
+      userA,
+      collection.id,
+      addItem(TEST_CARD_ID, { isForTrade: false }),
+      'd6b9cb93-cb69-4ff2-962c-b58874a611cb',
+    );
+    expect(
+      await prismaClient.collectionItem.findUnique({ where: { id: first.id } }),
+    ).toMatchObject({ quantity: 3, notes: 'conservar', isForTrade: true });
+  });
+
+  it('HTTP real: perder la respuesta y repetir la clave confirma el mismo alta sin duplicarla', async () => {
+    const collection = await createCollection(userA);
+    const key = '4b564c9d-2f7b-4ef7-ab5e-20f2f3d9b647';
+    const payload = { cardId: TEST_CARD_ID, quantity: 2 };
+    const httpModule = await Test.createTestingModule({
+      controllers: [CollectionsController],
+      providers: [
+        { provide: CollectionsService, useValue: service },
+        { provide: PortfolioService, useValue: {} },
+      ],
+    })
+      .overrideGuard(JwtAuthGuard)
+      .useValue({
+        canActivate(context: ExecutionContext) {
+          context.switchToHttp().getRequest<{ user: { sub: string } }>().user =
+            { sub: userA };
+          return true;
+        },
+      })
+      .compile();
+    const app = httpModule.createNestApplication();
+    app.useGlobalPipes(
+      new ValidationPipe({ whitelist: true, transform: true }),
+    );
+    try {
+      await app.listen(0, '127.0.0.1');
+      const url = `${await app.getUrl()}/collections/${collection.id}/items`;
+      const post = () =>
+        fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Idempotency-Key': key,
+          },
+          body: JSON.stringify(payload),
+        });
+      // Descarta el resultado confirmado; el cliente conserva solo clave y payload.
+      await (await post()).body?.cancel();
+      const replay = await post();
+      expect(replay.status).toBe(201);
+      expect(await replay.json()).toMatchObject({
+        collectionId: collection.id,
+        quantity: 2,
+      });
+      expect(
+        await prismaClient.collectionItem.findFirst({
+          where: { collectionId: collection.id },
+        }),
+      ).toMatchObject({ quantity: 2 });
+      expect(
+        await prismaClient.collectionItemAddOperation.count({
+          where: { userId: userA, key },
+        }),
+      ).toBe(1);
+    } finally {
+      await app.close();
+    }
+  });
+
+  it('fallos de precios después del commit no ocultan el alta ni rompen su replay', async () => {
+    const collection = await createCollection(userA);
+    const failingPricesPrisma = prismaClient.$extends({
+      query: {
+        $queryRaw({ args, query }) {
+          const statement: unknown = Array.isArray(args) ? args[0] : args;
+          if (
+            typeof statement === 'object' &&
+            statement !== null &&
+            'sql' in statement &&
+            typeof statement.sql === 'string' &&
+            statement.sql.includes('FROM card_prices')
+          ) {
+            throw new Error('consulta de precios caída');
+          }
+          return query(args);
+        },
+      },
+    });
+    const enqueueRefresh = vi.fn(() => {
+      throw new Error('cola caída');
+    });
+    const withFailingPrices = new CollectionsService(
+      failingPricesPrisma as unknown as PrismaService,
+      moduleRef.get(PRICE_PROVIDER),
+      { enqueueRefresh } as unknown as SyncPricesService,
+    );
+    const payload = addItem(TEST_CARD_ID, { quantity: 2 });
+    const key = 'c7c8b0a6-9f3f-4fe1-8a87-1b50d09f23ee';
+    const first = await withFailingPrices.addItem(
+      userA,
+      collection.id,
+      payload,
+      key,
+    );
+    expect(first).toMatchObject({ quantity: 2, price: null });
+    expect(
+      await withFailingPrices.addItem(userA, collection.id, payload, key),
+    ).toMatchObject({ id: first.id, quantity: 2, price: null });
+    expect(enqueueRefresh).toHaveBeenCalledTimes(2);
   });
 
   /*
@@ -561,7 +1041,7 @@ describe('CollectionsService', () => {
     const collection = await createCollection(userA);
     const stats = await service.getStats(userA, collection.id);
 
-    expect(stats).toEqual({
+    expect(stats).toMatchObject({
       totalCards: 0,
       uniqueCards: 0,
       duplicateCards: 0,
@@ -569,6 +1049,7 @@ describe('CollectionsService', () => {
       totalValueUsd: 0,
       totalValueArs: null,
       cardsMissingPrice: 0,
+      valuation: { amount: 0, currency: 'USD', coverage: { totalCopies: 0, pricedCopies: 0, unpricedCopies: 0, coverageRatio: null }, recency: { freshness: 'unknown', upstreamFreshness: 'unknown', freshCopies: 0, staleCopies: 0, unknownFreshnessCopies: 0 } },
     });
   });
 
@@ -704,6 +1185,54 @@ describe('CollectionsService', () => {
     });
   });
 
+
+  it('BE-04 valúa el scope completo con variante/fuente exactas, nulos, cero y recencia por copias', async () => {
+    const now = new Date('2026-10-08T12:00:00.000Z');
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(now);
+    try {
+      const collection = await createCollection(userA);
+      const prices = [
+        { variant: 'normal', market: 10, fetchedAt: new Date(now.getTime() - 86399999) },
+        { variant: 'holofoil', market: 4, fetchedAt: new Date(now.getTime() - 86400000) },
+        { variant: 'reverseHolofoil', market: 6, fetchedAt: new Date(now.getTime() + 1) },
+        { variant: 'firstEditionHolofoil', market: 0, fetchedAt: now },
+        { variant: 'firstEditionNormal', market: 100, fetchedAt: new Date(now.getTime() - 1) },
+        { variant: 'firstEditionNormal', market: null, fetchedAt: now },
+      ];
+      await prismaClient.cardPrice.createMany({ data: prices.map((price) => ({ ...price, cardId: TEST_CARD_ID, mid: 500, provider: 'tcgdex', source: 'tcgplayer', currency: 'USD' })) });
+      await prismaClient.cardPrice.createMany({ data: [
+        { cardId: TEST_CARD_ID, variant: 'normal', market: 999, provider: 'other', source: 'tcgplayer', currency: 'USD', fetchedAt: new Date(now.getTime() + 10) },
+        { cardId: TEST_CARD_ID, variant: 'normal', market: 888, provider: 'tcgdex', source: 'cardmarket', currency: 'USD', fetchedAt: new Date(now.getTime() + 10) },
+        { cardId: TEST_CARD_ID, variant: 'normal', market: 777, provider: 'tcgdex', source: 'tcgplayer', currency: 'EUR', fetchedAt: new Date(now.getTime() + 10) },
+      ] });
+      for (const [variant, quantity] of [['normal', 2], ['holofoil', 3], ['reverseHolofoil', 4], ['firstEditionHolofoil', 6], ['firstEditionNormal', 2]] as const) {
+        await service.addItem(userA, collection.id, addItem(TEST_CARD_ID, { variant, quantity }));
+      }
+      await service.addItem(userA, collection.id, addItem(TEST_CARD_NO_PRICE_ID, { quantity: 5 }));
+      const expected = { amount: 56, evaluatedAt: now.toISOString(), coverage: { totalCopies: 22, pricedCopies: 15, unpricedCopies: 7, coverageRatio: 15 / 22 },
+        recency: { freshness: 'mixed', freshCopies: 8, staleCopies: 3, unknownFreshnessCopies: 4, oldestFetchedAt: new Date(now.getTime() - 86400000).toISOString(), newestFetchedAt: now.toISOString() } };
+      expect((await service.findOne(userA, collection.id)).valuation).toMatchObject(expected);
+      expect((await service.getStats(userA, collection.id)).valuation).toMatchObject(expected);
+      const filtered = await service.listItems(userA, collection.id, { ...DEFAULT_LIST_ITEMS, search: 'charizard' });
+      expect(filtered.data).toHaveLength(1);
+      expect((await service.findOne(userA, collection.id)).valuation).toMatchObject(expected);
+      const items = await service.listItems(userA, collection.id, DEFAULT_LIST_ITEMS);
+      expect(items.data.find((item) => item.variant === 'firstEditionNormal')?.price).toMatchObject({ market: null, mid: 500 });
+      expect(items.data.find((item) => item.variant === 'firstEditionHolofoil')?.price).toMatchObject({ market: 0, freshness: 'fresh' });
+      const portfolio = new PortfolioService(prismaClient as unknown as PrismaService, PRICE_PROVIDER_STUB as PriceProvider);
+      await prismaClient.portfolioSnapshot.create({ data: { userId: userA, day: new Date('2026-10-07T00:00:00.000Z'), valueUsd: 10, totalCards: 4, unpricedCards: 2 } });
+      const result = await portfolio.summary(userA);
+      expect(result.valuation).toMatchObject(expected);
+      expect(result.valueUsd).toBe(56);
+      expect(result.topCards.find((card) => card.variant === 'normal')?.reference).toMatchObject({ provider: 'tcgdex', source: 'tcgplayer', currency: 'USD', fetchedAt: new Date(now.getTime() - 86399999).toISOString(), freshness: 'fresh', evaluatedAt: now.toISOString() });
+      expect(result.topCards.find((card) => card.variant === 'reverseHolofoil')?.reference.freshness).toBe('unknown');
+      expect(result.history[0]?.valuation).toMatchObject({ amount: 10, evaluatedAt: null, recency: null, coverage: { totalCopies: 4, pricedCopies: 2, unpricedCopies: 2, coverageRatio: 0.5 } });
+      await portfolio.summary(userA);
+      expect(await prismaClient.portfolioSnapshot.count({ where: { userId: userA, day: new Date('2026-10-08T00:00:00.000Z') } })).toBe(1);
+    } finally { vi.useRealTimers(); }
+  });
+
   it('updateItem cambia quantity y isForTrade, y da 409 si choca con el unique', async () => {
     const collection = await createCollection(userA);
     const normal = await service.addItem(
@@ -813,6 +1342,8 @@ describe('CollectionsService · cover de portada (B9)', () => {
   const CARD_C = `${PREFIX}c`;
   const CARD_D = `${PREFIX}d`;
   const CARD_E = `${PREFIX}e`;
+  const TEST_EMAIL = 'b9@test.local';
+  const OTHER_TEST_EMAIL = 'b9-otro@test.local';
 
   let moduleRef: TestingModule;
   let service: CollectionsService;
@@ -833,19 +1364,19 @@ describe('CollectionsService · cover de portada (B9)', () => {
 
   afterAll(async () => {
     await prismaClient.card.deleteMany({ where: { id: { startsWith: PREFIX } } });
-    await prismaClient.user.deleteMany({ where: { email: { endsWith: '@test.local' } } });
+    await prismaClient.user.deleteMany({ where: { email: { in: [TEST_EMAIL, OTHER_TEST_EMAIL] } } });
     await prismaClient.$disconnect();
     await moduleRef.close();
   });
 
   beforeEach(async () => {
-    await prismaClient.user.deleteMany({ where: { email: { endsWith: '@test.local' } } });
+    await prismaClient.user.deleteMany({ where: { email: { in: [TEST_EMAIL, OTHER_TEST_EMAIL] } } });
     await prismaClient.card.deleteMany({ where: { id: { startsWith: PREFIX } } });
 
     userId = (
       await prismaClient.user.create({
         data: {
-          email: 'b9@test.local',
+          email: TEST_EMAIL,
           username: 'b9user',
           passwordHash: 'fake-hash-not-used-in-these-tests',
           displayName: 'b9',
@@ -961,7 +1492,7 @@ describe('CollectionsService · cover de portada (B9)', () => {
 
     const other = await prismaClient.user.create({
       data: {
-        email: 'b9-otro@test.local',
+        email: OTHER_TEST_EMAIL,
         username: 'b9otro',
         passwordHash: 'fake-hash-not-used-in-these-tests',
         displayName: 'otro',
@@ -1143,6 +1674,7 @@ describe('CollectionsService · orden del listado y location de carta', () => {
   const RICH = `${PREFIX}rich`; // número 104, market 30
   const NO_PRICE = `${PREFIX}no-price`; // número 40, sin filas de precio
   const TEST_EMAIL = 'sort@b910.local';
+  const OTHER_TEST_EMAIL = 'otro@b910.local';
 
   let moduleRef: TestingModule;
   let service: CollectionsService;
@@ -1164,13 +1696,13 @@ describe('CollectionsService · orden del listado y location de carta', () => {
 
   afterAll(async () => {
     await prismaClient.card.deleteMany({ where: { id: { startsWith: PREFIX } } });
-    await prismaClient.user.deleteMany({ where: { email: { endsWith: '@b910.local' } } });
+    await prismaClient.user.deleteMany({ where: { email: { in: [TEST_EMAIL, OTHER_TEST_EMAIL] } } });
     await prismaClient.$disconnect();
     await moduleRef.close();
   });
 
   beforeEach(async () => {
-    await prismaClient.user.deleteMany({ where: { email: { endsWith: '@b910.local' } } });
+    await prismaClient.user.deleteMany({ where: { email: { in: [TEST_EMAIL, OTHER_TEST_EMAIL] } } });
     await prismaClient.card.deleteMany({ where: { id: { startsWith: PREFIX } } });
 
     userId = (
@@ -1383,7 +1915,7 @@ describe('CollectionsService · orden del listado y location de carta', () => {
 
     const other = await prismaClient.user.create({
       data: {
-        email: 'otro@b910.local',
+        email: OTHER_TEST_EMAIL,
         username: 'otro',
         passwordHash: 'fake-hash-not-used-in-these-tests',
         displayName: 'otro',

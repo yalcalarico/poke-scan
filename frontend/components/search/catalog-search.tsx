@@ -2,8 +2,9 @@
 
 import { Compass, Search, SearchX } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
+import { MotionGrid } from '@/components/visual-preview/effects';
 import { CardGrid } from '@/components/cards/card-grid';
 import {
   Alert,
@@ -69,6 +70,8 @@ const RESULTS_CHUNK = 60;
  */
 export function CatalogSearch() {
   const router = useRouter();
+  const pathname = usePathname();
+  const catalogPath = pathname === '/buscar-v2' ? '/buscar-v2' : '/buscar';
   const searchParams = useSearchParams();
 
   const urlQuery = searchParams.get('q') ?? '';
@@ -172,11 +175,11 @@ export function CatalogSearch() {
       pendingSearchParamsRef.current = queryString;
       // `scroll: false` es obligatorio: sin eso, cada tecla que pasa el debounce
       // saltaba al top de la página.
-      router.push(queryString ? `/buscar?${queryString}` : `/buscar`, {
+      router.push(queryString ? `${catalogPath}?${queryString}` : catalogPath, {
         scroll: false,
       });
     },
-    [router],
+    [router, catalogPath],
   );
 
   /** Escribe la query en la URL marcando que el cambio es nuestro. */
@@ -330,22 +333,22 @@ export function CatalogSearch() {
         setsLoading={sets.status === 'loading'}
         setsError={sets.status === 'error' ? sets.error : null}
         onClearFilters={clearFilterParams}
-      />
-
-      <CardResults
-        key={listKey}
-        returnHref={`/buscar${searchParams.toString() ? `?${searchParams.toString()}` : ''}`}
-        query={urlQuery.trim()}
-        searchBy={urlSearchBy}
-        setId={urlSetId}
-        rarity={urlRarity}
-        initialPage={urlPage}
-        sort={urlSort}
-        direction={urlDirection}
-        hasCriteria={hasCriteria}
-        listKey={listKey}
-        onClearFilters={clearFilters}
-      />
+      >
+        <CardResults
+          key={listKey}
+          returnHref={`${catalogPath}${searchParams.toString() ? `?${searchParams.toString()}` : ''}`}
+          query={urlQuery.trim()}
+          searchBy={urlSearchBy}
+          setId={urlSetId}
+          rarity={urlRarity}
+          initialPage={urlPage}
+          sort={urlSort}
+          direction={urlDirection}
+          hasCriteria={hasCriteria}
+          listKey={listKey}
+          onClearFilters={clearFilters}
+        />
+      </SearchControls>
     </div>
   );
 }
@@ -571,7 +574,7 @@ function CardResults({
 
       {/* 1 · loading — el skeleton tiene la forma real de la grilla, no la de un
           rectángulo (§9.1). */}
-      {isLoading ? <CardGridSkeleton count={CATALOG_PAGE_SIZE} /> : null}
+      {isLoading ? <CardGridSkeleton count={CATALOG_PAGE_SIZE} className="lg:grid-cols-3 xl:grid-cols-4" /> : null}
 
       {/* 2 · error */}
       {error !== null && items.length === 0 ? (
@@ -617,13 +620,17 @@ function CardResults({
       {/* 5 · ready */}
       {itemsToRender.length > 0 ? (
         <div ref={gridRef}>
+          <MotionGrid>
           <CardGrid
             entries={itemsToRender.map((card) => ({
               card,
               href: `/carta/${encodeURIComponent(card.id)}?returnTo=${encodeURIComponent(returnHref)}`,
             }))}
             label="Resultados de la búsqueda"
+            className="lg:grid-cols-3 xl:grid-cols-4"
+            sizes="(max-width: 639px) 46vw, (max-width: 767px) 31vw, (max-width: 1023px) 23vw, (max-width: 1279px) 23vw, 200px"
           />
+          </MotionGrid>
         </div>
       ) : null}
 

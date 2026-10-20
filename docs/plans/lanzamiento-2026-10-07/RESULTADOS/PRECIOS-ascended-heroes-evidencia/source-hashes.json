@@ -1,0 +1,7 @@
+{
+  "backend/src/jobs/tcgcsv/tcgcsv.adapter.ts": "7ef1132fcb1562b7708dd38e35de4992b9d540046caa984fb5bea8fcd047142a",
+  "backend/src/jobs/tcgcsv/tcgcsv.client.ts": "57fa5a59109c62a3afb97335dd592b95fa6be76168d5f70f260b757bc62502c7",
+  "backend/src/jobs/tcgcsv/tcgcsv.adapter.spec.ts": "edb211faba75273abda84f7930093ebe9bec9e197b3d9a90ba4f92b7710a1559",
+  "backend/src/jobs/tcgcsv/tcgcsv.client.spec.ts": "a01adf46aa75888fd23afcdb6494b3a7d87639f27653ebfb4aa56c525aeea2ba",
+  "backend/docs/pricing.md": "83bd85d2308d93a1a5dbcabc09635ed58a4cb176f3414c0cee27c623918ba3ff"
+}

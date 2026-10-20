@@ -1,0 +1,15 @@
+{
+  "selectedBaselineFiles": 532,
+  "capturedAfterDispatch": true,
+  "notFullPreTaskDirtySnapshot": true,
+  "changedSelectedFiles": [
+    "scripts/inf03-transfer.mjs",
+    "scripts/inf03-transfer-common.mjs",
+    "package.json"
+  ],
+  "taskFilesOutsideBaseline": [
+    "scripts/inf03-transfer.test.mjs",
+    "infra/inf03/TRANSFER-LOCAL.md"
+  ],
+  "noUnrelatedSelectedDelta": true
+}

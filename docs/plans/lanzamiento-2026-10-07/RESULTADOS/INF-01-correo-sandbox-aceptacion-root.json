@@ -1,0 +1,13 @@
+{
+  "checkedAtUtc": "2026-10-09T19:31:08.737193+00:00",
+  "decision": "Propuesta INF-01 correo local aceptada documentalmente como handoff de implementación BE-05; no sandbox funcional ni cierre IDs/gate BE-07",
+  "sourceCountBeforeCentralConsolidation": 12,
+  "artifactHashesVerified": 9,
+  "localLinkTargetsChecked": 20,
+  "mismatches": [],
+  "documentSha256": "a9deea1a9883d81caf5b761bf4a93706fb1551773376117157f5e3917b4ebad7",
+  "reportSha256": "eb33249368f60900985059e7c68a302f26d73e3e5a3e7c86b32b2f77fa4eaf8a",
+  "semanticReview": "Root leyó revisión y propuesta: autoridad PG distinta de caseGeneration, fixtures previas/cupos, deadline2s y lease120s/cap32 propuestos, DI/loopback/owner-marker/allowlist, tickets comunes prelookup, evidencia segura y cancelación cooperativa; sólo requisitos futuros.",
+  "testsRuntimeExecutedByRoot": false,
+  "resourcesCreated": false
+}

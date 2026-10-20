@@ -1,0 +1,39 @@
+{
+  "reviewer": "Sol HIGH",
+  "accessDateLocal": "2026-10-08",
+  "accessDateUtc": "2026-10-09",
+  "recordedAtUtc": "2026-10-09T00:54:56.008728+00:00",
+  "method": "web tool open de ambas URLs, luego find en generateMetadata; sin browser de producto ni páginas completas archivadas",
+  "sources": [
+    {
+      "url": "https://nextjs.org/docs/app/api-reference/file-conventions/metadata/opengraph-image",
+      "retrieved": true,
+      "pageLastUpdated": "2026-07-09",
+      "siteVersionShown": "16.4.0",
+      "checkedClaims": [
+        "convención por segmento",
+        "tags automáticos para imágenes estáticas o generadas",
+        "alt/size/contentType",
+        "1200x630 como ejemplo de documentación",
+        "optimización estática default condicionada a APIs de request/datos no cacheados"
+      ]
+    },
+    {
+      "url": "https://nextjs.org/docs/app/api-reference/functions/generate-metadata",
+      "retrieved": true,
+      "pageLastUpdated": "2026-08-19",
+      "siteVersionShown": "16.4.0",
+      "checkedClaims": [
+        "metadataBase compone URL absoluta con ruta relativa",
+        "metadata por archivo tiene prioridad",
+        "combinación superficial; objeto openGraph de hijo reemplaza padre"
+      ]
+    }
+  ],
+  "limits": [
+    "web actual no cambia Next instalado 16.3.6",
+    "documentación no es prueba de runtime",
+    "sin Google/Search Console/volúmenes ni claims de precisión",
+    "sin abrir fuentes externas de RES-04 ni emitir dictamen jurídico"
+  ]
+}

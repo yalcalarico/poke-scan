@@ -1,0 +1,200 @@
+diff --git a/frontend/app/layout.tsx b/frontend/app/layout.tsx
+index 6ca0ccb..fccf227 100644
+--- a/frontend/app/layout.tsx
++++ b/frontend/app/layout.tsx
+@@ -57,6 +57,86 @@ const DEV_SERVICE_WORKER_CLEANUP = `
+ })();
+ `;
+ 
++/** Captura el fragmento antes de hidratar; no se vuelve a ejecutar en rutas cliente. */
++const RECOVERY_CAPTURE_SCRIPT = `
++(() => {
++  const key = 'pcsRecoveryView';
++  let token = null;
++  let snapshot = { mode: 'request', token: null };
++  const emit = (mode, value = null) => {
++    snapshot = { mode, token: value };
++    window.dispatchEvent(new Event('pcs:recovery-view'));
++  };
++  const isRecovery = (url) => url.origin === location.origin && url.pathname.replace(/\\/$/, '') === '/recuperar';
++  const publishEntry = () => {
++    if (!isRecovery(new URL(location.href))) {
++      token = null;
++      return;
++    }
++    const hash = location.hash;
++    if (hash) {
++      const match = /^#token=([A-Za-z0-9_-]{43})$/.exec(hash);
++      const nextState = Object.assign({}, history.state && typeof history.state === 'object' ? history.state : {});
++      nextState[key] = 'link';
++      try {
++        history.replaceState(nextState, '', location.pathname + location.search);
++      } catch {
++        token = null;
++        emit('blocked');
++        return;
++      }
++      token = match ? match[1] : null;
++      emit(match ? 'link' : 'invalid', token);
++      return;
++    }
++    token = null;
++    if (history.state && history.state[key] === 'link') emit('unavailable');
++    else emit('request');
++  };
++  const manager = {
++    snapshot: () => snapshot,
++    subscribe: () => () => {},
++    startRequest: () => {
++      token = null;
++      const nextState = Object.assign({}, history.state && typeof history.state === 'object' ? history.state : {});
++      delete nextState[key];
++      try {
++        history.replaceState(nextState, '', location.pathname + location.search);
++      } catch {
++        emit('blocked');
++        return;
++      }
++      emit('request');
++    },
++  };
++  window.__pcsRecoveryManager = manager;
++  const nativePush = history.pushState.bind(history);
++  const nativeReplace = history.replaceState.bind(history);
++  const checkNavigation = (before) => {
++    const after = new URL(location.href);
++    if (before.pathname !== after.pathname || before.hash !== after.hash) {
++      if (isRecovery(after)) publishEntry();
++      else { token = null; emit('request'); }
++    }
++  };
++  history.pushState = function(state, unused, url) {
++    const before = new URL(location.href);
++    nativePush(state, unused, url);
++    checkNavigation(before);
++  };
++  history.replaceState = function(state, unused, url) {
++    const before = new URL(location.href);
++    nativeReplace(state, unused, url);
++    checkNavigation(before);
++  };
++  window.addEventListener('popstate', publishEntry);
++  window.addEventListener('hashchange', publishEntry);
++  window.addEventListener('pageshow', (event) => { if (event.persisted) publishEntry(); });
++  window.addEventListener('pagehide', () => { token = null; if (snapshot.mode === 'link') emit('unavailable'); });
++  publishEntry();
++})();
++`;
++
+ export const metadata: Metadata = {
+   /**
+    * `template` y no un título fijo: cada pantalla pone el suyo y el nombre de
+@@ -142,6 +222,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
+             {DEV_SERVICE_WORKER_CLEANUP}
+           </Script>
+         ) : null}
++        <Script id="pcs-recovery-fragment-capture" strategy="beforeInteractive">
++          {RECOVERY_CAPTURE_SCRIPT}
++        </Script>
+       </head>
+       {/*
+         El `<body>` no lleva `bg-*`: el fondo lo pone `globals.css` con el
+diff --git a/frontend/hooks/use-auth.tsx b/frontend/hooks/use-auth.tsx
+index 3427842..0d69e6d 100644
+--- a/frontend/hooks/use-auth.tsx
++++ b/frontend/hooks/use-auth.tsx
+@@ -17,7 +17,7 @@ import {
+   register as registerRequest,
+   type RegisterPayload,
+ } from '@/lib/api';
+-import { hasSession } from '@/lib/api/token-storage';
++import { clearTokens, getSessionEpoch, hasSession } from '@/lib/api/token-storage';
+ import type { UserDto } from '@/types/api';
+ 
+ export interface AuthContextValue {
+@@ -28,6 +28,7 @@ export interface AuthContextValue {
+   register: (payload: RegisterPayload) => Promise<UserDto>;
+   logout: () => Promise<void>;
+   refreshUser: () => Promise<UserDto | null>;
++  clearSession: (expectedEpoch: number) => boolean;
+ }
+ 
+ const AuthContext = createContext<AuthContextValue | null>(null);
+@@ -47,37 +48,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
+    * un refresh al volver de la PWA) dejaba la app colgada en el skeleton.
+    */
+   const refreshUser = useCallback(async (): Promise<UserDto | null> => {
++    const epoch = getSessionEpoch();
+     if (!hasSession()) {
+-      setUser(null);
+-      setIsLoading(false);
++      if (getSessionEpoch() === epoch) { setUser(null); setIsLoading(false); }
+       return null;
+     }
+     try {
+       const me = await getMe();
++      if (getSessionEpoch() !== epoch) return null;
+       setUser(me);
+       return me;
+     } catch {
+-      setUser(null);
++      if (getSessionEpoch() === epoch) setUser(null);
+       return null;
+     } finally {
+-      setIsLoading(false);
++      if (getSessionEpoch() === epoch) setIsLoading(false);
+     }
+   }, []);
+ 
+   useEffect(() => {
+     let cancelled = false;
+     const bootstrap = async () => {
++      const epoch = getSessionEpoch();
+       if (!hasSession()) {
+-        if (!cancelled) setIsLoading(false);
++        if (!cancelled && getSessionEpoch() === epoch) setIsLoading(false);
+         return;
+       }
+       try {
+         const me = await getMe();
+-        if (!cancelled) setUser(me);
++        if (!cancelled && getSessionEpoch() === epoch) setUser(me);
+       } catch {
+-        if (!cancelled) setUser(null);
++        if (!cancelled && getSessionEpoch() === epoch) setUser(null);
+       } finally {
+-        if (!cancelled) setIsLoading(false);
++        if (!cancelled && getSessionEpoch() === epoch) setIsLoading(false);
+       }
+     };
+     void bootstrap();
+@@ -104,10 +107,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
+     try {
+       await logoutRequest();
+     } finally {
+-      setUser(null);
++      if (!hasSession()) setUser(null);
+     }
+   }, []);
+ 
++  const clearSession = useCallback((expectedEpoch: number) => {
++    if (!clearTokens(expectedEpoch)) return false;
++    setUser(null);
++    setIsLoading(false);
++    return true;
++  }, []);
++
+   const value = useMemo<AuthContextValue>(
+     () => ({
+       user,
+@@ -117,8 +127,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
+       register,
+       logout,
+       refreshUser,
++      clearSession,
+     }),
+-    [user, isLoading, login, register, logout, refreshUser],
++    [user, isLoading, login, register, logout, refreshUser, clearSession],
+   );
+ 
+   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

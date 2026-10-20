@@ -1,0 +1,330 @@
+{
+  "ticket": "INF-02",
+  "reviewer": "GPT-6.1 Sol HIGH",
+  "gate": "OPERACION_PENDIENTE",
+  "project": "inf02-review-cebe674d28b5c53b",
+  "observations": {
+    "fullBundle": {
+      "artifactId": "dinov2-small-int8-8b1f705a3a7f6f062f6bdd21986c1583d3ef105d-fedc566773ff",
+      "entries": 20670,
+      "collections": 175,
+      "manifestSha256": "fe610634bb9839d45a8283197adefa79e4dc13e4923bf5609084cfdbf7f26504",
+      "treeSha256": "fedc566773ffe3735fae3dd30e087f298cee797d9536aa0a590b40d9b8fa6dd4"
+    },
+    "singleBundle": {
+      "artifactId": "dinov2-small-int8-8b1f705a3a7f6f062f6bdd21986c1583d3ef105d-5a2f58fc7842",
+      "entries": 1,
+      "collections": 1,
+      "manifestSha256": "515c5a56020a4a33ce657a19937c087af63bf4464ea2b3dd017aa7a4a010d5cf",
+      "treeSha256": "5a2f58fc7842725541dae438eb27ff142aaf39d0a9ddb79a10c5980d5127a98d"
+    },
+    "model": {
+      "path": "model/dinov2-small-int8.onnx",
+      "bytes": 24446700,
+      "sha256": "c179f8f7f592449c4c1bca4cd124a7538021428c5ffb89afde9503935b197efb"
+    },
+    "platform": {
+      "buildHost": {
+        "os": "darwin",
+        "arch": "arm64"
+      },
+      "target": {
+        "os": "linux",
+        "arch": "arm64"
+      }
+    },
+    "imageIds": [
+      {
+        "id": "sha256:1e92edf09a920cf1e42017644cf054a11b90b20d2d54ef6bf41dd58dd6c647f3",
+        "arch": "arm64",
+        "user": "nextjs"
+      },
+      {
+        "id": "sha256:c89a6a501f8929b82ff562c8b3e06e8337f6d53beaf0f744bd0395e6d8241c5f",
+        "arch": "arm64",
+        "user": "nextjs"
+      }
+    ],
+    "fullWarmup": {
+      "generation": 1,
+      "attempt": 1,
+      "state": "ready",
+      "elapsedMs": 2456
+    },
+    "coldStartMs": 32737,
+    "services": [
+      {
+        "service": "backend",
+        "state": "running",
+        "health": "healthy"
+      },
+      {
+        "service": "db",
+        "state": "running",
+        "health": "healthy"
+      },
+      {
+        "service": "frontend",
+        "state": "running",
+        "health": "healthy"
+      },
+      {
+        "service": "gateway",
+        "state": "running",
+        "health": ""
+      },
+      {
+        "service": "redis",
+        "state": "running",
+        "health": "healthy"
+      }
+    ],
+    "readiness": {
+      "status": 200,
+      "body": {
+        "status": "ready",
+        "degraded": false,
+        "detail": {
+          "database": {
+            "state": "ready"
+          },
+          "scanner": {
+            "state": "ready",
+            "busy": false
+          },
+          "redis": {
+            "state": "ready"
+          }
+        }
+      },
+      "noStore": true
+    },
+    "auth": {
+      "register": 201,
+      "refresh": 200,
+      "refreshRotated": true,
+      "cookieAttributes": [
+        "Secure",
+        "HttpOnly",
+        "SameSite=Lax",
+        "Path=/api/auth",
+        "host-only"
+      ],
+      "scannerWithoutBearer": 401,
+      "scannerCookieSent": false,
+      "scannerWithBearer": 200,
+      "references": 1,
+      "candidateMatched": true,
+      "accuracyClaimed": false
+    },
+    "ssr": {
+      "share": 200,
+      "card": 200,
+      "shareNoindex": true,
+      "privateHostnameLeaked": false,
+      "cardId": "sv3pt5-1"
+    },
+    "native": {
+      "uid": 1001,
+      "node": "v22.20.0",
+      "onnxImport": true,
+      "sharpPng": true,
+      "argon2": true,
+      "prismaSelect1": true
+    },
+    "egress": "egress-blocked",
+    "browserStatic": {
+      "files": 44,
+      "privateHostFound": false,
+      "publicPng": true
+    },
+    "readOnlyArtifact": true,
+    "privateNetwork": true,
+    "recreate": {
+      "changedGeneration": true,
+      "status": 200,
+      "gateExit": 0
+    },
+    "cleanup": {
+      "resources": "absent-after-label-verification",
+      "operatorBundlePreserved": true,
+      "unrelatedRunningContainersPreserved": true
+    }
+  },
+  "previousAttempt": {
+    "ticket": "INF-02",
+    "reviewer": "GPT-6.1 Sol HIGH",
+    "gate": "OPERACION_PENDIENTE",
+    "project": "inf02-review-bdb5fc199db0e1a7",
+    "observations": {
+      "fullBundle": {
+        "artifactId": "dinov2-small-int8-8b1f705a3a7f6f062f6bdd21986c1583d3ef105d-fedc566773ff",
+        "entries": 20670,
+        "collections": 175,
+        "manifestSha256": "fe610634bb9839d45a8283197adefa79e4dc13e4923bf5609084cfdbf7f26504",
+        "treeSha256": "fedc566773ffe3735fae3dd30e087f298cee797d9536aa0a590b40d9b8fa6dd4"
+      },
+      "singleBundle": {
+        "artifactId": "dinov2-small-int8-8b1f705a3a7f6f062f6bdd21986c1583d3ef105d-5a2f58fc7842",
+        "entries": 1,
+        "collections": 1,
+        "manifestSha256": "515c5a56020a4a33ce657a19937c087af63bf4464ea2b3dd017aa7a4a010d5cf",
+        "treeSha256": "5a2f58fc7842725541dae438eb27ff142aaf39d0a9ddb79a10c5980d5127a98d"
+      },
+      "model": {
+        "path": "model/dinov2-small-int8.onnx",
+        "bytes": 24446700,
+        "sha256": "c179f8f7f592449c4c1bca4cd124a7538021428c5ffb89afde9503935b197efb"
+      },
+      "platform": {
+        "buildHost": {
+          "os": "darwin",
+          "arch": "arm64"
+        },
+        "target": {
+          "os": "linux",
+          "arch": "arm64"
+        }
+      },
+      "imageIds": [
+        {
+          "id": "sha256:1e92edf09a920cf1e42017644cf054a11b90b20d2d54ef6bf41dd58dd6c647f3",
+          "arch": "arm64",
+          "user": "nextjs"
+        },
+        {
+          "id": "sha256:c89a6a501f8929b82ff562c8b3e06e8337f6d53beaf0f744bd0395e6d8241c5f",
+          "arch": "arm64",
+          "user": "nextjs"
+        }
+      ],
+      "fullWarmup": {
+        "generation": 1,
+        "attempt": 1,
+        "state": "ready",
+        "elapsedMs": 2326
+      },
+      "resumedOwnedStack": true,
+      "services": [
+        {
+          "service": "backend",
+          "state": "running",
+          "health": "healthy"
+        },
+        {
+          "service": "db",
+          "state": "running",
+          "health": "healthy"
+        },
+        {
+          "service": "frontend",
+          "state": "running",
+          "health": "healthy"
+        },
+        {
+          "service": "gateway",
+          "state": "running",
+          "health": ""
+        },
+        {
+          "service": "redis",
+          "state": "running",
+          "health": "healthy"
+        }
+      ],
+      "readiness": {
+        "status": 200,
+        "body": {
+          "status": "ready",
+          "degraded": false,
+          "detail": {
+            "database": {
+              "state": "ready"
+            },
+            "scanner": {
+              "state": "ready",
+              "busy": false
+            },
+            "redis": {
+              "state": "ready"
+            }
+          }
+        },
+        "noStore": true
+      },
+      "auth": {
+        "register": 201,
+        "refresh": 200,
+        "refreshRotated": true,
+        "cookieAttributes": [
+          "Secure",
+          "HttpOnly",
+          "SameSite=Lax",
+          "Path=/api/auth",
+          "host-only"
+        ],
+        "scannerWithoutBearer": 401,
+        "scannerCookieSent": false,
+        "scannerWithBearer": 200,
+        "references": 1,
+        "candidateMatched": true,
+        "accuracyClaimed": false
+      },
+      "ssr": {
+        "share": 200,
+        "card": 200,
+        "shareNoindex": true,
+        "privateHostnameLeaked": false,
+        "cardId": "sv3pt5-1"
+      },
+      "native": {
+        "uid": 1001,
+        "node": "v22.20.0",
+        "onnxImport": true,
+        "sharpPng": true,
+        "argon2": true,
+        "prismaSelect1": true
+      },
+      "egress": "egress-blocked",
+      "browserStatic": {
+        "files": 44,
+        "privateHostFound": false,
+        "publicPng": true
+      },
+      "readOnlyArtifact": true,
+      "privateNetwork": true
+    },
+    "previousAttempt": {
+      "ticket": "INF-02",
+      "reviewer": "GPT-6.1 Sol HIGH",
+      "gate": "OPERACION_PENDIENTE",
+      "project": "inf02-review-031dd52b2ba4bd41",
+      "observations": {},
+      "completed": false
+    },
+    "failure": "socket hang up",
+    "cleanupErrors": [
+      "project"
+    ],
+    "completed": false
+  },
+  "cleanupErrors": [],
+  "completed": true,
+  "postVerification": {
+    "tests": {
+      "suite": 43,
+      "passed": 43,
+      "additionalFocused": 2,
+      "additionalPassed": 2,
+      "full45SuiteClaimed": false
+    },
+    "sourcePairsPreserved": 175,
+    "sourceModelSha256": "c179f8f7f592449c4c1bca4cd124a7538021428c5ffb89afde9503935b197efb",
+    "allInf02ContainersNetworksVolumesAbsent": true,
+    "legacyAnonymousVolumeAbsent": true,
+    "reviewScratchAndMarkersAbsent": true,
+    "privateEnvAndCaAbsent": true,
+    "developmentDbAndRedis": "healthy-preserved",
+    "previousAttemptCleanupRecovered": true
+  }
+}

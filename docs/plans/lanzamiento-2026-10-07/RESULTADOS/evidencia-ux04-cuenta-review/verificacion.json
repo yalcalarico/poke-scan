@@ -1,0 +1,494 @@
+{
+  "checkedAtUtc": "2026-10-09T18:07:14.442326+00:00",
+  "scope": "Estática selectiva documental UX-04; no auditoría global, pruebas funcionales o QA",
+  "documentSha256": "d652eced63e071a909cdc1ceb3ed97a30b57e440b80f28b726d8b3627c8a560a",
+  "reportSha256": "ae9ed98de5a24d0b548102c5df9fb7b9160936419075906e20e9153b7a61cbe6",
+  "documentLines": 125,
+  "historicalEvidence": {
+    "sourceCount": 22,
+    "linkCount": 18,
+    "historicalSourceHashes": [
+      {
+        "path": "AGENTS.md",
+        "matchesObserved": true
+      },
+      {
+        "path": "frontend/AGENTS.md",
+        "matchesObserved": true
+      },
+      {
+        "path": "docs/plans/lanzamiento-2026-10-07/03-ui-ux.md",
+        "matchesObserved": true
+      },
+      {
+        "path": "docs/plans/lanzamiento-2026-10-07/10-decisiones-y-contratos.md",
+        "matchesObserved": true
+      },
+      {
+        "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-contrato-borrador.md",
+        "matchesObserved": true
+      },
+      {
+        "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-borrador-review.md",
+        "matchesObserved": true
+      },
+      {
+        "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-borrador-aceptacion-root.json",
+        "matchesObserved": true
+      },
+      {
+        "path": "frontend/docs/design-system.md",
+        "matchesObserved": true
+      },
+      {
+        "path": "frontend/docs/build-guide.md",
+        "matchesObserved": true
+      },
+      {
+        "path": "frontend/docs/components.md",
+        "matchesObserved": true
+      },
+      {
+        "path": "frontend/docs/routes.md",
+        "matchesObserved": true
+      },
+      {
+        "path": "frontend/docs/gotchas.md",
+        "matchesObserved": true
+      },
+      {
+        "path": "frontend/components/auth/auth-shell.tsx",
+        "matchesObserved": true
+      },
+      {
+        "path": "frontend/components/auth/login-form.tsx",
+        "matchesObserved": true
+      },
+      {
+        "path": "frontend/components/ui/field.tsx",
+        "matchesObserved": true
+      },
+      {
+        "path": "frontend/components/ui/password-input.tsx",
+        "matchesObserved": true
+      },
+      {
+        "path": "frontend/components/ui/alert.tsx",
+        "matchesObserved": true
+      },
+      {
+        "path": "frontend/components/ui/button.tsx",
+        "matchesObserved": true
+      },
+      {
+        "path": "frontend/hooks/use-auth.tsx",
+        "matchesObserved": true
+      },
+      {
+        "path": "frontend/lib/api/token-storage.ts",
+        "matchesObserved": true
+      },
+      {
+        "path": "/Users/ysmaelalcalarico/.codex/skills/frontend-ios-elegante/SKILL.md",
+        "matchesObserved": true
+      },
+      {
+        "path": "/Users/ysmaelalcalarico/.codex/skills/frontend-ios-elegante/references/direccion-visual.md",
+        "matchesObserved": true
+      }
+    ]
+  },
+  "sources": [
+    {
+      "path": "AGENTS.md",
+      "before": "0a44196ce9194cafcd54094af02e90e73f0da0f693604d0876d97bf14ee30688",
+      "after": "0a44196ce9194cafcd54094af02e90e73f0da0f693604d0876d97bf14ee30688"
+    },
+    {
+      "path": "frontend/AGENTS.md",
+      "before": "63f2c50380ed6303237cce215ce27af1d620d094c215e28d1b1538a3c070e3bb",
+      "after": "63f2c50380ed6303237cce215ce27af1d620d094c215e28d1b1538a3c070e3bb"
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/03-ui-ux.md",
+      "before": "6fd798bbb2867c00e18ac53a689233105cd01b167bbdb4a8a73eea203ee04a19",
+      "after": "6fd798bbb2867c00e18ac53a689233105cd01b167bbdb4a8a73eea203ee04a19"
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/10-decisiones-y-contratos.md",
+      "before": "a040c6d51aa674adc7449b9dc683e1d1f5fa0cc6aaf0b6f2377991827a2ab6e5",
+      "after": "a040c6d51aa674adc7449b9dc683e1d1f5fa0cc6aaf0b6f2377991827a2ab6e5"
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-contrato-borrador.md",
+      "before": "9b0c36f8bacc6192b3dc7f8ee695e1cc0992798e1fbd15302b4ec6fc38362a74",
+      "after": "9b0c36f8bacc6192b3dc7f8ee695e1cc0992798e1fbd15302b4ec6fc38362a74"
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-borrador-review.md",
+      "before": "10c874de3674be711e828397e77cfab3c20003470df21a6b9ca0474a52ff1cc3",
+      "after": "10c874de3674be711e828397e77cfab3c20003470df21a6b9ca0474a52ff1cc3"
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-borrador-aceptacion-root.json",
+      "before": "584855ba0788ed58a68197de516283633c262c1b03ecd2f41032895de47e6c88",
+      "after": "584855ba0788ed58a68197de516283633c262c1b03ecd2f41032895de47e6c88"
+    },
+    {
+      "path": "frontend/docs/design-system.md",
+      "before": "8c9016a295de3720215ba6553d5255d28af386e46724479218820800b421c241",
+      "after": "8c9016a295de3720215ba6553d5255d28af386e46724479218820800b421c241"
+    },
+    {
+      "path": "frontend/docs/build-guide.md",
+      "before": "a7dcd0631ee3124d5887f797597751588235041b28216ec1223fd78f924d8cdc",
+      "after": "a7dcd0631ee3124d5887f797597751588235041b28216ec1223fd78f924d8cdc"
+    },
+    {
+      "path": "frontend/docs/components.md",
+      "before": "63d488adbd5ae6064568450ec7b3342dac24c16f0965d06c3f356e9b698c8c81",
+      "after": "63d488adbd5ae6064568450ec7b3342dac24c16f0965d06c3f356e9b698c8c81"
+    },
+    {
+      "path": "frontend/docs/routes.md",
+      "before": "5b18947635a90656e57fd7f4286eadbf2b589264e492d46d2aff33bc6c4069a5",
+      "after": "5b18947635a90656e57fd7f4286eadbf2b589264e492d46d2aff33bc6c4069a5"
+    },
+    {
+      "path": "frontend/docs/gotchas.md",
+      "before": "b41b5a0f9c7beb1435120b1a132a1c91ee2f2f91e5558dcb3c5dacc6f10f7f4c",
+      "after": "b41b5a0f9c7beb1435120b1a132a1c91ee2f2f91e5558dcb3c5dacc6f10f7f4c"
+    },
+    {
+      "path": "frontend/components/auth/auth-shell.tsx",
+      "before": "ea3ff37dc713c14cf912390bede8cd9accb79a3798ccb182f800bd9730e49e2d",
+      "after": "ea3ff37dc713c14cf912390bede8cd9accb79a3798ccb182f800bd9730e49e2d"
+    },
+    {
+      "path": "frontend/components/auth/login-form.tsx",
+      "before": "55486e4e7e7bd0476a6e1259317224db1a7ac8df1d9f2ffa0660d690deddd709",
+      "after": "55486e4e7e7bd0476a6e1259317224db1a7ac8df1d9f2ffa0660d690deddd709"
+    },
+    {
+      "path": "frontend/components/ui/field.tsx",
+      "before": "e5f0b1cf5386e81609cdd55a94ca2d7d50245c8c26f3295ae1798e41c4388ffd",
+      "after": "e5f0b1cf5386e81609cdd55a94ca2d7d50245c8c26f3295ae1798e41c4388ffd"
+    },
+    {
+      "path": "frontend/components/ui/password-input.tsx",
+      "before": "a7b301f3b11b6339b3760ca4433349ed96444dbe856c1347abcbc08649bbec99",
+      "after": "a7b301f3b11b6339b3760ca4433349ed96444dbe856c1347abcbc08649bbec99"
+    },
+    {
+      "path": "frontend/components/ui/alert.tsx",
+      "before": "355f7dec16deff53c2d7c3c31e970f783d5ef89b3521c7d50cb8663b781968be",
+      "after": "355f7dec16deff53c2d7c3c31e970f783d5ef89b3521c7d50cb8663b781968be"
+    },
+    {
+      "path": "frontend/components/ui/button.tsx",
+      "before": "10a18a1a4f68d13d4469b080f935847524647ea78a880d30214b6fb5e8f06d3a",
+      "after": "10a18a1a4f68d13d4469b080f935847524647ea78a880d30214b6fb5e8f06d3a"
+    },
+    {
+      "path": "frontend/hooks/use-auth.tsx",
+      "before": "8e59872c612fc20d66f5503464b8ca83e7319f0876e75498297705cca7681745",
+      "after": "8e59872c612fc20d66f5503464b8ca83e7319f0876e75498297705cca7681745"
+    },
+    {
+      "path": "frontend/lib/api/token-storage.ts",
+      "before": "ce7e03a78388c4c1743eebc7a5af362829a83283ded6188bab37d9440d21b6e0",
+      "after": "ce7e03a78388c4c1743eebc7a5af362829a83283ded6188bab37d9440d21b6e0"
+    },
+    {
+      "path": "/Users/ysmaelalcalarico/.codex/skills/frontend-ios-elegante/SKILL.md",
+      "before": "3cbb358c79765375167f2cfb84910117c192c171a10734bdcaef50d59dd6b7b8",
+      "after": "3cbb358c79765375167f2cfb84910117c192c171a10734bdcaef50d59dd6b7b8"
+    },
+    {
+      "path": "/Users/ysmaelalcalarico/.codex/skills/frontend-ios-elegante/references/direccion-visual.md",
+      "before": "b44d64e09ace49dae860373234eb49974461fd82c6c8078fc4e92cc396fe78d1",
+      "after": "b44d64e09ace49dae860373234eb49974461fd82c6c8078fc4e92cc396fe78d1"
+    },
+    {
+      "path": "frontend/components/ui/input.tsx",
+      "before": "56eaed6f72d7410f53fdfc366f6583c0e79c458bcd2a4da40833a89ab1d2226c",
+      "after": "56eaed6f72d7410f53fdfc366f6583c0e79c458bcd2a4da40833a89ab1d2226c"
+    },
+    {
+      "path": "frontend/lib/api/api-client.ts",
+      "before": "2273f6f6adedaca136b7cf26925b01b2ea7cad34e44a7d3f6896b2f471d9225d",
+      "after": "2273f6f6adedaca136b7cf26925b01b2ea7cad34e44a7d3f6896b2f471d9225d"
+    },
+    {
+      "path": "frontend/lib/api/auth.ts",
+      "before": "4eee2697a27eaba4aef33e9f6487aa7b2c84d49cc3b08f05d4272cfc01872e89",
+      "after": "4eee2697a27eaba4aef33e9f6487aa7b2c84d49cc3b08f05d4272cfc01872e89"
+    },
+    {
+      "path": "backend/src/modules/auth/dto/register.dto.ts",
+      "before": "8854ae661ff1670e70d3c02c01fd5ce4250a1fe92b946d19dab628d3d1a4c57a",
+      "after": "8854ae661ff1670e70d3c02c01fd5ce4250a1fe92b946d19dab628d3d1a4c57a"
+    }
+  ],
+  "sourceCount": 26,
+  "sourceChanges": [],
+  "received": [
+    {
+      "copy": "UX-04-cuenta-recibido.md",
+      "expected": "c366aabfcfd8de2d304e84b95c8bb5e3e16ca67e96b1354c1f8b713551aab335",
+      "actual": "c366aabfcfd8de2d304e84b95c8bb5e3e16ca67e96b1354c1f8b713551aab335"
+    },
+    {
+      "copy": "baseline-selectivo-recibido.json",
+      "expected": "a546607296ba6ce1b76fe59c37896057bab33364db276ec827b1774cd01bec89",
+      "actual": "a546607296ba6ce1b76fe59c37896057bab33364db276ec827b1774cd01bec89",
+      "original": "a546607296ba6ce1b76fe59c37896057bab33364db276ec827b1774cd01bec89"
+    },
+    {
+      "copy": "verificacion-estatica-recibida.json",
+      "expected": "47726403b4e0c1dba7efa2b80ba54c3d757a59f4eace8948e08494972e95db4d",
+      "actual": "47726403b4e0c1dba7efa2b80ba54c3d757a59f4eace8948e08494972e95db4d",
+      "original": "47726403b4e0c1dba7efa2b80ba54c3d757a59f4eace8948e08494972e95db4d"
+    }
+  ],
+  "receivedChanges": [],
+  "links": [
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/UX-04-cuenta.md",
+      "target": "/Users/ysmaelalcalarico/.codex/skills/frontend-ios-elegante/SKILL.md",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/UX-04-cuenta.md",
+      "target": "/Users/ysmaelalcalarico/.codex/skills/frontend-ios-elegante/references/direccion-visual.md",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/UX-04-cuenta.md",
+      "target": "BE-05-contrato-borrador.md",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/UX-04-cuenta.md",
+      "target": "BE-05-borrador-review.md",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/UX-04-cuenta.md",
+      "target": "BE-05-borrador-aceptacion-root.json",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/UX-04-cuenta.md",
+      "target": "../10-decisiones-y-contratos.md#dec-05--pro-y-piloto-pago",
+      "exists": true,
+      "anchorValid": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/UX-04-cuenta.md",
+      "target": "../../../../frontend/docs/design-system.md",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/UX-04-cuenta.md",
+      "target": "../../../../frontend/docs/build-guide.md",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/UX-04-cuenta.md",
+      "target": "../../../../frontend/docs/components.md",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/UX-04-cuenta.md",
+      "target": "../../../../frontend/docs/routes.md",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/UX-04-cuenta.md",
+      "target": "../../../../frontend/docs/gotchas.md",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/UX-04-cuenta.md",
+      "target": "../../../../frontend/components/auth/auth-shell.tsx",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/UX-04-cuenta.md",
+      "target": "../../../../frontend/components/auth/login-form.tsx",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/UX-04-cuenta.md",
+      "target": "../../../../frontend/components/ui/field.tsx",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/UX-04-cuenta.md",
+      "target": "../../../../frontend/components/ui/password-input.tsx",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/UX-04-cuenta.md",
+      "target": "../../../../frontend/components/ui/alert.tsx",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/UX-04-cuenta.md",
+      "target": "../../../../frontend/components/ui/button.tsx",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/UX-04-cuenta.md",
+      "target": "../../../../frontend/hooks/use-auth.tsx",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/UX-04-cuenta.md",
+      "target": "../../../../frontend/lib/api/token-storage.ts",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/UX-04-cuenta.md",
+      "target": "evidencia-ux04-cuenta/",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/UX-04-cuenta.md",
+      "target": "evidencia-ux04-cuenta-review/baseline-review.json",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/UX-04-cuenta.md",
+      "target": "UX-04-review.md",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/UX-04-cuenta.md",
+      "target": "evidencia-ux04-cuenta-review/verificacion.json",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/UX-04-review.md",
+      "target": "UX-04-cuenta.md",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/UX-04-review.md",
+      "target": "evidencia-ux04-cuenta-review/baseline-review.json",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/UX-04-review.md",
+      "target": "evidencia-ux04-cuenta-review/UX-04-cuenta-recibido.md",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/UX-04-review.md",
+      "target": "evidencia-ux04-cuenta-review/correcciones.diff",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/UX-04-review.md",
+      "target": "evidencia-ux04-cuenta-review/verificacion.json",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/UX-04-review.md",
+      "target": "evidencia-ux04-cuenta-review/hashes-finales.json",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/UX-04-review.md",
+      "target": "/Users/ysmaelalcalarico/.codex/skills/frontend-ios-elegante/SKILL.md",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/UX-04-review.md",
+      "target": "/Users/ysmaelalcalarico/.codex/skills/frontend-ios-elegante/references/direccion-visual.md",
+      "exists": true
+    }
+  ],
+  "linkCount": 31,
+  "brokenLinks": [],
+  "semanticReview": {
+    "method": "Contraste manual Sol HIGH de contenido/contexto. Enlace existente/anchor válido no es prueba de soporte semántico ni funcionalidad.",
+    "support": [
+      {
+        "sources": [
+          "frontend/components/auth/auth-shell.tsx",
+          "frontend/docs/design-system.md"
+        ],
+        "observed": "AuthShell h1 máximo 4 palabras y max-w-md; design §10.1 Button hasta 3 palabras/Alert body ~140 caracteres. Títulos y acciones corregidos; no se afirma layout renderizado."
+      },
+      {
+        "sources": [
+          "frontend/components/auth/login-form.tsx",
+          "frontend/components/ui/field.tsx",
+          "frontend/components/ui/button.tsx",
+          "frontend/components/ui/alert.tsx"
+        ],
+        "observed": "Login usa Field/useFieldA11y, noValidate, loading/pending y Alert de submit; Field requiere aria-invalid del consumidor; Button nativo sin asChild, Alert error role alert y otros status/polite. Navegación Link y foco/roles son requisitos futuros."
+      },
+      {
+        "sources": [
+          "frontend/components/ui/password-input.tsx",
+          "frontend/components/ui/input.tsx"
+        ],
+        "observed": "PasswordInput TOGGLE_SIZES md/lg h-10 w-10, con nombres dinámicos y aria-pressed. Input md h-11; className va wrapper. Exigir 44 local no declara que primitiva ya lo cumpla ni describe un override existente."
+      },
+      {
+        "sources": [
+          "frontend/hooks/use-auth.tsx",
+          "frontend/lib/api/token-storage.ts",
+          "frontend/lib/api/api-client.ts"
+        ],
+        "observed": "Access memoria/pista, AuthProvider maneja user separado. ApiError status/mensaje y refreshInFlight actual; impedir respuesta antigua y consumir code/fields son adaptaciones futuras, no protección existente."
+      },
+      {
+        "sources": [
+          "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-contrato-borrador.md",
+          "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-borrador-aceptacion-root.json",
+          "backend/src/modules/auth/dto/register.dto.ts"
+        ],
+        "observed": "Contrato aceptado sólo documental: 202 recepción, secreto 32 bytes/43 chars sólo hash, body POST necesario, 30 min y reenvío 60 s sujetos a cupos, códigos/fields, User primero/authVersion PG y success tras commit. Reset contraseña 8–72, confirmación sólo local. UX no duplica política de locks/token ni afirma implementación."
+      },
+      {
+        "sources": [
+          "frontend/docs/routes.md",
+          "frontend/docs/build-guide.md",
+          "frontend/docs/gotchas.md",
+          "/Users/ysmaelalcalarico/.codex/skills/frontend-ios-elegante/SKILL.md",
+          "/Users/ysmaelalcalarico/.codex/skills/frontend-ios-elegante/references/direccion-visual.md"
+        ],
+        "observed": "Rama auth PlainShell sin nav; providers raíz; recuperación no aparece en rutas actuales. Skill solicita propuesta de estados/mobile-desktop/44/AA y no código por diseño. Descripción visual leída; no capturas vistas ni QA ejecutada."
+      }
+    ],
+    "invariantsReviewedManually": [
+      "Bare sin marcador=solicitud; link perdido con marcador no secreto=salida segura, sin afirmar detectar recarga",
+      "history.state preserva estado preexistente y carece token/email/clave/identidad; marcador indisponible degrada a solicitud",
+      "Captura previa idempotente StrictMode; montaje/GET/preview/back/recarga no consumen/validan API/reenvían",
+      "Secreto sólo memoria y body POST necesario; ausente de URL API/storage/log/evidencia/analytics y transferencia a login",
+      "202 no promete entrega ni repite email; correo planificado ficticio con duración propuesta, sin envío",
+      "400 INPUT_INVALID por fields distinto de RECOVERY_LINK_INVALID; 403 acción y 429 positivos/fallback sin live countdown",
+      "503/cuerpo200inválido/redcambio=incierto, login primario/nuevo enlace secundario, no replay ni limpieza como éxito",
+      "Limpieza tras éxito confirmado/race protección FE futura; no auto-auth ni cierre visual otros dispositivos",
+      "Título cambio 4 palabras, CTA≤3, Alert breve y A11y como criterios pendientes; toggle actual40 vs requisito44 local",
+      "Eliminación/operación pendientes; gates/IDs no cerrados; no QA/runtime/tests/red/correo ni centrales"
+    ]
+  },
+  "documentalArithmetic": {
+    "changeTitleWords": 4,
+    "recoveryTokenShapeCharsProposed": 43,
+    "minResendSecondsProposed": 60,
+    "retryAfterFallbackSecondsProposed": 60,
+    "mailTtlMinutesProposed": 30,
+    "mailTtlSeconds": 1800,
+    "recoveryActiveTokenCapInContract": 3,
+    "passwordMin": 8,
+    "passwordMax": 72,
+    "limits": "Especificaciones propuestas/contrato y DTO existentes; no resultados de runtime ni garantía de entrega."
+  },
+  "limitations": "Protecciones de fragmento/historial/cancelación, parseo respuesta/fields/header, sandbox de correo y controles de sesión quedan por implementar y probar. Hashes reflejan fuentes selectivas en este instante, no estabilidad global/posterior."
+}

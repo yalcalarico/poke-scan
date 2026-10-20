@@ -1,0 +1,54 @@
+{
+  "status": "accepted locally by root",
+  "scope": "Resend adapter + simulated native HTTP and compiled API/Next; no external sending",
+  "counts": {
+    "focusedTests": 11,
+    "standardTests": 1022,
+    "standardSkips": 0,
+    "backendVitest": 439,
+    "backendNodeScripts": 13,
+    "backendE2E": 6,
+    "frontend": 549,
+    "monitor": 15,
+    "runtimeFunctionalChecks": 38,
+    "runtimeOwnershipChecks": 9,
+    "runtimeTotal": 47,
+    "runtimeSourcesOutputsIntact": 1333
+  },
+  "initialFailure": {
+    "stage": "Nest build",
+    "code": "TS2571",
+    "preserved": true,
+    "rootCorrection": "Local unknown id binding enables type narrowing; nonempty bounded string checked"
+  },
+  "configuration": {
+    "providerChosen": "Resend Free",
+    "externalModeEnabled": false,
+    "accountCreated": false,
+    "domainVerified": false,
+    "externalEmailsSent": 0,
+    "providerDeliverabilityAccredited": false
+  },
+  "delegation": {
+    "assignments": 2,
+    "executor": "gpt-6-luna",
+    "effort": "medium",
+    "rootReviewAndCorrection": true,
+    "subdelegation": false
+  },
+  "resources": {
+    "ownCloneAndRedisRemoved": true,
+    "markedDatabaseSQLConnectionsBeforeDrop": 0,
+    "sharedBoundedCountsAndGINUnchanged": true,
+    "sharedRedisHealthy": true,
+    "userInstanceIntentionallyLive": true
+  },
+  "limits": [
+    "No account/domain/provider receipt or real external delivery",
+    "Local HTTP UI cannot accredit production Secure cookie/HTTPS",
+    "Simulation transport injected privately; no public outbox or simulated mode",
+    "Retention of provider not an approved project deletion policy",
+    "Source baseline captured after delegate dispatch; not entire original dirty tree snapshot"
+  ],
+  "next": "Ask before account-deletion channel decision; real Resend activation deferred by user"
+}

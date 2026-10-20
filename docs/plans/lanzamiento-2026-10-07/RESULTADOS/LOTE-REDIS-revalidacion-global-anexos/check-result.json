@@ -1,0 +1,7 @@
+{
+  "command": "pnpm run check",
+  "pid": 20637,
+  "startedAtUtc": "2026-10-09T19:42:21.862058+00:00",
+  "finishedAtUtc": "2026-10-09T19:43:42.021970+00:00",
+  "exitCode": 0
+}

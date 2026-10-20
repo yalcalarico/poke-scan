@@ -1,0 +1,29 @@
+{
+  "accepted": true,
+  "scope": "Standalone local beta questionnaire, not participant results",
+  "UIControls": 24,
+  "standardCheck": {
+    "passed": 1146,
+    "skips": 0,
+    "exactOnce": true
+  },
+  "sourceProductHashesUnchanged": 547,
+  "artifactHashes": 19,
+  "delegations": 0,
+  "noScreenshots": true,
+  "noNewParticipants": true,
+  "IDsComplete": 20,
+  "IDsPending": 18,
+  "QAResourcesCleaned": true,
+  "intentionalPreviewAlive": {
+    "pid": 7752,
+    "url": "http://127.0.0.1:53094/evaluacion.html"
+  },
+  "intentionalAppAlive": {
+    "api": 7731,
+    "next": 7746
+  },
+  "automationUnchanged": "PAUSED/two-hours",
+  "reportLinksVerified": 13,
+  "artifactHashesVerified": 19
+}

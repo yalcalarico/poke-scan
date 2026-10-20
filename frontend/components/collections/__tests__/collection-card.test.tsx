@@ -23,6 +23,7 @@ vi.mock('next/image', () => ({
 vi.mock('@/components/cards/money', () => ({
   Money: () => <span data-testid="money" />,
 }));
+vi.mock('@/components/prices/price-evidence', () => ({ ValuationEvidence: () => <span>Valuación de prueba</span> }));
 
 function collection(overrides: Partial<CollectionDto> = {}): CollectionDto {
   return {

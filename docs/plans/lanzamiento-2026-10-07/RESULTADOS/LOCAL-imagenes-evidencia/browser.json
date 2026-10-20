@@ -1,0 +1,15 @@
+{
+  "cardsVisibleAndLoaded": 6,
+  "samples": [
+    "Latias & Latios-GX",
+    "Charizard",
+    "Lugia ex",
+    "Rocket’s Mewtwo",
+    "Umbreon VMAX",
+    "Gengar & Mimikyu-GX"
+  ],
+  "allComplete": true,
+  "allNaturalDimensionsPositive": true,
+  "screenshotsTaken": false,
+  "method": "Navegador local, DOM img.complete/naturalWidth/naturalHeight después de recarga y orden por precio descendente"
+}

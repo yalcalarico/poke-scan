@@ -1,0 +1,791 @@
+{
+  "actualRuntime": [
+    {
+      "kind": "real-faq",
+      "viewport": 390,
+      "theme": "dark",
+      "expanded": 8,
+      "overflow": false,
+      "proLink": "http://localhost:3000/faq#faq-planes"
+    },
+    {
+      "kind": "real-landing",
+      "links": [
+        {
+          "href": "#contenido",
+          "label": "Saltar al contenido"
+        },
+        {
+          "href": "/",
+          "label": "PokéScan"
+        },
+        {
+          "href": "/#producto",
+          "label": "La app"
+        },
+        {
+          "href": "/#planes",
+          "label": "Gratis y Pro"
+        },
+        {
+          "href": "/faq",
+          "label": "FAQ"
+        },
+        {
+          "href": "/login",
+          "label": "Iniciar sesión"
+        },
+        {
+          "href": "/escanear",
+          "label": "ProbarProbar gratis"
+        },
+        {
+          "href": "/buscar",
+          "label": "Explorar el catálogo"
+        },
+        {
+          "href": "/escanear",
+          "label": "Probar el escáner"
+        },
+        {
+          "href": "/escanear",
+          "label": "Probar PokéScan"
+        },
+        {
+          "href": "/faq#faq-planes",
+          "label": "Ver qué estamos investigando"
+        },
+        {
+          "href": "/buscar",
+          "label": "Explorar el catálogo"
+        },
+        {
+          "href": "/escanear",
+          "label": "Probar reconocimiento visual"
+        },
+        {
+          "href": "/faq",
+          "label": "Ver todas las preguntas"
+        },
+        {
+          "href": "/faq",
+          "label": "Preguntas frecuentes"
+        },
+        {
+          "href": "/#planes",
+          "label": "Planes"
+        },
+        {
+          "href": "/buscar",
+          "label": "Catálogo"
+        }
+      ],
+      "overflow": false,
+      "theme": "dark",
+      "url": "http://localhost:3000/",
+      "viewport": 1280
+    },
+    {
+      "kind": "free-cta",
+      "url": "http://localhost:3000/escanear",
+      "result": "scanner visible; session required message before recognition; no payment"
+    },
+    {
+      "href": "#contenido",
+      "kind": "keyboard-skip-focus",
+      "rect": {
+        "bottom": 54,
+        "height": 38,
+        "left": 16,
+        "right": 183.421875,
+        "top": 16,
+        "width": 167.421875,
+        "x": 16,
+        "y": 16
+      },
+      "tag": "A",
+      "text": "Saltar al contenido"
+    },
+    {
+      "activeId": "",
+      "activeTag": "BODY",
+      "kind": "keyboard-skip-activation",
+      "url": "http://localhost:3000/#contenido"
+    },
+    {
+      "expanded": 8,
+      "h1": 1,
+      "kind": "real-faq",
+      "overflow": false,
+      "theme": "dark",
+      "viewport": 1280
+    },
+    {
+      "href": "/buscar",
+      "insideMain": true,
+      "kind": "keyboard-after-skip-tab",
+      "outline": "solid",
+      "outlineWidth": "2px",
+      "text": "Explorar el catálogo",
+      "url": "http://localhost:3000/#contenido"
+    }
+  ],
+  "themeControlledCompiledViews": [
+    {
+      "background": "rgb(244, 244, 246)",
+      "body": 390,
+      "expanded": 0,
+      "h1": 1,
+      "images": [
+        {
+          "src": "/icons/icon-192.png",
+          "width": 192
+        },
+        {
+          "src": "/icons/icon-192.png",
+          "width": 192
+        }
+      ],
+      "links": [
+        {
+          "href": "#contenido",
+          "label": "Saltar al contenido"
+        },
+        {
+          "href": "/",
+          "label": "PokéScan"
+        },
+        {
+          "href": "/#producto",
+          "label": "La app"
+        },
+        {
+          "href": "/#planes",
+          "label": "Gratis y Pro"
+        },
+        {
+          "href": "/faq",
+          "label": "FAQ"
+        },
+        {
+          "href": "/login",
+          "label": "Iniciar sesión"
+        },
+        {
+          "href": "/escanear",
+          "label": "ProbarProbar gratis"
+        },
+        {
+          "href": "/buscar",
+          "label": "Explorar el catálogo"
+        },
+        {
+          "href": "/escanear",
+          "label": "Probar el escáner"
+        },
+        {
+          "href": "/escanear",
+          "label": "Probar PokéScan"
+        },
+        {
+          "href": "/faq#faq-planes",
+          "label": "Ver qué estamos investigando"
+        },
+        {
+          "href": "/buscar",
+          "label": "Explorar el catálogo"
+        },
+        {
+          "href": "/escanear",
+          "label": "Probar reconocimiento visual"
+        },
+        {
+          "href": "/faq",
+          "label": "Ver todas las preguntas"
+        },
+        {
+          "href": "/faq",
+          "label": "Preguntas frecuentes"
+        },
+        {
+          "href": "/#planes",
+          "label": "Planes"
+        },
+        {
+          "href": "/buscar",
+          "label": "Catálogo"
+        }
+      ],
+      "mainText": "Pokémon TCG · para organizar tu colecciónTu colección Pokémon, ordenada carta por carta.Buscá cartas, organizá tus sets y tené a mano tus duplicadas. Cuando hay referencias disponibles, consultalas en USD o convertidas a ARS.Explorar el catálogoProbar el escánerPodés explorar el catálogo sin cuenta. Para escanear y guardar tu colección necesitás una cuenta y conexión.Pokémon TCGBuscá. Revisá. Coleccioná.Tu primer binder empieza con una carta.Pokémon TCGCatálogoPor setProgreso y duplicadasDINOv2Reconocimiento visual experimentalUSD + ARSReferencia y conversiónDE LA MESA AL BINDERMenos búsqueda. Más hobby.PokéScan te ayuda a pasar de una pila de cartas a una colección que podés consultar, completar y compartir.01Buscá por nombre, número o artista.Encontrá cartas y filtrá el catálogo por set.02Organizá tu colección.Registrá cartas, separá duplicadas y marcá las que querés intercambiar.03Consultá referencias con contexto.Cuando hay datos, mirá la variante, la fuente y cuándo se consultó. Podés ver USD o su conversión a ARS.Tu captura se procesa para reconocer la carta.Para reconocer necesitás una cuenta y conexión. PokéScan envía el recorte para procesarlo con DINOv2, sin guardar la foto de consulta. Podés subir una foto; la cámara se ofrece en teléfonos compatibles. La sugerencia puede fallar: revisá y corregí la carta antes de guardar. Buscar, consultar referencias y sincronizar también requiere conexión.REFERENCIAS DE MERCADOUna referencia internacional, también en ARS.Consultá la referencia disponible de la variante y, si querés, mirala convertida al tipo de cambio blue u oficial elegido. La conversión usa el cambio actual; no representa un precio de venta en Argentina.La fecha indica cuándo se consultó el dato. No siempre conocemos cuándo se actualizó la fuente. La condición que registrás no ajusta automáticamente el importe.Referencia internacionalUSDCuando hay datos para la varianteConversión estimadaARSAl cambio actual blue u oficialProgreso por setPor setFaltantes y duplicadasEnlace de solo lecturaUn linkElegís qué colección compartirPLANESEmpezá gratis. Pro está en evaluación.Hoy no hay suscripciones ni pagos activos. Cualquier propuesta de Pro dependerá de validar utilidad, costos y condiciones.GratisFunciones disponibles sin suscripción hoy.Disponible$0Catálogo y búsqueda por nombre, número o artistaReconocimiento visual experimental con revisión antes de guardar (requiere cuenta, foto o cámara compatible y conexión; puede no identificar la carta)Colecciones, duplicadas y marcas para intercambioProgreso por setReferencias e historial de cartas cuando hay datosObservaciones del portafolio al consultar el resumen: incluyen cambios de cantidad y referenciasExportación CSV de una colecciónConversión de referencias a ARSProbar PokéScanProUna posibilidad en evaluación.En evaluaciónTodavía no hay un plan Pro activo, precio, cuotas ni fecha de lanzamiento. Estamos investigando qué herramientas serían útiles. El historial de cartas, las observaciones del portafolio por consulta y la exportación CSV básica ya están disponibles sin suscripción. No hay seguimiento automático de precios ni alertas.Ver qué estamos investigandoCualquier oferta futura dependerá de validar utilidad, costos y condiciones.Empezá por encontrar una carta.Explorá el catálogo o probá el reconocimiento visual con una captura. Revisá la sugerencia antes de guardarla.Explorar el catálogoProbar reconocimiento visualPREGUNTAS FRECUENTESLo importante, sin letra chica.Cómo funciona el escáner, qué significa el precio y qué está disponible hoy.¿Qué es PokéScan?PokéScan es una app web para buscar cartas Pokémon, organizar colecciones y consultar referencias de mercado cuando hay datos disponibles. Podés revisar progreso por set, duplicadas, historial de referencias de cartas y observaciones del portafolio por consulta, exportar una colección a CSV y crear enlaces de solo lectura.¿Cómo funciona el escáner y qué pasa con mi foto?El escáner usa reconocimiento visual DINOv2 y requiere cuenta y conexión. Podés subir una foto o usar la cámara en un teléfono compatible: se envía el recorte para procesarlo sin guardar la foto de consulta. La sugerencia puede ser incorrecta o no aparecer. Revisá y corregí la carta antes de guardarla.¿PokéScan funciona sin conexión?No. Para buscar en el catálogo, reconocer cartas, consultar o sincronizar tu colección necesitás conexión. Algunas páginas públicas visitadas pueden seguir visibles desde caché; eso no garantiza que estén actualizadas.¿De dónde salen los precios?Mostramos referencias internacionales del mercado indicado por la fuente para la variante cuando hay datos. La fecha de consulta indica cuándo PokéScan obtuvo la referencia; no confirma cuándo se actualizó el mercado. Si la fuente aporta su propia fecha, se muestra por separado; puede faltar o ser anterior. Si ves ARS, es una conversión al cambio actual elegido, no un precio realizable en Argentina. La condición que guardás no modifica el valor automáticamente. La referencia puede faltar o estar desactualizada; no es oferta de compra ni tasación.¿Puedo ver los valores en pesos argentinos?Sí. Podés ver USD o convertir la referencia a ARS usando la cotización blue u oficial que elijas. El cambio aplicado es el actual; el importe no acredita una operación en pesos ni representa una cotización de compraventa local.¿Necesito una cuenta para empezar?Podés explorar el catálogo sin cuenta. Necesitás una cuenta para reconocer cartas con DINOv2, guardarlas en colecciones, sincronizarlas y administrar tus enlaces compartidos. El reconocimiento requiere conexión y puede fallar; revisás la sugerencia antes de guardar.¿Qué incluye Gratis y qué incluiría Pro?Hoy no hay plan Pro activo ni pagos. El catálogo, el historial de cartas, las observaciones del portafolio por consulta y la exportación CSV básica están disponibles sin suscripción. Seguimiento automático y alertas no están disponibles; cualquier plan futuro depende de validar su utilidad, costos y condiciones. No hay precio ni fecha confirmados.¿Funciona con otros juegos de cartas?Por ahora, PokéScan está enfocado en Pokémon TCG.Ver todas las preguntas",
+      "page": 390,
+      "scrollY": 0,
+      "theme": "light",
+      "url": "http://127.0.0.1:55951/?qa_theme=light",
+      "viewport": 390,
+      "route": "/",
+      "fixture": "only initial theme preference on private origin; compiled content unchanged",
+      "screenshot": "landing-390-light.jpg"
+    },
+    {
+      "background": "rgb(244, 244, 246)",
+      "body": 390,
+      "expanded": 8,
+      "h1": 1,
+      "images": [
+        {
+          "src": "/icons/icon-192.png",
+          "width": 192
+        },
+        {
+          "src": "/icons/icon-192.png",
+          "width": 192
+        }
+      ],
+      "links": [
+        {
+          "href": "#contenido",
+          "label": "Saltar al contenido"
+        },
+        {
+          "href": "/",
+          "label": "PokéScan"
+        },
+        {
+          "href": "/#producto",
+          "label": "La app"
+        },
+        {
+          "href": "/#planes",
+          "label": "Gratis y Pro"
+        },
+        {
+          "href": "/faq",
+          "label": "FAQ"
+        },
+        {
+          "href": "/login",
+          "label": "Iniciar sesión"
+        },
+        {
+          "href": "/escanear",
+          "label": "ProbarProbar gratis"
+        },
+        {
+          "href": "/faq",
+          "label": "Preguntas frecuentes"
+        },
+        {
+          "href": "/#planes",
+          "label": "Planes"
+        },
+        {
+          "href": "/buscar",
+          "label": "Catálogo"
+        }
+      ],
+      "mainText": "PREGUNTAS FRECUENTESLo importante, sin letra chica.Cómo funciona el escáner, qué significa el precio y qué está disponible hoy.¿Qué es PokéScan?PokéScan es una app web para buscar cartas Pokémon, organizar colecciones y consultar referencias de mercado cuando hay datos disponibles. Podés revisar progreso por set, duplicadas, historial de referencias de cartas y observaciones del portafolio por consulta, exportar una colección a CSV y crear enlaces de solo lectura.¿Cómo funciona el escáner y qué pasa con mi foto?El escáner usa reconocimiento visual DINOv2 y requiere cuenta y conexión. Podés subir una foto o usar la cámara en un teléfono compatible: se envía el recorte para procesarlo sin guardar la foto de consulta. La sugerencia puede ser incorrecta o no aparecer. Revisá y corregí la carta antes de guardarla.¿PokéScan funciona sin conexión?No. Para buscar en el catálogo, reconocer cartas, consultar o sincronizar tu colección necesitás conexión. Algunas páginas públicas visitadas pueden seguir visibles desde caché; eso no garantiza que estén actualizadas.¿De dónde salen los precios?Mostramos referencias internacionales del mercado indicado por la fuente para la variante cuando hay datos. La fecha de consulta indica cuándo PokéScan obtuvo la referencia; no confirma cuándo se actualizó el mercado. Si la fuente aporta su propia fecha, se muestra por separado; puede faltar o ser anterior. Si ves ARS, es una conversión al cambio actual elegido, no un precio realizable en Argentina. La condición que guardás no modifica el valor automáticamente. La referencia puede faltar o estar desactualizada; no es oferta de compra ni tasación.¿Puedo ver los valores en pesos argentinos?Sí. Podés ver USD o convertir la referencia a ARS usando la cotización blue u oficial que elijas. El cambio aplicado es el actual; el importe no acredita una operación en pesos ni representa una cotización de compraventa local.¿Necesito una cuenta para empezar?Podés explorar el catálogo sin cuenta. Necesitás una cuenta para reconocer cartas con DINOv2, guardarlas en colecciones, sincronizarlas y administrar tus enlaces compartidos. El reconocimiento requiere conexión y puede fallar; revisás la sugerencia antes de guardar.¿Qué incluye Gratis y qué incluiría Pro?Hoy no hay plan Pro activo ni pagos. El catálogo, el historial de cartas, las observaciones del portafolio por consulta y la exportación CSV básica están disponibles sin suscripción. Seguimiento automático y alertas no están disponibles; cualquier plan futuro depende de validar su utilidad, costos y condiciones. No hay precio ni fecha confirmados.¿Funciona con otros juegos de cartas?Por ahora, PokéScan está enfocado en Pokémon TCG.",
+      "page": 390,
+      "scrollY": 0,
+      "theme": "light",
+      "url": "http://127.0.0.1:55951/faq?qa_theme=light",
+      "viewport": 390,
+      "route": "/faq",
+      "fixture": "only initial theme preference on private origin; compiled content unchanged",
+      "screenshot": "faq-390-light.jpg"
+    },
+    {
+      "background": "rgb(11, 11, 15)",
+      "body": 390,
+      "expanded": 0,
+      "h1": 1,
+      "images": [
+        {
+          "src": "/icons/icon-192.png",
+          "width": 192
+        },
+        {
+          "src": "/icons/icon-192.png",
+          "width": 192
+        }
+      ],
+      "links": [
+        {
+          "href": "#contenido",
+          "label": "Saltar al contenido"
+        },
+        {
+          "href": "/",
+          "label": "PokéScan"
+        },
+        {
+          "href": "/#producto",
+          "label": "La app"
+        },
+        {
+          "href": "/#planes",
+          "label": "Gratis y Pro"
+        },
+        {
+          "href": "/faq",
+          "label": "FAQ"
+        },
+        {
+          "href": "/login",
+          "label": "Iniciar sesión"
+        },
+        {
+          "href": "/escanear",
+          "label": "ProbarProbar gratis"
+        },
+        {
+          "href": "/buscar",
+          "label": "Explorar el catálogo"
+        },
+        {
+          "href": "/escanear",
+          "label": "Probar el escáner"
+        },
+        {
+          "href": "/escanear",
+          "label": "Probar PokéScan"
+        },
+        {
+          "href": "/faq#faq-planes",
+          "label": "Ver qué estamos investigando"
+        },
+        {
+          "href": "/buscar",
+          "label": "Explorar el catálogo"
+        },
+        {
+          "href": "/escanear",
+          "label": "Probar reconocimiento visual"
+        },
+        {
+          "href": "/faq",
+          "label": "Ver todas las preguntas"
+        },
+        {
+          "href": "/faq",
+          "label": "Preguntas frecuentes"
+        },
+        {
+          "href": "/#planes",
+          "label": "Planes"
+        },
+        {
+          "href": "/buscar",
+          "label": "Catálogo"
+        }
+      ],
+      "mainText": "Pokémon TCG · para organizar tu colecciónTu colección Pokémon, ordenada carta por carta.Buscá cartas, organizá tus sets y tené a mano tus duplicadas. Cuando hay referencias disponibles, consultalas en USD o convertidas a ARS.Explorar el catálogoProbar el escánerPodés explorar el catálogo sin cuenta. Para escanear y guardar tu colección necesitás una cuenta y conexión.Pokémon TCGBuscá. Revisá. Coleccioná.Tu primer binder empieza con una carta.Pokémon TCGCatálogoPor setProgreso y duplicadasDINOv2Reconocimiento visual experimentalUSD + ARSReferencia y conversiónDE LA MESA AL BINDERMenos búsqueda. Más hobby.PokéScan te ayuda a pasar de una pila de cartas a una colección que podés consultar, completar y compartir.01Buscá por nombre, número o artista.Encontrá cartas y filtrá el catálogo por set.02Organizá tu colección.Registrá cartas, separá duplicadas y marcá las que querés intercambiar.03Consultá referencias con contexto.Cuando hay datos, mirá la variante, la fuente y cuándo se consultó. Podés ver USD o su conversión a ARS.Tu captura se procesa para reconocer la carta.Para reconocer necesitás una cuenta y conexión. PokéScan envía el recorte para procesarlo con DINOv2, sin guardar la foto de consulta. Podés subir una foto; la cámara se ofrece en teléfonos compatibles. La sugerencia puede fallar: revisá y corregí la carta antes de guardar. Buscar, consultar referencias y sincronizar también requiere conexión.REFERENCIAS DE MERCADOUna referencia internacional, también en ARS.Consultá la referencia disponible de la variante y, si querés, mirala convertida al tipo de cambio blue u oficial elegido. La conversión usa el cambio actual; no representa un precio de venta en Argentina.La fecha indica cuándo se consultó el dato. No siempre conocemos cuándo se actualizó la fuente. La condición que registrás no ajusta automáticamente el importe.Referencia internacionalUSDCuando hay datos para la varianteConversión estimadaARSAl cambio actual blue u oficialProgreso por setPor setFaltantes y duplicadasEnlace de solo lecturaUn linkElegís qué colección compartirPLANESEmpezá gratis. Pro está en evaluación.Hoy no hay suscripciones ni pagos activos. Cualquier propuesta de Pro dependerá de validar utilidad, costos y condiciones.GratisFunciones disponibles sin suscripción hoy.Disponible$0Catálogo y búsqueda por nombre, número o artistaReconocimiento visual experimental con revisión antes de guardar (requiere cuenta, foto o cámara compatible y conexión; puede no identificar la carta)Colecciones, duplicadas y marcas para intercambioProgreso por setReferencias e historial de cartas cuando hay datosObservaciones del portafolio al consultar el resumen: incluyen cambios de cantidad y referenciasExportación CSV de una colecciónConversión de referencias a ARSProbar PokéScanProUna posibilidad en evaluación.En evaluaciónTodavía no hay un plan Pro activo, precio, cuotas ni fecha de lanzamiento. Estamos investigando qué herramientas serían útiles. El historial de cartas, las observaciones del portafolio por consulta y la exportación CSV básica ya están disponibles sin suscripción. No hay seguimiento automático de precios ni alertas.Ver qué estamos investigandoCualquier oferta futura dependerá de validar utilidad, costos y condiciones.Empezá por encontrar una carta.Explorá el catálogo o probá el reconocimiento visual con una captura. Revisá la sugerencia antes de guardarla.Explorar el catálogoProbar reconocimiento visualPREGUNTAS FRECUENTESLo importante, sin letra chica.Cómo funciona el escáner, qué significa el precio y qué está disponible hoy.¿Qué es PokéScan?PokéScan es una app web para buscar cartas Pokémon, organizar colecciones y consultar referencias de mercado cuando hay datos disponibles. Podés revisar progreso por set, duplicadas, historial de referencias de cartas y observaciones del portafolio por consulta, exportar una colección a CSV y crear enlaces de solo lectura.¿Cómo funciona el escáner y qué pasa con mi foto?El escáner usa reconocimiento visual DINOv2 y requiere cuenta y conexión. Podés subir una foto o usar la cámara en un teléfono compatible: se envía el recorte para procesarlo sin guardar la foto de consulta. La sugerencia puede ser incorrecta o no aparecer. Revisá y corregí la carta antes de guardarla.¿PokéScan funciona sin conexión?No. Para buscar en el catálogo, reconocer cartas, consultar o sincronizar tu colección necesitás conexión. Algunas páginas públicas visitadas pueden seguir visibles desde caché; eso no garantiza que estén actualizadas.¿De dónde salen los precios?Mostramos referencias internacionales del mercado indicado por la fuente para la variante cuando hay datos. La fecha de consulta indica cuándo PokéScan obtuvo la referencia; no confirma cuándo se actualizó el mercado. Si la fuente aporta su propia fecha, se muestra por separado; puede faltar o ser anterior. Si ves ARS, es una conversión al cambio actual elegido, no un precio realizable en Argentina. La condición que guardás no modifica el valor automáticamente. La referencia puede faltar o estar desactualizada; no es oferta de compra ni tasación.¿Puedo ver los valores en pesos argentinos?Sí. Podés ver USD o convertir la referencia a ARS usando la cotización blue u oficial que elijas. El cambio aplicado es el actual; el importe no acredita una operación en pesos ni representa una cotización de compraventa local.¿Necesito una cuenta para empezar?Podés explorar el catálogo sin cuenta. Necesitás una cuenta para reconocer cartas con DINOv2, guardarlas en colecciones, sincronizarlas y administrar tus enlaces compartidos. El reconocimiento requiere conexión y puede fallar; revisás la sugerencia antes de guardar.¿Qué incluye Gratis y qué incluiría Pro?Hoy no hay plan Pro activo ni pagos. El catálogo, el historial de cartas, las observaciones del portafolio por consulta y la exportación CSV básica están disponibles sin suscripción. Seguimiento automático y alertas no están disponibles; cualquier plan futuro depende de validar su utilidad, costos y condiciones. No hay precio ni fecha confirmados.¿Funciona con otros juegos de cartas?Por ahora, PokéScan está enfocado en Pokémon TCG.Ver todas las preguntas",
+      "page": 390,
+      "scrollY": 0,
+      "theme": "dark",
+      "url": "http://127.0.0.1:55951/?qa_theme=dark",
+      "viewport": 390,
+      "route": "/",
+      "fixture": "only initial theme preference on private origin; compiled content unchanged",
+      "screenshot": "landing-390-dark.jpg"
+    },
+    {
+      "background": "rgb(11, 11, 15)",
+      "body": 390,
+      "expanded": 8,
+      "h1": 1,
+      "images": [
+        {
+          "src": "/icons/icon-192.png",
+          "width": 192
+        },
+        {
+          "src": "/icons/icon-192.png",
+          "width": 192
+        }
+      ],
+      "links": [
+        {
+          "href": "#contenido",
+          "label": "Saltar al contenido"
+        },
+        {
+          "href": "/",
+          "label": "PokéScan"
+        },
+        {
+          "href": "/#producto",
+          "label": "La app"
+        },
+        {
+          "href": "/#planes",
+          "label": "Gratis y Pro"
+        },
+        {
+          "href": "/faq",
+          "label": "FAQ"
+        },
+        {
+          "href": "/login",
+          "label": "Iniciar sesión"
+        },
+        {
+          "href": "/escanear",
+          "label": "ProbarProbar gratis"
+        },
+        {
+          "href": "/faq",
+          "label": "Preguntas frecuentes"
+        },
+        {
+          "href": "/#planes",
+          "label": "Planes"
+        },
+        {
+          "href": "/buscar",
+          "label": "Catálogo"
+        }
+      ],
+      "mainText": "PREGUNTAS FRECUENTESLo importante, sin letra chica.Cómo funciona el escáner, qué significa el precio y qué está disponible hoy.¿Qué es PokéScan?PokéScan es una app web para buscar cartas Pokémon, organizar colecciones y consultar referencias de mercado cuando hay datos disponibles. Podés revisar progreso por set, duplicadas, historial de referencias de cartas y observaciones del portafolio por consulta, exportar una colección a CSV y crear enlaces de solo lectura.¿Cómo funciona el escáner y qué pasa con mi foto?El escáner usa reconocimiento visual DINOv2 y requiere cuenta y conexión. Podés subir una foto o usar la cámara en un teléfono compatible: se envía el recorte para procesarlo sin guardar la foto de consulta. La sugerencia puede ser incorrecta o no aparecer. Revisá y corregí la carta antes de guardarla.¿PokéScan funciona sin conexión?No. Para buscar en el catálogo, reconocer cartas, consultar o sincronizar tu colección necesitás conexión. Algunas páginas públicas visitadas pueden seguir visibles desde caché; eso no garantiza que estén actualizadas.¿De dónde salen los precios?Mostramos referencias internacionales del mercado indicado por la fuente para la variante cuando hay datos. La fecha de consulta indica cuándo PokéScan obtuvo la referencia; no confirma cuándo se actualizó el mercado. Si la fuente aporta su propia fecha, se muestra por separado; puede faltar o ser anterior. Si ves ARS, es una conversión al cambio actual elegido, no un precio realizable en Argentina. La condición que guardás no modifica el valor automáticamente. La referencia puede faltar o estar desactualizada; no es oferta de compra ni tasación.¿Puedo ver los valores en pesos argentinos?Sí. Podés ver USD o convertir la referencia a ARS usando la cotización blue u oficial que elijas. El cambio aplicado es el actual; el importe no acredita una operación en pesos ni representa una cotización de compraventa local.¿Necesito una cuenta para empezar?Podés explorar el catálogo sin cuenta. Necesitás una cuenta para reconocer cartas con DINOv2, guardarlas en colecciones, sincronizarlas y administrar tus enlaces compartidos. El reconocimiento requiere conexión y puede fallar; revisás la sugerencia antes de guardar.¿Qué incluye Gratis y qué incluiría Pro?Hoy no hay plan Pro activo ni pagos. El catálogo, el historial de cartas, las observaciones del portafolio por consulta y la exportación CSV básica están disponibles sin suscripción. Seguimiento automático y alertas no están disponibles; cualquier plan futuro depende de validar su utilidad, costos y condiciones. No hay precio ni fecha confirmados.¿Funciona con otros juegos de cartas?Por ahora, PokéScan está enfocado en Pokémon TCG.",
+      "page": 390,
+      "scrollY": 0,
+      "theme": "dark",
+      "url": "http://127.0.0.1:55951/faq?qa_theme=dark",
+      "viewport": 390,
+      "route": "/faq",
+      "fixture": "only initial theme preference on private origin; compiled content unchanged",
+      "screenshot": "faq-390-dark.jpg"
+    },
+    {
+      "background": "rgb(244, 244, 246)",
+      "body": 1280,
+      "expanded": 0,
+      "h1": 1,
+      "images": [
+        {
+          "src": "/icons/icon-192.png",
+          "width": 192
+        },
+        {
+          "src": "/icons/icon-192.png",
+          "width": 192
+        }
+      ],
+      "links": [
+        {
+          "href": "#contenido",
+          "label": "Saltar al contenido"
+        },
+        {
+          "href": "/",
+          "label": "PokéScan"
+        },
+        {
+          "href": "/#producto",
+          "label": "La app"
+        },
+        {
+          "href": "/#planes",
+          "label": "Gratis y Pro"
+        },
+        {
+          "href": "/faq",
+          "label": "FAQ"
+        },
+        {
+          "href": "/login",
+          "label": "Iniciar sesión"
+        },
+        {
+          "href": "/escanear",
+          "label": "ProbarProbar gratis"
+        },
+        {
+          "href": "/buscar",
+          "label": "Explorar el catálogo"
+        },
+        {
+          "href": "/escanear",
+          "label": "Probar el escáner"
+        },
+        {
+          "href": "/escanear",
+          "label": "Probar PokéScan"
+        },
+        {
+          "href": "/faq#faq-planes",
+          "label": "Ver qué estamos investigando"
+        },
+        {
+          "href": "/buscar",
+          "label": "Explorar el catálogo"
+        },
+        {
+          "href": "/escanear",
+          "label": "Probar reconocimiento visual"
+        },
+        {
+          "href": "/faq",
+          "label": "Ver todas las preguntas"
+        },
+        {
+          "href": "/faq",
+          "label": "Preguntas frecuentes"
+        },
+        {
+          "href": "/#planes",
+          "label": "Planes"
+        },
+        {
+          "href": "/buscar",
+          "label": "Catálogo"
+        }
+      ],
+      "mainText": "Pokémon TCG · para organizar tu colecciónTu colección Pokémon, ordenada carta por carta.Buscá cartas, organizá tus sets y tené a mano tus duplicadas. Cuando hay referencias disponibles, consultalas en USD o convertidas a ARS.Explorar el catálogoProbar el escánerPodés explorar el catálogo sin cuenta. Para escanear y guardar tu colección necesitás una cuenta y conexión.Pokémon TCGBuscá. Revisá. Coleccioná.Tu primer binder empieza con una carta.Pokémon TCGCatálogoPor setProgreso y duplicadasDINOv2Reconocimiento visual experimentalUSD + ARSReferencia y conversiónDE LA MESA AL BINDERMenos búsqueda. Más hobby.PokéScan te ayuda a pasar de una pila de cartas a una colección que podés consultar, completar y compartir.01Buscá por nombre, número o artista.Encontrá cartas y filtrá el catálogo por set.02Organizá tu colección.Registrá cartas, separá duplicadas y marcá las que querés intercambiar.03Consultá referencias con contexto.Cuando hay datos, mirá la variante, la fuente y cuándo se consultó. Podés ver USD o su conversión a ARS.Tu captura se procesa para reconocer la carta.Para reconocer necesitás una cuenta y conexión. PokéScan envía el recorte para procesarlo con DINOv2, sin guardar la foto de consulta. Podés subir una foto; la cámara se ofrece en teléfonos compatibles. La sugerencia puede fallar: revisá y corregí la carta antes de guardar. Buscar, consultar referencias y sincronizar también requiere conexión.REFERENCIAS DE MERCADOUna referencia internacional, también en ARS.Consultá la referencia disponible de la variante y, si querés, mirala convertida al tipo de cambio blue u oficial elegido. La conversión usa el cambio actual; no representa un precio de venta en Argentina.La fecha indica cuándo se consultó el dato. No siempre conocemos cuándo se actualizó la fuente. La condición que registrás no ajusta automáticamente el importe.Referencia internacionalUSDCuando hay datos para la varianteConversión estimadaARSAl cambio actual blue u oficialProgreso por setPor setFaltantes y duplicadasEnlace de solo lecturaUn linkElegís qué colección compartirPLANESEmpezá gratis. Pro está en evaluación.Hoy no hay suscripciones ni pagos activos. Cualquier propuesta de Pro dependerá de validar utilidad, costos y condiciones.GratisFunciones disponibles sin suscripción hoy.Disponible$0Catálogo y búsqueda por nombre, número o artistaReconocimiento visual experimental con revisión antes de guardar (requiere cuenta, foto o cámara compatible y conexión; puede no identificar la carta)Colecciones, duplicadas y marcas para intercambioProgreso por setReferencias e historial de cartas cuando hay datosObservaciones del portafolio al consultar el resumen: incluyen cambios de cantidad y referenciasExportación CSV de una colecciónConversión de referencias a ARSProbar PokéScanProUna posibilidad en evaluación.En evaluaciónTodavía no hay un plan Pro activo, precio, cuotas ni fecha de lanzamiento. Estamos investigando qué herramientas serían útiles. El historial de cartas, las observaciones del portafolio por consulta y la exportación CSV básica ya están disponibles sin suscripción. No hay seguimiento automático de precios ni alertas.Ver qué estamos investigandoCualquier oferta futura dependerá de validar utilidad, costos y condiciones.Empezá por encontrar una carta.Explorá el catálogo o probá el reconocimiento visual con una captura. Revisá la sugerencia antes de guardarla.Explorar el catálogoProbar reconocimiento visualPREGUNTAS FRECUENTESLo importante, sin letra chica.Cómo funciona el escáner, qué significa el precio y qué está disponible hoy.¿Qué es PokéScan?PokéScan es una app web para buscar cartas Pokémon, organizar colecciones y consultar referencias de mercado cuando hay datos disponibles. Podés revisar progreso por set, duplicadas, historial de referencias de cartas y observaciones del portafolio por consulta, exportar una colección a CSV y crear enlaces de solo lectura.¿Cómo funciona el escáner y qué pasa con mi foto?El escáner usa reconocimiento visual DINOv2 y requiere cuenta y conexión. Podés subir una foto o usar la cámara en un teléfono compatible: se envía el recorte para procesarlo sin guardar la foto de consulta. La sugerencia puede ser incorrecta o no aparecer. Revisá y corregí la carta antes de guardarla.¿PokéScan funciona sin conexión?No. Para buscar en el catálogo, reconocer cartas, consultar o sincronizar tu colección necesitás conexión. Algunas páginas públicas visitadas pueden seguir visibles desde caché; eso no garantiza que estén actualizadas.¿De dónde salen los precios?Mostramos referencias internacionales del mercado indicado por la fuente para la variante cuando hay datos. La fecha de consulta indica cuándo PokéScan obtuvo la referencia; no confirma cuándo se actualizó el mercado. Si la fuente aporta su propia fecha, se muestra por separado; puede faltar o ser anterior. Si ves ARS, es una conversión al cambio actual elegido, no un precio realizable en Argentina. La condición que guardás no modifica el valor automáticamente. La referencia puede faltar o estar desactualizada; no es oferta de compra ni tasación.¿Puedo ver los valores en pesos argentinos?Sí. Podés ver USD o convertir la referencia a ARS usando la cotización blue u oficial que elijas. El cambio aplicado es el actual; el importe no acredita una operación en pesos ni representa una cotización de compraventa local.¿Necesito una cuenta para empezar?Podés explorar el catálogo sin cuenta. Necesitás una cuenta para reconocer cartas con DINOv2, guardarlas en colecciones, sincronizarlas y administrar tus enlaces compartidos. El reconocimiento requiere conexión y puede fallar; revisás la sugerencia antes de guardar.¿Qué incluye Gratis y qué incluiría Pro?Hoy no hay plan Pro activo ni pagos. El catálogo, el historial de cartas, las observaciones del portafolio por consulta y la exportación CSV básica están disponibles sin suscripción. Seguimiento automático y alertas no están disponibles; cualquier plan futuro depende de validar su utilidad, costos y condiciones. No hay precio ni fecha confirmados.¿Funciona con otros juegos de cartas?Por ahora, PokéScan está enfocado en Pokémon TCG.Ver todas las preguntas",
+      "page": 1280,
+      "scrollY": 0,
+      "theme": "light",
+      "url": "http://127.0.0.1:55951/?qa_theme=light",
+      "viewport": 1280,
+      "route": "/",
+      "fixture": "only initial theme preference on private origin; compiled content unchanged",
+      "screenshot": "landing-1280-light.jpg"
+    },
+    {
+      "background": "rgb(244, 244, 246)",
+      "body": 1280,
+      "expanded": 8,
+      "h1": 1,
+      "images": [
+        {
+          "src": "/icons/icon-192.png",
+          "width": 192
+        },
+        {
+          "src": "/icons/icon-192.png",
+          "width": 192
+        }
+      ],
+      "links": [
+        {
+          "href": "#contenido",
+          "label": "Saltar al contenido"
+        },
+        {
+          "href": "/",
+          "label": "PokéScan"
+        },
+        {
+          "href": "/#producto",
+          "label": "La app"
+        },
+        {
+          "href": "/#planes",
+          "label": "Gratis y Pro"
+        },
+        {
+          "href": "/faq",
+          "label": "FAQ"
+        },
+        {
+          "href": "/login",
+          "label": "Iniciar sesión"
+        },
+        {
+          "href": "/escanear",
+          "label": "ProbarProbar gratis"
+        },
+        {
+          "href": "/faq",
+          "label": "Preguntas frecuentes"
+        },
+        {
+          "href": "/#planes",
+          "label": "Planes"
+        },
+        {
+          "href": "/buscar",
+          "label": "Catálogo"
+        }
+      ],
+      "mainText": "PREGUNTAS FRECUENTESLo importante, sin letra chica.Cómo funciona el escáner, qué significa el precio y qué está disponible hoy.¿Qué es PokéScan?PokéScan es una app web para buscar cartas Pokémon, organizar colecciones y consultar referencias de mercado cuando hay datos disponibles. Podés revisar progreso por set, duplicadas, historial de referencias de cartas y observaciones del portafolio por consulta, exportar una colección a CSV y crear enlaces de solo lectura.¿Cómo funciona el escáner y qué pasa con mi foto?El escáner usa reconocimiento visual DINOv2 y requiere cuenta y conexión. Podés subir una foto o usar la cámara en un teléfono compatible: se envía el recorte para procesarlo sin guardar la foto de consulta. La sugerencia puede ser incorrecta o no aparecer. Revisá y corregí la carta antes de guardarla.¿PokéScan funciona sin conexión?No. Para buscar en el catálogo, reconocer cartas, consultar o sincronizar tu colección necesitás conexión. Algunas páginas públicas visitadas pueden seguir visibles desde caché; eso no garantiza que estén actualizadas.¿De dónde salen los precios?Mostramos referencias internacionales del mercado indicado por la fuente para la variante cuando hay datos. La fecha de consulta indica cuándo PokéScan obtuvo la referencia; no confirma cuándo se actualizó el mercado. Si la fuente aporta su propia fecha, se muestra por separado; puede faltar o ser anterior. Si ves ARS, es una conversión al cambio actual elegido, no un precio realizable en Argentina. La condición que guardás no modifica el valor automáticamente. La referencia puede faltar o estar desactualizada; no es oferta de compra ni tasación.¿Puedo ver los valores en pesos argentinos?Sí. Podés ver USD o convertir la referencia a ARS usando la cotización blue u oficial que elijas. El cambio aplicado es el actual; el importe no acredita una operación en pesos ni representa una cotización de compraventa local.¿Necesito una cuenta para empezar?Podés explorar el catálogo sin cuenta. Necesitás una cuenta para reconocer cartas con DINOv2, guardarlas en colecciones, sincronizarlas y administrar tus enlaces compartidos. El reconocimiento requiere conexión y puede fallar; revisás la sugerencia antes de guardar.¿Qué incluye Gratis y qué incluiría Pro?Hoy no hay plan Pro activo ni pagos. El catálogo, el historial de cartas, las observaciones del portafolio por consulta y la exportación CSV básica están disponibles sin suscripción. Seguimiento automático y alertas no están disponibles; cualquier plan futuro depende de validar su utilidad, costos y condiciones. No hay precio ni fecha confirmados.¿Funciona con otros juegos de cartas?Por ahora, PokéScan está enfocado en Pokémon TCG.",
+      "page": 1280,
+      "scrollY": 0,
+      "theme": "light",
+      "url": "http://127.0.0.1:55951/faq?qa_theme=light",
+      "viewport": 1280,
+      "route": "/faq",
+      "fixture": "only initial theme preference on private origin; compiled content unchanged",
+      "screenshot": "faq-1280-light.jpg"
+    },
+    {
+      "background": "rgb(11, 11, 15)",
+      "body": 1280,
+      "expanded": 0,
+      "h1": 1,
+      "images": [
+        {
+          "src": "/icons/icon-192.png",
+          "width": 192
+        },
+        {
+          "src": "/icons/icon-192.png",
+          "width": 192
+        }
+      ],
+      "links": [
+        {
+          "href": "#contenido",
+          "label": "Saltar al contenido"
+        },
+        {
+          "href": "/",
+          "label": "PokéScan"
+        },
+        {
+          "href": "/#producto",
+          "label": "La app"
+        },
+        {
+          "href": "/#planes",
+          "label": "Gratis y Pro"
+        },
+        {
+          "href": "/faq",
+          "label": "FAQ"
+        },
+        {
+          "href": "/login",
+          "label": "Iniciar sesión"
+        },
+        {
+          "href": "/escanear",
+          "label": "ProbarProbar gratis"
+        },
+        {
+          "href": "/buscar",
+          "label": "Explorar el catálogo"
+        },
+        {
+          "href": "/escanear",
+          "label": "Probar el escáner"
+        },
+        {
+          "href": "/escanear",
+          "label": "Probar PokéScan"
+        },
+        {
+          "href": "/faq#faq-planes",
+          "label": "Ver qué estamos investigando"
+        },
+        {
+          "href": "/buscar",
+          "label": "Explorar el catálogo"
+        },
+        {
+          "href": "/escanear",
+          "label": "Probar reconocimiento visual"
+        },
+        {
+          "href": "/faq",
+          "label": "Ver todas las preguntas"
+        },
+        {
+          "href": "/faq",
+          "label": "Preguntas frecuentes"
+        },
+        {
+          "href": "/#planes",
+          "label": "Planes"
+        },
+        {
+          "href": "/buscar",
+          "label": "Catálogo"
+        }
+      ],
+      "mainText": "Pokémon TCG · para organizar tu colecciónTu colección Pokémon, ordenada carta por carta.Buscá cartas, organizá tus sets y tené a mano tus duplicadas. Cuando hay referencias disponibles, consultalas en USD o convertidas a ARS.Explorar el catálogoProbar el escánerPodés explorar el catálogo sin cuenta. Para escanear y guardar tu colección necesitás una cuenta y conexión.Pokémon TCGBuscá. Revisá. Coleccioná.Tu primer binder empieza con una carta.Pokémon TCGCatálogoPor setProgreso y duplicadasDINOv2Reconocimiento visual experimentalUSD + ARSReferencia y conversiónDE LA MESA AL BINDERMenos búsqueda. Más hobby.PokéScan te ayuda a pasar de una pila de cartas a una colección que podés consultar, completar y compartir.01Buscá por nombre, número o artista.Encontrá cartas y filtrá el catálogo por set.02Organizá tu colección.Registrá cartas, separá duplicadas y marcá las que querés intercambiar.03Consultá referencias con contexto.Cuando hay datos, mirá la variante, la fuente y cuándo se consultó. Podés ver USD o su conversión a ARS.Tu captura se procesa para reconocer la carta.Para reconocer necesitás una cuenta y conexión. PokéScan envía el recorte para procesarlo con DINOv2, sin guardar la foto de consulta. Podés subir una foto; la cámara se ofrece en teléfonos compatibles. La sugerencia puede fallar: revisá y corregí la carta antes de guardar. Buscar, consultar referencias y sincronizar también requiere conexión.REFERENCIAS DE MERCADOUna referencia internacional, también en ARS.Consultá la referencia disponible de la variante y, si querés, mirala convertida al tipo de cambio blue u oficial elegido. La conversión usa el cambio actual; no representa un precio de venta en Argentina.La fecha indica cuándo se consultó el dato. No siempre conocemos cuándo se actualizó la fuente. La condición que registrás no ajusta automáticamente el importe.Referencia internacionalUSDCuando hay datos para la varianteConversión estimadaARSAl cambio actual blue u oficialProgreso por setPor setFaltantes y duplicadasEnlace de solo lecturaUn linkElegís qué colección compartirPLANESEmpezá gratis. Pro está en evaluación.Hoy no hay suscripciones ni pagos activos. Cualquier propuesta de Pro dependerá de validar utilidad, costos y condiciones.GratisFunciones disponibles sin suscripción hoy.Disponible$0Catálogo y búsqueda por nombre, número o artistaReconocimiento visual experimental con revisión antes de guardar (requiere cuenta, foto o cámara compatible y conexión; puede no identificar la carta)Colecciones, duplicadas y marcas para intercambioProgreso por setReferencias e historial de cartas cuando hay datosObservaciones del portafolio al consultar el resumen: incluyen cambios de cantidad y referenciasExportación CSV de una colecciónConversión de referencias a ARSProbar PokéScanProUna posibilidad en evaluación.En evaluaciónTodavía no hay un plan Pro activo, precio, cuotas ni fecha de lanzamiento. Estamos investigando qué herramientas serían útiles. El historial de cartas, las observaciones del portafolio por consulta y la exportación CSV básica ya están disponibles sin suscripción. No hay seguimiento automático de precios ni alertas.Ver qué estamos investigandoCualquier oferta futura dependerá de validar utilidad, costos y condiciones.Empezá por encontrar una carta.Explorá el catálogo o probá el reconocimiento visual con una captura. Revisá la sugerencia antes de guardarla.Explorar el catálogoProbar reconocimiento visualPREGUNTAS FRECUENTESLo importante, sin letra chica.Cómo funciona el escáner, qué significa el precio y qué está disponible hoy.¿Qué es PokéScan?PokéScan es una app web para buscar cartas Pokémon, organizar colecciones y consultar referencias de mercado cuando hay datos disponibles. Podés revisar progreso por set, duplicadas, historial de referencias de cartas y observaciones del portafolio por consulta, exportar una colección a CSV y crear enlaces de solo lectura.¿Cómo funciona el escáner y qué pasa con mi foto?El escáner usa reconocimiento visual DINOv2 y requiere cuenta y conexión. Podés subir una foto o usar la cámara en un teléfono compatible: se envía el recorte para procesarlo sin guardar la foto de consulta. La sugerencia puede ser incorrecta o no aparecer. Revisá y corregí la carta antes de guardarla.¿PokéScan funciona sin conexión?No. Para buscar en el catálogo, reconocer cartas, consultar o sincronizar tu colección necesitás conexión. Algunas páginas públicas visitadas pueden seguir visibles desde caché; eso no garantiza que estén actualizadas.¿De dónde salen los precios?Mostramos referencias internacionales del mercado indicado por la fuente para la variante cuando hay datos. La fecha de consulta indica cuándo PokéScan obtuvo la referencia; no confirma cuándo se actualizó el mercado. Si la fuente aporta su propia fecha, se muestra por separado; puede faltar o ser anterior. Si ves ARS, es una conversión al cambio actual elegido, no un precio realizable en Argentina. La condición que guardás no modifica el valor automáticamente. La referencia puede faltar o estar desactualizada; no es oferta de compra ni tasación.¿Puedo ver los valores en pesos argentinos?Sí. Podés ver USD o convertir la referencia a ARS usando la cotización blue u oficial que elijas. El cambio aplicado es el actual; el importe no acredita una operación en pesos ni representa una cotización de compraventa local.¿Necesito una cuenta para empezar?Podés explorar el catálogo sin cuenta. Necesitás una cuenta para reconocer cartas con DINOv2, guardarlas en colecciones, sincronizarlas y administrar tus enlaces compartidos. El reconocimiento requiere conexión y puede fallar; revisás la sugerencia antes de guardar.¿Qué incluye Gratis y qué incluiría Pro?Hoy no hay plan Pro activo ni pagos. El catálogo, el historial de cartas, las observaciones del portafolio por consulta y la exportación CSV básica están disponibles sin suscripción. Seguimiento automático y alertas no están disponibles; cualquier plan futuro depende de validar su utilidad, costos y condiciones. No hay precio ni fecha confirmados.¿Funciona con otros juegos de cartas?Por ahora, PokéScan está enfocado en Pokémon TCG.Ver todas las preguntas",
+      "page": 1280,
+      "scrollY": 0,
+      "theme": "dark",
+      "url": "http://127.0.0.1:55951/?qa_theme=dark",
+      "viewport": 1280,
+      "route": "/",
+      "fixture": "only initial theme preference on private origin; compiled content unchanged",
+      "screenshot": "landing-1280-dark.jpg"
+    },
+    {
+      "background": "rgb(11, 11, 15)",
+      "body": 1280,
+      "expanded": 8,
+      "h1": 1,
+      "images": [
+        {
+          "src": "/icons/icon-192.png",
+          "width": 192
+        },
+        {
+          "src": "/icons/icon-192.png",
+          "width": 192
+        }
+      ],
+      "links": [
+        {
+          "href": "#contenido",
+          "label": "Saltar al contenido"
+        },
+        {
+          "href": "/",
+          "label": "PokéScan"
+        },
+        {
+          "href": "/#producto",
+          "label": "La app"
+        },
+        {
+          "href": "/#planes",
+          "label": "Gratis y Pro"
+        },
+        {
+          "href": "/faq",
+          "label": "FAQ"
+        },
+        {
+          "href": "/login",
+          "label": "Iniciar sesión"
+        },
+        {
+          "href": "/escanear",
+          "label": "ProbarProbar gratis"
+        },
+        {
+          "href": "/faq",
+          "label": "Preguntas frecuentes"
+        },
+        {
+          "href": "/#planes",
+          "label": "Planes"
+        },
+        {
+          "href": "/buscar",
+          "label": "Catálogo"
+        }
+      ],
+      "mainText": "PREGUNTAS FRECUENTESLo importante, sin letra chica.Cómo funciona el escáner, qué significa el precio y qué está disponible hoy.¿Qué es PokéScan?PokéScan es una app web para buscar cartas Pokémon, organizar colecciones y consultar referencias de mercado cuando hay datos disponibles. Podés revisar progreso por set, duplicadas, historial de referencias de cartas y observaciones del portafolio por consulta, exportar una colección a CSV y crear enlaces de solo lectura.¿Cómo funciona el escáner y qué pasa con mi foto?El escáner usa reconocimiento visual DINOv2 y requiere cuenta y conexión. Podés subir una foto o usar la cámara en un teléfono compatible: se envía el recorte para procesarlo sin guardar la foto de consulta. La sugerencia puede ser incorrecta o no aparecer. Revisá y corregí la carta antes de guardarla.¿PokéScan funciona sin conexión?No. Para buscar en el catálogo, reconocer cartas, consultar o sincronizar tu colección necesitás conexión. Algunas páginas públicas visitadas pueden seguir visibles desde caché; eso no garantiza que estén actualizadas.¿De dónde salen los precios?Mostramos referencias internacionales del mercado indicado por la fuente para la variante cuando hay datos. La fecha de consulta indica cuándo PokéScan obtuvo la referencia; no confirma cuándo se actualizó el mercado. Si la fuente aporta su propia fecha, se muestra por separado; puede faltar o ser anterior. Si ves ARS, es una conversión al cambio actual elegido, no un precio realizable en Argentina. La condición que guardás no modifica el valor automáticamente. La referencia puede faltar o estar desactualizada; no es oferta de compra ni tasación.¿Puedo ver los valores en pesos argentinos?Sí. Podés ver USD o convertir la referencia a ARS usando la cotización blue u oficial que elijas. El cambio aplicado es el actual; el importe no acredita una operación en pesos ni representa una cotización de compraventa local.¿Necesito una cuenta para empezar?Podés explorar el catálogo sin cuenta. Necesitás una cuenta para reconocer cartas con DINOv2, guardarlas en colecciones, sincronizarlas y administrar tus enlaces compartidos. El reconocimiento requiere conexión y puede fallar; revisás la sugerencia antes de guardar.¿Qué incluye Gratis y qué incluiría Pro?Hoy no hay plan Pro activo ni pagos. El catálogo, el historial de cartas, las observaciones del portafolio por consulta y la exportación CSV básica están disponibles sin suscripción. Seguimiento automático y alertas no están disponibles; cualquier plan futuro depende de validar su utilidad, costos y condiciones. No hay precio ni fecha confirmados.¿Funciona con otros juegos de cartas?Por ahora, PokéScan está enfocado en Pokémon TCG.",
+      "page": 1280,
+      "scrollY": 0,
+      "theme": "dark",
+      "url": "http://127.0.0.1:55951/faq?qa_theme=dark",
+      "viewport": 1280,
+      "route": "/faq",
+      "fixture": "only initial theme preference on private origin; compiled content unchanged",
+      "screenshot": "faq-1280-dark.jpg"
+    }
+  ],
+  "scope": "public compiled pages only; initial theme fixture on separate origin; no account/data writes",
+  "helperCorrections": [
+    "Next root canonical normalization",
+    "native details locator",
+    "private icon allowlist"
+  ],
+  "screenshots": "final FAQ captures after native scroll to top; previous captures preserved privately",
+  "globalCheckRepeated": false
+}

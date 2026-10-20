@@ -1,0 +1,10 @@
+{
+  "checks": [
+    {
+      "name": "Standalone HTML file opens with no external dependencies",
+      "passed": true
+    }
+  ],
+  "errors": [],
+  "failure": "Expected values to be strictly equal:\n\nfalse !== true\n"
+}

@@ -378,18 +378,20 @@ decorators se registraban y no se ejecutaban nunca.
 | Job | Cada cuánto | Qué hace |
 |---|---|---|
 | `syncCatalogWeekly` | `7 4 * * 1` (lunes 04:07) | Corre el sync del catálogo con el **mismo lock** que el endpoint de admin |
-| `backfillPricesHourly` | `13 * * * *` | Encola hasta 300 cartas sin precio vigente del proveedor activo |
+| `backfillPricesHourly` | `13 * * * *` | Recorre el catálogo y encola todas las cartas sin precio vigente del proveedor activo; la cola deduplica y el gate regula las consultas |
 | `prunePricesMonthly` | `23 3 1 * *` | Corre la política de retención con los defaults de producción |
 
 **Por qué el sync es semanal y no diario**: 83 requests contra un límite de 1.000
 por día. Diario serían 8,3 % de la cuota diaria en una tarea que el catálogo no
 necesita cada día, y la fuente es deprecada (las keys mueren el 1/3/2027).
 
-**Por qué el backfill es horario y de lotes chicos**: el ritmo lo impone
-`ProviderRateGate` (26/min), el lote no lo cambia. Lo que decide el lote es cuánto
-tarda la cola en vaciarse: 300 cartas son ~12 minutos, así que la cola no le
-queda llena de cartas de backfill por delante de la que el usuario está mirando.
-Con 20.667 cartas pendientes, 300/hora vacía el backlog en tres días.
+**Por qué el backfill horario recorre el catálogo entero**: el ritmo lo impone
+`ProviderRateGate` (26/min), no el cron. El catálogo actual de 20.670 cartas
+requiere unas 13,2 horas de llamadas seriales en el peor caso, con margen dentro
+del ciclo diario. El cron vuelve a recorrer las vencidas cada hora; la cola
+persistente deduplica trabajos en curso y un upsert por lote evita miles de
+escrituras individuales. Las respuestas sin precio se reintentan una vez por día;
+los errores agotados vuelven a la cola después de vencer su backoff.
 
 **El backfill encola, no pide precios.** Es lo que garantiza que compita en el
 mismo reloj que las lecturas públicas. Si llamara al proveedor tendría su propio
@@ -576,9 +578,95 @@ pnpm run db:sync
   └─ 20.670 cartas en `cards` (176 sets), cada una con su `rawJson`
 ```
 
+## Cronjobs diarios de precios y operación (19/10/2026)
+
+TCGdex planifica el registro habilitado a las 03:15 UTC (`00:15` en Argentina).
+TCGCSV planifica a las 21:00 UTC (`18:00` en Argentina). Cada proveedor tiene
+un resumidor cada quince minutos; los ticks de coordinación y consumo siguen
+siendo internos. El backend debe permanecer encendido en esas ventanas; al volver
+después de una interrupción recupera el día UTC actual, no reconstruye días
+anteriores. Los precios TCGdex siguen pasando por `ProviderRateGate`, con 2300 ms entre
+llamadas compartidas en PostgreSQL. Ese ritmo es cortesía operativa de TCGdex;
+la cuota de 1000/día de pokemontcg.io corresponde al catálogo y no se traslada
+a este proveedor.
+
+TCGCSV descubre identidades cada diez minutos y planifica sólo grupos asociados
+a sets habilitados. Su consumidor conserva el control de cuota y las reservas
+de 24 h desde el final de una descarga. El descubrimiento cachea grupos por build.
+Las descargas
+respetan el presupuesto de cada archivo durante 24 h completas desde que termina
+su lectura. No hay topes globales de requests o grupos; los contadores por ventana
+de24h son informativos. Un build ya publicado se saltea y no duplica observaciones.
+Los grupos nuevos se registran sólo por identidad segura; el reporte durable
+conserva IDs de sets sin asociación y motivos, sin datos personales. Ver
+[pricing.md](pricing.md) para identidad, cobertura y fechas.
+
+Desde la raíz o desde backend, con la API activa:
+
+```bash
+pnpm run prices:sync
+pnpm run prices:sync -- --no-watch
+pnpm run prices:status
+pnpm run prices:status -- --watch --seconds=120
+pnpm run prices:status -- --json
+```
+
+`prices:sync` pide un ciclo de ambos proveedores y muestra el avance cada cinco
+segundos por hasta diez minutos. `--seconds=N` ajusta esa duración entre 1 y
+86400 segundos. Ctrl+C cierra la vista; la instancia activa sigue trabajando.
+`prices:status` sólo consulta datos locales, sin bootstrap ni requests externos.
+La CLI no inicia otra API, no ejecuta proveedores y no elimina ni adelanta leases
+o presupuestos de descarga.
+
+`price_sync_controls` conserva señales coalescidas, generaciones atendidas,
+leases y heartbeat del planificador. El tick de cinco segundos atiende pedidos
+manuales con los mismos servicios de cron. Un pedido manual puede adelantar
+la lectura del manifest TCGCSV, pero reutiliza el catálogo si el build no cambió
+y conserva el backoff de errores, los leases y las 24 h del archivo de precios.
+Los flags siguen mandando: `ENABLE_PRICE_BACKFILL_CRON`, `PRICE_QUEUE_ENABLED`
+y `ENABLE_TCGCSV_INGESTION`. Con un flag apagado, el pedido queda pendiente.
+La cola muestra `en espera` para pendientes cuya disponibilidad o última descarga
+impiden ejecutarlos ahora; los fallos reales conservan su estado y backoff.
+La próxima disponibilidad mostrada nunca queda en el pasado y contempla la espera
+del último archivo y el descubrimiento necesario para reencolar fallos.
+El estado distingue actividad reciente del cron y worker **configurado** como
+habilitado/apagado; no pretende probar que el loop del worker esté drenando.
+
+La capa de ciclos diarios agrega `20261018010000_price_sync_registry` sobre las
+tablas de descubrimiento TCGCSV. Las migraciones son aditivas y no modifican
+inventario, `pg_trgm` ni reservas de jobs existentes. La CLI no aplica
+migraciones ni cambia flags o configuración del entorno.
+
 ## Ver también
 
 - [providers.md](providers.md) — el provider que usa el sync y su `VARIANT_MAP`
 - [pricing.md](pricing.md) — `SyncPricesService` en detalle
 - [api.md](api.md) — los 3 endpoints de admin
 - [gotchas.md](gotchas.md) — por qué el sync es reanudable y no "reintenta todo"
+
+### Registro, estados y CLI local
+
+El estado diario incluye cada proveedor/set de hoy, cantidad cotizada, sin
+cotización, sin mapping, no asociado, pendiente, en proceso y fallido; muestra
+build, espera, próximo intento y pausa `blockedUntil`. Separa jobs legacy
+diferidos de solicitudes interactivas. La última actividad se calcula desde
+comprobaciones o precios persistidos; un heartbeat del planificador no acredita
+trabajo del proveedor. Errores se presentan con el detalle omitido para evitar
+exponer datos ajenos en JSON.
+
+Administrá el registro sin endpoints ni consumidores nuevos:
+
+```bash
+pnpm run prices:sets -- list
+pnpm run prices:sets -- seed
+pnpm run prices:sets -- add --set=swsh7 --priority=100
+pnpm run prices:sets -- enable --set=swsh7
+pnpm run prices:sets -- rank --set=swsh7 --priority=20
+pnpm run prices:sets -- disable --set=swsh7
+```
+
+`seed` agrega sólo IDs curados existentes y conserva decisiones previas.
+`add`/`enable` escriben una señal durable únicamente para fuentes habilitadas
+por sus flags. El planificador Nest sigue siendo el único que inicia ciclos;
+ningún comando consulta proveedores. `rank` cambia el orden de atención y
+`disable` conserva el registro y los precios históricos.

@@ -1,0 +1,18 @@
+{
+  "scripts/inf03-backup.mjs": "bc493d0dc653bf7a514b2b3bec4f52f8b35563a37f2a0db01b86b0d35e575c3c",
+  "scripts/inf03-restore.mjs": "f137b809cb73855141fcfb0f2e1308628398d8f1e04b2b902fa4d7ac6952fd82",
+  "scripts/inf03-inventory-common.mjs": "e9e06ca6660eb008cccf6bb6255b71c453fdd6d5ae3c5f8662b7e4737b9a9a6f",
+  "scripts/inf03-inventory.mjs": "b62290e42dc4c0cb3170bec052da7eadc3694688c5a09f118499205ced4a4c78",
+  "scripts/inf03-retention.mjs": "42b365b312701e7b3971d1c43adb79eb5f46066d7fea1dc63292b80fd14cd8f0",
+  "scripts/inf03-smoke.mjs": "fbebc38538f0a9fb003d8ac4c49d3044a663d6890548e93cc0564fefd3ea3141",
+  "scripts/inf03-inventory-common.test.mjs": "88b386aabfb5818aa6d653a566dbdb0886104a29d0c4dff1ffb786072352f47b",
+  "scripts/inf03-retention.test.mjs": "43fd3ab1d257153d041ec4d3bec5c59bc62f6bdc44424d0a22d54d38b4a214e9",
+  "scripts/inf03-inventory-restore.test.mjs": "c933f47884c830c1fad893502cdfb320e313d96de125972213f072ceaf6bf7ea",
+  "scripts/inf03-inventory-test-fixture.mjs": "132fc796d2cf32b6dc1ff3964869f84c35d57c713743f934a8a874b546e831b9",
+  "backend/src/modules/account-deletion/restore-policy.ts": "bf3f22e0d92e6bc60beab60e3b3f77121e2194048b57463394c95cdfc6a97160",
+  "backend/src/modules/account-deletion/restore-policy.spec.ts": "cfb27cfe63d6f8818d26d1bef9325854c841cf29c04f581185048c73058a7c89",
+  "backend/src/modules/account-deletion/account-deletion-restore.ts": "faa724f5fcec3b0112d62858e4a967fee491bfdfe57c26acf7d03b56ddee1161",
+  "backend/src/modules/account-deletion/account-deletion-restore.spec.ts": "69fe9f75de3f563a08d6ad0088bc503dc70c0ea6fb8a1d438708112cb7c25a5a",
+  "infra/inf03/README.md": "e5db13c2103e5d76761c2aa81c0e5828d53a8ee6121fbe497ef13e3a4522863b",
+  "package.json": "948992312edb434cb9afe8af03adceef4fcdc2084f1e7825b93e161bae960ffc"
+}

@@ -1,0 +1,153 @@
+{
+  "owner": "/root/be05_account_draft_review_sol",
+  "runId": "be07-global-469af22a0f8f",
+  "tmp": "/private/tmp/be07-global-469af22a0f8f",
+  "annex": "/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/docs/plans/lanzamiento-2026-10-07/RESULTADOS/LOTE-REDIS-revalidacion-global-anexos",
+  "database": "be07_global_469af22a0f8f_test",
+  "databaseComment": "be07-global-469af22a0f8f-owned",
+  "redis": "be07-global-469af22a0f8f-redis",
+  "redisLabel": "be07-global-469af22a0f8f",
+  "redisPort": 56391,
+  "proxyPort": 56392,
+  "resources": [
+    {
+      "role": "database",
+      "name": "be07_global_469af22a0f8f_test",
+      "pgContainer": "18aa2f6937521ae010930ae98cbee45f2fa435b554c65cf90daaffba0c641ba8",
+      "comment": "be07-global-469af22a0f8f-owned"
+    },
+    {
+      "role": "redis",
+      "name": "be07-global-469af22a0f8f-redis",
+      "id": "06e0661bf4edda67fc9e6207fb4d39719e27a382bf6e9b06887fc050336b5d31",
+      "label": "be07-global-469af22a0f8f",
+      "bind": "127.0.0.1:56391",
+      "tmpfs": true
+    }
+  ],
+  "liveResources": [],
+  "authorization": "Pedido humano directo nuevo: bueno, avanza entonces con la validacion global; stop/check exacto y runtime BE07 aislado si verde.",
+  "at": "2026-10-09T19:41:15.923388+00:00",
+  "plannedResources": [
+    {
+      "role": "database",
+      "name": "be07_global_469af22a0f8f_test",
+      "comment": "be07-global-469af22a0f8f-owned"
+    },
+    {
+      "role": "redis",
+      "name": "be07-global-469af22a0f8f-redis",
+      "label": "be07-global-469af22a0f8f",
+      "bind": "127.0.0.1:56391"
+    }
+  ],
+  "processes": [
+    {
+      "role": "proxy",
+      "port": 56392,
+      "pid": 21364,
+      "parentPID": 21357,
+      "command": [
+        "node",
+        "/private/tmp/be07-global-469af22a0f8f/proxy.mjs"
+      ],
+      "nonce": null
+    },
+    {
+      "role": "api",
+      "port": 3001,
+      "pid": 21371,
+      "parentPID": 21357,
+      "command": [
+        "node",
+        "--import",
+        "/private/tmp/be07-global-469af22a0f8f/network-guard.mjs",
+        "backend/dist/main.js"
+      ],
+      "nonce": "be07-global-469af22a0f8f-api-one-process"
+    },
+    {
+      "role": "web",
+      "port": 3000,
+      "pid": 21384,
+      "parentPID": 21357,
+      "command": [
+        "node",
+        "--import",
+        "/private/tmp/be07-global-469af22a0f8f/network-guard.mjs",
+        "frontend/node_modules/next/dist/bin/next",
+        "start",
+        "frontend",
+        "--hostname",
+        "127.0.0.1",
+        "--port",
+        "3000"
+      ],
+      "nonce": null
+    }
+  ],
+  "runtimeStartedAtUtc": "2026-10-09T19:46:37.789091+00:00",
+  "runtimeStarted": false,
+  "processesAliveAfterMatrix": [
+    {
+      "role": "proxy",
+      "pid": 21364,
+      "stillAlive": true,
+      "listenerPID": [
+        21364
+      ]
+    },
+    {
+      "role": "api",
+      "pid": 21371,
+      "stillAlive": true,
+      "listenerPID": [
+        21371
+      ]
+    },
+    {
+      "role": "web",
+      "pid": 21384,
+      "stillAlive": true,
+      "listenerPID": [
+        21384
+      ]
+    }
+  ],
+  "processesStopVerification": [
+    {
+      "role": "web",
+      "pid": 21384,
+      "parentPID": 21357,
+      "commandVerified": true,
+      "listenerVerified": true
+    },
+    {
+      "role": "api",
+      "pid": 21371,
+      "parentPID": 21357,
+      "commandVerified": true,
+      "listenerVerified": true
+    },
+    {
+      "role": "proxy",
+      "pid": 21364,
+      "parentPID": 21357,
+      "commandVerified": true,
+      "listenerVerified": true
+    }
+  ],
+  "processesStopped": [
+    21364,
+    21371,
+    21384
+  ],
+  "runtimeExitCode": 0,
+  "databaseCommentVerifiedBeforeDrop": true,
+  "databaseConnectionsBeforeDrop": 0,
+  "cloneDropped": true,
+  "redisRemoved": true,
+  "sourceCountsUnchanged": true,
+  "sourceInfraIDsUnchangedHealthy": true,
+  "cleanupAt": "2026-10-09T19:47:48.737802+00:00"
+}

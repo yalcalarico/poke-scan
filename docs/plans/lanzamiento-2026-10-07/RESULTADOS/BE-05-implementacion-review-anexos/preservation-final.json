@@ -1,0 +1,52 @@
+{
+  "verifiedAtUtc": "2026-10-10T01:44:01.045683+00:00",
+  "receivedCopiesVerified": 33,
+  "receivedChanged": [
+    "backend/src/common/guards/jwt-auth.guard.ts",
+    "backend/src/common/guards/jwt-auth.guard.spec.ts",
+    "backend/src/modules/auth/auth.controller.ts",
+    "backend/src/modules/auth/auth.service.ts",
+    "backend/src/modules/auth/dto/password-recovery-request.dto.ts",
+    "backend/src/modules/auth/dto/password-recovery.dto.ts",
+    "backend/src/modules/auth/password-recovery.service.ts",
+    "backend/src/modules/auth/recovery-http.filter.ts",
+    "backend/src/modules/auth/recovery-mail.port.ts",
+    "backend/test/auth-session.e2e-spec.ts",
+    "backend/test/password-recovery-harness.ts",
+    "backend/docs/api.md",
+    "backend/docs/database.md",
+    "backend/docs/testing.md",
+    "backend/docs/gotchas.md",
+    "backend/src/modules/auth/auth.service.spec.ts"
+  ],
+  "newScopedSources": [
+    "backend/src/modules/auth/recovery-json.guard.ts",
+    "backend/src/modules/auth/password-recovery.service.spec.ts",
+    "backend/test/password-recovery-mail-harness.ts"
+  ],
+  "source501Compared": 501,
+  "source501Changed": [
+    "backend/src/common/guards/jwt-auth.guard.ts",
+    "backend/src/modules/auth/auth.controller.ts",
+    "backend/src/modules/auth/auth.service.spec.ts",
+    "backend/src/modules/auth/auth.service.ts",
+    "backend/test/auth-session.e2e-spec.ts"
+  ],
+  "outsideAllowedScopeChanged": [],
+  "historicalMigrationPathsUnchanged": [
+    "backend/prisma/migrations/20260925180500_init_users_and_catalog/migration.sql",
+    "backend/prisma/migrations/20260925180600_add_pg_trgm/migration.sql",
+    "backend/prisma/migrations/20260926010423_add_friendships/migration.sql",
+    "backend/prisma/migrations/20260927120000_add_tcgdex_set_id/migration.sql",
+    "backend/prisma/migrations/20260928160000_add_cards_artist_trgm/migration.sql",
+    "backend/prisma/migrations/20260929103000_add_card_sets_ptcgo_code/migration.sql",
+    "backend/prisma/migrations/20260930180000_add_provider_identity_and_price_provenance/migration.sql",
+    "backend/prisma/migrations/20260930204819_persistent_job_queue/migration.sql",
+    "backend/prisma/migrations/20260930210000_job_queue_explicit_utc/migration.sql",
+    "backend/prisma/migrations/20261005170000_portfolio_snapshots/migration.sql",
+    "backend/prisma/migrations/20261007090000_collection_item_add_idempotency/migration.sql",
+    "backend/prisma/migrations/migration_lock.toml"
+  ],
+  "producerReportAndEvidenceUnchanged": true,
+  "source501BaselineKind": "reconstructed after first review edits; received hashes overlaid for original baseline paths"
+}

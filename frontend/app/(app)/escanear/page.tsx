@@ -1,5 +1,7 @@
 'use client';
 
+import { isRunProtected, readMaxSessionRunId, sessionRecoveryNotice } from '@/components/scanner/session-storage';
+
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { ScreenContainer } from '@/components/layout/screen-container';
@@ -20,6 +22,12 @@ import { CaptureReviewActions } from '@/components/scanner/capture-review';
 import type { CaptureReview } from '@/lib/scanner/capture-review';
 import type { CameraError, ScannedCapture } from '@/lib/scanner/types';
 import type { VisualIdentifyResponseDto } from '@/types/api';
+import { analyzeCaptureQuality, type CaptureQuality } from '@/lib/scanner/capture-quality';
+import { fileToImageData, DEFAULT_CAPTURE_WIDTH } from '@/components/scanner/image-input';
+import { CaptureQualityNotice } from '@/components/scanner/capture-quality-notice';
+import { VisualScanResult } from '@/components/scanner/visual-result';
+import { previewHref } from '@/components/visual-preview/preview-link';
+import { useVisualPreview } from '@/components/visual-preview/visual-preview';
 
 const AUTO_IDENTIFY_INTERVAL_MS = 2500;
 interface BrowserEnv { supported: boolean; secure: boolean }
@@ -32,6 +40,7 @@ function subscribeToEnv(): () => void { return () => {}; }
 interface Notice { kind: CameraNoticeKind; detail: string | null }
 
 export default function ScanPage() {
+  const visual = useVisualPreview();
   const [exitPending, setExitPending] = useState(false);
   const router = useRouter();
   const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
@@ -49,6 +58,8 @@ export default function ScanPage() {
   const [organizeReview, setOrganizeReview] = useState<CaptureReview | null>(null);
   const [reviewOpen, setReviewOpen] = useState(false);
   const [matchPending, setMatchPending] = useState(false);
+  const [manualReviewRunId, setManualReviewRunId] = useState<number | null>(null);
+  const [persistenceNotice, setPersistenceNotice] = useState<string | null>(null);
   const [session, setSession] = useState<SessionEntry[]>([]);
   /**
    * `true` cuando el primer render ya leyó el storage. Antes de eso el guardado
@@ -64,6 +75,8 @@ export default function ScanPage() {
     queueMicrotask(() => {
       if (disposed) return;
       const stored = readSession();
+      setPersistenceNotice(sessionRecoveryNotice());
+      runIdRef.current = Math.max(runIdRef.current, readMaxSessionRunId());
       if (stored.length > 0) {
         setSession(stored);
         runIdRef.current = Math.max(runIdRef.current, ...stored.map((entry) => entry.runId));
@@ -90,7 +103,7 @@ export default function ScanPage() {
    */
   useEffect(() => {
     if (!isSessionRestored) return;
-    writeSession(session);
+    if (!writeSession(session)) queueMicrotask(() => setPersistenceNotice(sessionRecoveryNotice() ?? 'El borrador dura mientras esta pantalla siga abierta. No pudimos guardarlo en esta pestaña.'));
   }, [isSessionRestored, session]);
 
 
@@ -108,10 +121,15 @@ export default function ScanPage() {
   const cameraAvailable = mobileCamera && !!env?.supported && !!env?.secure;
   const detected = session.at(-1) ?? null;
   const showCamera = mobileCamera && isCameraStage(stage) && captureMode === 'camera';
-  const goManualSearch = useCallback(() => router.push('/buscar'), [router]);
+  const goManualSearch = useCallback(() => router.push(previewHref('/buscar', visual)), [router, visual]);
 
   // La cámara ya entrega el recorte del marco. Solo la galería detecta y orienta.
-  const runRecognition = useCallback(async (load: () => Promise<string>, from: 'camera' | 'gallery') => {
+  const runRecognition = useCallback(async (load: () => Promise<{ image: string; quality?: CaptureQuality }>, from: 'camera' | 'gallery') => {
+    if (session.length >= MAX_SESSION_ENTRIES) {
+      setErrorMessage('Llegaste a 30 lecturas. Organizá el lote antes de sumar otra.');
+      setStage(from === 'camera' ? 'camera' : 'idle');
+      return;
+    }
     if (isAuthLoading) return;
     if (!isAuthenticated) { router.push('/login?next=escanear'); return; }
     const runId = ++runIdRef.current;
@@ -125,9 +143,9 @@ export default function ScanPage() {
     setCaptureReview(null);
     setReviewOpen(false);
     try {
-      const image = await load();
+      const { image, quality } = await load();
       controller.signal.throwIfAborted();
-      const review: CaptureReview = { image, source: from, capturedAt: new Date().toISOString(), runId, result: null, error: null };
+      const review: CaptureReview = { image, quality, source: from, capturedAt: new Date().toISOString(), runId, result: null, error: null };
       setCaptureReview(review);
       setPhase('searching');
       const candidate = await recognizeCameraCard(image,
@@ -152,7 +170,7 @@ export default function ScanPage() {
       setCaptureReview((current) => current?.runId === runId ? { ...current, error: error instanceof Error ? error.message : 'No pudimos reconocer la carta.' } : current);
       setStage(from === 'camera' ? 'camera' : 'error');
     }
-  }, [isAuthLoading, isAuthenticated, router]);
+  }, [isAuthLoading, isAuthenticated, router, session.length]);
 
   const handleCapture = useCallback((capture: ScannedCapture, source: CaptureSource) => {
     const now = Date.now();
@@ -161,7 +179,15 @@ export default function ScanPage() {
     setPreviewUrl(capture.dataUrl ?? null);
     void runRecognition(async () => {
       if (!capture.dataUrl) throw new Error('No pudimos preparar la captura.');
-      return capture.dataUrl;
+      // La métrica orienta; un fallo al decodificarla no impide reconocer los
+      // bytes originales de cámara ni modifica el recorte que se puede descargar.
+      let quality: CaptureQuality | undefined;
+      try {
+        const source = await fileToImageData(new File([capture.blob], 'captura', { type: capture.blob.type }), DEFAULT_CAPTURE_WIDTH);
+        try { quality = analyzeCaptureQuality(source.imageData); }
+        finally { source.highResolutionSource.close(); }
+      } catch { /* La consulta sigue disponible sin diagnóstico de calidad. */ }
+      return { image: capture.dataUrl, quality };
     }, 'camera');
   }, [runRecognition]);
 
@@ -173,7 +199,7 @@ export default function ScanPage() {
     setPreviewUrl(url);
     void runRecognition(async () => {
       const photo = await prepareVisualPhoto(file);
-      try { return photo.image; }
+      try { return { image: photo.image, quality: photo.quality }; }
       finally { photo.source.highResolutionSource.close(); }
     }, 'gallery');
   }, [runRecognition]);
@@ -193,11 +219,13 @@ export default function ScanPage() {
   }, []);
 
   const discardLast = useCallback(() => {
+    const last = session.at(-1);
+    if (last && isRunProtected(last.runId)) { toast.info('Esta lectura tiene un intento protegido. Verificalo desde Organizar.'); return; }
     setSession((current) => current.slice(0, -1));
     setCaptureReview(null);
     setReviewOpen(false);
     toast.info('Descartamos la última lectura.');
-  }, [toast]);
+  }, [session, toast]);
 
   const handleSaved = useCallback((runIds: number[]) => {
     const saved = new Set(runIds);
@@ -216,12 +244,12 @@ export default function ScanPage() {
    * cierto.
    */
   const handleDiscardAll = useCallback(() => {
-    clearSession();
+    if (!clearSession()) { toast.info('Hay intentos protegidos. Conservamos el lote para verificarlos.'); return; }
     reviewsRef.current.clear();
     setSession([]);
     setCaptureReview(null);
     setReviewOpen(false);
-  }, []);
+  }, [toast]);
 
   const handleRemove = useCallback((runId: number) => {
     reviewsRef.current.delete(runId);
@@ -245,7 +273,7 @@ export default function ScanPage() {
       const existing = session.find((entry) => entry.runId === runId)?.candidate;
       const prices = existing?.card.id === match.card.id ? existing.prices ?? []
         : await getCardPrices(match.card.id, AbortSignal.timeout(5000)).then((response) => response.prices).catch(() => []);
-      setSession((current) => current.map((entry) => entry.runId === runId ? { ...entry, candidate: {
+      setSession((current) => current.map((entry) => entry.runId === runId ? { ...entry, identityReviewed: true, selectionSource: 'visual', candidate: {
         card: match.card, score: Math.max(0, Math.min(1, match.similarity)), rawScore: match.similarity,
         price: prices[0] ?? (existing?.card.id === match.card.id ? existing.price : null), prices,
       } } : entry));
@@ -259,10 +287,13 @@ export default function ScanPage() {
   const headline = PHASE_HEADLINE[phase];
   const showShell = !showCamera;
   const reviewActions = captureReview && !detected && stage !== 'processing'
-    ? <CaptureReviewActions review={captureReview} open={reviewOpen} onOpenChange={setReviewOpen} /> : null;
+    ? <>
+      {captureReview.source === 'camera' ? <CaptureQualityNotice quality={captureReview.quality} /> : null}
+      <CaptureReviewActions review={captureReview} open={reviewOpen} onOpenChange={setReviewOpen} />
+    </> : null;
   return <>
     {showShell ? <>
-      <ScreenHeader title="Escanear" back={{ href: '/buscar', label: 'buscar' }} />
+      <ScreenHeader title="Escanear" back={{ href: previewHref('/buscar', visual), label: 'buscar' }} />
       <ScreenContainer className="flex flex-col gap-4">
         {stage === 'idle' ? <>
           {!isAuthLoading && !isAuthenticated ? <Alert tone="info" title="Iniciá sesión para reconocer cartas">Podés explorar el catálogo sin cuenta. Para usar el escáner, entrá a tu cuenta primero.</Alert> : null}
@@ -270,6 +301,7 @@ export default function ScanPage() {
             sessionCount={session.length} onScan={openCamera}
             onPickFromGallery={() => { if (isAuthLoading) return; if (!isAuthenticated) { router.push('/login?next=escanear'); return; } fileInputRef.current?.click(); }}
             onManualSearch={goManualSearch} onOrganize={() => openOrganize('idle')} />
+          {detected && captureReview?.runId === detected.runId ? <VisualScanResult entry={detected} onReview={() => setReviewOpen(true)} /> : null}
           {cameraNotice ? <Alert tone="error" title={cameraNoticeCopy(cameraNotice.kind).title}>
             <p>{cameraNoticeCopy(cameraNotice.kind).hint}</p>
             {cameraNotice.detail ? <details className="mt-2"><summary className="cursor-pointer text-caption">Detalle técnico</summary>
@@ -282,7 +314,7 @@ export default function ScanPage() {
           {detected && captureMode === 'gallery' && captureReview?.runId === detected.runId ?
             <Button variant="secondary" onClick={() => setReviewOpen(true)}>Revisar última foto</Button> : null}
           {session.length > 0 ? <div className="flex flex-col gap-1">
-            <p className="text-caption text-tertiary">{formatCount(session.length)} {session.length === 1 ? 'carta leída pendiente' : 'cartas leídas pendientes'} de guardar en una colección.</p>
+            <p className="text-caption text-tertiary">{formatCount(session.length)} {session.length === 1 ? 'lectura pendiente' : 'lecturas pendientes'} de guardar en una colección.</p>
             {session.length >= MAX_SESSION_ENTRIES ? <p className="text-caption text-tertiary">Esta sesión conserva hasta {formatCount(MAX_SESSION_ENTRIES)} cartas. Organizá estas antes de seguir escaneando.</p> : null}
             <Button variant="ghost" onClick={handleDiscardAll} fullWidth>Descartar la sesión</Button>
           </div> : null}
@@ -302,10 +334,16 @@ export default function ScanPage() {
             <Button variant="secondary" size="lg" onClick={goManualSearch} className="flex-1">Buscar a mano</Button>
           </div>
         </> : null}
+        {persistenceNotice ? <Alert tone="warning" title="Revisá el borrador de esta pestaña">{persistenceNotice}</Alert> : null}
+        {session.length >= MAX_SESSION_ENTRIES ? <Alert tone="warning" title="Llegaste a 30 lecturas">
+          <p>Organizá estas lecturas antes de sumar otra al lote.</p>
+          <Button onClick={() => openOrganize('idle')}>Organizar lecturas</Button>
+        </Alert> : null}
+        {captureMode === 'gallery' && stage !== 'processing' ? <CaptureQualityNotice quality={captureReview?.quality} /> : null}
         {reviewActions}
       </ScreenContainer>
     </> : null}
-    {showCamera ? <CameraView autoVisual reviewOpen={reviewOpen || exitPending} onReview={captureReview?.runId === detected?.runId ? () => setReviewOpen(true) : undefined} autoCapturePaused={reviewOpen || matchPending || exitPending} reviewActions={reviewActions} liveResult={errorMessage} busy={stage === 'processing'} detected={detected}
+    {showCamera ? <CameraView autoVisual reviewOpen={reviewOpen || exitPending} onReview={captureReview?.runId === detected?.runId ? () => setReviewOpen(true) : undefined} autoCapturePaused={reviewOpen || matchPending || exitPending || session.length >= MAX_SESSION_ENTRIES} reviewActions={reviewActions} liveResult={errorMessage} busy={stage === 'processing'} detected={detected}
       headline={headline} detail={PHASE_DETAIL[phase]} progress={progress} previewUrl={previewUrl}
       sessionCount={session.length} onCapture={handleCapture} onError={handleCameraError}
       onClose={() => { if (session.length > 0) setExitPending(true); else { abortRef.current?.abort(); runIdRef.current += 1; setStage('idle'); } }}
@@ -318,14 +356,18 @@ export default function ScanPage() {
         key={`${review.runId}-${entry.candidate.card.id}`} review={review} candidate={entry.candidate}
         open={Boolean(organizeReview) || reviewOpen} pending={matchPending}
         onOpenChange={(open) => { if (!matchPending) { setReviewOpen(open); if (!open) setOrganizeReview(null); } }}
-        onConfirm={(match) => void confirmMatch(match)} onManualSearch={() => { setReviewOpen(false); setOrganizeReview(null); goManualSearch(); }} /> : null;
+        onConfirm={(match) => void confirmMatch(match)} onManualSearch={() => { setReviewOpen(false); setOrganizeReview(null); setManualReviewRunId(review.runId); openOrganize('idle'); }} /> : null;
     })()}
-    <OrganizeSheet open={stage === 'organizing' && !organizeReview} entries={session} onClose={() => setStage(organizeReturn)}
+    <OrganizeSheet open={stage === 'organizing' && !organizeReview} entries={session} manualReviewRunId={manualReviewRunId} onClose={() => { setManualReviewRunId(null); setStage(organizeReturn); }}
       onSaved={handleSaved} onRemove={handleRemove}
+      onCorrect={(runId, card) => {
+        setSession((current) => current.map((entry) => entry.runId === runId ? { ...entry, identityReviewed: true, selectionSource: 'manual', candidate: { ...entry.candidate, card, score: 0, rawScore: 0, prices: [], price: null } } : entry));
+        setManualReviewRunId(null);
+      }}
       onReview={(runId) => {
         const review = reviewsRef.current.get(runId);
         if (review) setOrganizeReview(review);
-        else toast.info('Esta captura ya no está disponible. Volvé a escanear la carta para comparar las opciones.');
+        else { setManualReviewRunId(runId); toast.info('La foto ya no está disponible. Podés buscar la carta para corregir esta lectura.'); }
       }} />
     <Sheet open={exitPending} onClose={() => setExitPending(false)} title="¿Salir del escáner?"
       footer={<div className="flex gap-3">

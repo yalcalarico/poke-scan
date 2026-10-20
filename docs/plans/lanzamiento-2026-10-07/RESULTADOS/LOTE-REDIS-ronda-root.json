@@ -1,0 +1,38 @@
+{
+  "checkedAtUtc": "2026-10-09T13:03:08.706207+00:00",
+  "roundDeliveryAcceptedAsFailedGate": true,
+  "batchAccepted": false,
+  "artifactHashesVerified": 34,
+  "reportSha256": "d81a5039f3fb330dd4fa72559e9fd549394f359c82d8edad9f1405d32579b651",
+  "evidenceSha256": "e630bfa296367412adf9bca8655d42c9e84c2f664849be2efc817928cc0ac609",
+  "manifestSha256": "dd861596d70eff28630e5c08e7b660ef3c0ea23d0d8702c29e765341eb49104c",
+  "sourceOutputProof": {
+    "final-source-sha256.json": {
+      "count": 501,
+      "base": ".",
+      "mismatches": []
+    },
+    "final-next-sha256.json": {
+      "count": 2076,
+      "base": "frontend/.next",
+      "mismatches": []
+    },
+    "final-backend-dist-sha256.json": {
+      "count": 277,
+      "base": "backend/dist",
+      "mismatches": []
+    }
+  },
+  "ownershipCleanupCorroboratedFromRecordedEvidence": true,
+  "rootCurrentLsofNoListeners": [
+    3000,
+    3001,
+    56383,
+    56384
+  ],
+  "sourceCountsAndInfraIDsCompared": true,
+  "redisFocusedPhaseRemainsAccepted": true,
+  "frontendTestCorrectionAccepted": true,
+  "nextRequired": "Causal/contextual readiness socket diagnosis; new global only with evidence/new change, APIweb real still required before BE07 close.",
+  "limits": "No independent root Docker query in this round; cleanup script/log/ownership and counts corroborated, current ports independently free. Neither global reached build/runtime. Counts are aggregates, not full-row snapshots."
+}

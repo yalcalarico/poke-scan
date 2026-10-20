@@ -1,0 +1,10 @@
+{
+  "actualPgDump": true,
+  "format": "custom",
+  "originalCreatedAt": "2026-10-11T23:05:03.978Z",
+  "encryptedBytes": 6401197,
+  "plaintextPersisted": false,
+  "encryption": "AES-256-GCM private QA artifact, does not replace production age protocol",
+  "keyPersisted": false,
+  "independentSuppressionCustody": true
+}

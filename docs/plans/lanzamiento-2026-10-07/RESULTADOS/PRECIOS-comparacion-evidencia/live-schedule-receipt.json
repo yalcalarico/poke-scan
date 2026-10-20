@@ -1,0 +1,20 @@
+{
+  "scope": "User-authorized local comparison only; existing active policy stays tcgdex; public/commercial redistribution rights not asserted",
+  "groups": [
+    24722,
+    24837
+  ],
+  "realIngestionEnabledForNextStart": true,
+  "firstScheduledAtUtc": "2026-10-14T20:30:00+00:00",
+  "firstScheduledArgentina": "2026-10-14T17:30:00-03:00",
+  "priorPublicPulls": {
+    "24722": "2026-10-13T14:22:14.533373+00:00",
+    "24837": "2026-10-13T19:29:03.998750+00:00"
+  },
+  "minimum24hAfterEveryPriorPull": true,
+  "fetchAllowlistOnlyTCGCSVKnownGETPaths": true,
+  "noProviderRequestDuringConfiguration": true,
+  "tcgcsvPricesBeforeFirstImport": 0,
+  "guardSHA256": "8c6d64f25a5d9267401f9d44adeacd793c60b92a9ebd05a8d44571225e58af03",
+  "recordedAtUtc": "2026-10-13T20:34:08.897790+00:00"
+}

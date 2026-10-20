@@ -1,11 +1,25 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // El IPC nativo entre threads evita abrir el socket del pool de plugins.
+  experimental: {
+    turbopackPluginRuntimeStrategy: "workerThreads",
+  },
   allowedDevOrigins: process.env.DEV_LAN_IP ? [process.env.DEV_LAN_IP] : [],
   async rewrites() {
     // El celu usa HTTPS y el mismo origen; Next habla con la API local por HTTP.
     const target = process.env.NODE_ENV === "development" ? process.env.DEV_API_PROXY_TARGET : undefined;
     return target ? [{ source: "/api/:path*", destination: `${target}/:path*` }] : [];
+  },
+  async headers() {
+    return ["/recuperar", "/eliminar-cuenta"].map((source) => ({
+      source,
+      headers: [
+        { key: "Cache-Control", value: "no-store, no-cache, must-revalidate, private" },
+        { key: "Referrer-Policy", value: "no-referrer" },
+        { key: "X-Robots-Tag", value: "noindex, nofollow" },
+      ],
+    }));
   },
   // Implica el server de produccion auto-contenido que usa el Dockerfile.
   output: "standalone",

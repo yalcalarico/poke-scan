@@ -1,0 +1,12 @@
+{
+  "builderImage": "f1ba863d6b8f",
+  "builderFullID": "sha256:f1ba863d6b8f6e31d3a39571de216fc4151640c4d53a5ce97c5a8caf3e38f3f4",
+  "cachedRuntimeImage": "1e92edf09a92",
+  "currentSourceFreshLinuxCompile": true,
+  "lockHashExact": "d38db86265d9572a46047c8cfd98c326c3b50711bf221e0a3f1c2100ae118025",
+  "dependenciesExact": true,
+  "node": "v22.20.0",
+  "pnpm": "10.17.1",
+  "generatedClientNamespace": "/app/node_modules/.pnpm/@prisma+client@6.19.3_prisma@6.19.3_typescript@6.0.3__typescript@6.0.3/node_modules/.prisma/client",
+  "noNetwork": true
+}

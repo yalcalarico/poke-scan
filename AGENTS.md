@@ -281,3 +281,36 @@ Tres capacidades que el backend **ya tiene** y cuya UI quedó con un honesto "es
 todavía no funciona": el modo de búsqueda por número y artista (B1), el orden por
 precio (B2) y el filtro "para intercambio" server-side (B6). Ninguna bloquea una
 pantalla. Está en `frontend/docs/redesign-2026.md` §10.2.
+
+## 9. Política de orquestación vigente — 11/10/2026
+
+El usuario actualizó el método de trabajo mediante su prompt de orquestador.
+La política completa está en [docs/orquestacion-codex.md](docs/orquestacion-codex.md).
+Esta sección reemplaza las reglas anteriores de delegación, concurrencia y
+revisión obligatoria por subagente; conserva las restricciones técnicas y los
+gates de validación del proyecto.
+
+- Roles bajo demanda: orchestrator, explorer, frontend, backend, ai-vision, QA
+  y reviewer. Resolver directamente tareas pequeñas; no crear siete agentes.
+- Máximo dos subagentes activos además de root en todo el árbol; preferir cero
+  o uno. Sólo root delega, sin subdelegación. Una implementación activa;
+  propietarios por archivo y suites/DB/Redis/build/runtime serializados.
+- Contexto mínimo, `fork_turns="none"`, resultados breves y reutilización.
+  Explorer y reviewer son sólo lectura; las correcciones se asignan por separado
+  o las hace root. Root conserva la escritura de registros centrales.
+- Base actual: `gpt-6-luna` para ejecución ordinaria y `gpt-6.1-sol` para
+  coordinación o mayor capacidad cuando haga falta. Seleccionar esfuerzo compatible
+  con la tarea; `high` ante riesgo o ambigüedad demostrados. No afirmar costes
+  desconocidos ni simular cambios del modelo/esfuerzo activo del chat.
+- Máximo cuatro encargos delegados por tarea, incluidas correcciones, sin reiniciar
+  el contador al retomar. Por problema: intento inicial y hasta dos correcciones
+  con evidencia nueva; una escalada de capacidad por paquete. Al llegar al límite,
+  conservar el hito y pendientes, sin marcar completo lo que falta.
+- Pruebas focales y revisión proporcional; QA/reviewer delegados sólo cuando
+  aporten cobertura. Para cambios de producto, mantener `stop` antes de tests,
+  check estándar al cerrar el lote y flujo real aislado si afecta datos. No
+  repetir suites verdes sin cambios ni comandos fallidos sin contexto nuevo.
+- Leer el estado vigente y los documentos pertinentes; consultar históricos
+  sólo cuando la tarea los necesite. Comunicación breve y permisos sólo reales.
+- Esta actualización no inicia cambios de producto ni modifica configuración
+  global. La automatización existente permanece PAUSED con cadencia de dos horas.

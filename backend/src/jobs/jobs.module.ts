@@ -1,4 +1,9 @@
 import { Module } from '@nestjs/common';
+import { ComparisonController } from './comparison.controller.js';
+import { CardComparisonService } from './card-comparison.service.js';
+import { CollectionComparisonService } from './collection-comparison.service.js';
+import { TcgcsvClient } from './tcgcsv/tcgcsv.client.js';
+import { TcgcsvService } from './tcgcsv/tcgcsv.service.js';
 import { ConfigModule } from '@nestjs/config';
 import { ProvidersModule } from '../modules/providers/providers.module.js';
 import { RedisModule } from '../redis/redis.module.js';
@@ -16,6 +21,8 @@ import { SyncPricesService } from './sync-prices.service.js';
 import { SyncSetsService } from './sync-sets.service.js';
 import { SyncStateService } from './sync-state.service.js';
 import { TCGDEX_SET_MAPPING, TcgdexSetMappingService } from './tcgdex-set-mapping.service.js';
+import { PriceSyncRegistryService } from './price-sync-registry.service.js';
+import { PriceSyncDailyService } from './price-sync-daily.service.js';
 
 /**
  * ## Por qué el grafo de jobs es acíclico
@@ -28,8 +35,9 @@ import { TCGDEX_SET_MAPPING, TcgdexSetMappingService } from './tcgdex-set-mappin
  */
 @Module({
   imports: [ConfigModule, ProvidersModule, RedisModule],
-  controllers: [JobsController],
+  controllers: [JobsController, ComparisonController],
   providers: [
+    CardComparisonService, CollectionComparisonService, TcgcsvClient, TcgcsvService,
     // SyncSetsService va porque SyncCardsService lo inyecta: el sync de cartas
     // espeja los sets primero.
     SyncSetsService,
@@ -38,6 +46,8 @@ import { TCGDEX_SET_MAPPING, TcgdexSetMappingService } from './tcgdex-set-mappin
     SyncPricesService,
     ProviderRateGate,
     PriceQueueService,
+    PriceSyncRegistryService,
+    PriceSyncDailyService,
     // La retención corre a mano (dry run por default) y una vez por mes por el
     // cron. La misma política, las dos entradas.
     CardPricesRetentionService,
@@ -55,11 +65,14 @@ import { TCGDEX_SET_MAPPING, TcgdexSetMappingService } from './tcgdex-set-mappin
     TcgdexSetMappingService,
   ],
   exports: [
+    CardComparisonService, CollectionComparisonService, TcgcsvService,
     SyncSetsService,
     SyncCardsService,
     SyncStateService,
     SyncPricesService,
     PriceQueueService,
+    PriceSyncRegistryService,
+    PriceSyncDailyService,
     CatalogSyncService,
     PriceBackfillService,
     CardPricesRetentionService,

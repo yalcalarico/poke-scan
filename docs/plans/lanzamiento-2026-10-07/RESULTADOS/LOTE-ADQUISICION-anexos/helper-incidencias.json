@@ -1,0 +1,1 @@
+{"infraInspectionInitial":{"exitCode":1,"error":"IndexError: list index out of range","cause":"Import de helper con argv ausente; sólo rama de inspección privada, check no iniciado","fix":"Guard len(sys.argv)>1 en dispatch","productChanged":false}}

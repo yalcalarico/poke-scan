@@ -1,0 +1,886 @@
+
+> pokemon-cards-scanner-app@0.1.0 check /Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app
+> pnpm run lint && pnpm run typecheck && pnpm run test && pnpm run build
+
+
+> pokemon-cards-scanner-app@0.1.0 lint /Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app
+> pnpm --dir backend run lint && pnpm --dir frontend run lint
+
+
+> backend@0.0.1 lint /Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/backend
+> oxlint --type-aware src/ test/
+
+src/modules/auth/password-recovery.service.ts:115:32: warning unicorn(no-useless-spread): `Promise.allSettled` accepts an iterable, so it's unnecessary to convert the iterable to an array. help: Consider removing the spread operator.
+src/jobs/price-sync-acceptance.integration.spec.ts:44:24: warning typescript(unbound-method): Avoid referencing unbound methods which may cause unintentional scoping of `this`. help: If your function does not access `this`, you can annotate it with `this: void`, or consider using an arrow function instead.
+src/jobs/price-sync-acceptance.integration.spec.ts:80:21: warning typescript(unbound-method): Avoid referencing unbound methods which may cause unintentional scoping of `this`. help: If your function does not access `this`, you can annotate it with `this: void`, or consider using an arrow function instead.
+src/jobs/price-sync-acceptance.integration.spec.ts:87:21: warning typescript(unbound-method): Avoid referencing unbound methods which may cause unintentional scoping of `this`. help: If your function does not access `this`, you can annotate it with `this: void`, or consider using an arrow function instead.
+src/jobs/price-sync-acceptance.integration.spec.ts:92:40: warning typescript(unbound-method): Avoid referencing unbound methods which may cause unintentional scoping of `this`. help: If your function does not access `this`, you can annotate it with `this: void`, or consider using an arrow function instead.
+src/jobs/price-sync-acceptance.integration.spec.ts:103:21: warning typescript(unbound-method): Avoid referencing unbound methods which may cause unintentional scoping of `this`. help: If your function does not access `this`, you can annotate it with `this: void`, or consider using an arrow function instead.
+src/jobs/price-sync-acceptance.integration.spec.ts:111:64: warning typescript(unbound-method): Avoid referencing unbound methods which may cause unintentional scoping of `this`. help: If your function does not access `this`, you can annotate it with `this: void`, or consider using an arrow function instead.
+src/jobs/price-sync-acceptance.integration.spec.ts:119:24: warning typescript(unbound-method): Avoid referencing unbound methods which may cause unintentional scoping of `this`. help: If your function does not access `this`, you can annotate it with `this: void`, or consider using an arrow function instead.
+src/jobs/tcgcsv/tcgcsv.service.spec.ts:92:19: warning typescript(unbound-method): Avoid referencing unbound methods which may cause unintentional scoping of `this`. help: If your function does not access `this`, you can annotate it with `this: void`, or consider using an arrow function instead.
+src/jobs/tcgcsv/tcgcsv.service.spec.ts:109:19: warning typescript(unbound-method): Avoid referencing unbound methods which may cause unintentional scoping of `this`. help: If your function does not access `this`, you can annotate it with `this: void`, or consider using an arrow function instead.
+src/modules/account-deletion/account-suppression-custody.spec.ts:30:57: warning typescript(unbound-method): Avoid referencing unbound methods which may cause unintentional scoping of `this`. help: If your function does not access `this`, you can annotate it with `this: void`, or consider using an arrow function instead.
+src/modules/account-deletion/account-suppression-custody.spec.ts:32:63: warning typescript(unbound-method): Avoid referencing unbound methods which may cause unintentional scoping of `this`. help: If your function does not access `this`, you can annotate it with `this: void`, or consider using an arrow function instead.
+src/modules/account-deletion/account-suppression-custody.spec.ts:37:25: warning typescript(unbound-method): Avoid referencing unbound methods which may cause unintentional scoping of `this`. help: If your function does not access `this`, you can annotate it with `this: void`, or consider using an arrow function instead.
+src/jobs/tcgcsv/tcgcsv.service.spec.ts:121:19: warning typescript(unbound-method): Avoid referencing unbound methods which may cause unintentional scoping of `this`. help: If your function does not access `this`, you can annotate it with `this: void`, or consider using an arrow function instead.
+src/modules/account-deletion/account-suppression-custody.spec.ts:51:22: warning typescript(unbound-method): Avoid referencing unbound methods which may cause unintentional scoping of `this`. help: If your function does not access `this`, you can annotate it with `this: void`, or consider using an arrow function instead.
+src/modules/account-deletion/account-suppression-custody.spec.ts:59:25: warning typescript(unbound-method): Avoid referencing unbound methods which may cause unintentional scoping of `this`. help: If your function does not access `this`, you can annotate it with `this: void`, or consider using an arrow function instead.
+src/jobs/tcgcsv/tcgcsv.service.spec.ts:143:22: warning typescript(unbound-method): Avoid referencing unbound methods which may cause unintentional scoping of `this`. help: If your function does not access `this`, you can annotate it with `this: void`, or consider using an arrow function instead.
+src/jobs/tcgcsv/tcgcsv.service.spec.ts:158:19: warning typescript(unbound-method): Avoid referencing unbound methods which may cause unintentional scoping of `this`. help: If your function does not access `this`, you can annotate it with `this: void`, or consider using an arrow function instead.
+src/modules/account-deletion/account-suppression-custody.spec.ts:66:65: warning typescript(unbound-method): Avoid referencing unbound methods which may cause unintentional scoping of `this`. help: If your function does not access `this`, you can annotate it with `this: void`, or consider using an arrow function instead.
+src/jobs/tcgcsv/tcgcsv.daily.integration.spec.ts:97:19: warning typescript(unbound-method): Avoid referencing unbound methods which may cause unintentional scoping of `this`. help: If your function does not access `this`, you can annotate it with `this: void`, or consider using an arrow function instead.
+src/jobs/tcgcsv/tcgcsv.daily.integration.spec.ts:110:22: warning typescript(unbound-method): Avoid referencing unbound methods which may cause unintentional scoping of `this`. help: If your function does not access `this`, you can annotate it with `this: void`, or consider using an arrow function instead.
+src/jobs/tcgcsv/tcgcsv.daily.integration.spec.ts:112:19: warning typescript(unbound-method): Avoid referencing unbound methods which may cause unintentional scoping of `this`. help: If your function does not access `this`, you can annotate it with `this: void`, or consider using an arrow function instead.
+src/jobs/tcgcsv/tcgcsv.service.spec.ts:197:22: warning typescript(unbound-method): Avoid referencing unbound methods which may cause unintentional scoping of `this`. help: If your function does not access `this`, you can annotate it with `this: void`, or consider using an arrow function instead.
+src/jobs/tcgcsv/tcgcsv.service.spec.ts:207:19: warning typescript(unbound-method): Avoid referencing unbound methods which may cause unintentional scoping of `this`. help: If your function does not access `this`, you can annotate it with `this: void`, or consider using an arrow function instead.
+src/jobs/tcgcsv/tcgcsv.service.spec.ts:215:19: warning typescript(unbound-method): Avoid referencing unbound methods which may cause unintentional scoping of `this`. help: If your function does not access `this`, you can annotate it with `this: void`, or consider using an arrow function instead.
+src/jobs/tcgcsv/tcgcsv.service.spec.ts:226:19: warning typescript(unbound-method): Avoid referencing unbound methods which may cause unintentional scoping of `this`. help: If your function does not access `this`, you can annotate it with `this: void`, or consider using an arrow function instead.
+src/jobs/tcgcsv/tcgcsv.service.spec.ts:233:22: warning typescript(unbound-method): Avoid referencing unbound methods which may cause unintentional scoping of `this`. help: If your function does not access `this`, you can annotate it with `this: void`, or consider using an arrow function instead.
+src/jobs/tcgcsv/tcgcsv.daily.integration.spec.ts:151:22: warning typescript(unbound-method): Avoid referencing unbound methods which may cause unintentional scoping of `this`. help: If your function does not access `this`, you can annotate it with `this: void`, or consider using an arrow function instead.
+src/jobs/tcgcsv/tcgcsv.daily.integration.spec.ts:153:19: warning typescript(unbound-method): Avoid referencing unbound methods which may cause unintentional scoping of `this`. help: If your function does not access `this`, you can annotate it with `this: void`, or consider using an arrow function instead.
+src/jobs/tcgcsv/tcgcsv.daily.integration.spec.ts:185:22: warning typescript(unbound-method): Avoid referencing unbound methods which may cause unintentional scoping of `this`. help: If your function does not access `this`, you can annotate it with `this: void`, or consider using an arrow function instead.
+src/jobs/tcgcsv/tcgcsv.daily.integration.spec.ts:205:22: warning typescript(unbound-method): Avoid referencing unbound methods which may cause unintentional scoping of `this`. help: If your function does not access `this`, you can annotate it with `this: void`, or consider using an arrow function instead.
+src/jobs/tcgcsv/tcgcsv.daily.integration.spec.ts:214:19: warning typescript(unbound-method): Avoid referencing unbound methods which may cause unintentional scoping of `this`. help: If your function does not access `this`, you can annotate it with `this: void`, or consider using an arrow function instead.
+src/jobs/tcgcsv/tcgcsv.daily.integration.spec.ts:224:22: warning typescript(unbound-method): Avoid referencing unbound methods which may cause unintentional scoping of `this`. help: If your function does not access `this`, you can annotate it with `this: void`, or consider using an arrow function instead.
+src/modules/auth/resend-recovery-mail.port.spec.ts:62:32: warning typescript(no-base-to-string): 'url' may use Object's default stringification format ('[object Object]') when stringified. help: Consider picking a property (e.g. `user.name`), using a formatter (or `JSON.stringify`), or implementing a custom `toString()`/`toLocaleString()` on the type.
+src/jobs/tcgcsv/tcgcsv.daily.integration.spec.ts:229:19: warning typescript(unbound-method): Avoid referencing unbound methods which may cause unintentional scoping of `this`. help: If your function does not access `this`, you can annotate it with `this: void`, or consider using an arrow function instead.
+src/modules/auth/resend-recovery-mail.port.spec.ts:73:39: warning typescript(no-base-to-string): 'init.body' may use Object's default stringification format ('[object Object]') when stringified. help: Consider picking a property (e.g. `user.name`), using a formatter (or `JSON.stringify`), or implementing a custom `toString()`/`toLocaleString()` on the type.
+src/modules/metrics/metrics.service.spec.ts:51:21: warning typescript(unbound-method): Avoid referencing unbound methods which may cause unintentional scoping of `this`. help: If your function does not access `this`, you can annotate it with `this: void`, or consider using an arrow function instead.
+test/password-recovery-harness.ts:446:12: warning typescript(require-array-sort-compare): Require 'compare' argument.
+
+> frontend@0.1.0 lint /Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/frontend
+> eslint && node scripts/check-no-raw-colors.mjs && node scripts/check-no-url-spaces.mjs
+
+
+/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/frontend/components/cards/__tests__/card-tilt.test.tsx
+  19:60  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+✖ 1 problem (0 errors, 1 warning)
+
+check-no-raw-colors: sin colores crudos en 4 raíz(es).
+check-no-url-spaces: sin espacios en las URLs construidas.
+
+> pokemon-cards-scanner-app@0.1.0 typecheck /Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app
+> pnpm --dir frontend exec tsc --noEmit
+
+
+> pokemon-cards-scanner-app@0.1.0 test /Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app
+> pnpm run test:backend && pnpm run test:frontend && pnpm run ops:monitor:test && pnpm run ops:backups:test && pnpm run ops:custody-package:test
+
+
+> pokemon-cards-scanner-app@0.1.0 test:backend /Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app
+> pnpm --dir backend run test && pnpm --dir backend run test:e2e
+
+
+> backend@0.0.1 test /Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/backend
+> vitest run && node --test scripts/scanner-visual-index.test.mjs scripts/scanner-evaluation-metrics.test.mjs scripts/scanner-reference-cache.test.mjs scripts/prices-control.test.mjs scripts/prices-sets.test.mjs
+
+The plugin "vite-tsconfig-paths" is detected. Vite now supports tsconfig paths resolution natively via the resolve.tsconfigPaths option. You can remove the plugin and set resolve.tsconfigPaths: true in your Vite config instead.
+
+ RUN  v4.1.11 /Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/backend
+
+[setup] specs contra "scanfix_5ee722a6c8_test" — puerto 3001 libre
+[Nest] 89627  - 10/20/2026, 10:42:04 AM    WARN [TcgcsvService] El grupo TCGCSV 24722 conserva el último lote publicado
+[Nest] 89627  - 10/20/2026, 10:42:05 AM    WARN [TcgcsvService] El grupo TCGCSV 24722 conserva el último lote publicado
+[Nest] 89627  - 10/20/2026, 10:42:05 AM    WARN [TcgcsvService] El grupo TCGCSV 24722 conserva el último lote publicado
+[Nest] 89627  - 10/20/2026, 10:42:06 AM    WARN [TcgcsvService] El grupo TCGCSV 24722 conserva el último lote publicado
+[Nest] 89627  - 10/20/2026, 10:42:07 AM    WARN [TcgcsvService] El grupo TCGCSV 24722 conserva el último lote publicado
+[Nest] 89627  - 10/20/2026, 10:42:07 AM    WARN [TcgcsvService] El grupo TCGCSV 24722 conserva el último lote publicado
+[Nest] 89627  - 10/20/2026, 10:42:08 AM    WARN [TcgcsvService] El lote TCGCSV se publicó; quedó pendiente el corte de colecciones
+[Nest] 89627  - 10/20/2026, 10:42:11 AM    WARN [TcgcsvService] El grupo TCGCSV 24722 conserva el último lote publicado
+[Nest] 89664  - 10/20/2026, 10:42:32 AM   DEBUG [TcgdexProvider] 30th/18 no existe sin padding: reintentando con padStart(3)
+[Nest] 89680  - 10/20/2026, 10:42:37 AM    WARN [ReadinessService] La probe de PostgreSQL falló: PrismaClientInitializationError
+[Nest] 89682  - 10/20/2026, 10:42:40 AM    WARN [TcgcsvService] El grupo TCGCSV 990000001 conserva el último lote publicado
+[Nest] 89688  - 10/20/2026, 10:42:44 AM     LOG [SyncPricesService] Precios de test-priority-acceptance-mapped-1 actualizados desde tcgdex: normal
+[Nest] 89688  - 10/20/2026, 10:42:44 AM    WARN [PriceQueueService] 1 refrescos de precio quedaron en processing al arrancar y volvieron a la cola
+[Nest] 89688  - 10/20/2026, 10:42:44 AM     LOG [PriceQueueWorker] Worker de precios listo como MacBook-Pro-de-Ysmael.local:89688
+[Nest] 89688  - 10/20/2026, 10:42:44 AM     LOG [PriceQueueWorker] Worker de precios listo como MacBook-Pro-de-Ysmael.local:89688
+[Nest] 89688  - 10/20/2026, 10:42:44 AM    WARN [SyncPricesService] Sin mapeo a tcgdex para el set Acceptance unmapped (test-priority-acceptance-unmapped): no se pueden refrescar los precios de test-priority-acceptance-unmapped-1
+[Nest] 89688  - 10/20/2026, 10:42:44 AM     LOG [PriceQueueWorker] Worker de precios listo como MacBook-Pro-de-Ysmael.local:89688
+[Nest] 89688  - 10/20/2026, 10:42:44 AM    WARN [PriceQueueWorker] Refresh de test-priority-acceptance-mapped-1 falló (intento 0): fallo simulado
+[Nest] 89688  - 10/20/2026, 10:42:44 AM     LOG [PriceQueueWorker] Worker de precios desactivado por PRICE_QUEUE_ENABLED=false.
+[Nest] 89688  - 10/20/2026, 10:42:44 AM     LOG [PriceQueueWorker] Worker de precios desactivado por PRICE_QUEUE_ENABLED=false.
+[Nest] 89688  - 10/20/2026, 10:42:44 AM     LOG [PriceQueueWorker] Worker de precios desactivado por PRICE_QUEUE_ENABLED=false.
+[Nest] 89688  - 10/19/2026, 10:42:44 AM     LOG [SyncPricesService] Precios de test-priority-acceptance-mapped-1 actualizados desde tcgdex: normal
+[Nest] 89688  - 10/20/2026, 10:42:44 AM     LOG [SyncPricesService] Precios de test-priority-acceptance-mapped-1 actualizados desde tcgdex: normal
+[Nest] 89688  - 10/21/2026, 10:42:44 AM     LOG [SyncPricesService] tcgdex no devolvió tcgplayer/USD para test-priority-acceptance-mapped-1: queda lo último conocido
+[Nest] 89688  - 10/19/2026, 9:00:01 PM     LOG [SyncPricesService] Precios de test-priority-acceptance-mapped-1 actualizados desde tcgdex: normal
+[Nest] 89691  - 10/20/2026, 10:42:46 AM     LOG [PriceSyncDailyService] Ciclo tcgdex 2026-10-19: 1 objetivos encolados
+[Nest] 89691  - 10/20/2026, 10:42:46 AM     LOG [PriceSyncDailyService] Ciclo tcgdex 2026-10-20: 1 objetivos encolados
+[Nest] 89691  - 10/20/2026, 10:42:46 AM     LOG [PriceSyncDailyService] Ciclo tcgdex 2026-10-20: 0 objetivos encolados
+[Nest] 89691  - 10/20/2026, 10:42:46 AM     LOG [PriceSyncDailyService] Ciclo tcgdex 2026-10-20: 1 objetivos encolados
+[Nest] 89691  - 10/20/2026, 10:42:46 AM     LOG [PriceSyncDailyService] Ciclo tcgdex 2026-10-20: 1 objetivos encolados
+[Nest] 89691  - 10/20/2026, 10:42:46 AM     LOG [PriceSyncDailyService] Ciclo tcgdex 2026-10-20: 1 objetivos encolados
+[Nest] 89691  - 10/20/2026, 10:42:46 AM     LOG [PriceSyncDailyService] Ciclo tcgdex 2026-10-20: 1 objetivos encolados
+[Nest] 89691  - 10/20/2026, 10:42:46 AM     LOG [PriceSyncDailyService] Ciclo tcgdex 2026-10-20: 0 objetivos encolados
+[Nest] 89691  - 10/20/2026, 10:42:46 AM     LOG [PriceSyncDailyService] Ciclo tcgdex 2026-10-21: 1 objetivos encolados
+[Nest] 89692  - 10/20/2026, 10:42:46 AM   ERROR [TcgdexSetMappingService] No se pudo persistir el mapping tcgdex shared-id para test-map-segundo: El ID externo shared-id ya está asociado al set test-map-primero
+[Nest] 89697  - 10/20/2026, 10:42:48 AM    WARN [ScheduledJobsService] Ciclo tcgdex pendiente; se conserva la señal
+[Nest] 89708  - 10/20/2026, 10:42:52 AM     LOG [ScheduledJobsService] Sync de catálogo semanal omitido: ya había uno corriendo.
+[Nest] 89708  - 10/20/2026, 10:42:52 AM   ERROR [ScheduledJobsService] Falló la planificación diaria: la DB se cayó
+[Nest] 89708  - 10/20/2026, 10:42:52 AM   ERROR [ScheduledJobsService] Falló la planificación diaria: la DB se cayó
+[Nest] 89708  - 10/20/2026, 10:42:52 AM   ERROR [ScheduledJobsService] Falló la retención mensual: nope
+[Nest] 89708  - 10/20/2026, 10:42:52 AM     LOG [ScheduledJobsService] Retención mensual: 3 consolidadas, 0 podadas.
+[Nest] 89714  - 10/20/2026, 10:42:53 AM     LOG [TcgcsvService] TCGCSV: 1 sets con grupo validado, 0 sin asociación segura
+[Nest] 89714  - 10/20/2026, 10:42:53 AM     LOG [TcgcsvService] TCGCSV: 1 sets con grupo validado, 0 sin asociación segura
+[Nest] 89714  - 10/20/2026, 10:42:53 AM    WARN [TcgcsvService] TCGCSV conserva el registro previo; descubrimiento pendiente
+[Nest] 89714  - 10/20/2026, 10:42:53 AM    WARN [TcgcsvService] TCGCSV conserva el registro previo; descubrimiento pendiente
+
+ Test Files  59 passed (59)
+      Tests  596 passed (596)
+   Start at  10:41:45
+   Duration  69.86s (transform 717ms, setup 0ms, import 10.02s, tests 54.67s, environment 3ms)
+
+TAP version 13
+# Subtest: sync observa por defecto con duración acotada; status sólo lee salvo --watch
+ok 1 - sync observa por defecto con duración acotada; status sólo lee salvo --watch
+  ---
+  duration_ms: 1.348167
+  type: 'test'
+  ...
+# Subtest: status sólo ejecuta once lecturas agregadas y no contiene nombres de usuario o colecciones
+ok 2 - status sólo ejecuta once lecturas agregadas y no contiene nombres de usuario o colecciones
+  ---
+  duration_ms: 1.773917
+  type: 'test'
+  ...
+# Subtest: pedido manual sólo cambia la señal coalescida, conserva cuotas y leases
+ok 3 - pedido manual sólo cambia la señal coalescida, conserva cuotas y leases
+  ---
+  duration_ms: 0.32525
+  type: 'test'
+  ...
+# Subtest: heartbeat viejo o worker configurado apagado nunca promete un worker activo
+ok 4 - heartbeat viejo o worker configurado apagado nunca promete un worker activo
+  ---
+  duration_ms: 0.268208
+  type: 'test'
+  ...
+# Subtest: actividad supera los topes anteriores y la espera se muestra separada de errores
+ok 5 - actividad supera los topes anteriores y la espera se muestra separada de errores
+  ---
+  duration_ms: 0.229542
+  type: 'test'
+  ...
+# Subtest: rechaza comandos, flags, prioridades e IDs locales desconocidos
+ok 6 - rechaza comandos, flags, prioridades e IDs locales desconocidos
+  ---
+  duration_ms: 0.870041
+  type: 'test'
+  ...
+# Subtest: list es de solo lectura y add habilita con prioridad y señal coalescida
+ok 7 - list es de solo lectura y add habilita con prioridad y señal coalescida
+  ---
+  duration_ms: 0.516875
+  type: 'test'
+  ...
+# Subtest: disable persiste la baja sin pedir un ciclo
+ok 8 - disable persiste la baja sin pedir un ciclo
+  ---
+  duration_ms: 0.097292
+  type: 'test'
+  ...
+# Subtest: rank exige una prioridad nueva y sólo altera el orden de un set ya registrado
+ok 9 - rank exige una prioridad nueva y sólo altera el orden de un set ya registrado
+  ---
+  duration_ms: 0.106458
+  type: 'test'
+  ...
+# Subtest: no convierte una etiqueta pendiente en negativo y conserva compatibilidad
+ok 10 - no convierte una etiqueta pendiente en negativo y conserva compatibilidad
+  ---
+  duration_ms: 0.9605
+  type: 'test'
+  ...
+# Subtest: top-8, referencias ausentes y negativos se cuentan una vez y por origen
+ok 11 - top-8, referencias ausentes y negativos se cuentan una vez y por origen
+  ---
+  duration_ms: 0.326209
+  type: 'test'
+  ...
+# Subtest: sin negativos la tasa es null; detecta bytes duplicados
+ok 12 - sin negativos la tasa es null; detecta bytes duplicados
+  ---
+  duration_ms: 0.924792
+  type: 'test'
+  ...
+# Subtest: HTTP fallido no publica una imagen ni temporal
+ok 13 - HTTP fallido no publica una imagen ni temporal
+  ---
+  duration_ms: 12.87625
+  type: 'test'
+  ...
+# Subtest: HTTP 200 con contenido inválido o PNG truncado no envenena caché
+ok 14 - HTTP 200 con contenido inválido o PNG truncado no envenena caché
+  ---
+  duration_ms: 7.584625
+  type: 'test'
+  ...
+# Subtest: caché corrupta se vuelve a descargar y conserva una caché válida
+ok 15 - caché corrupta se vuelve a descargar y conserva una caché válida
+  ---
+  duration_ms: 3.706292
+  type: 'test'
+  ...
+# Subtest: respuesta demasiado grande corta el stream antes de publicarla
+ok 16 - respuesta demasiado grande corta el stream antes de publicarla
+  ---
+  duration_ms: 1.455917
+  type: 'test'
+  ...
+# Subtest: desconexión a mitad de stream deja la descarga pendiente y permite reintentar
+ok 17 - desconexión a mitad de stream deja la descarga pendiente y permite reintentar
+  ---
+  duration_ms: 4.560416
+  type: 'test'
+  ...
+# Subtest: abort cancela un lector pendiente aunque el transporte ignore la señal
+ok 18 - abort cancela un lector pendiente aunque el transporte ignore la señal
+  ---
+  duration_ms: 1.434792
+  type: 'test'
+  ...
+# Subtest: carga sólo vectores, sin resolver ni necesitar imágenes
+ok 19 - carga sólo vectores, sin resolver ni necesitar imágenes
+  ---
+  duration_ms: 8.188958
+  type: 'test'
+  ...
+# Subtest: reúne colecciones, deduplica IDs y recarga al agregar otra sin modificar el snapshot anterior
+ok 20 - reúne colecciones, deduplica IDs y recarga al agregar otra sin modificar el snapshot anterior
+  ---
+  duration_ms: 8.02275
+  type: 'test'
+  ...
+# Subtest: bloqueo o metadata incompatible conservan el snapshot válido y fallan sin uno previo
+ok 21 - bloqueo o metadata incompatible conservan el snapshot válido y fallan sin uno previo
+  ---
+  duration_ms: 5.037167
+  type: 'test'
+  ...
+# Subtest: rechaza líneas incompletas, vectores inválidos y duplicados diferentes
+ok 22 - rechaza líneas incompletas, vectores inválidos y duplicados diferentes
+  ---
+  duration_ms: 5.843875
+  type: 'test'
+  ...
+1..22
+# tests 22
+# suites 0
+# pass 22
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 144.694041
+
+> backend@0.0.1 test:e2e /Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/backend
+> vitest run --config ./vitest.config.e2e.ts
+
+The plugin "vite-tsconfig-paths" is detected. Vite now supports tsconfig paths resolution natively via the resolve.tsconfigPaths option. You can remove the plugin and set resolve.tsconfigPaths: true in your Vite config instead.
+
+ RUN  v4.1.11 /Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/backend
+
+[setup] specs contra "scanfix_5ee722a6c8_test" — puerto 3001 libre
+
+ Test Files  2 passed (2)
+      Tests  6 passed (6)
+   Start at  10:42:56
+   Duration  1.91s (transform 358ms, setup 0ms, import 1.09s, tests 629ms, environment 0ms)
+
+
+> pokemon-cards-scanner-app@0.1.0 test:frontend /Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app
+> pnpm --dir frontend run test
+
+
+> frontend@0.1.0 test /Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/frontend
+> vitest run
+
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.2 /Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/frontend
+
+
+ Test Files  79 passed (79)
+      Tests  622 passed (622)
+   Start at  10:42:59
+   Duration  8.07s (environment 39%, tests 31%, setup 11%, transform 10%, import 9%)
+
+    Isolate  79 workers spawned · ~410ms startup each (spawn + environment, per file)
+             at least ~3.19s faster with isolate: false — reuses workers across files instead of one per file
+
+
+> pokemon-cards-scanner-app@0.1.0 ops:monitor:test /Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app
+> node --test scripts/inf04-monitor.test.mjs
+
+TAP version 13
+# Subtest: URL local impide secretos, rutas, query y hosts remotos
+ok 1 - URL local impide secretos, rutas, query y hosts remotos
+  ---
+  duration_ms: 0.705
+  type: 'test'
+  ...
+# Subtest: HTTP no sigue redirects, acota cuerpo/tiempo y propaga cancelación
+ok 2 - HTTP no sigue redirects, acota cuerpo/tiempo y propaga cancelación
+  ---
+  duration_ms: 73.84825
+  type: 'test'
+  ...
+# Subtest: shape de métricas es allowlist estricta, incluyendo cola e histogramas
+ok 3 - shape de métricas es allowlist estricta, incluyendo cola e histogramas
+  ---
+  duration_ms: 0.655958
+  type: 'test'
+  ...
+# Subtest: busy/error deltas esperan muestras y denominadores de outcome
+ok 4 - busy/error deltas esperan muestras y denominadores de outcome
+  ---
+  duration_ms: 0.385708
+  type: 'test'
+  ...
+# Subtest: cambio de epoch o rollback bloquea tasas; ventana válida siguiente limpia reset
+ok 5 - cambio de epoch o rollback bloquea tasas; ventana válida siguiente limpia reset
+  ---
+  duration_ms: 0.166041
+  type: 'test'
+  ...
+# Subtest: histogram delta usa diferencia de sum/count y promedio ponderado
+ok 6 - histogram delta usa diferencia de sum/count y promedio ponderado
+  ---
+  duration_ms: 0.352791
+  type: 'test'
+  ...
+# Subtest: cola suma pending y processing, recupera sólo con muestra disponible limpia
+ok 7 - cola suma pending y processing, recupera sólo con muestra disponible limpia
+  ---
+  duration_ms: 0.239708
+  type: 'test'
+  ...
+# Subtest: debounce requiere consecutividad; hueco desconocido no recupera ni conserva streak
+ok 8 - debounce requiere consecutividad; hueco desconocido no recupera ni conserva streak
+  ---
+  duration_ms: 0.249292
+  type: 'test'
+  ...
+# Subtest: readiness, health y cola desconocidos no recuperan alertas activas
+ok 9 - readiness, health y cola desconocidos no recuperan alertas activas
+  ---
+  duration_ms: 0.1695
+  type: 'test'
+  ...
+# Subtest: feed sólo acepta metadata estricta, pequeña, UTC y no futura
+ok 10 - feed sólo acepta metadata estricta, pequeña, UTC y no futura
+  ---
+  duration_ms: 6.740125
+  type: 'test'
+  ...
+# Subtest: CLI una muestra usa token sólo en metrics y no imprime secretos; valida args
+ok 11 - CLI una muestra usa token sólo en metrics y no imprime secretos; valida args
+  ---
+  duration_ms: 215.027
+  type: 'test'
+  ...
+# Subtest: CLI --samples limita consultas y SIGTERM cancela fetch activo
+ok 12 - CLI --samples limita consultas y SIGTERM cancela fetch activo
+  ---
+  duration_ms: 471.938209
+  type: 'test'
+  ...
+# Subtest: PID opcional sólo informa RSS y porcentaje numérico
+ok 13 - PID opcional sólo informa RSS y porcentaje numérico
+  ---
+  duration_ms: 0.210875
+  type: 'test'
+  ...
+# Subtest: fechas con texto privado o calendario inválido quedan desconocidas
+ok 14 - fechas con texto privado o calendario inválido quedan desconocidas
+  ---
+  duration_ms: 0.108166
+  type: 'test'
+  ...
+# Subtest: worker initializing no acredita recuperación antes de ready
+ok 15 - worker initializing no acredita recuperación antes de ready
+  ---
+  duration_ms: 0.242042
+  type: 'test'
+  ...
+1..15
+# tests 15
+# suites 0
+# pass 15
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 827.212167
+
+> pokemon-cards-scanner-app@0.1.0 ops:backups:test /Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app
+> node --test scripts/inf03-inventory-common.test.mjs scripts/inf03-retention.test.mjs scripts/inf03-transfer.test.mjs scripts/inf03-custody.test.mjs scripts/inf03-schedule.test.mjs
+
+TAP version 13
+# Subtest: publica metadata exacta y recupera todos los originales con marcador canónico sin registrar copias
+ok 1 - publica metadata exacta y recupera todos los originales con marcador canónico sin registrar copias
+  ---
+  duration_ms: 1975.489667
+  type: 'test'
+  ...
+# Subtest: falta anchor, snapshot alterado o snapshot histórico elegido fuera del anchor fallan cerrado
+ok 2 - falta anchor, snapshot alterado o snapshot histórico elegido fuera del anchor fallan cerrado
+  ---
+  duration_ms: 2991.631833
+  type: 'test'
+  ...
+# Subtest: rechaza rollback de inventario, journal y bifurcación con la misma secuencia
+ok 3 - rechaza rollback de inventario, journal y bifurcación con la misma secuencia
+  ---
+  duration_ms: 3503.428334
+  type: 'test'
+  ...
+# Subtest: publish exige originales completos y journal aprobado; recovery no necesita esos originales
+ok 4 - publish exige originales completos y journal aprobado; recovery no necesita esos originales
+  ---
+  duration_ms: 913.2065
+  type: 'test'
+  ...
+# Subtest: preflight rechaza rutas existentes, originales parciales, parent público y symlinks sin sobrescribir
+ok 5 - preflight rechaza rutas existentes, originales parciales, parent público y symlinks sin sobrescribir
+  ---
+  duration_ms: 1915.836958
+  type: 'test'
+  ...
+# Subtest: objetos ausentes, retirados, corruptos o hardlinks bloquean antes de materializar
+ok 6 - objetos ausentes, retirados, corruptos o hardlinks bloquean antes de materializar
+  ---
+  duration_ms: 1976.759375
+  type: 'test'
+  ...
+# Subtest: fecha original vencida y cobertura insuficiente nunca habilitan recovery ni publicación
+ok 7 - fecha original vencida y cobertura insuficiente nunca habilitan recovery ni publicación
+  ---
+  duration_ms: 864.965542
+  type: 'test'
+  ...
+# Subtest: intención deleting no se publica y retiro completo mantiene tombstones sin payload
+ok 8 - intención deleting no se publica y retiro completo mantiene tombstones sin payload
+  ---
+  duration_ms: 1165.977875
+  type: 'test'
+  ...
+# Subtest: fallo de autoridad al final conserva parcial, bloquea retry y nunca devuelve recovered
+ok 9 - fallo de autoridad al final conserva parcial, bloquea retry y nunca devuelve recovered
+  ---
+  duration_ms: 810.478917
+  type: 'test'
+  ...
+# Subtest: vencimiento durante reconstrucción y cambio de anchor durante lectura no devuelven éxito
+ok 10 - vencimiento durante reconstrucción y cambio de anchor durante lectura no devuelven éxito
+  ---
+  duration_ms: 1155.340542
+  type: 'test'
+  ...
+# Subtest: provisión explícita, claves independientes, roots separados, locks y MAC privados
+ok 11 - provisión explícita, claves independientes, roots separados, locks y MAC privados
+  ---
+  duration_ms: 178.434709
+  type: 'test'
+  ...
+# Subtest: CLI estricto rechaza flags duplicados, remotos, irrelevantes y reloj sin JSONsuccess
+ok 12 - CLI estricto rechaza flags duplicados, remotos, irrelevantes y reloj sin JSONsuccess
+  ---
+  duration_ms: 252.961084
+  type: 'test'
+  ...
+# Subtest: verify enlaza originales normales al anchor actual sin publicar ni modificar bytes
+ok 13 - verify enlaza originales normales al anchor actual sin publicar ni modificar bytes
+  ---
+  duration_ms: 1301.483458
+  type: 'test'
+  ...
+# Subtest: vencimiento durante cierre bloquea el resultado aunque publish haya terminado
+ok 14 - vencimiento durante cierre bloquea el resultado aunque publish haya terminado
+  ---
+  duration_ms: 403.41475
+  type: 'test'
+  ...
+# Subtest: fecha original: límite exacto30d, imposible/futuro, copiar/mtime no renueva
+ok 15 - fecha original: límite exacto30d, imposible/futuro, copiar/mtime no renueva
+  ---
+  duration_ms: 257.718583
+  type: 'test'
+  ...
+# Subtest: lock exclusivo e init explícito no reemplazable
+ok 16 - lock exclusivo e init explícito no reemplazable
+  ---
+  duration_ms: 194.57525
+  type: 'test'
+  ...
+# Subtest: sin inventario/checkpoint/marker disponible se rechaza
+ok 17 - sin inventario/checkpoint/marker disponible se rechaza
+  ---
+  duration_ms: 718.258208
+  type: 'test'
+  ...
+# Subtest: HMAC alterado y rollback parcial frente a custodia actual fallan cerrado
+ok 18 - HMAC alterado y rollback parcial frente a custodia actual fallan cerrado
+  ---
+  duration_ms: 399.903916
+  type: 'test'
+  ...
+# Subtest: duplicados de UUID y ciphertext y metadata discordante son rechazados
+ok 19 - duplicados de UUID y ciphertext y metadata discordante son rechazados
+  ---
+  duration_ms: 278.559042
+  type: 'test'
+  ...
+# Subtest: ciphertext/recibo ausente, alterado, symlink o hardlink bloquea prune y restore
+ok 20 - ciphertext/recibo ausente, alterado, symlink o hardlink bloquea prune y restore
+  ---
+  duration_ms: 1205.374125
+  type: 'test'
+  ...
+# Subtest: directorio/inventario symlink, hardlink y permisos públicos no se admiten
+ok 21 - directorio/inventario symlink, hardlink y permisos públicos no se admiten
+  ---
+  duration_ms: 207.238375
+  type: 'test'
+  ...
+# Subtest: archivo ajeno no puede registrarse desde afuera ni por traversal
+ok 22 - archivo ajeno no puede registrarse desde afuera ni por traversal
+  ---
+  duration_ms: 202.028
+  type: 'test'
+  ...
+# Subtest: dry-run por defecto, apply elimina sólo copias propias vencidas y conserva tombstones
+ok 23 - dry-run por defecto, apply elimina sólo copias propias vencidas y conserva tombstones
+  ---
+  duration_ms: 478.066208
+  type: 'test'
+  ...
+# Subtest: crash después de cada unlink retoma sólo intención firmada; replay idempotente
+ok 24 - crash después de cada unlink retoma sólo intención firmada; replay idempotente
+  ---
+  duration_ms: 920.158292
+  type: 'test'
+  ...
+# Subtest: faltante sin intención no se interpreta como retirement; intento manipulado no toca ajenos
+ok 25 - faltante sin intención no se interpreta como retirement; intento manipulado no toca ajenos
+  ---
+  duration_ms: 222.883458
+  type: 'test'
+  ...
+# Subtest: fallo antes unlink deja ciphertext y recibo disponibles
+ok 26 - fallo antes unlink deja ciphertext y recibo disponibles
+  ---
+  duration_ms: 230.664792
+  type: 'test'
+  ...
+# Subtest: CLI no anuncia una retención exitosa si falla el cierre de custodia
+ok 27 - CLI no anuncia una retención exitosa si falla el cierre de custodia
+  ---
+  duration_ms: 248.200292
+  type: 'test'
+  ...
+# Subtest: calendario explícito, slots perdidos agrupados y pending prioritario
+ok 28 - calendario explícito, slots perdidos agrupados y pending prioritario
+  ---
+  duration_ms: 1.664084
+  type: 'test'
+  ...
+# Subtest: plan no cambia autoridades ni crea intent; cycle dryrun tampoco
+ok 29 - plan no cambia autoridades ni crea intent; cycle dryrun tampoco
+  ---
+  duration_ms: 1097.527333
+  type: 'test'
+  ...
+# Subtest: ciclo real de librerías registra una vez, sube, publica y segunda pasada sólo mantenimiento
+ok 30 - ciclo real de librerías registra una vez, sube, publica y segunda pasada sólo mantenimiento
+  ---
+  duration_ms: 3765.879916
+  type: 'test'
+  ...
+# Subtest: backup fallido antes de registro deja intent incierto y no lo vuelve a ejecutar
+ok 31 - backup fallido antes de registro deja intent incierto y no lo vuelve a ejecutar
+  ---
+  duration_ms: 1036.447834
+  type: 'test'
+  ...
+# Subtest: reinicio tras registro y tras upload reconcilia ID original sin nuevo backup
+ok 32 - reinicio tras registro y tras upload reconcilia ID original sin nuevo backup
+  ---
+  duration_ms: 4010.367459
+  type: 'test'
+  ...
+# Subtest: mantenimiento sin backup debido conserva límite original30d y nunca poda journal ni intents
+ok 33 - mantenimiento sin backup debido conserva límite original30d y nunca poda journal ni intents
+  ---
+  duration_ms: 2585.028583
+  type: 'test'
+  ...
+# Subtest: mantenimiento antes del primer slot retira backup previo sin crear uno nuevo
+ok 34 - mantenimiento antes del primer slot retira backup previo sin crear uno nuevo
+  ---
+  duration_ms: 1367.856291
+  type: 'test'
+  ...
+# Subtest: prune interrumpido conserva intent deleting y se reanuda en mantenimiento
+ok 35 - prune interrumpido conserva intent deleting y se reanuda en mantenimiento
+  ---
+  duration_ms: 1500.667667
+  type: 'test'
+  ...
+# Subtest: missing authority no provisiona calendario ni comienza backup
+ok 36 - missing authority no provisiona calendario ni comienza backup
+  ---
+  duration_ms: 720.954584
+  type: 'test'
+  ...
+# Subtest: modo, claves iguales, paths solapados, source ajeno y config cambiado se rechazan
+ok 37 - modo, claves iguales, paths solapados, source ajeno y config cambiado se rechazan
+  ---
+  duration_ms: 232.576458
+  type: 'test'
+  ...
+# Subtest: lock propio serializa, lock ajeno no se elimina y directorio alias no se acepta
+ok 38 - lock propio serializa, lock ajeno no se elimina y directorio alias no se acepta
+  ---
+  duration_ms: 362.183208
+  type: 'test'
+  ...
+# Subtest: ledger alterado/hardlink/incomplete se rechaza antes de backup
+ok 39 - ledger alterado/hardlink/incomplete se rechaza antes de backup
+  ---
+  duration_ms: 4212.395917
+  type: 'test'
+  ...
+# Subtest: deadline tras callback espera settlement y conserva accepted original para reconciliar
+ok 40 - deadline tras callback espera settlement y conserva accepted original para reconciliar
+  ---
+  duration_ms: 1789.519583
+  type: 'test'
+  ...
+# Subtest: pérdida del objeto completo publicado bloquea plan y apply sin recrearlo
+ok 41 - pérdida del objeto completo publicado bloquea plan y apply sin recrearlo
+  ---
+  duration_ms: 1397.846166
+  type: 'test'
+  ...
+# Subtest: pérdida de objeto anterior durante el backup impide finalizar el nuevo slot
+ok 42 - pérdida de objeto anterior durante el backup impide finalizar el nuevo slot
+  ---
+  duration_ms: 1793.754167
+  type: 'test'
+  ...
+# Subtest: sube bytes, verifica integridad e idempotencia; descarga a cuarentena sin habilitar restore
+ok 43 - sube bytes, verifica integridad e idempotencia; descarga a cuarentena sin habilitar restore
+  ---
+  duration_ms: 496.719125
+  type: 'test'
+  ...
+# Subtest: descriptor alterado bloquea descarga y colisión de subida
+ok 44 - descriptor alterado bloquea descarga y colisión de subida
+  ---
+  duration_ms: 379.248833
+  type: 'test'
+  ...
+# Subtest: falla cerrado si el checkpoint original fue alterado o hay hardlinks
+ok 45 - falla cerrado si el checkpoint original fue alterado o hay hardlinks
+  ---
+  duration_ms: 304.88925
+  type: 'test'
+  ...
+# Subtest: el retiro exige vencimiento original, prepara tombstone durable y reanuda idempotentemente
+ok 46 - el retiro exige vencimiento original, prepara tombstone durable y reanuda idempotentemente
+  ---
+  duration_ms: 444.703334
+  type: 'test'
+  ...
+# Subtest: no adopta objetos parciales ni registra cuarentena cuando falta un componente
+ok 47 - no adopta objetos parciales ni registra cuarentena cuando falta un componente
+  ---
+  duration_ms: 280.461208
+  type: 'test'
+  ...
+# Subtest: vencimiento durante descarga nunca devuelve downloaded:true
+ok 48 - vencimiento durante descarga nunca devuelve downloaded:true
+  ---
+  duration_ms: 392.042625
+  type: 'test'
+  ...
+# Subtest: sustitución idéntica de recibo durante retiro conserva el archivo nuevo
+ok 49 - sustitución idéntica de recibo durante retiro conserva el archivo nuevo
+  ---
+  duration_ms: 340.8905
+  type: 'test'
+  ...
+# Subtest: cambio del directorio a symlink después de open bloquea mutaciones
+ok 50 - cambio del directorio a symlink después de open bloquea mutaciones
+  ---
+  duration_ms: 263.990584
+  type: 'test'
+  ...
+# Subtest: ruta de cuarentena sustituida durante refresh no obtiene éxito
+ok 51 - ruta de cuarentena sustituida durante refresh no obtiene éxito
+  ---
+  duration_ms: 406.32925
+  type: 'test'
+  ...
+# Subtest: CLI no usa red ni modos remotos, ignora cero flags y no emite éxito ante cierre fallido
+ok 52 - CLI no usa red ni modos remotos, ignora cero flags y no emite éxito ante cierre fallido
+  ---
+  duration_ms: 690.750916
+  type: 'test'
+  ...
+# Subtest: objetos con hardlinks, payload alterado y permisos públicos no producen descarga
+ok 53 - objetos con hardlinks, payload alterado y permisos públicos no producen descarga
+  ---
+  duration_ms: 785.569167
+  type: 'test'
+  ...
+# Subtest: rehusar original ausente mantiene guard de inventario sin fallback de recuperación
+ok 54 - rehusar original ausente mantiene guard de inventario sin fallback de recuperación
+  ---
+  duration_ms: 288.894666
+  type: 'test'
+  ...
+1..54
+# tests 54
+# suites 0
+# pass 54
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 25931.981375
+
+> pokemon-cards-scanner-app@0.1.0 ops:custody-package:test /Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app
+> node --test scripts/infra/inf02-custody-package.test.mjs
+
+TAP version 13
+# Subtest: paquete allowlist, hashes, layout absoluto y permisos inmutables
+ok 1 - paquete allowlist, hashes, layout absoluto y permisos inmutables
+  ---
+  duration_ms: 43.331459
+  type: 'test'
+  ...
+# Subtest: destino existente no se pisa y symlinks de fuente se rechazan
+ok 2 - destino existente no se pisa y symlinks de fuente se rechazan
+  ---
+  duration_ms: 6.116041
+  type: 'test'
+  ...
+# Subtest: verificador detecta hash alterado, symlink y rutas extra
+ok 3 - verificador detecta hash alterado, symlink y rutas extra
+  ---
+  duration_ms: 35.342417
+  type: 'test'
+  ...
+# Subtest: target por defecto queda en runner y overlay exige contexto y rutas runtime opt-in
+ok 4 - target por defecto queda en runner y overlay exige contexto y rutas runtime opt-in
+  ---
+  duration_ms: 1.907667
+  type: 'test'
+  ...
+# Subtest: ancestro symlink se rechaza sin crear destino ni alterar fuentes
+ok 5 - ancestro symlink se rechaza sin crear destino ni alterar fuentes
+  ---
+  duration_ms: 2.587708
+  type: 'test'
+  ...
+# Subtest: helpers base rechazan perfil y backend custodia; cleanup conserva acceso explícito
+ok 6 - helpers base rechazan perfil y backend custodia; cleanup conserva acceso explícito
+  ---
+  duration_ms: 3.996042
+  type: 'test'
+  ...
+# Subtest: CLI usa raíz correcta y publica sólo código del repo en contexto nuevo
+ok 7 - CLI usa raíz correcta y publica sólo código del repo en contexto nuevo
+  ---
+  duration_ms: 103.541875
+  type: 'test'
+  ...
+1..7
+# tests 7
+# suites 0
+# pass 7
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 242.796459
+
+> pokemon-cards-scanner-app@0.1.0 build /Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app
+> pnpm run build:backend && pnpm run build:frontend
+
+
+> pokemon-cards-scanner-app@0.1.0 build:backend /Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app
+> pnpm --dir backend run build
+
+
+> backend@0.0.1 build /Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/backend
+> nest build
+
+
+> pokemon-cards-scanner-app@0.1.0 build:frontend /Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app
+> pnpm --dir frontend run build
+
+
+> frontend@0.1.0 build /Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/frontend
+> next build
+
+▲ Next.js 16.3.6 (Turbopack)
+- Environments: .env.local
+⚠ Warning: Next.js inferred your workspace root, but it may not be correct.
+ We detected multiple lockfiles and selected the directory of /Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/pnpm-lock.yaml as the root directory.
+ To silence this warning, set `turbopack.root` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
+   See https://nextjs.org/docs/app/api-reference/config/next-config-js/turbopack#root-directory for more information.
+ Detected additional lockfiles: 
+   * /Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/frontend/pnpm-lock.yaml
+
+✓ Running next.config.ts took 69ms
+- Experiments (use with caution):
+  · turbopackPluginRuntimeStrategy: "workerThreads"
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 648ms
+  Running TypeScript ...
+  Finished TypeScript in 1850ms ...
+  Collecting page data using 9 workers ...
+  Generating static pages using 9 workers (0/17) ...
+  Generating static pages using 9 workers (4/17) 
+  Generating static pages using 9 workers (8/17) 
+  Generating static pages using 9 workers (12/17) 
+Invalid value "76" for "height". Expected a number, "auto", or a percentage value (e.g., "50%").
+Invalid value "76" for "width". Expected a number, "auto", or a percentage value (e.g., "50%").
+✓ Generating static pages using 9 workers (17/17) in 408ms
+  Finalizing page optimization ...
+
+Route (app)                 Revalidate  Expire
+┌ ○ /                               1h      1y
+├ ○ /_not-found
+├ ○ /ajustes
+├ ○ /buscar
+├ ○ /buscar-v2
+├ ƒ /carta/[id]
+├ ○ /colecciones
+├ ƒ /colecciones/[id]
+├ ƒ /colecciones/[id]/sets
+├ ƒ /eliminar-cuenta
+├ ○ /escanear
+├ ○ /faq
+├ ○ /inicio                         1h      1y
+├ ƒ /login
+├ ○ /opengraph-image
+├ ƒ /perfil
+├ ƒ /recuperar
+├ ○ /registro
+├ ○ /robots.txt
+├ ƒ /share/[slug]
+└ ○ /sitemap.xml
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+

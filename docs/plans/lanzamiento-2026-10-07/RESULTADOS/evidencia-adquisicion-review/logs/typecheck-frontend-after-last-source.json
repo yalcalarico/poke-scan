@@ -1,0 +1,15 @@
+{
+  "name": "typecheck-frontend-after-last-source",
+  "command": [
+    "pnpm",
+    "--dir",
+    "frontend",
+    "exec",
+    "tsc",
+    "--noEmit"
+  ],
+  "startedAtUtc": "2026-10-10T14:34:19.942284+00:00",
+  "finishedAtUtc": "2026-10-10T14:34:21.580231+00:00",
+  "exitCode": 0,
+  "log": "logs/typecheck-frontend-after-last-source.log"
+}

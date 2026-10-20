@@ -1,0 +1,12 @@
+{
+  "selectedFiles": 1462,
+  "allSelectedSourcesAndCompiledOutputsIntact": true,
+  "delta": [],
+  "includes": [
+    "scripts",
+    "backend/src/prisma/dist",
+    "frontend/app/components/hooks/lib/types/public/.next/server/.next/static",
+    "packages/locks/config/BUILD_ID"
+  ],
+  "excludes": "Next mutable caches, logs; selected files only, not a full dirty-tree snapshot"
+}

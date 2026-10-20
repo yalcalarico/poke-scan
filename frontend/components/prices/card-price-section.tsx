@@ -9,12 +9,13 @@ import type { PriceDto } from '@/types/api';
 
 import {
   freshestFetchedAt,
-  isPriceStale,
   priceAgeMs,
   PRICE_FRESHNESS_SLACK_MS,
   PRICE_MAX_AGE_MS,
 } from './price-delta';
 import { PriceHero } from './price-hero';
+import { CardComparisonPanel } from './comparison-panel';
+import { PriceReferenceDetails } from './price-evidence';
 import { countPricelessVariants, PriceTable, sortPricesByVariant } from './price-table';
 
 type SectionStatus = 'loading' | 'ready' | 'empty' | 'error';
@@ -27,6 +28,7 @@ export interface CardPriceSectionProps {
    * (24 h) y el cliente vuelve a preguntar solo cuando hace falta.
    */
   initialPrices?: readonly PriceDto[];
+  showComparison?: boolean;
 }
 
 function isAbort(error: unknown): boolean {
@@ -36,30 +38,20 @@ function isAbort(error: unknown): boolean {
 function messageOf(error: unknown): string {
   return error instanceof Error && error.message
     ? error.message
-    : 'No pudimos consultar los precios en este momento.';
+    : 'Revisá tu conexión y reintentá.';
 }
 
-/**
- * El precio de referencia de la carta.
- *
- * Es el `market` de la primera variante con precio, y el `mid` como respaldo.
- * `market` es el número que la fuente calcula sobre las ventas reales y el que
- * la app usa en todos lados (el chip del escáner, el total de una colección);
- * `mid` es el punto medio de los listados, que es lo mejor que hay cuando la
- * fuente todavía no tiene historial de ventas de esa variante.
- *
- * Ojo con el rate limit: esto **no** dispara ningún request. Solo elige una fila
- * de las que el backend ya devolvió.
- */
+/** Primera variante canónica con market conocido; mid nunca sustituye mercado. */
 export function heroPriceUsd(prices: readonly PriceDto[]): number | null {
   const rows = sortPricesByVariant(prices);
   for (const price of rows) {
     if (price.market !== null && Number.isFinite(price.market)) return price.market;
   }
-  for (const price of rows) {
-    if (price.mid !== null && Number.isFinite(price.mid)) return price.mid;
-  }
   return null;
+}
+
+function heroReference(prices: readonly PriceDto[]): PriceDto | null {
+  return sortPricesByVariant(prices).find((price) => price.market !== null && Number.isFinite(price.market)) ?? null;
 }
 
 /** El delta que se le pasa al `PriceDelta`, o `null` si no hay ninguno. */
@@ -70,33 +62,10 @@ export interface PriceWindowDelta {
   windowLabel?: string;
 }
 
-/**
- * El delta de la ventana, leído de los precios que ya están en memoria.
- *
- * ## De dónde sale
- *
- * De la **primera variante que lo trae**, en el orden de `sortPricesByVariant`, que
- * es el mismo orden que usa `heroPriceUsd`. Esa coincidencia importa: si la
- * píldora hablara de la variación de una variante y la cifra grande de otra, la
- * pantalla mostraría dos precios distintos para la misma carta.
- *
- * ## Las dos formas, y por qué se leen las dos
- *
- * El backend manda el delta en dos formas: los tres campos planos
- * (`changeUsd` / `changePercent` / `windowLabel`) y el objeto anidado `change`.
- * Son **la misma cuenta**, y leer las dos es lo que evita que el delta desaparezca
- * si una de las dos deja de venir. Los planos ganan cuando están.
- *
- * ## El `null` no se convierte en `0`
- *
- * Los tres vienen juntos o en `null`, y `null` significa "se calculó y no hay con
- * qué comparar" (un solo punto con precio, o el primero en cero). Se propaga tal
- * cual y el `PriceDelta` lo traduce a la fecha de actualización, que es lo único
- * que sabe decir con verdad. Convertirlo a `0` afirmaría que el precio no se movió,
- * que es un dato.
- */
+/** El delta pertenece a la misma fila que aporta el hero; ausencia no equivale a cero. */
 export function priceWindowDelta(prices: readonly PriceDto[]): PriceWindowDelta | null {
-  for (const price of sortPricesByVariant(prices)) {
+  const price = heroReference(prices);
+  if (price) {
     const flatUsd = price.changeUsd;
     const flatPercent = price.changePercent;
 
@@ -139,7 +108,7 @@ export function priceWindowDelta(prices: readonly PriceDto[]): PriceWindowDelta 
  * throttled. No se debe agregar polling ni requests por tile: cada refresco que
  * vence la caché puede gastar presupuesto externo (`AGENTS.md` §3.1).
  */
-export function CardPriceSection({ cardId, initialPrices = [] }: CardPriceSectionProps) {
+export function CardPriceSection({ cardId, initialPrices = [], showComparison = false }: CardPriceSectionProps) {
   const [prices, setPrices] = useState<PriceDto[]>(() => [...initialPrices]);
   const [status, setStatus] = useState<SectionStatus>(() =>
     initialPrices.length > 0 ? 'ready' : 'loading',
@@ -211,7 +180,8 @@ export function CardPriceSection({ cardId, initialPrices = [] }: CardPriceSectio
 
   const isLoading = status === 'loading';
   const usd = heroPriceUsd(prices);
-  const stale = prices.some((price) => price.isStale === true) || isPriceStale(updatedAt);
+  const reference = heroReference(prices);
+  const stale = prices.some((price) => price.freshness === 'stale');
   const pricelessVariants = countPricelessVariants(prices);
   const hasPrices = prices.length > 0;
 
@@ -231,10 +201,10 @@ export function CardPriceSection({ cardId, initialPrices = [] }: CardPriceSectio
    * un dato (`price-delta.tsx`).
    *
    * El `windowLabel` solo se pasa si hay delta: sin él el `PriceHero` usaría el
-   * default "últimos 30 días" al lado de una fecha de actualización, que son dos
+   * default "últimos 30 días" al lado de una fecha de consulta, que son dos
    * afirmaciones sobre ventanas distintas en la misma línea.
    */
-  const delta = priceWindowDelta(prices);
+  const delta = priceWindowDelta(reference ? [reference] : []);
 
   /*
    * `empty` no necesita un bloque propio: lo muestra el `PriceHero` con el guion
@@ -244,7 +214,8 @@ export function CardPriceSection({ cardId, initialPrices = [] }: CardPriceSectio
    */
 
   return (
-    <div className="flex flex-col gap-3">
+    <>
+    <div className="flex flex-col gap-3" aria-busy={isLoading}>
       {/*
         En error el hero **no** se dibuja: su `Alert` de "no tenemos precio" sería
         mentira (no sabemos si lo hay, sabemos que no pudimos preguntarlo) y
@@ -253,7 +224,7 @@ export function CardPriceSection({ cardId, initialPrices = [] }: CardPriceSectio
       */}
       {status === 'error' ? (
         <ErrorState
-          title="No pudimos consultar el precio"
+          title="No pudimos cargar la referencia de precio"
           message={error ?? undefined}
           onRetry={retry}
           retrying={isLoading}
@@ -263,13 +234,16 @@ export function CardPriceSection({ cardId, initialPrices = [] }: CardPriceSectio
           usd={usd}
           cardId={cardId}
           isLoading={isLoading}
-          updatedAt={updatedAt}
+          updatedAt={reference?.fetchedAt}
           changeUsd={delta?.changeUsd}
           changePercent={delta?.changePercent}
           windowLabel={delta?.windowLabel}
           onOpenDetails={hasPrices ? () => setIsSheetOpen(true) : undefined}
+          variant={reference?.variant}
         />
       )}
+
+      {reference ? <div role="status"><PriceReferenceDetails reference={reference} /></div> : status === 'ready' ? <p role="status" className="text-caption text-warning">Referencia, variante y antigüedad no disponibles.</p> : null}
 
       {/*
         `warning` y no `error` (§2.3): un precio viejo no impide hacer nada, solo
@@ -277,9 +251,8 @@ export function CardPriceSection({ cardId, initialPrices = [] }: CardPriceSectio
         es `warning`, y la dice el hero.
       */}
       {status === 'ready' && stale ? (
-        <Alert tone="warning" size="sm" title="Precio desactualizado">
-          El dato puede ser viejo o venir de una fuente anterior. Lo actualizamos
-          cuando alguien consulta la carta.
+        <Alert tone="warning" size="sm" title="Referencia anterior">
+          Hay consultas anteriores o de otra API al evaluar. Cada variante conserva su fecha, mercado y proveedor.
         </Alert>
       ) : null}
 
@@ -301,5 +274,7 @@ export function CardPriceSection({ cardId, initialPrices = [] }: CardPriceSectio
         </Sheet>
       ) : null}
     </div>
+    {showComparison ? <CardComparisonPanel cardId={cardId} variants={prices.map((price) => price.variant)} preferredVariant={reference?.variant} loadingVariants={isLoading} /> : null}
+    </>
   );
 }

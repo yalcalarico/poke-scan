@@ -1,0 +1,12 @@
+{
+  "checkedAtUtc": "2026-10-09T17:58:45.561841+00:00",
+  "decision": "Aceptado sólo como entrada documental UX-04; no implementación ni cierre de IDs/gate BE-07",
+  "sourceCount": 36,
+  "artifactHashesVerified": 9,
+  "localLinksChecked": 49,
+  "mismatches": [],
+  "semanticReview": "Root leyó contrato y dictamen: reenvío acotado sin evicción/entrega garantizada, User primero/version PG, códigos e incertidumbre, eliminación condicional y gates explícitos.",
+  "documentSha256": "9b0c36f8bacc6192b3dc7f8ee695e1cc0992798e1fbd15302b4ec6fc38362a74",
+  "reportSha256": "10c874de3674be711e828397e77cfab3c20003470df21a6b9ca0474a52ff1cc3",
+  "testsRuntimeExecutedByRoot": false
+}

@@ -1,0 +1,27 @@
+{
+  "purpose": "Local custody packaging validation",
+  "records": [
+    {
+      "phase": "stop",
+      "command": [
+        "pnpm",
+        "run",
+        "stop"
+      ],
+      "exitCode": 0,
+      "startedAtUtc": "2026-10-13T02:55:06.341492+00:00",
+      "finishedAtUtc": "2026-10-13T02:55:06.626491+00:00"
+    },
+    {
+      "phase": "check",
+      "command": [
+        "pnpm",
+        "run",
+        "check"
+      ],
+      "exitCode": 0,
+      "startedAtUtc": "2026-10-13T02:55:06.626981+00:00",
+      "finishedAtUtc": "2026-10-13T02:56:46.088762+00:00"
+    }
+  ]
+}

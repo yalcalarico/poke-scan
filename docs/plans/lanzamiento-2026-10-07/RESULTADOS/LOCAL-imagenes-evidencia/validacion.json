@@ -1,0 +1,49 @@
+{
+  "atUtc": "2026-10-13T23:02:50.260402+00:00",
+  "before": {
+    "status": 500,
+    "body": "Internal Server Error",
+    "url": "http://localhost:3000/_next/image?url=https%3A%2F%2Fimages.pokemontcg.io%2Fsm9%2F170.png&w=384&q=75"
+  },
+  "after": {
+    "status": 200,
+    "contentType": "image/png",
+    "bytes": 44731,
+    "url": "http://localhost:3000/_next/image?url=https%3A%2F%2Fimages.pokemontcg.io%2Fsm9%2F170.png&w=384&q=75"
+  },
+  "allowlistChecksPassed": 15,
+  "codeOrBuildChanged": false,
+  "apiRestarted": false,
+  "sampleChecks": [
+    {
+      "image": "https://images.pokemontcg.io/ecard3/146.png",
+      "status": 200,
+      "contentType": "image/png",
+      "bytes": 57520,
+      "dimensions": [
+        240,
+        330
+      ]
+    },
+    {
+      "image": "https://images.pokemontcg.io/ex10/105.png",
+      "status": 200,
+      "contentType": "image/png",
+      "bytes": 57724,
+      "dimensions": [
+        245,
+        342
+      ]
+    },
+    {
+      "image": "https://images.scrydex.com/pokemon/me4-106/small",
+      "status": 200,
+      "contentType": "image/png",
+      "bytes": 40268,
+      "dimensions": [
+        245,
+        342
+      ]
+    }
+  ]
+}

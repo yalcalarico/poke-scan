@@ -1,0 +1,211 @@
+{
+  "capturedAt": "2026-10-09T00:28:19.112186+00:00",
+  "method": "Inspecci\u00f3n est\u00e1tica local; sin runtime ni llamadas externas",
+  "files": [
+    {
+      "path": "AGENTS.md",
+      "sha256": "0a44196ce9194cafcd54094af02e90e73f0da0f693604d0876d97bf14ee30688",
+      "bytes": 12424
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/README.md",
+      "sha256": "24ec5dee918d19778b3a7bfd4187fecf1eff2e2f855ffdd2a26ed0843fc1eced",
+      "bytes": 7565
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/07-marketing.md",
+      "sha256": "46691ec0a3b6cc3aefc31b0827d7711180cabdaf09680e994bfdfae6793f1707",
+      "bytes": 7099
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/10-decisiones-y-contratos.md",
+      "sha256": "a1334c37eab2be2893cfdba65f2e294eaa8c2f5820950a9e572c999c50a71b3c",
+      "bytes": 18276
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/11-orquestacion.md",
+      "sha256": "f3eabbf57c706e0afdc0cf566be3dbf03956240efb7006e9455273d84267bdf3",
+      "bytes": 14657
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/RES-04-fuentes.md",
+      "sha256": "1d8d9db271f8a9c4691c5477c490a14a8e8268a44b564798b00a57344625126a",
+      "bytes": 30059
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/UX-03-valores.md",
+      "sha256": "66838aefa7b8bb6f751f547150da5ed33b3649f64fee57f096995dd9a0e300c0",
+      "bytes": 26294
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/RES-01-segmento.md",
+      "sha256": "c8e1e8d4651a190bc609028aec053d16902be089341e201797e5aeb82f42b5fc",
+      "bytes": 12654
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BUILD-GATE-diagnostico.md",
+      "sha256": "57c073d91950e0cb28d6f4d2a835281e9177ab2d06eb01b60e8e64306c56426c",
+      "bytes": 5820
+    },
+    {
+      "path": "frontend/components/marketing/landing-page.tsx",
+      "sha256": "41ad37ed441902a8f60b8c78300af3167961ad0cdee4420cdbb80878d24f355c",
+      "bytes": 14325
+    },
+    {
+      "path": "frontend/components/marketing/faq-section.tsx",
+      "sha256": "cf3fd767abb33c025137fb3a7c0d138f97574123f97b98017f5c467a75aa5112",
+      "bytes": 4829
+    },
+    {
+      "path": "frontend/components/search/search-controls.tsx",
+      "sha256": "fc08a3d0cdc1140b234be76e99654bf7c3a2cfefad86db7987be4c801f5626be",
+      "bytes": 16899
+    },
+    {
+      "path": "frontend/components/search/catalog-search.tsx",
+      "sha256": "df45d69b520d428b29dd05656699398d9072750b08f03c98450e33def7425f28",
+      "bytes": 27144
+    },
+    {
+      "path": "frontend/components/collections/collection-detail.tsx",
+      "sha256": "c08b6f32d04da340318156ed10527015c9c7d6589101e85bf63ac3d2c18872a6",
+      "bytes": 52508
+    },
+    {
+      "path": "frontend/components/collections/collection-actions.tsx",
+      "sha256": "896ad8819ff1b2f4cddfceb949b38ce761b7fb1cf9c2b674102cfa7caf985ad9",
+      "bytes": 2649
+    },
+    {
+      "path": "frontend/lib/collections/export-collection.ts",
+      "sha256": "c5e1006e8479c0bcecfc2b6ce728da55eedaef75629dab67c2a18ce0ec539603",
+      "bytes": 1660
+    },
+    {
+      "path": "frontend/docs/portfolio.md",
+      "sha256": "8e6b0ffb6becf29ad531e82608795cd4e5f3a0163cb274aec31e37db8c181816",
+      "bytes": 3651
+    },
+    {
+      "path": "frontend/components/collections/portfolio-overview.tsx",
+      "sha256": "f6376743c33a5fed84624c5d730ae9ba0f00524f738794a8df15e6c0c72f4d19",
+      "bytes": 6851
+    },
+    {
+      "path": "backend/src/modules/collections/portfolio.service.ts",
+      "sha256": "bc733c6a4d8c60a7e2bc39543697e7d39c93a707050eea2bd46935465a12a9e7",
+      "bytes": 5948
+    },
+    {
+      "path": "backend/src/modules/cards/cards.controller.ts",
+      "sha256": "fb5ceeac3b649817efd632305709a5516e4d76c322be55c4b2e80142e1d72d9d",
+      "bytes": 2053
+    },
+    {
+      "path": "backend/src/modules/cards/cards.service.ts",
+      "sha256": "fe5abf0a8659c4361156b9026cdbb34c2394e823685f62158c71e3e7e1fe2fa3",
+      "bytes": 45969
+    },
+    {
+      "path": "frontend/lib/api/cards.ts",
+      "sha256": "b213d280abfb8d88b31de0c48c7630136adad4d09fec548eb3b7d6d6e6c7fcb6",
+      "bytes": 3716
+    },
+    {
+      "path": "frontend/lib/api/collections.ts",
+      "sha256": "5c8c611895de26e31c2815fc46a3b0e2e0e9e479ecee5e5ce6288fd825bc999a",
+      "bytes": 7242
+    },
+    {
+      "path": "frontend/components/prices/price-history.tsx",
+      "sha256": "3ed4a87dea3a5a7a0ee2d67ff473a6efb78eadabdddec76e91cae0f7902625bf",
+      "bytes": 14455
+    },
+    {
+      "path": "frontend/docs/scanner.md",
+      "sha256": "cd5646940492469583b428c1911a7f7820538742764abfb254b50f630adcbf52",
+      "bytes": 15476
+    },
+    {
+      "path": "frontend/lib/scanner/visual-photo.ts",
+      "sha256": "026c09d0a8017a29cccc22861af5c374bbf9e4aa2c084a4cd3a08ff4c8712fbc",
+      "bytes": 1715
+    },
+    {
+      "path": "backend/src/modules/cards/visual-identify.controller.ts",
+      "sha256": "048474b4181fc585ed41369643bcc7c138e3a4a79b47546f38353b7a4af2b148",
+      "bytes": 2720
+    },
+    {
+      "path": "backend/src/modules/cards/visual-identify.service.ts",
+      "sha256": "e95d2f442ee4ff0be6ddc5eed6ebd7e53c8d8dda67aed2822402eb9f5d866416",
+      "bytes": 12822
+    },
+    {
+      "path": "backend/scripts/scanner-visual-worker.mjs",
+      "sha256": "9ae1412c4792339462e05870b258106c3842dc302bae4ef082fa5b4fad48252a",
+      "bytes": 3912
+    },
+    {
+      "path": "frontend/components/scanner/session-draft.ts",
+      "sha256": "aa7963a24547d4c5b2a4d8a77bef663e3e0424bba0fb9e8535cb39059aa6ed70",
+      "bytes": 14482
+    },
+    {
+      "path": "frontend/components/scanner/session-storage.ts",
+      "sha256": "e53a60992e18481e1b1d51ce5a20ca8fb34adcb180820f32dc7ac28709fbf6f2",
+      "bytes": 2666
+    },
+    {
+      "path": "frontend/docs/redesign-2026.md",
+      "sha256": "52aa37ad05ae97670746c64a57231463ec13518326e85d6ac0b937d79559c710",
+      "bytes": 51983
+    },
+    {
+      "path": "frontend/public/sw.js",
+      "sha256": "5647d8e6f5cb69511817b2ac00df6d5eaa4b906a8f6f7001ef59cbcbadb24503",
+      "bytes": 8566
+    },
+    {
+      "path": "frontend/components/share/share-link-creator.tsx",
+      "sha256": "46dffce3893a710a30c72de39d363184500814c2ffe9f451025d05e47288cda8",
+      "bytes": 13402
+    },
+    {
+      "path": "frontend/components/share/share-link-preview.tsx",
+      "sha256": "b9d055ac522f1dffee5d82fe1ca163eff5628404caafda9bcdff0d2130ac28b0",
+      "bytes": 5203
+    },
+    {
+      "path": "frontend/app/share/[slug]/page.tsx",
+      "sha256": "a2c7b3dc3a1159a8deb7f505cbc7e271519c7b11610ae0042ec7bfb02fb34072",
+      "bytes": 4595
+    },
+    {
+      "path": "frontend/app/(app)/buscar/page.tsx",
+      "sha256": "289af2e7e52607999d5ea12a614613996ec0cd65c549a1433c5eef014bcf5fd0",
+      "bytes": 2131
+    },
+    {
+      "path": "frontend/app/(app)/escanear/page.tsx",
+      "sha256": "c13ef2730c23480bd8e5b3261a8f18b7c2c91cdaec74dd4ae6908ffc9af6e06d",
+      "bytes": 21666
+    },
+    {
+      "path": "frontend/app/(app)/escanear/layout.tsx",
+      "sha256": "51f9ad7bfd4872079993bafb41fbf706f6db3402bafbed5174de5d57779bdded",
+      "bytes": 816
+    },
+    {
+      "path": "frontend/app/(marketing)/faq/page.tsx",
+      "sha256": "d2d96fb9009da52cb788b2ae39493287855b8f221265636228e44d1bedc9b9b5",
+      "bytes": 522
+    },
+    {
+      "path": "backend/src/jobs/sync-prices.service.ts",
+      "sha256": "d4ddbda2e2ab192be41a927eeb8a379d0a6e40c6048ae6b369a9a7a7386e7c29",
+      "bytes": 17218
+    }
+  ]
+}

@@ -1,4 +1,5 @@
 import { hostname } from 'node:os';
+import { setTimeout as delay } from 'node:timers/promises';
 
 import {
   Injectable,
@@ -12,6 +13,7 @@ import { ConfigService } from '@nestjs/config';
 import { ProviderRateGate } from './provider-rate.gate.js';
 import { PriceQueueService, type ClaimedPriceRefresh } from './price-queue.service.js';
 import { SyncPricesService } from './sync-prices.service.js';
+import { ProviderRateLimitError } from '../common/errors/provider-rate-limit.error.js';
 
 /**
  * Cuánto espera el worker cuando no encuentra nada, y hasta cuánto crece.
@@ -60,6 +62,7 @@ export class PriceQueueWorker implements OnModuleInit, OnModuleDestroy {
   private readonly id = instanceId();
   private running = false;
   private loop: Promise<void> | null = null;
+  private readonly shutdown = new AbortController();
   private idleMs = IDLE_POLL_MIN_MS;
   private pollMinMs = IDLE_POLL_MIN_MS;
   private pollMaxMs = IDLE_POLL_MAX_MS;
@@ -85,8 +88,7 @@ export class PriceQueueWorker implements OnModuleInit, OnModuleDestroy {
 
   async onModuleInit(): Promise<void> {
     const enabled =
-      (this.config?.get<string>('PRICE_QUEUE_ENABLED') ?? process.env.PRICE_QUEUE_ENABLED) !==
-      'false';
+      !['false', '0', 'no'].includes((this.config?.get<string>('PRICE_QUEUE_ENABLED') ?? process.env.PRICE_QUEUE_ENABLED ?? 'true').trim().toLowerCase());
     if (!enabled) {
       this.logger.log('Worker de precios desactivado por PRICE_QUEUE_ENABLED=false.');
       return;
@@ -99,13 +101,17 @@ export class PriceQueueWorker implements OnModuleInit, OnModuleDestroy {
     this.logger.log(`Worker de precios listo como ${this.id}`);
   }
 
-  onModuleDestroy(): void {
+  async onModuleDestroy(): Promise<void> {
     this.running = false;
+    this.shutdown.abort();
+    await this.loop;
   }
 
   private async run(): Promise<void> {
     while (this.running) {
       try {
+        await this.gate.waitOutProviderPause(this.shutdown.signal);
+        if (!this.running) break;
         const job = await this.queue.claimNext(this.id);
         if (!job) {
           await this.sleep(this.idleMs);
@@ -128,7 +134,16 @@ export class PriceQueueWorker implements OnModuleInit, OnModuleDestroy {
   }
 
   private async runJob(job: ClaimedPriceRefresh): Promise<void> {
+    let attempts = job.attempts;
+    let requestStarted = false;
+    const dailyDeduplicate = job.origin === 'daily' || (job.syncDate !== null && job.attempts > 0);
     try {
+      if (dailyDeduplicate && await this.syncPrices.hasTerminalDailyObservation(job.cardId)) {
+        await this.syncPrices.fetchAndStoreWithOutcome(job.cardId, true);
+        await this.queue.complete(job.id);
+        await this.queue.markCrossedDayMissed(job);
+        return;
+      }
       /*
        * El claim va **antes** del slot, y el slot no se suelta hasta el final.
        *
@@ -139,12 +154,36 @@ export class PriceQueueWorker implements OnModuleInit, OnModuleDestroy {
        * proceso muere en esa espera la deja en `processing`, que es
        * exactamente lo que `reconcileAbandoned` sabe recuperar.
        */
-      await this.gate.wait();
-      await this.syncPrices.fetchAndStore(job.cardId);
+      const blockedFor = await this.gate.waitForClaimedJobSlot();
+      if (blockedFor !== null) {
+        await this.queue.release(job.id, blockedFor);
+        return;
+      }
+      await this.syncPrices.fetchAndStoreWithOutcome(job.cardId, dailyDeduplicate, async () => {
+        attempts = await this.queue.startAttempt(job.id);
+        requestStarted = true;
+      });
       await this.queue.complete(job.id);
+      await this.queue.markCrossedDayMissed(job);
+      const now = new Date();
+      if (job.origin === 'daily' && job.syncDate && job.syncDate.toISOString().slice(0, 10) !== now.toISOString().slice(0, 10) &&
+        now.getTime() >= Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 3, 15)) {
+        const syncDate = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+        await this.queue.requeuePendingDailyTarget(job.cardId, syncDate);
+      }
     } catch (error) {
       const message = (error as Error).message;
-      const status = await this.queue.fail(job.id, job.attempts, message);
+      const rateLimit = error instanceof ProviderRateLimitError
+        ? error
+        : error instanceof Error && error.cause instanceof ProviderRateLimitError
+          ? error.cause
+          : null;
+      if (rateLimit) await this.gate.recordRateLimit(rateLimit);
+      if (!requestStarted) {
+        await this.queue.release(job.id, rateLimit?.retryAfterMs ?? 1000);
+        return;
+      }
+      const status = await this.queue.fail(job.id, Math.max(attempts, job.attempts), message);
       if (status === 'failed') {
         this.logger.error(
           `Refresh de ${job.cardId} agotó los intentos: ${message}. Queda esperando una señal nueva.`,
@@ -159,10 +198,8 @@ export class PriceQueueWorker implements OnModuleInit, OnModuleDestroy {
    * La espera entre polls es un `setTimeout` común, con `unref` para que el
    * timer no impida que el proceso baje.
    */
-  private sleep(ms: number): Promise<void> {
-    return new Promise((resolve) => {
-      const timer = setTimeout(resolve, ms);
-      timer.unref?.();
-    });
+  private async sleep(ms: number): Promise<void> {
+    try { await delay(ms, undefined, { signal: this.shutdown.signal }); }
+    catch { /* el cierre interrumpe el poll y el backoff del loop */ }
   }
 }

@@ -43,13 +43,21 @@ símbolo están citados, la afirmación es verificable con un grep.
 | `scanner/` | cámara, frame, action bar, resultados, organización | `CameraView` + `app/(app)/escanear/page.tsx` |
 | `collections/` | lista, detalle, summary, sheets de ítem y de colección | `CollectionsScreen` / `CollectionDetailScreen` |
 | `set-progress/` | progreso por set y binder | `SetProgressScreen` |
-| `prices/` | `PriceHero`, `PriceDelta`, `PriceTable`, `CardPriceSection` | `CardPriceSection` |
+| `prices/` | `PriceHero`, `PriceDelta`, `PriceTable`, `CardPriceSection`, `PriceReferenceDetails`, `ValuationEvidence` | `CardPriceSection` |
 | `settings/` | identidad, apariencia, moneda, sesión, `RequireAuth` | `RequireAuth` + las 5 secciones |
 | `share/` | enlaces del usuario, vista pública, `InstallCta` | `PublicCollectionView` / `ShareLinksSection` |
 | `auth/` | `AuthShell`, `LoginForm`, `RegisterForm` | `AuthShell` |
 | `home/` | inicio PWA: reanudación, mock y CTA de sesión | `app/(app)/inicio/page.tsx` (server) |
 | `marketing/` | landing pública, planes y FAQ | `app/(marketing)/page.tsx` (server) |
 | `brand/` | `AppMark` | `AppMark` |
+
+### Precio y valuación (FE-03)
+
+`components/prices/price-evidence.tsx` comparte la lectura de procedencia por referencia y la cobertura/antigüedad por agregado. Los agregados usan `valuation.amount` y cobertura por copias; una respuesta legacy sin `valuation` se anuncia como no disponible. `PriceReferenceDetails` muestra mercado, API, moneda original, consulta, evaluación y fecha upstream en líneas separadas, sin calcular frescura con el reloj del navegador. `PriceHistory` conserva la variante nullable del envelope y permite desplegar la metadata de cada observación. `PortfolioOverview` usa la valuación del snapshot para la gráfica y la lista, y el cambio en ARS informa que la conversión usa la cotización vigente.
+
+`components/prices/comparison-panel.tsx` agrega la comparación local TCGdex/TCGCSV en la ficha, el detalle de colección y el portafolio. `ComparisonChart` usa dos series etiquetadas, fechas UTC y cortes ante huecos; el detalle de observaciones expone valores, cobertura y composición a lectores de pantalla. Ver [`comparison.md`](comparison.md) para la semántica y los endpoints.
+
+La ficha y `PriceTable` toman `market` de la variante exacta; un `market: null` no se reemplaza con `mid`. `ItemSheet` oculta la referencia mientras la variante elegida difiere de la guardada; el precio autoritativo llega al guardar por el flujo existente. Share presenta `stats.valuation` sobre el scope completo en USD y distingue copias con precio de grupos visibles. La condición se muestra como registrada, sin ajustar el importe.
 
 ---
 
@@ -922,8 +930,8 @@ recurso inexistente— que se maneja con `onError` y un fallback de texto, más
 ### `CardTile` — lo que hay que saber
 
 - **El tile es la imagen, no un contenedor.** No lleva `border` ni `bg-surface`:
-  la imagen flota sobre el canvas con `shadow-sm` y sube medio píxel en hover
-  (`group-hover:-translate-y-0.5 group-hover:shadow-md`). En la v1 era un
+  la imagen flota sobre el canvas con `shadow-sm` y usa `CardTilt` para dar
+  profundidad suave a la carta señalada. En la v1 era un
   `rounded-xl border bg-slate-900/40 p-2` con la sombra en la imagen, y el
   resultado eran 20 cajas de gris compitiendo con 20 obras de arte.
 - **`priceUsd` tiene tres estados, y el tercero es el importante**: número →
@@ -946,6 +954,16 @@ recurso inexistente— que se maneja con `onError` y un fallback de texto, más
   Importa que sean correctas: sin eso el LCP de `/buscar` se va al primer `fetch`
   de la grilla en vez de al de la primera carta. `sizes` por prop existe para el
   binder (5 columnas, ~17vw).
+
+### `CardTilt`
+
+Isla client decorativa compartida por la ficha y los tiles. Recibe `children`,
+`variant="detail" | "catalog"` y clases de ubicación. La imagen puede seguir
+renderizándose en el servidor. El detalle responde al cursor y al arrastre
+horizontal táctil; el catálogo conserva el toque para navegar o seleccionar.
+Límites 8°/3°, reset al salir/soltar/cancelar y desactivación dinámica por
+movimiento reducido. CSS module, sin librerías ni consultas de datos. El reflejo
+neutro del detalle no afirma una variante holográfica. Ver design system §5.1.1.
 
 ### `CardGrid`
 
@@ -1003,11 +1021,17 @@ Lo no obvio:
   es el que evita tocar la pantalla entera si uno vuelve a quedar deshabilitado,
   pero hoy ningún chip se ve apagado: *"la función existe y la app no la ofrece"*
   es un defecto, no una prudencia.
-- **El `sort` y la `direction` viven en el `Sheet` de filtros**, no en la barra:
-  son cuatro criterios más un sentido, y la barra está pensada para input + un
-  botón. Con texto en el input **ambos se deshabilitan y se explica por qué**,
-  porque el backend ignora el orden cuando viene `q` (manda el score de
-  relevancia, que no es invertible). Cambiar el `sort` pone la `direction` en
+- **El modo de búsqueda queda visible junto al campo.** El panel de filtros
+  agrupa expansión, rareza y orden. En móvil usa `Sheet` con cierre explícito
+  «Ver resultados»: los cambios se aplican al elegirlos. Desde `lg` se monta
+  como un lateral; hay una sola instancia del panel y el estado sigue en la URL.
+  `SearchControls` recibe los resultados como `children` para componer las dos
+  columnas sin trasladar la consulta ni sus hooks. Los chips de criterios activos
+  siguen siendo removibles. Dentro del catálogo con lateral, la grilla y su
+  skeleton usan 3 columnas en `lg` y 4 en `xl`; otras grillas mantienen su escala.
+- **El orden muestra relevancia cuando hay texto**, porque el backend ignora
+  `sort` y `direction` cuando viene `q` (el score no es invertible). Sin texto
+  se ofrecen los controles de orden. Cambiar el `sort` pone la `direction` en
   `desc` para `price` y `number` —"las más caras primero"— y en `asc` para los
   otros dos, porque alfabético descendente no lo pide nadie.
 - `SearchFallback` se usa **tanto** en el `fallback` del `Suspense` como en
@@ -1143,7 +1167,7 @@ Lo no obvio:
 - **`PriceDelta` tiene dos salidas en un componente** porque las dos ocupan el
   mismo lugar en la composición y nunca aparecen juntas. Lo que **no** hace es
   inventar el dato: sin `changeUsd` y `changePercent` no hay píldora, hay
-  "Actualizado hace 3 h". El `Alert` de "esto está viejo" lo pone
+  "Consultado el {instante UTC}". El `Alert` de "esto está viejo" lo pone
   `CardPriceSection`, *"porque un `Alert` no es una píldora y esta caja no debe
   crecer de ancho completo"*.
 - **B10 está implementado.** `PriceDto.change` y `PriceHistoryDto` llegan del
@@ -1157,8 +1181,8 @@ Lo no obvio:
   el caption de `PriceHistory` termina con `· tcgplayer · TCGdex` y `PriceTable`
   rotula el mercado de cada fila. Con `provider: null` el texto dice "origen no
   identificado" en vez de atribuir la serie a la fuente activa —no hay dato que
-  pruebe de dónde salió— y `PriceDto.isStale` (precio de otro proveedor o de más
-  de 24 h) es lo que dispara el `Alert` de "esto está viejo" y el refresh.
+  pruebe de dónde salió—. `freshness` del servidor informa el estado al evaluar;
+  `isStale` conserva su función legacy de decidir si releer la API.
 - **`PriceDelta` tiene un tercer tono, `flat`.** *"Sin cambio no es 'ni una cosa ni
   la otra': es un precio quieto, y pintar un 0 % de rojo dice 'cayó' cuando no cayó
   nada"*.
@@ -1166,8 +1190,21 @@ Lo no obvio:
   listener de `matchMedia`, que además no funcionaría en un Server Component. El
   corte está en `lg:` (1024 px), que es donde las 5 columnas entran sin scroll. La
   tabla conserva `<caption class="sr-only">` y `scope="col"`/`"row"`.
-- `heroPriceUsd(prices)` elige el precio de referencia y `countPricelessVariants`
-  da el "N cartas sin precio" del estado parcial de §9.1.
+- `heroPriceUsd(prices)` usa la primera variante canónica con `market` conocido,
+  incluido cero; el delta pertenece a esa misma fila y `mid` no rescata ausencia.
+  `countPricelessVariants` cuenta variantes sin referencia de mercado.
+- `PriceHistory` conserva la serie en la misma `Surface`, fuera del botón del
+  hero: su `<details>` tiene foco propio. La carga y el error de la serie se
+  comunican sin ocultar el precio actual; `variant: null` informa que la mejor
+  referencia puede cambiar de variante por día.
+- `ValuationMetadata` es server-safe y comparte cobertura/recencia con el resumen
+  público sin sesión ni preferencia de moneda. `PriceReferenceDetails` muestra
+  consulta, evaluación y fecha upstream separadas. `lib/prices/format.ts` conserva
+  hora, milisegundos y UTC del instante cacheado; los días observados se formatean
+  como días UTC, sin corrimiento por el huso del browser.
+- Los agregados consumen `valuation.amount`; ausencia legacy sigue desconocida.
+  El item muestra unitario y subtotal de su variante exacta, y deja de mostrar la
+  referencia anterior mientras se edita esa variante. Condición no ajusta el monto.
 
 ## 2.8 `settings/` — `/ajustes`
 
@@ -1330,6 +1367,32 @@ consistente el cambio, y `app/(app)/perfil/route.ts` deriva el destino del redir
 de acá (`NAV_ITEMS[NAV_ITEMS.length - 1].href`) en vez de hardcodear la cadena.
 
 ---
+
+## 3.1 Comparación visual V2
+
+`visual-preview/` encapsula la vista optativa del 16/10/2026. `AppShell` monta
+`VisualPreviewProvider` dentro de `Suspense`, sin repetir los providers raíz.
+
+- `VisualScope` aplica ambientación y tokens de la vista; también sirve en portales.
+- `VisualCard` elige entre la presentación actual y `HoloCard`, conservando la imagen
+  compuesta por el servidor. La V2 incluye reflejo multicolor, glow, inclinación,
+  movimiento en reposo y revelado. Es decorativo, independiente de la variante física.
+- `PreviewLink`/`previewHref` mantienen la vista entre destinos internos;
+  `visualVersionHref` alterna Actual/V2 conservando los otros parámetros.
+- `PreviewSheet` reutiliza la primitiva `Sheet`, con su foco y acciones; solo
+  aplica la superficie visual mediante `useVisualPanelClassName`.
+- `AnimatedNumber` conserva el valor final accesible y los helpers monetarios.
+  `Reveal`, `Burst`, `Pokeball` y `ScannerEffect` aportan entrada, partículas,
+  espera y láser. `VisualScanResult` presenta la coincidencia ya existente, sin
+  nuevas consultas ni cambios de reconocimiento/persistencia.
+- `MotionGrid` interpola posiciones de celdas por identidad estable. La memoria
+  está acotada a las celdas visibles y al provider, sobrevive al skeleton y al
+  remonte por criterios, y separa catálogo y colección. Las mutaciones de texto de
+  los contadores no cancelan el reordenamiento.
+
+Los efectos se desactivan por movimiento reducido y las animaciones persistentes
+se pausan al ocultar la pestaña; las cartas también observan su visibilidad.
+La implementación usa CSS y animaciones nativas sin nuevas dependencias.
 
 ## 4. Lo que este documento no cubre
 

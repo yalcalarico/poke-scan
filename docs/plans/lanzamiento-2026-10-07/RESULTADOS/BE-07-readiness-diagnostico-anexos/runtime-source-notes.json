@@ -1,0 +1,24 @@
+{
+  "node": "v22.20.0",
+  "pnpm": "10.17.1",
+  "supertest": "7.3.0",
+  "superagent": "10.4.1",
+  "vitest": "4.1.11",
+  "sources": {
+    "/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/backend/node_modules/.pnpm/supertest@7.3.0/node_modules/supertest/lib/test.js": {
+      "sha256": "2f1b0699d5bb05ad36f7c605961c9035ff2c86c3e38f87e7bca61375ea327245"
+    },
+    "/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/backend/node_modules/.pnpm/superagent@10.4.1/node_modules/superagent/lib/node/index.js": {
+      "sha256": "6f78ca06586b0ab80c6ffae1835918c680d59b5b6abfd0fcd47673fe8fa6a93d"
+    },
+    "/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/backend/node_modules/.pnpm/vitest@4.1.11_@types+node@24.13.6_@vitest+coverage-v8@4.1.11_vite@8.3.1_@types+node@24._6e3933dda33da588b1eda12428fff677/node_modules/vitest/package.json": {
+      "sha256": "a28126d97bcaf567da5bed69443b7f3bcd9a7a8c38c8b66e554686b6bb2c10e0"
+    }
+  },
+  "nativeHttpServerSha256": "2fefb5d6114bd49de0e5345bf1b2792388e131910f30e47a847c33ab6491f38b",
+  "nativeNetSha256": "f7e3e93436b7ee23237f3d03bd19bd05cbddef1fba4725d5910d5cf7f42531e1",
+  "setupConnectionsTracking": "function setupConnectionsTracking() {\n  // Start connection handling\n  this[kConnections] ||= new ConnectionsList();\n\n  if (this[kConnectionsCheckingInterval]) {\n    clearInterval(this[kConnectionsCheckingInterval]);\n  }\n  // This checker is started without checking whether any headersTimeout or requestTimeout is non zero\n  // otherwise it would not be started if such timeouts are modified after createServer.\n  this[kConnectionsCheckingInterval] =\n    setInterval(checkConnections.bind(this), this.connectionsCheckingInterval).unref();\n}\n\nfunction httpServerPreClose(server) {\n  server.closeIdleConnections();\n  clearInterval(server[kConnectionsCheckingInterval]);\n}\n\n",
+  "serverClose": "Server.prototype.close = function close() {\n  httpServerPreClose(this);\n  ReflectApply(net.Server.prototype.close, this, arguments);\n  return this;\n};\n\nServer.prototype[SymbolAsyncDispose] = assignFunctionName(SymbolAsyncDispose, async function() {\n  await promisify(this.close).call(this);\n});\n\nServer.prototype.closeAllConnections = function closeAllConnections() {\n  if (!this[kConnections]) {\n    return;\n  }\n\n  const connections = this[kConnections].all();\n\n  for (let i = 0, l = connections.length; i < l; i++) {\n    connections[i].socket.destroy();\n  }\n};\n\nServer.prototype.closeIdleConnections = function closeIdleConnections() {\n  if (!this[kConnections]) {\n    return;\n  }\n\n  const connections = this[kConnections].idle();\n\n  for (let i = 0, l = connections.length; i < l; i++) {\n    if (connections[i].socket._httpMessage && !connections[i].socket._httpMessage.finished) {\n      continue;\n    }\n\n    connections[i].socket.destroy();\n  }\n};\n\n",
+  "netClose": "Server.prototype.close = function(cb) {\n  this._listeningId++;\n  if (typeof cb === 'function') {\n    if (!this._handle) {\n      this.once('close', function close() {\n        cb(new ERR_SERVER_NOT_RUNNING());\n      });\n    } else {\n      this.once('close', cb);\n    }\n  }\n\n  if (this._handle) {\n    this._handle.close();\n    this._handle = null;\n  }\n\n  if (this._usingWorkers) {\n    let left = this._workers.length;\n    const onWorkerClose = () => {\n      if (--left !== 0) return;\n\n      this._connections = 0;\n      this._emitCloseIfDrained();\n    };\n\n    // Increment connections to be sure that, even if all sockets will be closed\n    // during polling of workers, `close` event will be emitted only once.\n    this._connections++;\n\n    // Poll workers\n    for (let n = 0; n < this._workers.length; n++)\n      this._workers[n].close(onWorkerClose);\n  } else {\n    this._emitCloseIfDrained();\n  }\n\n  return this;\n};\n\n",
+  "inferenceLimits": "Lectura local: listeners/cleanup deterministas no prueban que no exista una carrera nativa no capturada. Default Vitest isolate=true, forks; configuración vigente no los modifica."
+}

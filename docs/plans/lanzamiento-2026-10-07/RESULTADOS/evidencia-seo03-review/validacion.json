@@ -1,0 +1,525 @@
+{
+  "checkedAtUtc": "2026-10-09T00:57:33.310245+00:00",
+  "receivedCopyMatches": true,
+  "sourceRows": [
+    {
+      "path": "AGENTS.md",
+      "reported": "0a44196ce9194cafcd54094af02e90e73f0da0f693604d0876d97bf14ee30688",
+      "validSha256Format": true,
+      "matchesBaseline": true,
+      "currentSha256": "0a44196ce9194cafcd54094af02e90e73f0da0f693604d0876d97bf14ee30688"
+    },
+    {
+      "path": "frontend/AGENTS.md",
+      "reported": "63f2c50380ed6303237cce215ce27af1d620d094c215e28d1b1538a3c070e3bb",
+      "validSha256Format": true,
+      "matchesBaseline": true,
+      "currentSha256": "63f2c50380ed6303237cce215ce27af1d620d094c215e28d1b1538a3c070e3bb"
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/README.md",
+      "reported": "24ec5dee918d19778b3a7bfd4187fecf1eff2e2f855ffdd2a26ed0843fc1eced",
+      "validSha256Format": true,
+      "matchesBaseline": true,
+      "currentSha256": "24ec5dee918d19778b3a7bfd4187fecf1eff2e2f855ffdd2a26ed0843fc1eced"
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/06-seo.md",
+      "reported": "61d6f363e53535c3cde75a3812d92d2f03b275c83762d0ed7fc68eed6435b2c3",
+      "validSha256Format": true,
+      "matchesBaseline": true,
+      "currentSha256": "61d6f363e53535c3cde75a3812d92d2f03b275c83762d0ed7fc68eed6435b2c3"
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/10-decisiones-y-contratos.md",
+      "reported": "a1334c37eab2be2893cfdba65f2e294eaa8c2f5820950a9e572c999c50a71b3c",
+      "validSha256Format": true,
+      "matchesBaseline": true,
+      "currentSha256": "a1334c37eab2be2893cfdba65f2e294eaa8c2f5820950a9e572c999c50a71b3c"
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/MKT-01-copy.md",
+      "reported": "d12287eb65d1feff484201f069f518018ad79e543d3832d440dc9bab55157f6d",
+      "validSha256Format": true,
+      "matchesBaseline": true,
+      "currentSha256": "d12287eb65d1feff484201f069f518018ad79e543d3832d440dc9bab55157f6d"
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/MKT-01-review.md",
+      "reported": "905a34f980c40aa245d6019cc2936a9898ae491057d7032970145521aa828d4c",
+      "validSha256Format": true,
+      "matchesBaseline": true,
+      "currentSha256": "905a34f980c40aa245d6019cc2936a9898ae491057d7032970145521aa828d4c"
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/RES-04-fuentes.md",
+      "reported": "1d8d9db271f8a9c4691c5477c490a14a8e8268a44b564798b00a57344625126a",
+      "validSha256Format": true,
+      "matchesBaseline": true,
+      "currentSha256": "1d8d9db271f8a9c4691c5477c490a14a8e8268a44b564798b00a57344625126a"
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/RES-04-review.md",
+      "reported": "b71e33816357879a11ea108501653909697fb8021425db6bb95329250f7a81ef",
+      "validSha256Format": true,
+      "matchesBaseline": true,
+      "currentSha256": "b71e33816357879a11ea108501653909697fb8021425db6bb95329250f7a81ef"
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/RES-03-protocolo.md",
+      "reported": "2595f9aa242d8faaf43575ef6273888db3df7a13a1b2063f17bdcec2e8928c57",
+      "validSha256Format": true,
+      "matchesBaseline": true,
+      "currentSha256": "2595f9aa242d8faaf43575ef6273888db3df7a13a1b2063f17bdcec2e8928c57"
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/UX-03-valores.md",
+      "reported": "66838aefa7b8bb6f751f547150da5ed33b3649f64fee57f096995dd9a0e300c0",
+      "validSha256Format": true,
+      "matchesBaseline": true,
+      "currentSha256": "66838aefa7b8bb6f751f547150da5ed33b3649f64fee57f096995dd9a0e300c0"
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/UX-03-review.md",
+      "reported": "1552e843bdf930a9476149b4bd2ea655f92dde38e3656f025024fb004f5fb3fd",
+      "validSha256Format": true,
+      "matchesBaseline": true,
+      "currentSha256": "1552e843bdf930a9476149b4bd2ea655f92dde38e3656f025024fb004f5fb3fd"
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/SEO-01-review.md",
+      "reported": "f49435adcf79443b6c701fc4f2adfc574051e0bf5833dbea73eda4474121a2d0",
+      "validSha256Format": true,
+      "matchesBaseline": true,
+      "currentSha256": "f49435adcf79443b6c701fc4f2adfc574051e0bf5833dbea73eda4474121a2d0"
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/SEO-01-runtime-review.md",
+      "reported": "01a1180f9d6a5b94d5776ca03763d342f2881dfbb09989ac22ee529c8f780f99",
+      "validSha256Format": true,
+      "matchesBaseline": true,
+      "currentSha256": "01a1180f9d6a5b94d5776ca03763d342f2881dfbb09989ac22ee529c8f780f99"
+    },
+    {
+      "path": "frontend/app/layout.tsx",
+      "reported": "4f142a61056cfb3819f0160f5d94b3459020bea37fff718944cfc5a33082ed8c",
+      "validSha256Format": true,
+      "matchesBaseline": true,
+      "currentSha256": "4f142a61056cfb3819f0160f5d94b3459020bea37fff718944cfc5a33082ed8c"
+    },
+    {
+      "path": "frontend/app/(marketing)/layout.tsx",
+      "reported": "0d59b1ddc1a9d2d74291bbd24f56f1c91e4df5ebcaadc5066f08d5108b2265b4",
+      "validSha256Format": true,
+      "matchesBaseline": true,
+      "currentSha256": "0d59b1ddc1a9d2d74291bbd24f56f1c91e4df5ebcaadc5066f08d5108b2265b4"
+    },
+    {
+      "path": "frontend/app/(marketing)/page.tsx",
+      "reported": "bbb661d27ae8d4fd7190162265260c1ef25701c6771716aa685bba3a3d06a0c6",
+      "validSha256Format": true,
+      "matchesBaseline": true,
+      "currentSha256": "bbb661d27ae8d4fd7190162265260c1ef25701c6771716aa685bba3a3d06a0c6"
+    },
+    {
+      "path": "frontend/app/(marketing)/faq/page.tsx",
+      "reported": "d2d96fb9009da52cb788b2ae39493287855b8f221265636228e44d1bedc9b9b5",
+      "validSha256Format": true,
+      "matchesBaseline": true,
+      "currentSha256": "d2d96fb9009da52cb788b2ae39493287855b8f221265636228e44d1bedc9b9b5"
+    },
+    {
+      "path": "frontend/app/(app)/buscar/page.tsx",
+      "reported": "289af2e7e52607999d5ea12a614613996ec0cd65c549a1433c5eef014bcf5fd0",
+      "validSha256Format": true,
+      "matchesBaseline": true,
+      "currentSha256": "289af2e7e52607999d5ea12a614613996ec0cd65c549a1433c5eef014bcf5fd0"
+    },
+    {
+      "path": "frontend/app/(app)/escanear/page.tsx",
+      "reported": "c13ef2730c23480bd8e5b3261a8f18b7c2c91cdaec74dd4ae6908ffc9af6e06d",
+      "validSha256Format": true,
+      "matchesBaseline": true,
+      "currentSha256": "c13ef2730c23480bd8e5b3261a8f18b7c2c91cdaec74dd4ae6908ffc9af6e06d"
+    },
+    {
+      "path": "frontend/components/search/search-controls.tsx",
+      "reported": "fc08a3d0cdc1140b234be76e99654bf7c3a2cfefad86db7987be4c801f5626be",
+      "validSha256Format": true,
+      "matchesBaseline": true,
+      "currentSha256": "fc08a3d0cdc1140b234be76e99654bf7c3a2cfefad86db7987be4c801f5626be"
+    },
+    {
+      "path": "frontend/components/search/catalog-search.tsx",
+      "reported": "df45d69b520d428b29dd05656699398d9072750b08f03c98450e33def7425f28",
+      "validSha256Format": true,
+      "matchesBaseline": true,
+      "currentSha256": "df45d69b520d428b29dd05656699398d9072750b08f03c98450e33def7425f28"
+    },
+    {
+      "path": "frontend/components/collections/collection-actions.tsx",
+      "reported": "896ad8819ff1b2f4cddfceb949b38ce761b7fb1cf9c2b674102cfa7caf985ad9",
+      "validSha256Format": true,
+      "matchesBaseline": true,
+      "currentSha256": "896ad8819ff1b2f4cddfceb949b38ce761b7fb1cf9c2b674102cfa7caf985ad9"
+    },
+    {
+      "path": "frontend/lib/collections/export-collection.ts",
+      "reported": "c5e1006e8479c0bcecfc2b6ce728da55eedaef75629dab67c2a18ce0ec539603",
+      "validSha256Format": true,
+      "matchesBaseline": true,
+      "currentSha256": "c5e1006e8479c0bcecfc2b6ce728da55eedaef75629dab67c2a18ce0ec539603"
+    },
+    {
+      "path": "frontend/docs/routes.md",
+      "reported": "5b18947635a90656e57fd7f4286eadbf2b589264e492d46d2aff33bc6c4069a5",
+      "validSha256Format": true,
+      "matchesBaseline": true,
+      "currentSha256": "5b18947635a90656e57fd7f4286eadbf2b589264e492d46d2aff33bc6c4069a5"
+    },
+    {
+      "path": "frontend/docs/scanner.md",
+      "reported": "cd5646940492469583b428c1911a7f7820538742764abfb254b50f630adcbf52",
+      "validSha256Format": true,
+      "matchesBaseline": true,
+      "currentSha256": "cd5646940492469583b428c1911a7f7820538742764abfb254b50f630adcbf52"
+    },
+    {
+      "path": "frontend/docs/portfolio.md",
+      "reported": "8e6b0ffb6becf29ad531e82608795cd4e5f3a0163cb274aec31e37db8c181816",
+      "validSha256Format": true,
+      "matchesBaseline": true,
+      "currentSha256": "8e6b0ffb6becf29ad531e82608795cd4e5f3a0163cb274aec31e37db8c181816"
+    },
+    {
+      "path": "frontend/node_modules/next/package.json",
+      "reported": "906602ce9cbbc4d57b1d5bc8b99b6e74b23ff8eecba57e3c47b680b61823ec0c",
+      "validSha256Format": true,
+      "matchesBaseline": true,
+      "currentSha256": "906602ce9cbbc4d57b1d5bc8b99b6e74b23ff8eecba57e3c47b680b61823ec0c"
+    },
+    {
+      "path": "frontend/node_modules/next/dist/docs/01-app/01-getting-started/14-metadata-and-og-images.md",
+      "reported": "76c7b626838fc34d8657b742d178baf4fa857543016b7a0c8c537b75253f9110",
+      "validSha256Format": true,
+      "matchesBaseline": true,
+      "currentSha256": "76c7b626838fc34d8657b742d178baf4fa857543016b7a0c8c537b75253f9110"
+    },
+    {
+      "path": "frontend/node_modules/next/dist/docs/01-app/03-api-reference/04-functions/generate-metadata.md",
+      "reported": "68e0ff80fa633a99fe65ac1b6f1d7f7ededa666adc0a407a1ab43f43cf7ebe1a",
+      "validSha256Format": true,
+      "matchesBaseline": true,
+      "currentSha256": "68e0ff80fa633a99fe65ac1b6f1d7f7ededa666adc0a407a1ab43f43cf7ebe1a"
+    },
+    {
+      "path": "frontend/node_modules/next/dist/docs/01-app/03-api-reference/03-file-conventions/01-metadata/opengraph-image.md",
+      "reported": "375540f4bc3ffa85f96342b2af89121ec74e5b1656ff14a96a34df75f14caa13",
+      "validSha256Format": true,
+      "matchesBaseline": true,
+      "currentSha256": "375540f4bc3ffa85f96342b2af89121ec74e5b1656ff14a96a34df75f14caa13"
+    },
+    {
+      "path": "frontend/public/icons/apple-touch-icon.png",
+      "reported": "389f4029e2c35c88e58cdd8d82d5bdcec6c03a83e770b8f2be9dda974edd7318",
+      "validSha256Format": true,
+      "matchesBaseline": true,
+      "currentSha256": "389f4029e2c35c88e58cdd8d82d5bdcec6c03a83e770b8f2be9dda974edd7318"
+    },
+    {
+      "path": "frontend/public/icons/icon-192.png",
+      "reported": "cf124c679c1321dce022323a181c8a07c7c8bc62789fb4621d663f08a3431650",
+      "validSha256Format": true,
+      "matchesBaseline": true,
+      "currentSha256": "cf124c679c1321dce022323a181c8a07c7c8bc62789fb4621d663f08a3431650"
+    },
+    {
+      "path": "frontend/public/icons/icon-512.png",
+      "reported": "0dcc9078967cb8768611f165a42c8c9f75f9127897e880c6e8b712815e853ef0",
+      "validSha256Format": true,
+      "matchesBaseline": true,
+      "currentSha256": "0dcc9078967cb8768611f165a42c8c9f75f9127897e880c6e8b712815e853ef0"
+    },
+    {
+      "path": "frontend/public/icons/maskable-512.png",
+      "reported": "152930dc18e409ea76d93b9a1c7654c940f00e74292732eda6af218f1f6677a1",
+      "validSha256Format": true,
+      "matchesBaseline": true,
+      "currentSha256": "152930dc18e409ea76d93b9a1c7654c940f00e74292732eda6af218f1f6677a1"
+    }
+  ],
+  "sourceTableCoverage": {
+    "missing": [],
+    "extra": [],
+    "duplicates": []
+  },
+  "sourceDriftSinceBaseline": [],
+  "localLinks": [
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/SEO-03-contenido.md",
+      "target": "SEO-03-review.md",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/SEO-03-contenido.md",
+      "target": "MKT-01-review.md",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/SEO-03-contenido.md",
+      "target": "RES-03-protocolo.md#dec-04-método-mínimo-y-diccionario-propuesto",
+      "exists": true,
+      "anchorExists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/SEO-03-contenido.md",
+      "target": "../../../../frontend/app/%28app%29/buscar/page.tsx",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/SEO-03-contenido.md",
+      "target": "../../../../frontend/docs/routes.md",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/SEO-03-contenido.md",
+      "target": "../../../../frontend/app/%28app%29/buscar/page.tsx",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/SEO-03-contenido.md",
+      "target": "MKT-01-copy.md",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/SEO-03-contenido.md",
+      "target": "RES-04-fuentes.md",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/SEO-03-contenido.md",
+      "target": "UX-03-valores.md",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/SEO-03-contenido.md",
+      "target": "../10-decisiones-y-contratos.md#dec-03--qué-significan-precio-e-historial",
+      "exists": true,
+      "anchorExists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/SEO-03-contenido.md",
+      "target": "../../../../frontend/app/%28app%29/buscar/page.tsx",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/SEO-03-contenido.md",
+      "target": "RES-03-protocolo.md#rúbrica-de-comprensión-del-precio",
+      "exists": true,
+      "anchorExists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/SEO-03-contenido.md",
+      "target": "../../../../frontend/app/layout.tsx",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/SEO-03-contenido.md",
+      "target": "../../../../frontend/app/%28marketing%29/page.tsx",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/SEO-03-contenido.md",
+      "target": "../../../../frontend/app/%28marketing%29/faq/page.tsx",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/SEO-03-contenido.md",
+      "target": "../../../../frontend/app/%28marketing%29/layout.tsx",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/SEO-03-contenido.md",
+      "target": "../../../../frontend/node_modules/next/dist/docs/01-app/01-getting-started/14-metadata-and-og-images.md",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/SEO-03-contenido.md",
+      "target": "../../../../frontend/node_modules/next/dist/docs/01-app/03-api-reference/04-functions/generate-metadata.md",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/SEO-03-contenido.md",
+      "target": "../../../../frontend/node_modules/next/dist/docs/01-app/03-api-reference/03-file-conventions/01-metadata/opengraph-image.md",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/SEO-03-contenido.md",
+      "target": "evidencia-seo03-review/SEO-03-contenido-recibido.md",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/SEO-03-contenido.md",
+      "target": "evidencia-seo03-review/baseline.json",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/SEO-03-contenido.md",
+      "target": "evidencia-seo03-review/fuentes-verificadas.json",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/SEO-03-contenido.md",
+      "target": "evidencia-seo03-review/correcciones.diff",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/SEO-03-contenido.md",
+      "target": "evidencia-seo03-review/validacion.json",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/SEO-03-review.md",
+      "target": "SEO-03-contenido.md",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/SEO-03-review.md",
+      "target": "evidencia-seo03-review/SEO-03-contenido-recibido.md",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/SEO-03-review.md",
+      "target": "evidencia-seo03-review/baseline.json",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/SEO-03-review.md",
+      "target": "evidencia-seo03-review/web-verificado.json",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/SEO-03-review.md",
+      "target": "evidencia-seo03-review/fuentes-verificadas.json",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/SEO-03-review.md",
+      "target": "evidencia-seo03-review/validacion.json",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/SEO-03-review.md",
+      "target": "evidencia-seo03-review/validar.py",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/SEO-03-review.md",
+      "target": "evidencia-seo03-review/correcciones.diff",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/SEO-03-review.md",
+      "target": "evidencia-seo03-review/hashes-finales.json",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/SEO-03-review.md",
+      "target": "evidencia-seo03-review/validacion-inicial.json",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/SEO-03-review.md",
+      "target": "evidencia-seo03-review/verificacion-incidencias.json",
+      "exists": true
+    }
+  ],
+  "briefStructure": [
+    {
+      "piece": 1,
+      "intentionHypothetical": true,
+      "question": true,
+      "evidence": true,
+      "cta": true,
+      "manualMeasurement": true,
+      "publicCatalogCta": true
+    },
+    {
+      "piece": 2,
+      "intentionHypothetical": true,
+      "question": true,
+      "evidence": true,
+      "cta": true,
+      "manualMeasurement": true,
+      "publicCatalogCta": true
+    },
+    {
+      "piece": 3,
+      "intentionHypothetical": true,
+      "question": true,
+      "evidence": true,
+      "cta": true,
+      "manualMeasurement": true,
+      "publicCatalogCta": true
+    }
+  ],
+  "editorialRouteProposals": [
+    {
+      "proposal": "/guias/duplicadas-pokemon",
+      "routeFilesFound": []
+    },
+    {
+      "proposal": "/guias/variantes-pokemon",
+      "routeFilesFound": []
+    },
+    {
+      "proposal": "/guias/referencia-usd-ars",
+      "routeFilesFound": []
+    }
+  ],
+  "metadataFilesInApp": [],
+  "acquisitionMetadataSources": [
+    {
+      "path": "frontend/app/layout.tsx",
+      "declaresMetadata": true,
+      "declaresOpenGraph": true,
+      "imagePropertyLines": [],
+      "scope": "observación estática de fuentes; no extracción de head"
+    },
+    {
+      "path": "frontend/app/(marketing)/layout.tsx",
+      "declaresMetadata": false,
+      "declaresOpenGraph": false,
+      "imagePropertyLines": [],
+      "scope": "observación estática de fuentes; no extracción de head"
+    },
+    {
+      "path": "frontend/app/(marketing)/page.tsx",
+      "declaresMetadata": true,
+      "declaresOpenGraph": true,
+      "imagePropertyLines": [],
+      "scope": "observación estática de fuentes; no extracción de head"
+    },
+    {
+      "path": "frontend/app/(marketing)/faq/page.tsx",
+      "declaresMetadata": true,
+      "declaresOpenGraph": false,
+      "imagePropertyLines": [],
+      "scope": "observación estática de fuentes; no extracción de head"
+    }
+  ],
+  "productPreservation": {
+    "baselineCount": 424,
+    "afterCount": 424,
+    "changed": [],
+    "added": [],
+    "removed": [],
+    "excludedConcurrentWork": [
+      "frontend/next.config.ts",
+      "build outputs (not opened or hashed)",
+      "central plans and task registry"
+    ]
+  },
+  "issues": [],
+  "passed": true
+}

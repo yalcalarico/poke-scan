@@ -1,0 +1,20 @@
+{
+  "task": "BE-07-review",
+  "time": "2026-10-09T12:40:37.431136+00:00",
+  "containerId": "9b3f761949c7915487ad19e56fae3636ad088c9a639a7897500d7923123ab59a",
+  "owner": "be07-review-sol-20261009",
+  "labelsVerified": true,
+  "bindVerified": "127.0.0.1:56382",
+  "data": "tmpfs /data; save disabled; appendonly no",
+  "db15KeysAfterSpecs": 0,
+  "removedByFullId": "9b3f761949c7915487ad19e56fae3636ad088c9a639a7897500d7923123ab59a",
+  "remainingOwnedContainers": "",
+  "listenerAfterCleanup": "",
+  "lunaContainerAbsent": true,
+  "lunaPid9528AbsentAtBaseline": true,
+  "tcpFixtureCleanup": "afterEach destroys sockets and closes own server; final 27 specs exit0",
+  "databaseMutations": 0,
+  "sharedRedisMutations": 0,
+  "flushdb": false,
+  "providerRequests": 0
+}

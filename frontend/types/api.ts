@@ -74,7 +74,11 @@ export interface PriceDto {
   currency: string; // 'USD'
   source: string; // mercado/listing, p. ej. 'tcgplayer'
   fetchedAt: string; // ISO 8601
-  priceArs?: number | null; // presente cuando CURRENCY_ARS_ENABLED está activo
+  evaluatedAt?: string;
+  freshness?: PriceFreshness;
+  upstreamUpdatedAt?: string | null;
+  upstreamFreshness?: PriceFreshness;
+  priceArs?: number | { low: number | null; mid: number | null; high: number | null; market: number | null } | null; // presente cuando CURRENCY_ARS_ENABLED está activo
   /**
    * Variación contra la ventana de 30 días (B10).
    *
@@ -131,6 +135,40 @@ export interface PriceDto {
   windowLabel?: string | null;
 }
 
+export type PriceFreshness = 'fresh' | 'stale' | 'unknown';
+
+/** Espejo de ComparisonPriceDto y los DTOs de comparison.dto.ts del backend. */
+export type ComparisonProvider = 'tcgdex' | 'tcgcsv';
+export interface ComparisonPriceDto {
+  date: string; market: number | null; low: number | null; mid: number | null; high: number | null;
+  fetchedAt: string; feedPublishedAt: string | null; upstreamUpdatedAt: null; freshness: PriceFreshness;
+}
+export interface CardComparisonDto {
+  cardId: string; variant: CardVariant; currency: 'USD'; windowDays: number; activeProvider: string; evaluatedAt: string;
+  tcgcsv: { enabled: boolean; state: 'disabled' | 'unsupported' | 'pending' | 'ready' | 'failed'; groupId: number | null; nextAttemptAt: string | null };
+  series: { provider: ComparisonProvider; source: 'tcgplayer'; currency: 'USD'; current: ComparisonPriceDto | null; points: ComparisonPriceDto[] }[];
+}
+export interface CollectionComparisonPointDto {
+  date: string; valueUsd: number | null; totalCopies: number; pricedCopies: number; unpricedCopies: number;
+  freshCopies: number; staleCopies: number; unknownFreshnessCopies: number; oldestFetchedAt: string | null;
+  newestFetchedAt: string | null; feedPublishedAt: string | null; compositionFingerprint: string;
+  compositionChanged: boolean; provisional: boolean; evaluatedAt: string; cutAt: string;
+}
+export interface CollectionComparisonDto {
+  collectionId: string | null; activeProvider: string; currency: 'USD'; windowDays: number; evaluatedAt: string;
+  series: { provider: ComparisonProvider; policy: string; current: CollectionComparisonPointDto; points: CollectionComparisonPointDto[] }[];
+}
+
+export type AggregateFreshness = PriceFreshness | 'mixed';
+export interface CopyCoverageDto { totalCopies: number; pricedCopies: number; unpricedCopies: number; coverageRatio: number | null }
+export interface PriceRecencyDto {
+  freshness: AggregateFreshness; freshCopies: number; staleCopies: number; unknownFreshnessCopies: number;
+  upstreamFreshness: AggregateFreshness; oldestFetchedAt: string | null; newestFetchedAt: string | null;
+}
+export interface ValueAggregateDto {
+  amount: number | null; currency: 'USD'; evaluatedAt: string | null; coverage: CopyCoverageDto; recency: PriceRecencyDto | null;
+}
+
 /** Variación de precio de una ventana. Espeja `PriceChangeDto` del backend. */
 export interface PriceChangeDto {
   usd: number;
@@ -162,6 +200,10 @@ export interface PriceHistoryPointDto {
   low: number | null;
   mid: number | null;
   high: number | null;
+  evaluatedAt?: string;
+  freshness?: PriceFreshness;
+  upstreamUpdatedAt?: string | null;
+  upstreamFreshness?: PriceFreshness;
 }
 
 /**
@@ -260,14 +302,46 @@ export interface AuthResponseDto {
   user: UserDto;
 }
 
+export interface PasswordRecoveryRequestDto {
+  email: string;
+}
+
+export interface PasswordRecoveryAcceptedDto {
+  message: string;
+}
+
+export interface PasswordRecoveryDto {
+  token: string;
+  newPassword: string;
+}
+
+export interface PasswordRecoverySuccessDto {
+  success: true;
+}
+
+export type RecoveryErrorCode =
+  | 'INPUT_INVALID'
+  | 'SESSION_REQUEST_FORBIDDEN'
+  | 'RECOVERY_RATE_LIMITED'
+  | 'RECOVERY_UNAVAILABLE'
+  | 'RECOVERY_LINK_INVALID';
+
+export interface RecoveryErrorDto {
+  statusCode: 400 | 403 | 429 | 500 | 503;
+  code: RecoveryErrorCode;
+  message: string;
+  fields?: Record<string, string>;
+}
+
 // ─── Colecciones ───
 export interface PortfolioDto {
   totalCards: number;
   unpricedCards: number;
   valueUsd: number | null;
-  history: { date: string; valueUsd: number | null; totalCards: number; unpricedCards: number }[];
+  valuation?: ValueAggregateDto;
+  history: { date: string; valueUsd: number | null; totalCards: number; unpricedCards: number; valuation?: ValueAggregateDto }[];
   topCards: { cardId: string; name: string; imageSmall: string; setName: string; number: string;
-    variant: string; quantity: number; marketUsd: number; valueUsd: number }[];
+    variant: string; quantity: number; marketUsd: number; valueUsd: number; reference?: Omit<PriceDto, 'cardId' | 'variant' | 'market' | 'low' | 'mid' | 'high' | 'isStale' | 'priceArs' | 'change' | 'changeUsd' | 'changePercent' | 'windowLabel'> }[];
 }
 
 /**
@@ -291,6 +365,7 @@ export interface CollectionDto {
   uniqueCount: number;
   duplicateCount: number;
   totalValueUsd: number;
+  valuation?: ValueAggregateDto;
   totalValueArs: number | null;
   /**
    * Hasta 4 miniaturas para el collage. Viene en `GET /collections`,
@@ -322,6 +397,7 @@ export interface CollectionStatsDto {
   setsCount: number;
   totalValueUsd: number;
   totalValueArs: number | null;
+  valuation?: ValueAggregateDto;
 }
 
 /** Carta visual seleccionada y sus precios; modelo de sesión del navegador. */
@@ -346,8 +422,43 @@ export interface ShareLinkDto {
 export interface SharedCollectionDto {
   ownerDisplayName: string;
   collectionName: string;
-  items: CollectionItemDto[];
-  stats: CollectionStatsDto;
+  items: PublicSharedItemDto[];
+  stats: PublicShareStatsDto;
+  truncated: boolean;
+  sharedAt: string;
+}
+
+/** Vista de solo lectura: excluye identidad y estado del grupo de inventario. */
+export interface PublicSharedItemDto {
+  card: CardDto;
+  variant: CardVariant;
+  condition: CardCondition;
+  quantity: number;
+  price: PublicReferencePriceDto | null;
+}
+
+export interface PublicReferencePriceDto {
+  market: number | null;
+  currency: string;
+  provider: string | null;
+  source: string;
+  fetchedAt: string;
+  evaluatedAt?: string;
+  freshness?: PriceFreshness;
+  upstreamUpdatedAt?: string | null;
+  upstreamFreshness?: PriceFreshness;
+}
+
+export interface PublicShareStatsDto {
+  totalGroups: number;
+  totalCards: number;
+  uniqueCards: number;
+  duplicateCards: number;
+  setsCount: number;
+  totalValueUsd: number | null;
+  pricedGroups: number;
+  cardsMissingPrice: number;
+  valuation?: ValueAggregateDto;
 }
 
 // ─── Progreso por set ───
@@ -425,3 +536,48 @@ export interface VisualIdentifyResponseDto {
   inferenceMs: number;
   totalMs: number;
 }
+
+/** Estado operacional para probes de infraestructura; no lo consume la UI. */
+export interface ReadinessResponseDto {
+  status: 'ready' | 'not_ready';
+  degraded: boolean;
+  detail: {
+    database: { state: 'ready' | 'unavailable' };
+    scanner: {
+      state:
+        | 'disabled'
+        | 'initializing'
+        | 'ready'
+        | 'unavailable'
+        | 'incompatible';
+      busy: boolean;
+    };
+    redis: { state: 'disabled' | 'ready' | 'degraded' };
+  };
+}
+
+/** Snapshot privado de operación; no se consume desde la UI. */
+export interface MetricsSnapshotDto {
+  generatedAt: string;
+  processStartedAt: string;
+  metrics: {
+    since: string;
+    counters: Record<
+      | 'scanner_http_requests' | 'scanner_http_2xx' | 'scanner_http_3xx' | 'scanner_http_4xx' | 'scanner_http_5xx' | 'scanner_http_401' | 'scanner_http_400' | 'scanner_http_503' | 'scanner_http_aborted'
+      | 'inference_started' | 'inference_completed' | 'inference_failed' | 'admission_busy' | 'admission_unavailable' | 'admission_cancelled' | 'admission_disabled' | 'admission_invalid' | 'warmup_ready' | 'warmup_failed', number>;
+    histograms: Partial<Record<
+      | 'scanner_http_duration_ms' | 'worker_duration_ms' | 'inference_duration_ms' | 'index_duration_ms' | 'model_duration_ms' | 'cold_model_duration_ms' | 'warmup_duration_ms',
+      { count: number; sumMs: number; boundsMs: number[]; buckets: number[] }>>;
+  };
+  scanner: { state: 'disabled' | 'initializing' | 'ready' | 'unavailable' | 'incompatible'; busy: boolean };
+  queue:
+    | { state: 'unavailable' }
+    | { state: 'available'; sampledAt: string; statuses: Record<'pending' | 'processing', { count: number; oldestAgeMs: number | null; retries: number }> };
+  redis: { configured: boolean; available: boolean; degradedSince: string | null; lastErrorAt: string | null };
+}
+
+// Espejo del DTO de baja autenticada: nunca acepta autoridad por body.
+export interface AccountDeletionRequestDto { password: string; confirmation: 'ELIMINAR' }
+export interface AccountDeletionResponseDto { success: true }
+export interface AccountDeletionAvailabilityDto { available: boolean }
+export type AccountDeletionErrorCode = 'INPUT_INVALID' | 'SESSION_REQUEST_FORBIDDEN' | 'ACCOUNT_DELETION_AUTH_INVALID' | 'ACCOUNT_DELETION_RATE_LIMITED' | 'ACCOUNT_DELETION_RESULT_UNKNOWN';

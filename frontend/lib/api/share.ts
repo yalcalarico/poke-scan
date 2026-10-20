@@ -8,11 +8,8 @@ export interface ShareLink extends ShareLinkDto {
   expiresAt: string | null;
 }
 
-/** `GET /s/:slug` agrega `truncated` y `sharedAt` a `SharedCollectionDto`. */
-export interface PublicSharedCollection extends SharedCollectionDto {
-  truncated: boolean;
-  sharedAt: string;
-}
+/** Contrato validado de `GET /s/:slug`; no incluye campos de gestión del dueño. */
+export type PublicSharedCollection = SharedCollectionDto;
 
 export interface CreateShareLinkPayload {
   /** Sin valor (o vacío) se comparten todas las colecciones del usuario. */

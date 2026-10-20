@@ -1,0 +1,13 @@
+{
+  "command": [
+    "pnpm",
+    "--dir",
+    "frontend",
+    "exec",
+    "eslint",
+    "components/auth/recovery-experience.tsx",
+    "components/auth/recovery-experience.test.tsx"
+  ],
+  "exitCode": 1,
+  "finishedAtUtc": "2026-10-10T02:21:48.182409+00:00"
+}

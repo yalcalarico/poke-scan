@@ -1,0 +1,113 @@
+{
+  "pid": 14096,
+  "scope": "Nest compiled controller/mockdeps exact five-request sequence; no real DB/Redis/scanner",
+  "boundedCyclesPerVariant": 60,
+  "stages": [
+    {
+      "database": "ready",
+      "scanner": "disabled",
+      "busy": false,
+      "path": "/api/ready",
+      "status": 200
+    },
+    {
+      "database": "ready",
+      "scanner": "disabled",
+      "busy": false,
+      "path": "/api/ready",
+      "status": 200
+    },
+    {
+      "database": "unavailable",
+      "scanner": "incompatible",
+      "busy": false,
+      "path": "/api/ready",
+      "status": 503
+    },
+    {
+      "database": "unavailable",
+      "scanner": "incompatible",
+      "busy": false,
+      "path": "/api/health",
+      "status": 200
+    },
+    {
+      "database": "ready",
+      "scanner": "ready",
+      "busy": true,
+      "path": "/api/ready",
+      "status": 200
+    }
+  ],
+  "variants": [
+    {
+      "variant": "immediate",
+      "cycles": 60,
+      "requests": 300,
+      "responses": [
+        {
+          "phase": 0,
+          "status": 200,
+          "connection": "close"
+        },
+        {
+          "phase": 1,
+          "status": 200,
+          "connection": "close"
+        },
+        {
+          "phase": 2,
+          "status": 503,
+          "connection": "close"
+        },
+        {
+          "phase": 3,
+          "status": 200,
+          "connection": "close"
+        },
+        {
+          "phase": 4,
+          "status": 200,
+          "connection": "close"
+        }
+      ],
+      "elapsedMs": 738.978584
+    },
+    {
+      "variant": "yield-setImmediate",
+      "cycles": 60,
+      "requests": 300,
+      "responses": [
+        {
+          "phase": 0,
+          "status": 200,
+          "connection": "close"
+        },
+        {
+          "phase": 1,
+          "status": 200,
+          "connection": "close"
+        },
+        {
+          "phase": 2,
+          "status": 503,
+          "connection": "close"
+        },
+        {
+          "phase": 3,
+          "status": 200,
+          "connection": "close"
+        },
+        {
+          "phase": 4,
+          "status": 200,
+          "connection": "close"
+        }
+      ],
+      "elapsedMs": 689.792708
+    }
+  ],
+  "failures": [],
+  "serversClosed": 120,
+  "finishedAt": "2026-10-09T13:19:16.894Z"
+}

@@ -1,0 +1,12 @@
+[
+  {
+    "rateType": "blue",
+    "originalTimestamp": "2026-10-10T15:00:00.000Z",
+    "copiedOnlyToOwnedRedis": true
+  },
+  {
+    "rateType": "oficial",
+    "originalTimestamp": "2026-10-09T18:55:00.000Z",
+    "copiedOnlyToOwnedRedis": true
+  }
+]

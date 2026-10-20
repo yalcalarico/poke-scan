@@ -20,6 +20,17 @@ npm-debug.log*
 # SO
 .DS_Store
 
+# Temporales de OpenSSL; no son fuentes ni evidencia del proyecto.
+.srl
+:memory:.ses
+
+# Atajos locales que apuntan recursivamente a su propia carpeta.
+/docs/beta/beta
+/docs/evaluations/evaluations
+/docs/files/files
+/docs/infra/infra
+/docs/plans/plans
+
 # Docker
 pgdata/
 

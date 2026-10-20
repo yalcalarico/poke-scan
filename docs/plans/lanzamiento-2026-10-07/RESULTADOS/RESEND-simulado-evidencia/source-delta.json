@@ -1,0 +1,10 @@
+{
+  "baselineCount": 439,
+  "changed": [
+    "backend/src/modules/auth/resend-recovery-mail.port.ts",
+    "backend/src/modules/auth/resend-recovery-mail.port.spec.ts"
+  ],
+  "missing": [],
+  "otherBaselineSourcesUnchanged": true,
+  "limitation": "Baseline after delegate dispatch; authorized files may already include initial implementation."
+}

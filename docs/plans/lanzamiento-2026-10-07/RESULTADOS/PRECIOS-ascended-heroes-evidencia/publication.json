@@ -1,0 +1,27 @@
+{
+  "runId": "77a92bae-e473-477a-b375-620e029ad1c3",
+  "mappedCards": 292,
+  "unmappedCards": 3,
+  "observations": 328,
+  "unmapped": [
+    {
+      "id": "me2pt5-183",
+      "name": "Boss's Orders",
+      "number": "183"
+    },
+    {
+      "id": "me2pt5-198",
+      "name": "Poké Pad",
+      "number": "198"
+    },
+    {
+      "id": "me2pt5-256",
+      "name": "Boss's Orders",
+      "number": "256"
+    }
+  ],
+  "publishedAt": "2026-10-14T00:02:32.892Z",
+  "feedPublishedAt": "2026-10-13T20:06:44.000Z",
+  "fetchedAt": "2026-10-13T23:53:27.577Z",
+  "nextContentDownloadNotBefore": "2026-10-14T23:53:26.660Z"
+}

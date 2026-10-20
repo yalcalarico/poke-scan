@@ -1,0 +1,42 @@
+{
+  "date": "2026-10-20",
+  "scope": "Revisión escaneo → corrección → organización → colección con V2 predeterminada",
+  "productChanges": false,
+  "frontendFocused": {
+    "command": "pnpm --dir frontend exec vitest run components/scanner lib/scanner",
+    "exitCode": 0,
+    "filesPassed": 19,
+    "testsPassed": 130
+  },
+  "runtime": {
+    "backend": "dist/main.js compilado, NODE_ENV=development para HTTP local",
+    "frontend": "Next compilado con next start",
+    "DINOv2": "modelo e índice locales reales; 20670 referencias en 175 carpetas",
+    "database": "clon propio de TEST, migraciones existentes aplicadas sólo al clon",
+    "redis": "contenedor propio efímero",
+    "providers": "fetch externo del API bloqueado; workers/crons desactivados en QA"
+  },
+  "checks": {
+    "registrationAndLogin": true,
+    "defaultV2": true,
+    "wrongRecognitionWasNotSaved": true,
+    "manualCorrection": true,
+    "saveDisabledBeforeRequiredSelections": true,
+    "draftSurvivedReload": true,
+    "saveByEnter": true,
+    "ownedDatabaseOneItemTwoCopiesOneOperation": true,
+    "collectionReloadAndRelogin": true,
+    "scannerEmptyAfterSave": true,
+    "horizontalOverflow390And1440": false,
+    "clearThemeSelectedAndDarkRestored": true,
+    "browserConsoleErrors": 0
+  },
+  "result": "Guardado y corrección manual comprobados; reconocimiento degradado por recorte automático en la foto de desarrollo. No se declara precisión visual aprobada.",
+  "screenshots": false,
+  "queryPhotosSaved": false,
+  "limits": [
+    "No cámara física, HTTPS ni PWA instalada",
+    "No precios nuevos de proveedores ni precisión física general",
+    "Sin código de producto nuevo: se conserva el gate global ya verde, sin repetirlo"
+  ]
+}

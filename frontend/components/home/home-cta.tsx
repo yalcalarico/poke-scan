@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import { PreviewLink as Link } from '@/components/visual-preview/preview-link';
 import { Layers, ScanLine, Search, UserRound } from 'lucide-react';
 
 import { buttonVariants } from '@/components/ui';

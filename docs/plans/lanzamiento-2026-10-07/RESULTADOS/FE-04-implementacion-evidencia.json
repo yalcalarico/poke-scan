@@ -1,0 +1,33 @@
+{
+  "task": "FE-04",
+  "result": "implemented",
+  "baseline": {
+    "captured_before_edits": true,
+    "files": [
+      "/private/tmp/fe04-status-baseline.txt",
+      "/private/tmp/fe04-focal-baseline.diff",
+      "/private/tmp/fe04-focal-baseline-hashes.txt",
+      "/private/tmp/fe04-more-baseline.diff",
+      "/private/tmp/fe04-more-baseline-hashes.txt",
+      "/private/tmp/fe04-doc-baseline.diff",
+      "/private/tmp/fe04-doc-baseline-hashes.txt"
+    ],
+    "workspace_was_dirty": true
+  },
+  "validation": {
+    "stop_before_tests": "passed",
+    "frontend_vitest": { "command": "pnpm --dir frontend exec vitest run", "files": 63, "passed": 503, "failed": 0 },
+    "frontend_lint": { "command": "pnpm --dir frontend run lint", "passed": true },
+    "frontend_typescript": { "command": "pnpm --dir frontend exec tsc --noEmit", "passed": true }
+  },
+  "limitations": [
+    "No browser navigation, bfcache, keyboard, or 390/1280 light/dark visual QA was run; those remain for the later gate.",
+    "No frontend build or root global check was run."
+  ],
+  "scope": {
+    "backend_or_database_touched": false,
+    "central_plan_or_status_files_touched": false,
+    "frontend_api_types_changed": false,
+    "service_worker_version": "v5"
+  }
+}

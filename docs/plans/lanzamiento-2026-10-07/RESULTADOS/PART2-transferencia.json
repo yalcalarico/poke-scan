@@ -1,0 +1,22 @@
+{
+  "completedAtUtc": "2026-10-09T13:12:52.487781+00:00",
+  "sourceThreadId": "01a11309-8ae2-72b2-a632-bcc5e7fea0a1",
+  "destinationThreadId": "01a120ca-2bb0-77f1-9a04-76ae5127079f",
+  "projectId": "4579ed5b-b18e-4b96-9270-d78ebc3f61d3",
+  "hostId": "local",
+  "coordinatorModel": "gpt-6.1-sol",
+  "reasoningEffort": "high",
+  "contextFile": "docs/plans/lanzamiento-2026-10-07/CONTEXTO-PART2.md",
+  "destinationStarted": true,
+  "automationId": "orquestaci-n-pok-scan",
+  "automationTargetVerified": true,
+  "automationStatus": "ACTIVE",
+  "existingSchedulePreserved": true,
+  "sourceStopsImplementation": true,
+  "sourceAgentsCompleted": true,
+  "noSourceRuntimeActiveAtHandoff": true,
+  "currentBatch": "BE-07",
+  "currentBatchGate": "failed; cause diagnosis pending",
+  "completedIDs": 14,
+  "pendingIDs": 24
+}

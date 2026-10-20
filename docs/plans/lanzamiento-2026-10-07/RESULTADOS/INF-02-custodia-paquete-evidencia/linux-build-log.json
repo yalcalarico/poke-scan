@@ -1,0 +1,34 @@
+[
+  {
+    "command": [
+      "pnpm",
+      "--version"
+    ],
+    "exitCode": 0,
+    "stdout": "10.17.1\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "pnpm",
+      "exec",
+      "prisma",
+      "generate",
+      "--schema",
+      "prisma/schema.prisma"
+    ],
+    "exitCode": 0,
+    "stdout": "Prisma schema loaded from prisma/schema.prisma\n\n\u2714 Generated Prisma Client (v6.19.3) to ./node_modules/.pnpm/@prisma+client@6.19.3_prisma@6.19.3_typescript@6.0.3__typescript@6.0.3/node_modules/@prisma/client in 265ms\n\nStart by importing your Prisma Client (See: https://pris.ly/d/importing-client)\n\nTip: Want to turn off tips and other hints? https://pris.ly/tip-4-nohints\n\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "pnpm",
+      "run",
+      "build"
+    ],
+    "exitCode": 0,
+    "stdout": "\n> backend@0.0.1 build /app\n> nest build\n\n",
+    "stderr": ""
+  }
+]

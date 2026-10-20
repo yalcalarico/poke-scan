@@ -1,0 +1,50 @@
+[
+  {
+    "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/evidencia-mkt02-review/MKT-02-beta-recibido.md",
+    "sha256": "45421a64c6809dc6131a9d781c08f57637d3bca3fac4572bd4e0db4d9b0aca92"
+  },
+  {
+    "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/evidencia-mkt02-review/MKT-02-evidencia-recibido.md",
+    "sha256": "b0a5a8e794db344e329d34d30b88a33aba333d94bb8e39be015f02fcb1cff617"
+  },
+  {
+    "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/evidencia-mkt02-review/baseline.json",
+    "sha256": "263e631b93ac0e80782be569304544c651892d4f292a55206344ee1afb873324"
+  },
+  {
+    "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/evidencia-mkt02-review/correcciones.diff",
+    "sha256": "884e29d26933e110a7d1c41e68da0e500dec1bf641c7b278733f47bc1f2099bd"
+  },
+  {
+    "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/evidencia-mkt02-review/dirty-antes.txt",
+    "sha256": "8de07d26b67740891caa4c4fa65cb5092ed4bec80bdea46f044573841d9fac90"
+  },
+  {
+    "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/evidencia-mkt02-review/fuentes-verificadas.json",
+    "sha256": "c4a9ffd57d22a8b3ec7864ee564e758e91b507afa849a2737baea13fe141a8c7"
+  },
+  {
+    "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/evidencia-mkt02-review/hashes-recibidos-verificados.json",
+    "sha256": "bb37b28c8ce2ad89ddb078797d2f794c766737c3a9dbc3b2e2af7d616d018ba2"
+  },
+  {
+    "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/evidencia-mkt02-review/validacion.json",
+    "sha256": "b388fb6c212cd2fa910a3791a378364259170542d948654db65068175910dbac"
+  },
+  {
+    "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/evidencia-mkt02-review/verificar-documentos.py",
+    "sha256": "b1572d3708b76dbaa39fa67c8359e0bd7d5779614e6b85761c19e49c424663c0"
+  },
+  {
+    "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/MKT-02-beta.md",
+    "sha256": "8e1c9ceee3483f9528c22b77d9712006606dea5c2c8b54567d0d068eca7c739f"
+  },
+  {
+    "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/MKT-02-evidencia.md",
+    "sha256": "0441668a01170b33154aa33539ef03110a98b4f700a36845e28b785d4bfe1d7c"
+  },
+  {
+    "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/MKT-02-review.md",
+    "sha256": "76df4227eaedb5f5039cdc8d72252414dbeb5634d8721aeb67e8dc74a60e2a90"
+  }
+]

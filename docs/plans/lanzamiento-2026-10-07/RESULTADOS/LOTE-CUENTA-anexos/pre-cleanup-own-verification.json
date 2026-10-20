@@ -1,0 +1,47 @@
+{
+  "markerExact": true,
+  "database": "be05_review_a4b26947b392_test",
+  "ginCount": 5,
+  "ginDefinitions": [
+    {
+      "oid": "43063",
+      "name": "card_sets_name_trgm_idx",
+      "definition": "CREATE INDEX card_sets_name_trgm_idx ON public.card_sets USING gin (name gin_trgm_ops)"
+    },
+    {
+      "oid": "43065",
+      "name": "cards_artist_trgm_idx",
+      "definition": "CREATE INDEX cards_artist_trgm_idx ON public.cards USING gin (artist gin_trgm_ops)"
+    },
+    {
+      "oid": "43067",
+      "name": "cards_name_trgm_idx",
+      "definition": "CREATE INDEX cards_name_trgm_idx ON public.cards USING gin (name gin_trgm_ops)"
+    },
+    {
+      "oid": "43086",
+      "name": "users_display_name_trgm_idx",
+      "definition": "CREATE INDEX users_display_name_trgm_idx ON public.users USING gin (\"displayName\" gin_trgm_ops)"
+    },
+    {
+      "oid": "43089",
+      "name": "users_username_trgm_idx",
+      "definition": "CREATE INDEX users_username_trgm_idx ON public.users USING gin (username gin_trgm_ops)"
+    }
+  ],
+  "ownCounts": {
+    "cards": 20670,
+    "sets": 176,
+    "migrations": 13,
+    "users": 5,
+    "collections": 0,
+    "items": 0,
+    "shares": 0,
+    "prices": 188,
+    "jobs": 0,
+    "snapshots": 0,
+    "gin": 5
+  },
+  "runtimeDrainVerified": true,
+  "runtimePortsFree": true
+}

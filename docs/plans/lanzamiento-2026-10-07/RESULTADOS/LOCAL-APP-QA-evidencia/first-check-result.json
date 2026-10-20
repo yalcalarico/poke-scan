@@ -1,0 +1,27 @@
+{
+  "purpose": "verification after actual local repair and OG route product fix; no timeout/historical diagnostic retry",
+  "records": [
+    {
+      "phase": "stop",
+      "command": [
+        "pnpm",
+        "run",
+        "stop"
+      ],
+      "exitCode": 0,
+      "startedAtUtc": "2026-10-11T14:11:54.887454+00:00",
+      "finishedAtUtc": "2026-10-11T14:11:55.178881+00:00"
+    },
+    {
+      "phase": "check",
+      "command": [
+        "pnpm",
+        "run",
+        "check"
+      ],
+      "exitCode": 1,
+      "startedAtUtc": "2026-10-11T14:11:55.179398+00:00",
+      "finishedAtUtc": "2026-10-11T14:13:04.802060+00:00"
+    }
+  ]
+}

@@ -1,0 +1,120 @@
+{
+  "ticket": "INF-02",
+  "status": "implementacion-lista-para-revision-integrada",
+  "runtime": {
+    "dockerEngine": "29.8.2",
+    "os": "linux",
+    "architecture": "arm64",
+    "node": "22.20.0",
+    "pnpm": "10.17.1",
+    "backendBase": "node:22.20.0-bookworm-slim",
+    "backendBaseDigest": "sha256:b21fe589dfbe5cc39365d0544b9be3f1f33f55f3c86c87a76ff65a02f8f5848e",
+    "frontendBase": "node:22.20.0-alpine",
+    "frontendBaseDigest": "sha256:dbcedd8aeab47fbc0f4dd4bffa55b7c3c729a707875968d467aaaea42d6225af"
+  },
+  "native": {
+    "alpine": "fallo de carga real ONNX ARM64: ld-linux-aarch64.so.1 / ERR_DLOPEN_FAILED",
+    "bookworm": {
+      "uid": 1001,
+      "onnxModuleImport": "ok",
+      "sharpPng": "ok",
+      "argon2HashVerify": "ok",
+      "prismaClientInitDisconnect": "ok",
+      "opensslEngineWarning": false
+    }
+  },
+  "bundleA": {
+    "modelBytes": 24446700,
+    "modelSha256": "c179f8f7f592449c4c1bca4cd124a7538021428c5ffb89afde9503935b197efb",
+    "collections": 175,
+    "parsedValidVectors": 20670,
+    "fileCount": 352,
+    "indexTreeSha256": "fedc566773ffe3735fae3dd30e087f298cee797d9536aa0a590b40d9b8fa6dd4",
+    "manifestSha256": "a476045a28c2a1b6c813ed7fee68a75123ab13a444730c742330db24023b3865",
+    "workerWarmup": {
+      "state": "ready",
+      "generation": 1,
+      "attempt": 1,
+      "seconds": 2.64
+    }
+  },
+  "bundleB": {
+    "collections": 1,
+    "manifestEntries": 1,
+    "physicalJsonlLines": 1,
+    "fixtureCardId": "sv3pt5-1",
+    "indexTreeSha256": "5a2f58fc7842725541dae438eb27ff142aaf39d0a9ddb79a10c5980d5127a98d",
+    "manifestSha256": "19cad196dad882f4d78f949990d3e2f6d69834bcc81e07cb2cbc5456fc9e798c",
+    "identify": {
+      "withoutBearer": 401,
+      "withBearer": 200,
+      "references": 1,
+      "candidateMatched": true,
+      "accuracyClaimed": false
+    }
+  },
+  "readiness": {
+    "A": {
+      "status": 200,
+      "database": "ready",
+      "scanner": "ready",
+      "redis": "ready"
+    },
+    "redisDegraded": {
+      "status": 200,
+      "degraded": true,
+      "database": "ready",
+      "scanner": "ready",
+      "redis": "degraded"
+    },
+    "missingArtifact": {
+      "status": 503,
+      "database": "ready",
+      "scanner": "unavailable",
+      "gatewayStarted": false,
+      "gate": "timeout-finito-fail-closed"
+    },
+    "incompatibleArtifact": {
+      "status": 503,
+      "database": "ready",
+      "scanner": "incompatible",
+      "gatewayStarted": false,
+      "gate": "timeout-finito-fail-closed"
+    }
+  },
+  "authAndSSR": {
+    "register": 201,
+    "refresh": 200,
+    "refreshRotated": true,
+    "cookie": [
+      "Secure",
+      "HttpOnly",
+      "SameSite=Lax",
+      "Path=/api/auth",
+      "host-only"
+    ],
+    "shareSSR": 200,
+    "cardSSR": 200,
+    "shareNoindex": true,
+    "privateHostnameLeaked": false,
+    "syntheticImagePersisted": false
+  },
+  "cleanup": {
+    "inf02ProjectResources": "limpiados-verificados-por-label",
+    "developmentDbAndRedis": "preservados",
+    "unownedScratchNegative": "rechazado-y-contenido-preservado",
+    "publishCollisionNegative": "rechazado-y-destino-preservado",
+    "unmarkedLegacyScratch": "preservado-para-revision"
+  },
+  "limits": [
+    "No se ejecutó pnpm run check global ni Vitest; requieren coordinación con servicios dev compartidos.",
+    "Validado sólo en ARM64 local.",
+    "B comprueba fixture sintética y cableado de runtime, no precisión de captura/cámara.",
+    "Pendiente revisión Sol HIGH y check global integrado."
+  ],
+  "cleanupAfterReview": {
+    "unmarkedLegacyScratch": "retirado-por-coordinador-tras-verificar-arbol-owner-y-hashes-sin-marker",
+    "runtimeReview": "INF-02-runtime-review.md",
+    "finalEvidence": "INF-02-review-evidencia.json"
+  }
+}

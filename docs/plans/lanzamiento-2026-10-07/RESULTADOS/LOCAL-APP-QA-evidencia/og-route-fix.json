@@ -1,0 +1,14 @@
+{
+  "status": 200,
+  "contentType": "image/png",
+  "dimensions": [
+    1200,
+    630
+  ],
+  "bytes": 47138,
+  "cause": "routegroup hash suffix incompatible with fixed metadata URL",
+  "fix": "generator moved to app root",
+  "sourcePath": "frontend/app/opengraph-image.tsx",
+  "sourceSha256": "3edeb5dd315e638e627bb210465f175db911787870c525171335cb5d64aef654",
+  "runtimeVerificationScope": "Next16.3.6 development Turbopack; standard check pending after browser QA"
+}

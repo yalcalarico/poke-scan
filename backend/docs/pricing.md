@@ -726,9 +726,146 @@ referencia), pero borra historia que un gráfico de evolución necesitaría.
 El `totalValueUsd` **no** depende de la poda: usa el `LATERAL ... LIMIT 1`, que
 corta en la primera fila del índice y nunca recorre el histórico.
 
+## Metadata de evaluación y cobertura
+
+Las respuestas de precios incluyen `evaluatedAt`, `freshness`,
+`upstreamUpdatedAt` y `upstreamFreshness`. `freshness` clasifica `fetchedAt`
+frente al instante único de evaluación (menos de 24 h es `fresh`; 24 h o más
+es `stale`). Una fecha ausente, inválida o futura queda `unknown`. Las fechas de metadata
+son ISO UTC reales; un día sin hora o un día inexistente no se normaliza. El proveedor
+alternativo queda `stale` aunque su consulta sea reciente. Hoy no se persiste
+una fecha upstream atribuible: se devuelve `null`/`unknown`.
+
+Los campos de evaluación se serializan junto con `CardPriceView` en Redis; un
+hit conserva el instante original. El payload público comparte un reloj para
+items y valuación, también conservado por su caché. Una entrada previa sin metadata se sirve
+con frescura desconocida. No cambian las TTL, la selección de filas, la cola ni
+el ritmo hacia tcgdex.
+
+Los objetos `valuation` de colecciones, portfolio y share calculan su importe
+desde las filas activas exactas y cobertura por copias. Market cero es un precio
+conocido; vacío vale cero, todo sin precio vale `null` y una cobertura parcial
+conserva solo el subtotal cotizado. La recencia agrega copias frescas, viejas y
+desconocidas; upstream permanece desconocido. La historia de portfolio deriva
+solo su cobertura de `totalCards`/`unpricedCards` guardados, sin reconstruir el
+pasado ni completar fechas.
+
 ## Ver también
 
 - [providers.md](providers.md) — el `VARIANT_MAP` de tcgdex y la traducción de IDs de set
 - [database.md](database.md) — el patrón `DISTINCT ON`
 - [jobs.md](jobs.md) — el mapeo de sets y la carga del catálogo
 - [api.md](api.md) — los endpoints que devuelven precios
+
+## Comparación TCGCSV y cortes por colección (13/10/2026)
+
+TCGdex continúa activo. El nuevo comparador lee `card_prices` por proveedor,
+TCGplayer/USD y **variante fija**; no usa fallback ni promedio. El histórico
+TCGCSV comienza al importar un build real. Sus `feedPublishedAt` y `fetchedAt`
+son publicación del archivo y recepción local; la fecha de cotización upstream
+sigue desconocida. La frescura comparativa de TCGCSV usa el build, no la hora
+local de una descarga tardía. `market = NULL` es faltante; cero es conocido.
+Ambos feeds representan referencias de TCGplayer, no mercados independientes.
+
+La ingesta está apagada por defecto. `ENABLE_TCGCSV_INGESTION=true` habilita
+cola durable por grupo, cron diario 20:30 UTC y consumidor cada cinco segundos.
+`ENABLE_COLLECTION_COMPARISON_CRON=true` habilita además el corte local diario
+20:35 UTC sin necesitar una ingesta activa. No se habilitan por visitar la UI.
+Una visita sólo puede encolar un grupo nunca publicado. Los pins revisados
+son 24722 (`me55`), 24837 (`me55c`) y 24541 (`me2pt5`, Ascended Heroes); el
+descubrimiento en background admite además grupos registrados en
+`card_set_external_ids` con `provider = tcgcsv`. Classic tiene 30 identidades revisadas en
+`src/jobs/tcgcsv/classic-identities.ts`: número completo, alias específicos,
+producto, grupo e idioma se validan; un cambio o una ambigüedad dejan sin precio.
+Sellados no tienen asociación canónica.
+
+`tcgcsv_group_jobs` conserva lease, último build y reserva de descarga de 24 h,
+incluso tras error/reinicio. El límite se aplica al **mismo archivo**, no a
+todos los sets juntos: cada grupo tiene su presupuesto. Se reserva antes de
+productos/precios y se extiende hasta 24 h después de terminar la lectura del
+cuerpo, aun cuando falle. `GREATEST` conserva las reservas futuras existentes.
+La reserva previa incluye un margen conservador de dos minutos para una caída
+del proceso antes de poder guardar el fin de la lectura.
+El ritmo global se reserva en PostgreSQL (150 ms),
+el cuerpo tiene tope de 8 MiB y timeout total de 15 s. Los dos archivos deben
+validarse, cubrir explícitamente los productos asociados y pertenecer al mismo
+build revalidado. Publicación, mapeos, observaciones y corrida son una sola
+transacción. Build repetido no crea puntos; rollback no borra el lote anterior.
+No hay descarga desde un handler ni un origen configurable arbitrario.
+
+El bootstrap y el cron de diez minutos consultan `last-updated.txt`; el catálogo
+`tcgplayer/3/groups` se descarga sólo para un build posterior al cacheado. Un
+manifest que retrocede o cambia durante la descarga conserva el registro previo.
+`tcgcsv_discovery_state` separa ese cache y su lease de las corridas de precios;
+guarda además reporte de sets asociados/faltantes y contadores informativos de
+requests y grupos por ventana24h. No hay topes globales de500requests/40grupos:
+se retiraron por pedido del usuario15/10, porque impedían recorrer el catálogo.
+Cada ciclo encola todos los grupos elegibles, priorizando los nunca publicados;
+el consumidor de
+cinco segundos sigue el backlog aunque nadie visite la app. La ingesta de un
+build igual o anterior no agrega precios ni cambia las fechas del lote anterior.
+
+La asociación de sets compara títulos exactos tras normalizar un vocabulario
+explícito de prefijos y títulos base, con serie compatible e inventario inglés.
+Rechaza ambigüedad en cualquiera de los dos catálogos, grupos suplementarios no
+revisados y diferencias de idioma/región/edición. Preserva los pins y registros
+previos. La asociación de cartas sigue exigiendo número y denominador, nombre,
+grupo, idioma y subtipo conocido; nunca cambia nombres o inventario. Los sets
+sin identidad segura y cartas sin productos asociados permanecen faltantes.
+No se reconstruye historial con el archivo `.7z` retirado: el historial comienza
+con observaciones reales importadas y cortes reales del inventario.
+
+`collection_comparison_snapshots` guarda dinero decimal, cobertura por copias,
+recencia, fingerprint de composición y corte común. Una sentencia MVCC toma
+cantidades y referencias de ambos proveedores. Lecturas y movimientos actualizan
+hoy; los días previos no se reconstruyen. Un reloj que retrocede se rechaza.
+El corte del portfolio sólo suma colecciones de un mismo corte y scope completo;
+un corte incompleto tras una baja queda fuera. Los snapshots se eliminan por
+cascade de la colección/cuenta. `portfolio_snapshots` legacy permanece intacto.
+La gráfica muestra valor del inventario de ese día, no rendimiento financiero.
+ARS sigue siendo conversión al tipo de cambio actual, fuera de estas series USD.
+
+La migración `20261013203000_tcgcsv_comparison` es aditiva y conserva `pg_trgm`.
+`20261014010000_tcgcsv_discovery` agrega exclusivamente las tablas de
+descubrimiento y señales operativas; no altera las reservas previas.
+Antes de aplicarla, los endpoints nuevos responden 503 con un estado de
+actualización pendiente; las operaciones existentes siguen confirmando cambios.
+El despliegue debe aplicar la migración y generar Prisma antes de habilitar los
+flags. Habilitar red real/redistribución requiere acreditar derechos y operación;
+el código no implica esa aprobación. El harness privado reemplaza
+`TcgcsvClient.fetchFeed` y puede inyectar `COMPARISON_CLOCK`; no hay ruta debug.
+
+### Referencias de colecciones — 16/10/2026
+
+`CollectionPriceRefreshService` selecciona por usuario, colección, variante,
+proveedor, mercado y moneda. Encola mediante una sentencia SQL durable las
+referencias ausentes, vencidas a 24 h o con fecha futura; no consulta al proveedor.
+Las lecturas de listado, detalle y portafolio solicitan este refresco sin impedir
+la lectura si la cola falla. `POST /collections/:id/refresh-prices` conserva
+`{ queued }`, ahora contando inserciones/reactivaciones reales. Pending/processing
+no se duplican, el backoff no se adelanta y las respuestas sin cotización tienen
+cooldown de 24 horas para respuestas sin precio. Los fallos se reintentan
+automáticamente después del backoff, reiniciando el contador de intentos al
+reactivarse el job.
+
+`PortfolioService.captureDaily` registra a las 23:45 UTC un punto por usuario con
+inventario actual y última referencia del proveedor activo; además solicita el
+corte comparativo por colección existente. No hace solicitudes externas ni
+rellena días anteriores. `ENABLE_PORTFOLIO_SNAPSHOTS_CRON=false` lo desactiva.
+Los puntos del día se actualizan al consultar; los días anteriores se conservan.
+
+### Ciclo diario priorizado — 19/10/2026
+
+El mantenimiento automático se limita a `price_sync_sets.enabled`. TCGdex
+planifica a las 03:15 UTC y TCGCSV a las 21:00 UTC; ambos reanudan el día actual
+cada quince minutos. Las observaciones se acreditan por fecha UTC de recepción,
+con cotización real, ausencia, falta de asociación o falta de soporte separadas.
+La falta de una cotización nunca genera un punto histórico usando el precio de
+ayer. Los jobs legacy ajenos al registro quedan diferidos, aunque una consulta
+interactiva puede seguir pidiendo cualquier carta.
+
+`pnpm run prices:sets -- list|seed|add|enable|rank|disable` administra el
+registro localmente. `prices:status -- --json` informa avance por proveedor y
+set, pausas durables, próxima espera, actividad respaldada por comprobaciones o
+cotizaciones persistidas y trabajo legacy/interactivo. El heartbeat sólo describe
+al planificador y no se cuenta como consulta exitosa.

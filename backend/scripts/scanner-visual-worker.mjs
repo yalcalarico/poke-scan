@@ -23,7 +23,41 @@ async function load() {
     }),
   };
 }
+async function warmup(generation, attempt) {
+  try {
+    runtime ??= await load();
+    const refreshed = await refreshIndex(directory, runtime.expected, snapshot);
+    snapshot = refreshed.snapshot;
+    process.send?.({
+      type: 'warmup-result',
+      generation,
+      attempt,
+      state: 'ready',
+    });
+  } catch (error) {
+    const incompatible =
+      typeof error?.message === 'string' &&
+      (error.message.startsWith('Modelo o metadata del índice incompatibles.') ||
+        error.message.startsWith('Índice inválido:'));
+    process.send?.({
+      type: 'warmup-result',
+      generation,
+      attempt,
+      state: incompatible ? 'incompatible' : 'unavailable',
+    });
+  }
+}
+
 process.on('message', async (message) => {
+  if (message?.type === 'warmup') {
+    if (
+      Number.isInteger(message.generation) &&
+      Number.isInteger(message.attempt)
+    ) {
+      await warmup(message.generation, message.attempt);
+    }
+    return;
+  }
   const start = performance.now();
   try {
     const bytes = Buffer.from(message.image.split(',')[1], 'base64');

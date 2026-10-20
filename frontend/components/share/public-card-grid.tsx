@@ -4,7 +4,9 @@ import { CardGrid, type CardGridEntry } from '@/components/cards/card-grid';
 import { formatCount } from '@/components/collections/collection-options';
 import { Button } from '@/components/ui';
 import { useChunkedList } from '@/components/set-progress/use-chunked-list';
-import { pluralize } from '@/lib/format';
+import { PriceReferenceDetails } from '@/components/prices/price-evidence';
+import { formatPrice, pluralize } from '@/lib/format';
+import { conditionShort, variantShort } from '@/lib/variants';
 import type { PublicSharedCollection } from '@/lib/api/share';
 
 /**
@@ -68,12 +70,20 @@ export function PublicCardGrid({ items, label }: PublicCardGridProps) {
    */
   const entries: CardGridEntry[] = items.map((item) => ({
     card: item.card,
-    quantity: item.quantity,
-    // La misma carta puede estar dos veces con variantes distintas (holofoil y
-    // normal), y la `key` sola las confunde: React reusa el nodo y el primer
-    // hover se queda pegado al equivocado. Es el mismo sufijo que usa
-    // `collection-detail.tsx`.
-    key: `${item.variant}-${item.condition}-${item.id}`,
+    action: (
+      <div className="flex flex-col gap-1 text-caption text-secondary">
+        <span>{variantShort(item.variant)} · {conditionShort(item.condition)} · {item.quantity} {pluralize(item.quantity, 'copia', 'copias')}</span>
+        {item.price ? (
+          <div>
+            <p>{item.price.market === null ? 'Sin referencia de precio para esta variante' : `Referencia internacional: USD ${formatPrice(item.price.market, 'USD')} por copia`}</p>
+            <p>Condición {conditionShort(item.condition)} · no ajusta este valor.</p>
+            <PriceReferenceDetails reference={item.price} showConversion={false} />
+          </div>
+        ) : (
+          <span>Sin referencia de precio para esta variante · antigüedad no disponible.</span>
+        )}
+      </div>
+    ),
   }));
 
   const { visible, hasMore, showMore, sentinelRef } = useChunkedList(
@@ -100,7 +110,7 @@ export function PublicCardGrid({ items, label }: PublicCardGridProps) {
             apretar a propósito.
           */}
           <Button variant="secondary" size="lg" onClick={showMore}>
-            {formatCount(remaining)} {pluralize(remaining, 'carta más', 'cartas más')}
+            {formatCount(remaining)} {pluralize(remaining, 'grupo más', 'grupos más')}
           </Button>
         </div>
       ) : null}

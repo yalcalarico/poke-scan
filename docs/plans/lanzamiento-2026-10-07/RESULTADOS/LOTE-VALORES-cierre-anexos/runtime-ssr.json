@@ -1,0 +1,37 @@
+{
+  "checks": [
+    {
+      "name": "actual-next-warm-SSR-no-private-noindex-no-store",
+      "passed": true
+    },
+    {
+      "name": "revoke-hot-api-and-SSR",
+      "passed": true
+    },
+    {
+      "name": "reactivate-actual-SSR",
+      "passed": true
+    },
+    {
+      "name": "expired-hot-cache-vigency-first-API-SSR-bot",
+      "passed": true
+    },
+    {
+      "name": "expired-cache-was-still-hot",
+      "passed": true
+    },
+    {
+      "name": "runtime-own-jobs-not-executed",
+      "passed": true
+    },
+    {
+      "name": "no-external-fetch-attempts",
+      "passed": true
+    }
+  ],
+  "ownJobs": 6,
+  "executedJobs": 0,
+  "externalFetchAttempts": 0,
+  "availableSSRBytes": 68135,
+  "expiredSSRBytes": 26288
+}

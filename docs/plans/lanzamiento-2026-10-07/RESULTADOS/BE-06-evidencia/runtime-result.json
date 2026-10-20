@@ -1,0 +1,101 @@
+{
+  "checks": [
+    {
+      "name": "compiled API ready with real local DINOv2",
+      "passed": true
+    },
+    {
+      "name": "anonymous denied",
+      "passed": true
+    },
+    {
+      "name": "wrong operations credential denied",
+      "passed": true
+    },
+    {
+      "name": "private metrics accessible no-store",
+      "passed": true
+    },
+    {
+      "name": "warmup measured once",
+      "passed": true
+    },
+    {
+      "name": "synthetic own account created",
+      "passed": true
+    },
+    {
+      "name": "customer JWT cannot read metrics",
+      "passed": true
+    },
+    {
+      "name": "scanner anonymous rejected",
+      "passed": true
+    },
+    {
+      "name": "scanner DTO invalid rejected",
+      "passed": true
+    },
+    {
+      "name": "scanner GET does not count inference",
+      "passed": true
+    },
+    {
+      "name": "real inference succeeds and busy returns503",
+      "passed": true
+    },
+    {
+      "name": "HTTP requests separated from inference including guards",
+      "passed": true
+    },
+    {
+      "name": "busy admissions distinct from completed inference",
+      "passed": true
+    },
+    {
+      "name": "real worker and inference durations have correct sample counts",
+      "passed": true
+    },
+    {
+      "name": "metrics include scanner and safe Redis state",
+      "passed": true
+    },
+    {
+      "name": "aggregate excludes photos and credentials",
+      "passed": true
+    },
+    {
+      "name": "queue aggregate available",
+      "passed": true
+    },
+    {
+      "name": "queue counts and active retry claims accurate",
+      "passed": true
+    },
+    {
+      "name": "queue age uses aggregate observation cut",
+      "passed": true
+    },
+    {
+      "name": "queue IDs not serialized",
+      "passed": true
+    },
+    {
+      "name": "Redis loss reported without killing API",
+      "passed": true
+    },
+    {
+      "name": "Redis recovery same API process",
+      "passed": true
+    }
+  ],
+  "success": true,
+  "inferenceStatuses": [
+    503,
+    200,
+    503,
+    503,
+    503
+  ],
+  "scope": "owned PG/Redis, compiled Nest, synthetic image in memory; no physical accuracy claim"
+}

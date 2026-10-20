@@ -1,0 +1,15 @@
+{
+  "targetScope": "clone",
+  "exitCode": 0,
+  "command": [
+    "pnpm",
+    "--dir",
+    "backend",
+    "exec",
+    "prisma",
+    "migrate",
+    "deploy"
+  ],
+  "startedAtUtc": "2026-10-14T00:29:11.785218+00:00",
+  "finishedAtUtc": "2026-10-14T00:29:12.738556+00:00"
+}

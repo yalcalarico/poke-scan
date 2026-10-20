@@ -1,0 +1,88 @@
+{
+  "date": "2026-10-20",
+  "scope": "Corrección del recorte interior y del denominador impreso del resultado V2",
+  "productSources": {
+    "frontend/lib/scanner/preprocess.ts": "da9b3d053960f2819974e9571b78cffece70effb354c96e29718947aaa1af793",
+    "frontend/lib/scanner/__tests__/perspective.test.ts": "383e475621f61d2741de052d8d794298b3ac53b83dfac77288c24bc664ecdd44",
+    "frontend/components/scanner/visual-result.tsx": "2db2a72b7360beb0da383d45afc1d74827b992bd81e35a88cbb77305e0f66ada",
+    "frontend/components/scanner/__tests__/visual-result.test.tsx": "0cf9c5aa2842f8de1227b4ff38c254d8cf02dbde6a32b1648d1a429c7b54b9c4"
+  },
+  "focused": {
+    "command": "pnpm --dir frontend exec vitest run components/scanner lib/scanner",
+    "exitCode": 0,
+    "passed": 133,
+    "files": 19
+  },
+  "global": {
+    "commands": [
+      "pnpm run stop",
+      "pnpm run check"
+    ],
+    "checkExitCode": 0,
+    "runs": 1,
+    "backendVitest": 596,
+    "backendNodeTests": 22,
+    "backendE2E": 6,
+    "frontendVitest": 622,
+    "opsNodeTests": 76,
+    "total": 1322,
+    "skipped": 0,
+    "lintTypesNestNextTurbopack": true
+  },
+  "browser": {
+    "DINOv2Actual": true,
+    "defaultWithoutVisualQuery": true,
+    "captureDimensions": [
+      834,
+      1042
+    ],
+    "firstCandidate": "swshp-SWSH023",
+    "selectedCandidate": "me55-92",
+    "selectedCandidateRank": 3,
+    "manualSearchUsed": false,
+    "samePrintedDenominatorResultReviewOrganizer": "92 / 128",
+    "saveByKeyboard": true,
+    "mobileWidth": 390,
+    "desktopWidth": 1440,
+    "noHorizontalOverflowObserved": true,
+    "quantityVisibleAfterReload": 2,
+    "pendingScansAfterSave": 0,
+    "lightCheckedAndOriginalDarkRestored": true,
+    "consoleErrors": 0,
+    "syntheticSessionClosed": true,
+    "screenshots": false,
+    "photosSaved": false
+  },
+  "limitations": [
+    "La primera propuesta de esta foto sigue siendo Luxray; no se acredita top-1 ni precisión general.",
+    "Sin cámara física, HTTPS ni PWA instalada.",
+    "Los cinco originales HEIC no se pudieron redecodificar con sharp: bad seek; no hay revalidación actual de ese corpus.",
+    "Los casos válidos de perspectiva y orientación quedan cubiertos por las regresiones geométricas sintéticas.",
+    "No se habilitaron proveedores/crons en la instancia QA; los faltantes siguieron como Sin precio."
+  ],
+  "cleanupGlobal": {
+    "ownCloneAndRedisRemoved": true,
+    "SQLConnections": 0,
+    "sourceTESTUnchanged": true,
+    "devCountsUnchanged": true,
+    "dev": {
+      "cards": 20670,
+      "users": 22,
+      "collections": 21,
+      "items": 69,
+      "shares": 13,
+      "gin": 5,
+      "jobs": 143,
+      "priced": 18634
+    },
+    "redisSharedHealthy": true
+  },
+  "cleanupRuntime": {
+    "cloneRemoved": true,
+    "redisRemoved": true,
+    "connectionsBeforeDrop": 0,
+    "devAndTESTCountsUnchanged": true,
+    "sharedRedisHealthy": true
+  },
+  "devRestored": true
+}

@@ -1,0 +1,21 @@
+{
+  "reflow-diagnostic.mjs": "6d677796f6db95d71da5f9b001f464a990a1d6bfd9270b139339007779fdddd4",
+  "source-gitignore": "cfafc8c43081f8e44745863a1d59f67253c15d244dd5f21678ed1b89ed61249c",
+  "ui-focused.mjs": "ccdf2c58cabedb9cf9c07662ba4b50e315befc54416f9e639a1fb26d6c160a0d",
+  "current-stop.log": "12970d8b80d3abdcde47fae9061ffb349a3b7e3e0b1f7f8391e3c2cbc1c55e29",
+  "current-check.log": "af184720a61ace3ee95882e270a96a842cc1c5a1b7c73cc06f628156f6e9e760",
+  "source-README.md": "53207f38ce11c051abeb02afcca24de4a6da34274ba66762f7768eaa38059c16",
+  "product-source-integrity.json": "3ec732213677efb701dbb7166e681d70d036c3d13c1598aedd9c36da253fbaad",
+  "current-check-result.json": "ac71fb7723e67248b1280530d097ef5ec88fb239c434bcde7e13a189065c68a1",
+  "ui-test.mjs": "58f77f842888cacf92e3b648ca425f5a08149a5591f0c09f0c76d1d1e6bda7de",
+  "final-instance.json": "ed844acf5c747c6408a39e6f9075110c16329a38d62f975819ecad341b3005e8",
+  "preview-verified.json": "d278a381674a0cd5427623a00078dc71c231dd1669ffb2fcfd4063f908db5844",
+  "ui-failure-import-harness.json": "f18cc2a2e93689850834296a68fb0be83c6228b2cbd34b0df540a83e41823a10",
+  "preview-owner.json": "216b330646f7588c0421185b4445ba917215a2d15ca6bbf0315979279e44cb9f",
+  "ui-result.json": "310eb17cfa21142708be8a00b5b4408ff5a32410fb178826672db2d6cb2f4558",
+  "cleanup-receipt.json": "bad98c379854caea672fea403151d169ea35337bc37a5c16e62a9d181edff712",
+  "ui-failure-import-harness-2.json": "c8fb7271778cc803d73e5df3906c5c13cc269a124b5d4b23e749996295bdba30",
+  "ui-focused-result.json": "473522046c0a36f942267a8d9e37614c685bce21573cef8c72f74049b0590ddd",
+  "source-evaluacion.html": "e2429380861b75cf5a9f348a78ba32a85ebda6878a8c8072645b0efe6a378c8a",
+  "ui-failure-initial-reflow.json": "09c0de431c925c7b98a1ebf15f5356067c917f8ec7bc0c8a5d65e5c6c6826a87"
+}

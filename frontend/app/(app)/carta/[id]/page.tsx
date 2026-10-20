@@ -1,11 +1,12 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
-import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
 import { ArrowRight } from 'lucide-react';
 import type { ReactNode } from 'react';
 
+import { VisualCard } from '@/components/visual-preview/holo-card';
+import { PreviewLink } from '@/components/visual-preview/preview-link';
 import { CardTile } from '@/components/cards/card-tile';
 import { SetLogo, SetSymbol } from '@/components/cards/set-media';
 import { ScreenContainer } from '@/components/layout/screen-container';
@@ -105,13 +106,13 @@ async function RelatedCardsSection({
         <h2 id="otras-del-set" className="text-h3 text-primary">
           Otras de este set
         </h2>
-        <Link
+        <PreviewLink
           href={`/buscar?setId=${encodeURIComponent(setId)}`}
           className="inline-flex min-h-11 items-center gap-1 rounded-control text-label text-brand transition-colors duration-fast ease-standard hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--focus-ring)]"
         >
           Ver el set
           <ArrowRight aria-hidden="true" focusable="false" strokeWidth={1.75} className="h-4 w-4" />
-        </Link>
+        </PreviewLink>
       </div>
 
       <p className="mt-0.5 text-caption text-tertiary">
@@ -186,7 +187,8 @@ export default async function CardDetailPage({ params, searchParams }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const { id } = await params;
-  const backHref = catalogReturnHref((await searchParams).returnTo);
+  const query = await searchParams;
+  const backHref = catalogReturnHref(query.returnTo, query.visual === 'v2');
 
   const card = await fetchCard(id);
   if (!card) notFound();
@@ -210,19 +212,21 @@ export default async function CardDetailPage({ params, searchParams }: {
       <ScreenContainer labelledBy="titulo-carta">
         <div className="grid grid-cols-1 items-start gap-5 md:grid-cols-2 md:gap-8">
           <div className="flex flex-col items-center gap-3 md:sticky md:top-20 md:gap-5 lg:top-36">
-            <div className="relative w-full max-w-56 md:max-w-xs">
+            <div className="relative w-full max-w-80 rounded-panel bg-surface-2 px-4 py-5 md:max-w-sm md:px-6">
               {image ? (
-                <div className="overflow-hidden rounded-surface shadow-xl">
-                  <Image
-                    src={image}
-                    alt={alt}
-                    width={420}
-                    height={588}
-                    sizes="(max-width: 767px) 224px, 320px"
-                    className="h-auto w-full"
-                    priority
-                  />
-                </div>
+                <VisualCard className="mx-auto max-w-xs">
+                  <div className="overflow-hidden rounded-surface shadow-xl">
+                    <Image
+                      src={image}
+                      alt={alt}
+                      width={420}
+                      height={588}
+                      sizes="(max-width: 767px) 288px, 320px"
+                      className="h-auto w-full"
+                      priority
+                    />
+                  </div>
+                </VisualCard>
               ) : (
                 <div
                   role="img"
@@ -248,7 +252,8 @@ export default async function CardDetailPage({ params, searchParams }: {
             </div>
             {/* La carga del precio vive en cliente: un refresh externo lento no
                 retrasa el render de la carta, y el hero muestra su skeleton. */}
-            <CardPriceSection key={`${card.id}:price`} cardId={card.id} />
+            <CardPriceSection key={`${card.id}:price`} cardId={card.id} showComparison />
+
 
             <CardActions key={`${card.id}:actions`} cardId={card.id} cardName={card.name} />
 

@@ -268,6 +268,7 @@ export function CardGrid({
             key={`${entry.card.id}-${entry.key ?? index}`}
             role={itemRole}
             data-card-index={index}
+            data-card-key={`${entry.card.id}:${entry.key ?? ''}`}
             className="min-w-0"
           >
             {cell}

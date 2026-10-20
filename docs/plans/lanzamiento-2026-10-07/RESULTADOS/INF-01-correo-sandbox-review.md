@@ -1,0 +1,24 @@
+# INF-01 — revisión de propuesta de correo sandbox
+
+Fecha: 2026-10-09 · Revisor: **GPT-6.1 Sol HIGH** · Dictamen: **propuesta corregida y aceptada sólo como entrada documental**. Sandbox operativo/ensayo BE-05 e implementación siguen pendientes; no se cierra INF-01, BE-05, UX-04 ni gate/IDs. BE-07 mantiene gate fallido y límite humano de diagnóstico focal.
+
+Reserva sólo [INF-01-correo-sandbox.md](INF-01-correo-sandbox.md), este informe y [evidencia propia](evidencia-inf01-correo-sandbox-review/baseline-review.json). Antes de editar se preservaron [documento recibido](evidencia-inf01-correo-sandbox-review/INF-01-correo-sandbox-recibido.md) (SHA-256 `c4e4294c5449884e720a0049d01c740f0c5d7f6e7f0b83658c0261f242266d06`) y dos JSON Luna; originales intactos. Sus 9 fuentes/11 enlaces son históricos. [Diff](evidencia-inf01-correo-sandbox-review/correcciones.diff), [verificación final](evidencia-inf01-correo-sandbox-review/verificacion.json) y [hashes](evidencia-inf01-correo-sandbox-review/hashes-finales.json) documentan la corrección.
+
+Se contrastaron 12 fuentes selectivas: AGENTS, plan INF-01, orquestación/modelos/alcance vigente, propuestas/revisión INF-01 previas, contrato/revisión/aceptación BE-05, UX-04/revisión/aceptación y requisitos NEG-03. Mailtrap es antecedente sin cuenta/ensayo: no se revisaron precios actuales ni web/cuentas. No se amplió la búsqueda estática comunicada por root ni se inspeccionaron env/credenciales.
+
+## Hallazgos corregidos
+
+1. **Generación y autoridad:** caseGeneration sólo teardown/reinicio del harness. Enlace pendiente antes del reset real se entrega/intenta en la misma generación y es rechazado por estado/hash/authVersion PG; usar otro token fixture preparado/válido antes del ticket, sin emitir dentro de 2 s, saltar cuotas o extender timeout. Emisión/cuotas se ensayan aparte. Supresión previa a envío es optimización, no autoridad ni prueba del reset; locks/contrato BE-05 intactos.
+2. **Memoria y cancelación:** deadline entrega 2 s distinto de lease receptor 120 s desde captura, hasta uso/cancelación/fin de caso si sucede antes; cap 32 propuesto. Finalmente liberar referencias/handles y rechazar callbacks tardíos, sin zeroización/GC prometidos. Delay/never-resolve cooperativos con cancelación/drain; Promise.race no prueba limpieza de una closure/promesa huérfana. Si cierre no acreditado, caso/cleanup fallan sin secretos.
+3. **Guardas de aislamiento:** opt-in DI del runner, binding loopback, DB única con marker exacto propio, conexión/rol/fixtures/allowlist antes de payload. Env enum/sufijo email no bastan. Runner inválido rechaza arranque; puerto general no disponible en futuro servicio devuelve 503 antes de lookup para ambos. Sin SMTP/fallback ni opciones existentes inventadas.
+4. **Capacidad compartida:** limitador BE-05 conserva autoridad; ticket local antes de lookup para cada pedido presente/ausente, reserva sin identidad, plazo fijo 2 s y liberación por reloj/cierre, no por rama. Pool/FIFO/buzón 32 y un consumidor son propuestas locales, no beta/global. Saturación/handoff/entrega fallida conservan 202 genérico sin await entrega, nueva señal/code ni promesa de latencia igual/anti-enumeración medida.
+5. **Evidencia segura y hooks:** test usa secreto en memoria y body POST legítimo; sin endpoint de captura, filesystem, trace/screenshots/args/reporters que diffeen token/email/body. Aserciones internas emiten boolean/código fijo, conteos/tiempos y hashes de artefactos no secretos. Caída tras commit es hook del issuer, no transacción decidida por adapter. Recursos/casos acotados con cleanup sólo bajo ownership futuro.
+6. **Scope operativo:** transporte en proceso sin red de entrega; HTTP loopback por IP literal del futuro runner es distinto de SMTP/exterior. Si externo retiene secreto/link recuperable, requiere nuevo contrato de amenaza/retención; análisis futuro no lo vuelve compatible automáticamente con sólo hash. No declarar sandbox listo por revisión documental.
+
+## Verificación y límites
+
+Verificación estática: preservación de fuentes/originales, enlaces locales/anchors y contraste semántico de invariantes; aritmética de plazos/caps propuesta separada de medición. No tests espejo de implementación ni auditoría/snapshot global. La validez de enlaces no acredita garantías funcionales.
+
+No se modificó contrato BE-05, UX-04, informes INF-01 anteriores, app/config/Docker/paquetes/tests/schema/DTO ni centrales. No suites/check/build/stop, runtime, DB/Redis/API/browser/red/correo/SMTP/cuentas/contactos. Implementación y ensayo aislado deben comprobar guardas/tickets, issuer/PG/reset, deadlines/leases/cancelación cooperativa, fallos/reporters y cleanup; siguen condicionados al gate/autorización aplicables, sin permiso humano nuevo inventado para esta propuesta rutinaria.
+
+**Reserva liberada:** root puede consolidar la entrada documental; conserva aceptación y estados centrales.

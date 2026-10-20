@@ -1,0 +1,50 @@
+{
+  "frontend/components/marketing/landing-page.tsx": {
+    "initialSha256": "41ad37ed441902a8f60b8c78300af3167961ad0cdee4420cdbb80878d24f355c",
+    "finalSha256": "5bba09ef9ef828ff404a67bdb063c6d54d6a0faab346dddb05f3132b88ed4f2d",
+    "status": "modified",
+    "finalCopy": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/evidencia-adquisicion-implementacion/final/frontend__components__marketing__landing-page.tsx"
+  },
+  "frontend/components/marketing/faq-section.tsx": {
+    "initialSha256": "cf3fd767abb33c025137fb3a7c0d138f97574123f97b98017f5c467a75aa5112",
+    "finalSha256": "6de1178c68081d68db86f70866e4e549745393eabd98e261b6d0bf5ebd09d571",
+    "status": "modified",
+    "finalCopy": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/evidencia-adquisicion-implementacion/final/frontend__components__marketing__faq-section.tsx"
+  },
+  "frontend/components/marketing/__tests__/faq-section.test.tsx": {
+    "initialSha256": "c222735ef138ee44cc26826ab5eb1c7cadfd65104b9fd5579b0a295e1bd2d3ba",
+    "finalSha256": "5b00f659cc446981f2b9e49e69e37590dd4bdc194a35059c11a8b25272eb391a",
+    "status": "modified",
+    "finalCopy": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/evidencia-adquisicion-implementacion/final/frontend__components__marketing____tests____faq-section.test.tsx"
+  },
+  "frontend/app/(marketing)/page.tsx": {
+    "initialSha256": "bbb661d27ae8d4fd7190162265260c1ef25701c6771716aa685bba3a3d06a0c6",
+    "finalSha256": "a186669ea2efa2520de951273eb7e22a92a8086413fec2a74f204919a1d9b240",
+    "status": "modified",
+    "finalCopy": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/evidencia-adquisicion-implementacion/final/frontend__app__(marketing)__page.tsx"
+  },
+  "frontend/app/(marketing)/faq/page.tsx": {
+    "initialSha256": "d2d96fb9009da52cb788b2ae39493287855b8f221265636228e44d1bedc9b9b5",
+    "finalSha256": "cdcf2d98a07957426587a86f851a7659fec00e5db659f5593d7ec528d85e5c34",
+    "status": "modified",
+    "finalCopy": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/evidencia-adquisicion-implementacion/final/frontend__app__(marketing)__faq__page.tsx"
+  },
+  "frontend/app/(marketing)/opengraph-image.tsx": {
+    "initialSha256": null,
+    "finalSha256": "4b824c7800dadcfc48f54e5f572fee00aea6f16adec1b5a5cb46386882605f81",
+    "status": "new",
+    "finalCopy": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/evidencia-adquisicion-implementacion/final/frontend__app__(marketing)__opengraph-image.tsx"
+  },
+  "frontend/lib/marketing/acquisition-metadata.ts": {
+    "initialSha256": null,
+    "finalSha256": "74c64b4e00ef5d17893338e5d18afef8136ac56d1c57d884bde4603449294144",
+    "status": "new",
+    "finalCopy": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/evidencia-adquisicion-implementacion/final/frontend__lib__marketing__acquisition-metadata.ts"
+  },
+  "frontend/lib/marketing/__tests__/acquisition-metadata.test.ts": {
+    "initialSha256": null,
+    "finalSha256": "56f1dc9fa026afd26cdc9767eec19908483a093cdd1a49e9401fecdb93ec4465",
+    "status": "new",
+    "finalCopy": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/evidencia-adquisicion-implementacion/final/frontend__lib__marketing____tests____acquisition-metadata.test.ts"
+  }
+}

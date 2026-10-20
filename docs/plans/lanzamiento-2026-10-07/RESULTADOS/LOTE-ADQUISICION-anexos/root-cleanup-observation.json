@@ -1,0 +1,19 @@
+{
+  "atUtc": "2026-10-10T14:49:19.771037+00:00",
+  "runs": [
+    {
+      "runId": "adquisicion-gate-8e4fa11b7ccb",
+      "databaseAbsent": true,
+      "redisNameAndFullIDAbsent": true,
+      "sharedBoundedCountsGINIDsHealthy": true
+    },
+    {
+      "runId": "adquisicion-gate-19c2741bba85",
+      "databaseAbsent": true,
+      "redisNameAndFullIDAbsent": true,
+      "sharedBoundedCountsGINIDsHealthy": true
+    }
+  ],
+  "ports3000_3001_56396Free": true,
+  "readOnlySQLAndDocker": true
+}

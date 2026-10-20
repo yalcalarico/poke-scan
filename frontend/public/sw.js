@@ -9,7 +9,7 @@
  * Bump de VERSION para forzar el renuevo del cache en el siguiente activate.
  */
 
-const VERSION = 'v4';
+const VERSION = 'v7';
 const SHELL_CACHE = `pokescan-shell-${VERSION}`;
 const IMAGE_CACHE = `pokescan-images-${VERSION}`;
 const API_CACHE = `pokescan-api-${VERSION}`;
@@ -78,6 +78,8 @@ self.addEventListener('activate', (event) => {
           .filter((name) => name.startsWith('pokescan-') && !CURRENT_CACHES.includes(name))
           .map((name) => caches.delete(name)),
       );
+      await removeCachedSharePages();
+      await removeCachedRecoveryPages();
       if (self.registration.navigationPreload) {
         await self.registration.navigationPreload.enable();
       }
@@ -127,6 +129,34 @@ async function trimCache(cacheName, limit) {
   await Promise.all(keys.slice(0, keys.length - limit).map((key) => cache.delete(key)));
 }
 
+async function removeCachedSharePages() {
+  const names = await caches.keys();
+  await Promise.all(names.map(async (name) => {
+    if (!name.startsWith('pokescan-')) return;
+    const cache = await caches.open(name);
+    const requests = await cache.keys();
+    await Promise.all(requests.map(async (request) => {
+      const url = new URL(request.url);
+      if (url.origin === self.location.origin && /^\/share(?:\/|$)/.test(url.pathname)) await cache.delete(request);
+    }));
+  }));
+}
+
+async function removeCachedRecoveryPages() {
+  const names = await caches.keys();
+  await Promise.all(names.map(async (name) => {
+    if (!name.startsWith('pokescan-')) return;
+    const cache = await caches.open(name);
+    const requests = await cache.keys();
+    await Promise.all(requests.map(async (request) => {
+      const url = new URL(request.url);
+      if (url.origin === self.location.origin && ['/recuperar', '/eliminar-cuenta'].includes(url.pathname.replace(/\/$/, ''))) {
+        await cache.delete(request);
+      }
+    }));
+  }));
+}
+
 async function networkFirstNavigation(request) {
   try {
     const response = await fetch(request);
@@ -166,12 +196,17 @@ async function cacheFirst(request, cacheName, { limit = 0, cacheable = () => tru
 }
 
 async function networkFirstApi(request) {
+  const pathname = new URL(request.url).pathname;
+  // La comparación lleva fechas y estado de importación; una copia offline
+  // no puede hacerse pasar por la evaluación actual aunque sea un dato público.
   const cacheable =
     !isAuthenticated(request) &&
-    API_CACHEABLE.some((pattern) => pattern.test(new URL(request.url).pathname));
+    request.cache !== 'no-store' &&
+    !/^\/api\/cards\/[^/]+\/comparison\/?$/.test(pathname) &&
+    API_CACHEABLE.some((pattern) => pattern.test(pathname));
   try {
     const response = await fetch(request);
-    if (response.ok && cacheable) {
+    if (response.ok && cacheable && !/\bno-store\b/i.test(response.headers.get('Cache-Control') || '')) {
       const cache = await caches.open(API_CACHE);
       await cache.put(request, response.clone());
       await trimCache(API_CACHE, 50);
@@ -180,7 +215,7 @@ async function networkFirstApi(request) {
   } catch (err) {
     if (cacheable) {
       const cached = await caches.match(request);
-      if (cached) return cached;
+      if (cached && !/\bno-store\b/i.test(cached.headers.get('Cache-Control') || '')) return cached;
     }
     throw err;
   }
@@ -200,10 +235,18 @@ self.addEventListener('fetch', (event) => {
   const sameOrigin = url.origin === self.location.origin;
   if (!sameOrigin && !IMAGE_HOSTS.includes(url.hostname)) return;
 
+  // Nunca reproducir ni guardar esta pantalla: contiene un flujo de credenciales.
+  if (sameOrigin && ['/recuperar', '/eliminar-cuenta'].includes(url.pathname.replace(/\/$/, ''))) {
+    if (request.mode === 'navigate') event.respondWith(fetch(request));
+    return;
+  }
+
   // Un stream Flight cacheado puede ser el fallback de Suspense de una
   // navegación anterior. No se cachea ni reproduce; el bump de VERSION purga
   // además las entradas `_rsc` viejas de las instalaciones existentes.
   if (sameOrigin && isNextRscRequest(request, url)) return;
+
+  if (sameOrigin && /^\/share(?:\/|$)/.test(url.pathname)) return;
 
   if (request.mode === 'navigate') {
     event.respondWith(networkFirstNavigation(request));

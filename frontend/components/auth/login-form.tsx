@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useState, type FormEvent } from 'react';
 
 import { Alert, Button, Field, Input, PasswordInput, useFieldA11y } from '@/components/ui';
@@ -123,6 +124,12 @@ export function LoginForm({ redirectPath = POST_LOGIN_PATH }: { redirectPath?: '
           aria-describedby={passwordField.describedBy}
         />
       </Field>
+
+      <div className="-mt-2 text-right">
+        <Link href="/recuperar" className="inline-flex min-h-11 items-center text-label text-brand underline-offset-4 hover:underline">
+          ¿Olvidaste tu contraseña?
+        </Link>
+      </div>
 
       {submitError ? <Alert tone="error">{submitError}</Alert> : null}
 

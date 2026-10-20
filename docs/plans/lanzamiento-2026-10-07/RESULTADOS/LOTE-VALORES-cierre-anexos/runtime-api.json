@@ -1,0 +1,409 @@
+{
+  "source": "current compiled Nest + current Next routes",
+  "checks": [
+    {
+      "name": "real-register-cookie-session",
+      "passed": true
+    },
+    {
+      "name": "real-login",
+      "passed": true
+    },
+    {
+      "name": "aggregate-exact-variant-copy-scope-mixed",
+      "passed": true
+    },
+    {
+      "name": "distinct-vacía",
+      "passed": true
+    },
+    {
+      "name": "distinct-cero",
+      "passed": true
+    },
+    {
+      "name": "distinct-desconocida",
+      "passed": true
+    },
+    {
+      "name": "item-exact-saved-attributes-and-reference",
+      "passed": true
+    },
+    {
+      "name": "latest-null-does-not-fallback-mid",
+      "passed": true
+    },
+    {
+      "name": "filter-does-not-shrink-summary-scope",
+      "passed": true
+    },
+    {
+      "name": "portfolio-snapshot-own-coverage-ranking-same-row",
+      "passed": true
+    },
+    {
+      "name": "card-hero-delta-canonical-source-cache-evaluation",
+      "passed": true
+    },
+    {
+      "name": "history-envelope-null-variant-UTC-provenance",
+      "passed": true
+    },
+    {
+      "name": "ownership-and-auth",
+      "passed": true
+    },
+    {
+      "name": "public-allowlist-full-scope-cache-evaluation",
+      "passed": true
+    },
+    {
+      "name": "uuid-replay-and-deliberate-new-intent",
+      "passed": true
+    }
+  ],
+  "payloads": {
+    "main": {
+      "amount": 49,
+      "currency": "USD",
+      "evaluatedAt": "2026-10-09T00:59:03.112Z",
+      "coverage": {
+        "totalCopies": 11,
+        "pricedCopies": 9,
+        "unpricedCopies": 2,
+        "coverageRatio": 0.8181818181818182
+      },
+      "recency": {
+        "freshness": "mixed",
+        "freshCopies": 6,
+        "staleCopies": 2,
+        "unknownFreshnessCopies": 1,
+        "upstreamFreshness": "unknown",
+        "oldestFetchedAt": "2026-10-07T00:59:02.723Z",
+        "newestFetchedAt": "2026-10-09T00:59:02.723Z"
+      }
+    },
+    "vacía": {
+      "amount": 0,
+      "currency": "USD",
+      "evaluatedAt": "2026-10-09T00:59:03.119Z",
+      "coverage": {
+        "totalCopies": 0,
+        "pricedCopies": 0,
+        "unpricedCopies": 0,
+        "coverageRatio": null
+      },
+      "recency": {
+        "freshness": "unknown",
+        "freshCopies": 0,
+        "staleCopies": 0,
+        "unknownFreshnessCopies": 0,
+        "upstreamFreshness": "unknown",
+        "oldestFetchedAt": null,
+        "newestFetchedAt": null
+      }
+    },
+    "cero": {
+      "amount": 0,
+      "currency": "USD",
+      "evaluatedAt": "2026-10-09T00:59:03.122Z",
+      "coverage": {
+        "totalCopies": 2,
+        "pricedCopies": 2,
+        "unpricedCopies": 0,
+        "coverageRatio": 1
+      },
+      "recency": {
+        "freshness": "fresh",
+        "freshCopies": 2,
+        "staleCopies": 0,
+        "unknownFreshnessCopies": 0,
+        "upstreamFreshness": "unknown",
+        "oldestFetchedAt": "2026-10-09T00:59:02.723Z",
+        "newestFetchedAt": "2026-10-09T00:59:02.723Z"
+      }
+    },
+    "desconocida": {
+      "amount": null,
+      "currency": "USD",
+      "evaluatedAt": "2026-10-09T00:59:03.124Z",
+      "coverage": {
+        "totalCopies": 2,
+        "pricedCopies": 0,
+        "unpricedCopies": 2,
+        "coverageRatio": 0
+      },
+      "recency": {
+        "freshness": "unknown",
+        "freshCopies": 0,
+        "staleCopies": 0,
+        "unknownFreshnessCopies": 0,
+        "upstreamFreshness": "unknown",
+        "oldestFetchedAt": null,
+        "newestFetchedAt": null
+      }
+    },
+    "portfolio": {
+      "valuation": {
+        "amount": 49,
+        "currency": "USD",
+        "evaluatedAt": "2026-10-09T00:59:03.142Z",
+        "coverage": {
+          "totalCopies": 15,
+          "pricedCopies": 11,
+          "unpricedCopies": 4,
+          "coverageRatio": 0.7333333333333333
+        },
+        "recency": {
+          "freshness": "mixed",
+          "freshCopies": 8,
+          "staleCopies": 2,
+          "unknownFreshnessCopies": 1,
+          "upstreamFreshness": "unknown",
+          "oldestFetchedAt": "2026-10-07T00:59:02.723Z",
+          "newestFetchedAt": "2026-10-09T00:59:02.723Z"
+        }
+      },
+      "history": [
+        {
+          "date": "2026-10-04",
+          "valuation": {
+            "amount": 9,
+            "currency": "USD",
+            "evaluatedAt": null,
+            "coverage": {
+              "totalCopies": 3,
+              "pricedCopies": 2,
+              "unpricedCopies": 1,
+              "coverageRatio": 0.6666666666666666
+            },
+            "recency": null
+          }
+        },
+        {
+          "date": "2026-10-09",
+          "valuation": {
+            "amount": 49,
+            "currency": "USD",
+            "evaluatedAt": null,
+            "coverage": {
+              "totalCopies": 15,
+              "pricedCopies": 11,
+              "unpricedCopies": 4,
+              "coverageRatio": 0.7333333333333333
+            },
+            "recency": null
+          }
+        }
+      ],
+      "topCards": [
+        {
+          "marketUsd": 10,
+          "quantity": 3,
+          "valueUsd": 30,
+          "reference": {
+            "provider": "tcgdex",
+            "source": "tcgplayer",
+            "currency": "USD",
+            "fetchedAt": "2026-10-09T00:59:02.723Z",
+            "evaluatedAt": "2026-10-09T00:59:03.142Z",
+            "freshness": "fresh",
+            "upstreamUpdatedAt": null,
+            "upstreamFreshness": "unknown"
+          }
+        },
+        {
+          "marketUsd": 6,
+          "quantity": 1,
+          "valueUsd": 6,
+          "reference": {
+            "provider": "tcgdex",
+            "source": "tcgplayer",
+            "currency": "USD",
+            "fetchedAt": "2026-10-11T00:59:02.723Z",
+            "evaluatedAt": "2026-10-09T00:59:03.142Z",
+            "freshness": "unknown",
+            "upstreamUpdatedAt": null,
+            "upstreamFreshness": "unknown"
+          }
+        },
+        {
+          "marketUsd": 5,
+          "quantity": 1,
+          "valueUsd": 5,
+          "reference": {
+            "provider": "tcgdex",
+            "source": "tcgplayer",
+            "currency": "USD",
+            "fetchedAt": "2026-10-09T00:59:02.723Z",
+            "evaluatedAt": "2026-10-09T00:59:03.142Z",
+            "freshness": "fresh",
+            "upstreamUpdatedAt": null,
+            "upstreamFreshness": "unknown"
+          }
+        },
+        {
+          "marketUsd": 4,
+          "quantity": 2,
+          "valueUsd": 8,
+          "reference": {
+            "provider": "tcgdex",
+            "source": "tcgplayer",
+            "currency": "USD",
+            "fetchedAt": "2026-10-07T00:59:02.723Z",
+            "evaluatedAt": "2026-10-09T00:59:03.142Z",
+            "freshness": "stale",
+            "upstreamUpdatedAt": null,
+            "upstreamFreshness": "unknown"
+          }
+        },
+        {
+          "marketUsd": 0,
+          "quantity": 4,
+          "valueUsd": 0,
+          "reference": {
+            "provider": "tcgdex",
+            "source": "tcgplayer",
+            "currency": "USD",
+            "fetchedAt": "2026-10-09T00:59:02.723Z",
+            "evaluatedAt": "2026-10-09T00:59:03.142Z",
+            "freshness": "fresh",
+            "upstreamUpdatedAt": null,
+            "upstreamFreshness": "unknown"
+          }
+        }
+      ]
+    },
+    "prices": [
+      {
+        "cardId": "valclose-card2",
+        "variant": "normal",
+        "low": null,
+        "mid": null,
+        "high": null,
+        "market": 10,
+        "provider": "tcgdex",
+        "isStale": false,
+        "currency": "USD",
+        "source": "tcgplayer",
+        "fetchedAt": "2026-10-09T00:59:02.723Z",
+        "evaluatedAt": "2026-10-09T00:59:03.154Z",
+        "freshness": "fresh",
+        "upstreamUpdatedAt": null,
+        "upstreamFreshness": "unknown",
+        "change": {
+          "usd": 8,
+          "percent": 400,
+          "windowDays": 30,
+          "from": "2026-08-30T00:59:02.723Z"
+        },
+        "changeUsd": 8,
+        "changePercent": 400,
+        "windowLabel": "últimos 30 días"
+      },
+      {
+        "cardId": "valclose-card2",
+        "variant": "reverseHolofoil",
+        "low": null,
+        "mid": null,
+        "high": null,
+        "market": 5,
+        "provider": "tcgdex",
+        "isStale": false,
+        "currency": "USD",
+        "source": "tcgplayer",
+        "fetchedAt": "2026-10-09T00:59:02.723Z",
+        "evaluatedAt": "2026-10-09T00:59:03.154Z",
+        "freshness": "fresh",
+        "upstreamUpdatedAt": null,
+        "upstreamFreshness": "unknown",
+        "change": {
+          "usd": -45,
+          "percent": -90,
+          "windowDays": 30,
+          "from": "2026-08-30T00:59:02.723Z"
+        },
+        "changeUsd": -45,
+        "changePercent": -90,
+        "windowLabel": "últimos 30 días"
+      }
+    ],
+    "history": {
+      "cardId": "valclose-card2",
+      "provider": "tcgdex",
+      "source": "tcgplayer",
+      "variant": null,
+      "currency": "USD",
+      "windowDays": 90,
+      "from": "2026-08-30",
+      "to": "2026-10-09",
+      "points": [
+        {
+          "date": "2026-08-30",
+          "fetchedAt": "2026-08-30T00:59:02.723Z",
+          "market": 50,
+          "low": null,
+          "mid": null,
+          "high": null,
+          "evaluatedAt": "2026-10-09T00:59:03.162Z",
+          "freshness": "stale",
+          "upstreamUpdatedAt": null,
+          "upstreamFreshness": "unknown"
+        },
+        {
+          "date": "2026-10-05",
+          "fetchedAt": "2026-10-05T00:59:02.723Z",
+          "market": 7,
+          "low": null,
+          "mid": null,
+          "high": null,
+          "evaluatedAt": "2026-10-09T00:59:03.162Z",
+          "freshness": "stale",
+          "upstreamUpdatedAt": null,
+          "upstreamFreshness": "unknown"
+        },
+        {
+          "date": "2026-10-09",
+          "fetchedAt": "2026-10-09T00:59:02.723Z",
+          "market": 10,
+          "low": null,
+          "mid": null,
+          "high": null,
+          "evaluatedAt": "2026-10-09T00:59:03.162Z",
+          "freshness": "fresh",
+          "upstreamUpdatedAt": null,
+          "upstreamFreshness": "unknown"
+        }
+      ],
+      "change": {
+        "changeUsd": -40,
+        "changePercent": -80
+      }
+    },
+    "public": {
+      "amount": 49,
+      "currency": "USD",
+      "evaluatedAt": "2026-10-09T00:59:03.180Z",
+      "coverage": {
+        "totalCopies": 11,
+        "pricedCopies": 9,
+        "unpricedCopies": 2,
+        "coverageRatio": 0.8181818181818182
+      },
+      "recency": {
+        "freshness": "mixed",
+        "freshCopies": 6,
+        "staleCopies": 2,
+        "unknownFreshnessCopies": 1,
+        "upstreamFreshness": "unknown",
+        "oldestFetchedAt": "2026-10-07T00:59:02.723Z",
+        "newestFetchedAt": "2026-10-09T00:59:02.723Z"
+      }
+    }
+  },
+  "fixture": {
+    "synthetic": true,
+    "queuedUnexecuted": 6
+  },
+  "externalFetchAttempts": 0
+}

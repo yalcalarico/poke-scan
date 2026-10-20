@@ -1,16 +1,22 @@
 'use client';
 
+import { PreviewSheet as Sheet } from '@/components/visual-preview/preview-sheet';
+
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { Trash2 } from 'lucide-react';
+import Image from 'next/image';
+import { VisualCard } from '@/components/visual-preview/holo-card';
+import { PreviewLink } from '@/components/visual-preview/preview-link';
+import { useVisualPreview } from '@/components/visual-preview/visual-preview';
 
 import { Money } from '@/components/cards/money';
+import { PriceReferenceDetails } from '@/components/prices/price-evidence';
 import {
   Alert,
   Button,
   Field,
   Input,
   Select,
-  Sheet,
   Stat,
   StatGrid,
   Switch,
@@ -96,15 +102,16 @@ export interface ItemSheetProps {
  * guardar un cambio y borrar la fila en la misma interacción.
  */
 export function ItemSheet({ item, open, onClose, onUpdated, onDeleted }: ItemSheetProps) {
+  const visual = useVisualPreview();
   const toast = useToast();
   const confirmRef = useRef<HTMLDivElement>(null);
   const confirmTitleId = useId();
 
-  const [quantity, setQuantity] = useState(1);
-  const [isForTrade, setIsForTrade] = useState(false);
-  const [notes, setNotes] = useState('');
-  const [variant, setVariant] = useState<CardVariant>('normal');
-  const [condition, setCondition] = useState<CardCondition>('NM');
+  const [quantity, setQuantity] = useState(item?.quantity ?? 1);
+  const [isForTrade, setIsForTrade] = useState(item?.isForTrade ?? false);
+  const [notes, setNotes] = useState(item?.notes ?? '');
+  const [variant, setVariant] = useState<CardVariant>(item?.variant ?? 'normal');
+  const [condition, setCondition] = useState<CardCondition>(item?.condition ?? 'NM');
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -191,7 +198,8 @@ export function ItemSheet({ item, open, onClose, onUpdated, onDeleted }: ItemShe
   if (!item) return null;
 
   const marketPrice = item.price?.market ?? null;
-  const total = marketPrice === null ? null : marketPrice * item.quantity;
+  const variantPriceMatches = variant === item.variant;
+  const total = !variantPriceMatches || marketPrice === null ? null : marketPrice * quantity;
 
   const subtitle = `${item.card.set?.name ?? item.card.setId} · agregada ${formatRelativeTime(item.addedAt)}`;
 
@@ -272,8 +280,15 @@ export function ItemSheet({ item, open, onClose, onUpdated, onDeleted }: ItemShe
           </div>
         </div>
       ) : (
+        <>
+        {visual ? <div className="mx-auto mb-5 flex w-full max-w-56 flex-col items-center gap-3 pt-4">
+          <VisualCard><Image src={item.card.imageLarge || item.card.imageSmall} alt={item.card.name} width={315} height={440} sizes="224px" className="h-auto w-full rounded-surface" /></VisualCard>
+          <PreviewLink href={`/carta/${encodeURIComponent(item.card.id)}`} className="flex min-h-11 items-center rounded-control px-3 text-label text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--focus-ring)]">Ver detalle de la carta</PreviewLink>
+        </div> : null}
         <ItemForm
-          marketPrice={marketPrice}
+          marketPrice={variantPriceMatches ? marketPrice : null}
+          reference={variantPriceMatches ? item.price : null}
+          variantPriceMatches={variantPriceMatches}
           total={total}
           quantity={quantity}
           onQuantityChange={setQuantity}
@@ -288,6 +303,7 @@ export function ItemSheet({ item, open, onClose, onUpdated, onDeleted }: ItemShe
           error={error}
           disabled={isSaving}
         />
+        </>
       )}
     </Sheet>
   );
@@ -296,6 +312,8 @@ export function ItemSheet({ item, open, onClose, onUpdated, onDeleted }: ItemShe
 interface ItemFormProps {
   /** Precio de mercado de la variante, en USD. `null` si no hay. */
   marketPrice: number | null;
+  reference: CollectionItemDto['price'];
+  variantPriceMatches: boolean;
   /** Mercado × cantidad, en USD. */
   total: number | null;
   quantity: number;
@@ -314,6 +332,8 @@ interface ItemFormProps {
 
 function ItemForm({
   marketPrice,
+  reference,
+  variantPriceMatches,
   total,
   quantity,
   onQuantityChange,
@@ -354,6 +374,11 @@ function ItemForm({
           }
         />
       </StatGrid>
+      <div className="flex flex-col gap-1 text-caption text-secondary" aria-live="polite">
+        {variantPriceMatches && marketPrice === null ? <p className="text-warning">Sin referencia de precio para esta variante.</p> : null}
+        {variantPriceMatches ? reference ? <PriceReferenceDetails reference={reference} showConversion /> : <p className="text-warning">Sin referencia de precio para esta variante · antigüedad no disponible.</p> : <p className="text-warning">Guardá el cambio de variante para ver su referencia de precio.</p>}
+        <p>Condición: {conditionLabel(condition)} · la condición no ajusta este valor.</p>
+      </div>
 
       <div className="flex flex-col gap-4">
         <Field {...quantityField} label="Cantidad">

@@ -1,0 +1,151 @@
+{
+  "capturedAt": "2026-10-08T20:43:24.502516+00:00",
+  "phaseAccepted": "documental revisada con correcciones mínimas",
+  "fullTaskAccepted": false,
+  "taskRemaining": "Matriz HTTP/HTML/head completo/DOM por caso y dominio productivo confirmado",
+  "baseline": "SEO-01-review-baseline.json",
+  "artifactsSha256": {
+    "SEO-01-auditoria.md": "6d7a32a79f14b3b54fa2ad903bc7119c4b575ac067e98fec0df79acafe11df49",
+    "SEO-01-review.md": "f49435adcf79443b6c701fc4f2adfc574051e0bf5833dbea73eda4474121a2d0",
+    "SEO-01-review-baseline.json": "bf3cd9b061a2f832b5c48d2acc88cb63dc03cbfd215807f65ec804c8f44fca88"
+  },
+  "sourceAndInstalledDocsPreserved": true,
+  "preservedSourceCount": 36,
+  "localLinks": [
+    {
+      "source": "SEO-01-auditoria.md",
+      "target": "LOTE-VALORES-validacion.md",
+      "exists": true
+    },
+    {
+      "source": "SEO-01-auditoria.md",
+      "target": "LOTE-VALORES-runtime-api.json",
+      "exists": true
+    },
+    {
+      "source": "SEO-01-auditoria.md",
+      "target": "LOTE-VALORES-runtime-ssr.json",
+      "exists": true
+    },
+    {
+      "source": "SEO-01-auditoria.md",
+      "target": "LOTE-VALORES-build-diagnostico-root.md",
+      "exists": true
+    },
+    {
+      "source": "SEO-01-auditoria.md",
+      "target": "SEO-01-review.md",
+      "exists": true
+    },
+    {
+      "source": "SEO-01-auditoria.md",
+      "target": "SEO-01-review-baseline.json",
+      "exists": true
+    },
+    {
+      "source": "SEO-01-auditoria.md",
+      "target": "SEO-01-review-evidencia.json",
+      "exists": true
+    },
+    {
+      "source": "SEO-01-review.md",
+      "target": "SEO-01-review-baseline.json",
+      "exists": true
+    },
+    {
+      "source": "SEO-01-review.md",
+      "target": "SEO-01-review-evidencia.json",
+      "exists": true
+    }
+  ],
+  "primarySources": [
+    {
+      "url": "https://developers.google.com/search/docs/crawling-indexing/troubleshoot-crawling-errors",
+      "consultedOn": "2026-10-08",
+      "kind": "primary",
+      "claim": "Soft404 comunica ausencia con200; no equivale a diagnóstico de esta app."
+    },
+    {
+      "url": "https://developers.google.com/search/docs/crawling-indexing/consolidate-duplicate-urls",
+      "consultedOn": "2026-10-08",
+      "kind": "primary",
+      "claim": "Canonical es señal; selección no garantizada."
+    },
+    {
+      "url": "https://developers.google.com/search/docs/crawling-indexing/block-indexing",
+      "consultedOn": "2026-10-08",
+      "kind": "primary",
+      "claim": "Noindex necesita acceso crawler; robots.txt no lo sustituye."
+    },
+    {
+      "url": "https://developers.google.com/crawling/docs/troubleshooting/http-status-codes?hl=en",
+      "consultedOn": "2026-10-08",
+      "kind": "primary",
+      "claim": "2xx no garantiza indexación; contenido error puede soft404."
+    },
+    {
+      "url": "https://nextjs.org/docs/app/api-reference/functions/generate-metadata",
+      "consultedOn": "2026-10-08",
+      "kind": "primary",
+      "claim": "Streaming metadata y bots: body completo vs head inicial."
+    },
+    {
+      "url": "https://nextjs.org/docs/app/api-reference/file-conventions/not-found",
+      "consultedOn": "2026-10-08",
+      "kind": "primary",
+      "claim": "Not-found200 streaming/404 no streaming."
+    }
+  ],
+  "historicalEvidence": {
+    "date": "2026-10-08",
+    "files": [
+      "LOTE-VALORES-validacion.md",
+      "LOTE-VALORES-runtime-api.json",
+      "LOTE-VALORES-runtime-ssr.json",
+      "LOTE-VALORES-build-diagnostico-root.md"
+    ],
+    "scope": "Checks y fixtures sintéticas históricas sanitizadas; sin nueva medición ni reconstrucción retrospectiva de status/head; .next no inspeccionado"
+  },
+  "executed": {
+    "readOnlySource": true,
+    "webPrimaryDocs": true,
+    "localLinkAndHashValidation": true,
+    "productCodeChanges": false,
+    "tests": false,
+    "check": false,
+    "build": false,
+    "appHttp": false,
+    "stack": false,
+    "db": false,
+    "redis": false,
+    "browser": false,
+    "dotNextReadOrWrite": false
+  },
+  "reservationsReleased": true,
+  "ownResourcesCreated": false,
+  "writers": [
+    "SEO-01-auditoria.md",
+    "SEO-01-review.md",
+    "SEO-01-review-baseline.json",
+    "SEO-01-review-evidencia.json"
+  ],
+  "amendmentBeforeConsolidation": {
+    "capturedAt": "2026-10-08T20:44:47.333874+00:00",
+    "reason": "Auditoría/matriz HTTP local sin dependencia INF-01; dominio aprobado necesario solo para verificación productiva",
+    "priorArtifactHashes": {
+      "SEO-01-auditoria.md": "c220c99d9d42a8b92fb83ab68440c9f6ec1439926c9d74cfe0dc93465ca758e7",
+      "SEO-01-review.md": "740f1c9c70b6ce5ee6ec555de659daf43017e93f21a18279f6cd8bcc6f6d875c",
+      "SEO-01-review-baseline.json": "bf3cd9b061a2f832b5c48d2acc88cb63dc03cbfd215807f65ec804c8f44fca88"
+    },
+    "localMatrixPrerequisites": [
+      "host sintético autorizado",
+      "fixtures propias",
+      "ventana runtime aislada acordada con coordinación"
+    ],
+    "productionPrerequisites": [
+      "dominio aprobado",
+      "valor efectivo de despliegue"
+    ],
+    "runtimeExecuted": false
+  }
+}

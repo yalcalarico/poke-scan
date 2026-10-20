@@ -1,0 +1,1641 @@
+--- received/backend/src/common/guards/jwt-auth.guard.ts
++++ review/backend/src/common/guards/jwt-auth.guard.ts
+@@ -39,12 +39,16 @@
+       throw new UnauthorizedException('Token de acceso requerido');
+     }
+ 
+-    let payload: AccessTokenPayload;
++    let verified: unknown;
+     try {
+-      payload = await this.jwtService.verifyAsync<AccessTokenPayload>(token);
++      verified = await this.jwtService.verifyAsync(token);
+     } catch {
+       throw new UnauthorizedException('Token de acceso inválido o expirado');
+     }
++    if (typeof verified !== 'object' || verified === null || Array.isArray(verified)) {
++      throw new UnauthorizedException('Token de acceso inválido o expirado');
++    }
++    const payload = verified as AccessTokenPayload;
+     try {
+       if (typeof payload.sub !== 'string' || payload.sub.length === 0 ||
+           typeof payload.email !== 'string' || payload.email.length === 0 ||
+@@ -75,7 +79,7 @@
+       } else if (!Number.isInteger(payload.authVersion) || payload.authVersion !== current.authVersion) {
+         throw new UnauthorizedException('Token de acceso inválido o expirado');
+       }
+-      request.user = payload as AuthUser;
++      request.user = { sub: payload.sub, email: payload.email, authVersion: current.authVersion };
+     } catch (error) {
+       if (error instanceof UnauthorizedException || error instanceof ServiceUnavailableException) throw error;
+       throw new ServiceUnavailableException('No se pudo validar la sesión');
+--- received/backend/src/common/guards/jwt-auth.guard.spec.ts
++++ review/backend/src/common/guards/jwt-auth.guard.spec.ts
+@@ -2,7 +2,8 @@
+ import type { ExecutionContext } from '@nestjs/common';
+ import { ConfigService } from '@nestjs/config';
+ import { Reflector } from '@nestjs/core';
+-import type { JwtService } from '@nestjs/jwt';
++import { randomBytes } from 'node:crypto';
++import { JwtService } from '@nestjs/jwt';
+ import type { PrismaService } from '../../prisma/index.js';
+ import { JwtAuthGuard } from './jwt-auth.guard.js';
+ 
+@@ -54,6 +55,28 @@
+     await expect(newerLegacy.canActivate(contextFor(structuredClone(request)))).rejects.toBeInstanceOf(UnauthorizedException);
+   });
+ 
++  it('rechaza payloads firmados escalares/nulos y no propaga campos extra', async () => {
++    for (const payload of [null, 'scalar', 7, ['array']]) {
++      const { guard, findUnique } = makeGuard(payload);
++      await expect(guard.canActivate(contextFor(structuredClone(request)))).rejects.toBeInstanceOf(UnauthorizedException);
++      expect(findUnique).not.toHaveBeenCalled();
++    }
++    const { guard } = makeGuard({ sub: 'user-id', email: 'safe@example.test', authVersion: 2, iat: nowSeconds - 10, exp: nowSeconds + 200, extra: 'private' });
++    const req = structuredClone(request) as { headers: { authorization: string }; user?: unknown };
++    await guard.canActivate(contextFor(req));
++    expect(Object.keys(req.user as object).sort()).toEqual(['authVersion', 'email', 'sub']);
++  });
++
++  it('rechaza un JWT string firmado de verdad como 401 antes de consultar PG', async () => {
++    const jwt = new JwtService({ secret: randomBytes(32).toString('base64url') });
++    const token = await jwt.signAsync('scalar');
++    const findUnique = vi.fn();
++    const guard = new JwtAuthGuard(jwt, new Reflector(), { user: { findUnique } } as unknown as PrismaService,
++      {} as ConfigService);
++    await expect(guard.canActivate(contextFor({ headers: { authorization: `Bearer ${token}` } }))).rejects.toBeInstanceOf(UnauthorizedException);
++    expect(findUnique).not.toHaveBeenCalled();
++  });
++
+   it('falla cerrado como indisponibilidad si Postgres no responde', async () => {
+     const { guard } = makeGuard({ sub: 'user-id', email: 'safe@example.test', authVersion: 2, iat: nowSeconds - 10, exp: nowSeconds + 200 }, user, undefined, true);
+     await expect(guard.canActivate(contextFor(structuredClone(request)))).rejects.toBeInstanceOf(ServiceUnavailableException);
+--- received/backend/src/modules/auth/auth.controller.ts
++++ review/backend/src/modules/auth/auth.controller.ts
+@@ -1,5 +1,5 @@
+ import {
+-  Body, Controller, HttpCode, Post, Req, Res, UnauthorizedException,
++  Body, Controller, HttpCode, Post, Req, Res, UnauthorizedException, UseGuards,
+ } from '@nestjs/common';
+ import { ConfigService } from '@nestjs/config';
+ import { SkipThrottle, Throttle } from '@nestjs/throttler';
+@@ -7,6 +7,7 @@
+ import { Public } from '../../common/decorators/public.decorator.js';
+ import type { AuthResponseDto, AuthTokens } from '../../common/types/auth-user.js';
+ import { AuthService } from './auth.service.js';
++import { RecoveryJsonGuard } from './recovery-json.guard.js';
+ import { PasswordRecoveryService } from './password-recovery.service.js';
+ import { PasswordRecoveryRequestDto } from './dto/password-recovery-request.dto.js';
+ import { PasswordRecoveryDto } from './dto/password-recovery.dto.js';
+@@ -40,6 +41,7 @@
+   @Public()
+   @SkipThrottle()
+   @HttpCode(202)
++  @UseGuards(RecoveryJsonGuard)
+   @Post('password-recovery-requests')
+   async requestPasswordRecovery(
+     @Body() dto: PasswordRecoveryRequestDto, @Req() request: Request,
+@@ -53,6 +55,7 @@
+   @Public()
+   @SkipThrottle()
+   @HttpCode(200)
++  @UseGuards(RecoveryJsonGuard)
+   @Post('password-recoveries')
+   async recoverPassword(
+     @Body() dto: PasswordRecoveryDto, @Req() request: Request,
+--- received/backend/src/modules/auth/auth.service.ts
++++ review/backend/src/modules/auth/auth.service.ts
+@@ -120,25 +120,27 @@
+           user: { select: USER_SELECT } },
+       });
+       if (!stored) throw new UnauthorizedException('Refresh token inválido');
++      const clock = await tx.$queryRaw<Array<{ now: Date }>>(Prisma.sql`SELECT clock_timestamp() AS now`);
++      const now = clock[0]!.now;
+       if (stored.issuedAuthVersion !== stored.user.authVersion) return null;
+       if (stored.revokedAt !== null) {
+         await tx.refreshToken.updateMany({
+           where: { userId: stored.userId, revokedAt: null },
+-          data: { revokedAt: new Date() },
++          data: { revokedAt: now },
+         });
+         // Se lanza fuera de la transacción para que la revocación haga commit.
+         return null;
+       }
+-      if (stored.expiresAt.getTime() <= Date.now()) {
++      if (stored.expiresAt <= now) {
+         throw new UnauthorizedException('Refresh token expirado');
+       }
+       await tx.refreshToken.update({
+-        where: { id: stored.id }, data: { revokedAt: new Date() },
++        where: { id: stored.id }, data: { revokedAt: now },
+       });
+       return this.issueSession(stored.user, dto.deviceInfo, tx);
+     });
+     if (!result) {
+-      throw new UnauthorizedException('Refresh token reutilizado: se revocaron todas las sesiones');
++      throw new UnauthorizedException('Refresh token inválido o no vigente');
+     }
+     return result;
+   }
+--- received/backend/src/modules/auth/dto/password-recovery-request.dto.ts
++++ review/backend/src/modules/auth/dto/password-recovery-request.dto.ts
+@@ -1,6 +1,9 @@
+-import { IsEmail, MaxLength } from 'class-validator';
++import { Transform } from 'class-transformer';
++import { IsEmail, IsString, MaxLength } from 'class-validator';
+ 
+ export class PasswordRecoveryRequestDto {
++  @Transform(({ value }: { value: unknown }) => typeof value === 'string' ? value.trim().toLowerCase() : value)
++  @IsString()
+   @IsEmail()
+   @MaxLength(254)
+   email!: string;
+--- received/backend/src/modules/auth/dto/password-recovery.dto.ts
++++ review/backend/src/modules/auth/dto/password-recovery.dto.ts
+@@ -1,9 +1,11 @@
+-import { Matches, MaxLength, MinLength } from 'class-validator';
++import { IsString, Matches, MaxLength, MinLength } from 'class-validator';
+ 
+ export class PasswordRecoveryDto {
++  @IsString()
+   @Matches(/^[A-Za-z0-9_-]{43}$/)
+   token!: string;
+ 
++  @IsString()
+   @MinLength(8)
+   @MaxLength(72)
+   newPassword!: string;
+--- received/backend/src/modules/auth/password-recovery.service.ts
++++ review/backend/src/modules/auth/password-recovery.service.ts
+@@ -1,4 +1,5 @@
+ import { createHmac, createHash, randomBytes } from 'node:crypto';
++import { performance } from 'node:perf_hooks';
+ import { Prisma } from '@prisma/client';
+ import { Inject, Injectable, OnModuleDestroy, ServiceUnavailableException } from '@nestjs/common';
+ import { ConfigService } from '@nestjs/config';
+@@ -15,12 +16,20 @@
+ const TICKET_TTL_MS = 2_000;
+ const MAX_TICKETS = 32;
+ const GLOBAL_PER_MINUTE = 1_000;
++const JOB_TRANSACTION = { maxWait: 500, timeout: 1_500 };
++const DRAIN_MS = 2_100;
+ 
+ @Injectable()
+ export class PasswordRecoveryService implements OnModuleDestroy {
+-  private readonly tickets = new Map<object, { controller: AbortController; timer: NodeJS.Timeout }>();
++  private readonly tickets = new Map<object, { controller: AbortController; timer: NodeJS.Timeout; deadline: number }>();
+   private readonly pendingJobs = new Set<Promise<void>>();
+   private shuttingDown = false;
++  private drainDeadlineExceeded = false;
++
++  drainStatus(): { pendingJobs: number; tickets: number; quarantined: boolean; deadlineExceeded: boolean } {
++    return { pendingJobs: this.pendingJobs.size, tickets: this.tickets.size,
++      quarantined: this.shuttingDown && this.pendingJobs.size > 0, deadlineExceeded: this.drainDeadlineExceeded };
++  }
+ 
+   constructor(
+     private readonly prisma: PrismaService,
+@@ -34,7 +43,8 @@
+     const ip = ipInput || 'unknown';
+     const budget = await this.admit(ip, 'request', email);
+     if (budget.ipRetry || budget.globalRetry) throw this.rateLimited(Math.max(budget.ipRetry, budget.globalRetry));
+-    if (budget.identifierDenied || this.tickets.size >= MAX_TICKETS) return GENERIC_REQUEST;
++    if (this.shuttingDown) throw this.unavailable();
++    if (budget.identifierDenied || this.tickets.size >= MAX_TICKETS || this.pendingJobs.size >= MAX_TICKETS) return GENERIC_REQUEST;
+ 
+     const ticket = {};
+     const controller = new AbortController();
+@@ -42,7 +52,7 @@
+       controller.abort();
+       this.tickets.delete(ticket);
+     }, TICKET_TTL_MS);
+-    this.tickets.set(ticket, { controller, timer });
++    this.tickets.set(ticket, { controller, timer, deadline: performance.now() + TICKET_TTL_MS });
+     const generation = this.mail.caseGeneration;
+     let task: Promise<void>;
+     task = this.issueAndDeliver(email, ticket, generation, controller)
+@@ -53,7 +63,7 @@
+   }
+ 
+   async recover(token: string, newPassword: string, ipInput: string): Promise<{ success: true }> {
+-    if (!this.mail.available) throw this.unavailable();
++    if (this.shuttingDown) throw this.unavailable();
+     const budget = await this.admit(ipInput || 'unknown', 'consume');
+     if (budget.ipRetry || budget.globalRetry) throw this.rateLimited(Math.max(budget.ipRetry, budget.globalRetry));
+     let passwordHash: string;
+@@ -95,76 +105,97 @@
+       pending.controller.abort();
+       this.tickets.delete(ticket);
+     }
+-    await Promise.allSettled(this.pendingJobs);
++    // La cancelación lógica no cancela SQL en vuelo; el drain tampoco puede
++    // impedir indefinidamente el shutdown si el motor no devuelve la promesa.
++    await new Promise<void>((resolve) => {
++      const timer = setTimeout(() => { this.drainDeadlineExceeded = this.pendingJobs.size > 0; resolve(); }, DRAIN_MS);
++      void Promise.allSettled([...this.pendingJobs]).then(() => { clearTimeout(timer); resolve(); });
++    });
+   }
+ 
+   private async issueAndDeliver(
+     email: string, ticket: object, generation: number, controller: AbortController,
+   ): Promise<void> {
+     if (!this.tickets.has(ticket) || controller.signal.aborted) return;
+-    const issued = await this.prisma.$transaction(async (tx) => {
+-      const observed = await tx.user.findUnique({ where: { email }, select: { id: true, authVersion: true } });
+-      if (!observed || controller.signal.aborted || !this.tickets.has(ticket)) return null;
+-      await tx.$queryRaw(Prisma.sql`SELECT id FROM users WHERE id = ${observed.id} FOR UPDATE`);
+-      const current = await tx.user.findUnique({ where: { id: observed.id }, select: { id: true, authVersion: true } });
+-      if (!current || current.authVersion !== observed.authVersion || controller.signal.aborted ||
+-          !this.tickets.has(ticket) || this.mail.caseGeneration !== generation) return null;
+-      const clock = await tx.$queryRaw<Array<{ now: Date }>>(Prisma.sql`SELECT clock_timestamp() AS now`);
+-      const now = clock[0]!.now;
+-      const active = await tx.passwordRecoveryToken.count({
+-        where: { userId: current.id, usedAt: null, revokedAt: null, expiresAt: { gt: now } },
+-      });
+-      if (active >= 3 || controller.signal.aborted || !this.tickets.has(ticket)) return null;
+-      const token = randomBytes(32).toString('base64url');
+-      const expiresAt = new Date(now.getTime() + this.tokenTtlMs());
+-      await tx.passwordRecoveryToken.create({
+-        data: { userId: current.id, tokenHash: this.hashToken(token), issuedAuthVersion: current.authVersion, expiresAt },
+-      });
+-      if (controller.signal.aborted || !this.tickets.has(ticket) || this.mail.caseGeneration !== generation) {
+-        throw new Error('RECOVERY_TICKET_EXPIRED');
++    const secret: { value: string | null } = { value: null };
++    const clearSecret = (): void => { secret.value = null; };
++    controller.signal.addEventListener('abort', clearSecret, { once: true });
++    try {
++      const issued = await this.prisma.$transaction(async (tx) => {
++        await this.constrainBackgroundSql(tx);
++        const observed = await tx.user.findUnique({ where: { email }, select: { id: true, authVersion: true } });
++        if (!observed || !this.live(ticket, generation, controller.signal)) return null;
++        await tx.$queryRaw(Prisma.sql`SELECT id FROM users WHERE id = ${observed.id} FOR UPDATE`);
++        const current = await tx.user.findUnique({ where: { id: observed.id }, select: { id: true, email: true, authVersion: true } });
++        if (!current || current.authVersion !== observed.authVersion || !this.live(ticket, generation, controller.signal)) return null;
++        const clock = await tx.$queryRaw<Array<{ now: Date }>>(Prisma.sql`SELECT clock_timestamp() AS now`);
++        const now = clock[0]!.now;
++        const active = await tx.passwordRecoveryToken.count({
++          where: { userId: current.id, usedAt: null, revokedAt: null, expiresAt: { gt: now } },
++        });
++        if (active >= 3 || !this.live(ticket, generation, controller.signal)) return null;
++        secret.value = randomBytes(32).toString('base64url');
++        const tokenHash = this.hashToken(secret.value);
++        const expiresAt = new Date(now.getTime() + this.tokenTtlMs());
++        await tx.passwordRecoveryToken.create({
++          data: { userId: current.id, tokenHash, issuedAuthVersion: current.authVersion, expiresAt },
++        });
++        if (!this.live(ticket, generation, controller.signal)) throw new Error('RECOVERY_TICKET_EXPIRED');
++        return { tokenHash, expiresAt, recipient: current.email, userId: current.id };
++      }, JOB_TRANSACTION);
++      if (!issued) return;
++      const authorizeHandoff = async (): Promise<boolean> => {
++        if (!this.live(ticket, generation, controller.signal)) return false;
++        const allowed = await this.prisma.$transaction(async (tx) => {
++          await this.constrainBackgroundSql(tx);
++          const rows = await tx.$queryRaw<Array<{
++            authVersion: number; issuedAuthVersion: number; expiresAt: Date;
++            usedAt: Date | null; revokedAt: Date | null; now: Date;
++          }>>(Prisma.sql`
++            SELECT u."authVersion", r."issuedAuthVersion", r."expiresAt", r."usedAt", r."revokedAt",
++              clock_timestamp() AS now
++            FROM users u JOIN password_recovery_tokens r ON r."userId" = u.id
++            WHERE r."tokenHash" = ${issued.tokenHash} AND u.id = ${issued.userId}`);
++          const row = rows[0];
++          return Boolean(row && row.authVersion === row.issuedAuthVersion && row.expiresAt > row.now &&
++            row.usedAt === null && row.revokedAt === null && this.live(ticket, generation, controller.signal));
++        }, JOB_TRANSACTION);
++        if (!allowed) await this.revokeIssuedToken(issued.tokenHash);
++        return allowed && this.live(ticket, generation, controller.signal);
++      };
++      try {
++        const envelope: RecoveryMail = {
++          recipient: issued.recipient, recipientUserId: issued.userId,
++          get token() { return secret.value ?? ''; }, expiresAt: issued.expiresAt, caseGeneration: generation,
++        };
++        // Un puerto acreditado copia el secreto sólo tras la autorización y
++        // debe liberar sus propias referencias al abortar/cancelar o vencer lease.
++        await this.mail.deliver(envelope, controller.signal, authorizeHandoff);
++      } catch {
++        // Un error de transporte no demuestra que nadie recibió el enlace.
++        // El commit conserva vigencia/cap; no invalidar una entrega incierta.
+       }
+-      return { token, tokenHash: this.hashToken(token), expiresAt, userId: current.id };
+-    }, { maxWait: 500, timeout: 1_500 });
+-    if (!issued) return;
+-    const authorizeHandoff = async (): Promise<boolean> => {
+-      if (controller.signal.aborted || !this.tickets.has(ticket) || this.mail.caseGeneration !== generation) return false;
+-      const rows = await this.prisma.$queryRaw<Array<{
+-        email: string; authVersion: number; issuedAuthVersion: number; expiresAt: Date;
+-        usedAt: Date | null; revokedAt: Date | null; now: Date;
+-      }>>(Prisma.sql`
+-        SELECT u.email, u."authVersion", r."issuedAuthVersion", r."expiresAt", r."usedAt", r."revokedAt",
+-          clock_timestamp() AS now
+-        FROM users u JOIN password_recovery_tokens r ON r."userId" = u.id
+-        WHERE r."tokenHash" = ${issued.tokenHash}`);
+-      const row = rows[0];
+-      return Boolean(row && row.authVersion === row.issuedAuthVersion && row.expiresAt > row.now &&
+-        row.usedAt === null && row.revokedAt === null && !controller.signal.aborted &&
+-        this.tickets.has(ticket) && this.mail.caseGeneration === generation);
+-    };
+-    if (!await authorizeHandoff()) {
+-      await this.revokeIssuedToken(issued.tokenHash);
+-      return;
++    } finally {
++      controller.signal.removeEventListener('abort', clearSecret);
++      clearSecret();
+     }
+-    try {
+-      const user = await this.prisma.user.findUnique({ where: { id: issued.userId }, select: { email: true } });
+-      if (!user) { await this.revokeIssuedToken(issued.tokenHash); return; }
+-      const envelope: RecoveryMail = {
+-        recipient: user.email, token: issued.token, expiresAt: issued.expiresAt, caseGeneration: generation,
+-      };
+-      await this.mail.deliver(envelope, controller.signal, async () => {
+-        const allowed = await authorizeHandoff();
+-        if (!allowed) await this.revokeIssuedToken(issued.tokenHash);
+-        return allowed;
+-      });
+-    } catch {
+-      await this.revokeIssuedToken(issued.tokenHash);
+-      throw new Error('RECOVERY_DELIVERY_FAILED');
+-    }
++  }
++
++  private live(ticket: object, generation: number, signal: AbortSignal): boolean {
++    const reservation = this.tickets.get(ticket);
++    return !this.shuttingDown && !signal.aborted && Boolean(reservation && reservation.deadline > performance.now()) &&
++      this.mail.caseGeneration === generation;
++  }
++
++  private async constrainBackgroundSql(tx: Prisma.TransactionClient): Promise<void> {
++    await tx.$executeRaw(Prisma.sql`SET LOCAL statement_timeout = '1200ms'`);
++    await tx.$executeRaw(Prisma.sql`SET LOCAL lock_timeout = '1200ms'`);
+   }
+ 
+   private async revokeIssuedToken(tokenHash: string): Promise<void> {
+     try {
+       await this.prisma.$transaction(async (tx) => {
++        await this.constrainBackgroundSql(tx);
+         const token = await tx.passwordRecoveryToken.findUnique({ where: { tokenHash }, select: { id: true, userId: true } });
+         if (!token) return;
+         await tx.$queryRaw(Prisma.sql`SELECT id FROM users WHERE id = ${token.userId} FOR UPDATE`);
+@@ -173,12 +204,13 @@
+           where: { id: token.id, usedAt: null, revokedAt: null }, data: { revokedAt: now[0]!.now },
+         });
+       }, { maxWait: 500, timeout: 1_500 });
+-    } catch { /* A token remains unusable after its user version changes; cleanup is best effort. */ }
++    } catch { /* La versión invalida enlaces viejos; esta limpieza adicional es best-effort. */ }
+   }
+ 
+   private async admit(ip: string, purpose: 'request' | 'consume', email?: string) {
+     try {
+       return await this.prisma.$transaction(async (tx) => {
++        await this.constrainBackgroundSql(tx);
+         const ipHash = this.hmac(ip);
+         const globalHash = 'all';
+         const identifierHash = email ? this.hmac(email) : null;
+@@ -232,7 +264,7 @@
+           }
+         }
+         return result;
+-      });
++      }, JOB_TRANSACTION);
+     } catch {
+       throw this.unavailable();
+     }
+--- received/backend/src/modules/auth/recovery-http.filter.ts
++++ review/backend/src/modules/auth/recovery-http.filter.ts
+@@ -11,7 +11,7 @@
+     const context = host.switchToHttp();
+     const request = context.getRequest<Request>();
+     const response = context.getResponse<Response>();
+-    const path = request.path.replace(/^\/api\//, '/');
++    const path = request.path.toLowerCase().replace(/\/+$/, '').replace(/^\/api\//, '/');
+     if (!['/auth/password-recovery-requests', '/auth/password-recoveries'].includes(path)) {
+       super.catch(exception, host);
+       return;
+@@ -19,6 +19,11 @@
+     response.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+     response.setHeader('Pragma', 'no-cache');
+     response.setHeader('Expires', '0');
++
++    if (request.method !== 'POST') {
++      response.status(404).json({ statusCode: 404, code: RECOVERY_CODES.inputInvalid, message: 'Ruta no disponible.' });
++      return;
++    }
+ 
+     const status = exception instanceof HttpException ? exception.getStatus() : 500;
+     if (status === 429) {
+@@ -41,7 +46,7 @@
+       }
+       if (path.endsWith('recoveries')) {
+         const joined = this.validationMessage(exception);
+-        if (/token/i.test(joined)) {
++        if (/^token(?:\s|$)/m.test(joined)) {
+           response.status(400).json({ statusCode: 400, code: RECOVERY_CODES.linkInvalid, message: 'El enlace no es válido o venció. Pedí uno nuevo para continuar.' });
+           return;
+         }
+@@ -54,10 +59,10 @@
+       response.status(503).json({ statusCode: 503, code: RECOVERY_CODES.unavailable, message: 'No pudimos procesar el pedido ahora. Probá más tarde.' });
+       return;
+     }
+-    response.status(500).json({ statusCode: 500, code: RECOVERY_CODES.unavailable, message: 'No pudimos procesar el pedido ahora. Probá más tarde.' });
++    response.status(503).json({ statusCode: 503, code: RECOVERY_CODES.unavailable, message: 'No pudimos procesar el pedido ahora. Probá más tarde.' });
+   }
+ 
+-  private invalidFields(exception: unknown, path: string, body: unknown): Record<string, string> {
++  private invalidFields(exception: unknown, path: string, _body: unknown): Record<string, string> {
+     if (!(exception instanceof HttpException) || exception.getStatus() !== 400) return {};
+     const response = exception.getResponse();
+     const messages = typeof response === 'object' && response !== null && 'message' in response ? response.message : undefined;
+@@ -65,7 +70,7 @@
+     const fields: Record<string, string> = {};
+     if (path.endsWith('requests') && /email/i.test(joined)) fields.email = 'Revisá el formato del email.';
+     if (path.endsWith('recoveries') && /newPassword/i.test(joined)) fields.newPassword = 'Usá entre 8 y 72 caracteres.';
+-    if (!Object.keys(fields).length && typeof body === 'object' && body !== null) fields.request = 'Revisá los datos ingresados.';
++    if (!Object.keys(fields).length) fields.request = 'Revisá los datos ingresados.';
+     return fields;
+   }
+ 
+@@ -73,7 +78,7 @@
+     if (!(exception instanceof HttpException)) return '';
+     const response = exception.getResponse();
+     const messages = typeof response === 'object' && response !== null && 'message' in response ? response.message : undefined;
+-    return Array.isArray(messages) ? messages.join(' ') : typeof messages === 'string' ? messages : '';
++    return Array.isArray(messages) && messages.every((message) => typeof message === 'string') ? messages.join('\n') : '';
+   }
+ 
+   private retryAfter(exception: unknown): number {
+--- received/backend/src/modules/auth/recovery-mail.port.ts
++++ review/backend/src/modules/auth/recovery-mail.port.ts
+@@ -2,6 +2,7 @@
+ 
+ export interface RecoveryMail {
+   readonly recipient: string;
++  readonly recipientUserId: string;
+   readonly token: string;
+   readonly expiresAt: Date;
+   readonly caseGeneration: number;
+@@ -10,6 +11,9 @@
+ export interface RecoveryMailPort {
+   readonly available: boolean;
+   readonly caseGeneration: number;
++  // El puerto acredita entorno/fixtures antes de leer token. La autorización
++  // PG precede inmediatamente al handoff; abort debe terminar cooperativamente
++  // trabajo/esperas y cada copia retenida tiene lease y cancelación propios.
+   deliver(mail: RecoveryMail, signal: AbortSignal, authorizeHandoff: () => Promise<boolean>): Promise<void>;
+ }
+ 
+--- received/backend/test/auth-session.e2e-spec.ts
++++ review/backend/test/auth-session.e2e-spec.ts
+@@ -1,4 +1,5 @@
+ import { ValidationPipe } from '@nestjs/common';
++import type { Server } from 'node:http';
+ import type { INestApplication } from '@nestjs/common';
+ import { ConfigModule } from '@nestjs/config';
+ import { JwtModule } from '@nestjs/jwt';
+@@ -28,6 +29,15 @@
+     app.setGlobalPrefix('api');
+     app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
+     await app.init();
++    const server = app.getHttpServer() as unknown as Server;
++    await new Promise<void>((resolve, reject) => {
++      server.once('error', reject);
++      server.listen(0, '127.0.0.1', () => { server.removeListener('error', reject); resolve(); });
++    });
++    const address = server.address();
++    if (!address || typeof address === 'string' || address.address !== '127.0.0.1') {
++      throw new Error('SESSION_TEST_LOOPBACK_LISTENER_GUARD');
++    }
+   });
+   beforeEach(async () => { await prisma.user.deleteMany({ where: { email } }); });
+   afterAll(async () => {
+@@ -58,7 +68,7 @@
+       .set('X-Session-Request', '1').set('Cookie', initial.split(';')[0]!).send({}).expect(200);
+     expect(refreshed.body).not.toHaveProperty('refreshToken');
+     const next = cookies(refreshed.headers)[0]!;
+-    expect(next.split(';')[0]).not.toBe(initial.split(';')[0]);
++    expect(next.split(';')[0] !== initial.split(';')[0]).toBe(true);
+     const loggedOut = await request(app.getHttpServer()).post('/api/auth/logout')
+       .set('X-Session-Request', '1').set('Cookie', next.split(';')[0]!).send({}).expect(200);
+     expect(cookies(loggedOut.headers)[0]).toContain('pcs.refreshToken=;');
+--- received/backend/test/password-recovery-harness.ts
++++ review/backend/test/password-recovery-harness.ts
+@@ -1,177 +1,43 @@
+ import { createHash, randomBytes } from 'node:crypto';
++import { writeFileSync } from 'node:fs';
+ import { setTimeout as delay } from 'node:timers/promises';
+-import { readFileSync } from 'node:fs';
++import { createServer } from 'node:http';
+ import type { Server } from 'node:http';
+ import { ValidationPipe } from '@nestjs/common';
+ import type { INestApplication } from '@nestjs/common';
+-import { ConfigModule } from '@nestjs/config';
++import { ConfigModule, ConfigService } from '@nestjs/config';
+ import { HttpAdapterHost } from '@nestjs/core';
+ import { JwtModule } from '@nestjs/jwt';
+ import { Test } from '@nestjs/testing';
+-import { PrismaClient } from '@prisma/client';
++import { Prisma, PrismaClient } from '@prisma/client';
+ import * as argon2 from 'argon2';
+ import request from 'supertest';
+ import { AuthController } from '../src/modules/auth/auth.controller.js';
+ import { AuthService } from '../src/modules/auth/auth.service.js';
+ import { PasswordRecoveryService } from '../src/modules/auth/password-recovery.service.js';
+ import { RECOVERY_MAIL_PORT } from '../src/modules/auth/recovery-mail.port.js';
+-import type { RecoveryMail, RecoveryMailPort } from '../src/modules/auth/recovery-mail.port.js';
++import type { RecoveryMail } from '../src/modules/auth/recovery-mail.port.js';
+ import { RecoveryHttpFilter } from '../src/modules/auth/recovery-http.filter.js';
+ import { REFRESH_COOKIE } from '../src/modules/auth/session-security.js';
+ import { PrismaService } from '../src/prisma/index.js';
++
++import { assertOwnedLoopbackDatabase, createOwnedRecoveryMailHarness } from './password-recovery-mail-harness.js';
++import type { RecoveryMailHarness } from './password-recovery-mail-harness.js';
+ 
+ const prisma = new PrismaClient();
+ const registeredId = 'be050000-0000-4000-8000-000000000001';
+ const registeredEmail = 'be05-recovery-account@example.test';
+ const absentEmail = 'be05-recovery-absent@example.test';
+ 
+-function assertOwnedLoopbackDatabase(rawUrl: string, expectedDatabase: string): void {
+-  const url = new URL(rawUrl);
+-  if (!['localhost', '127.0.0.1', '::1'].includes(url.hostname) || url.port !== '55432' ||
+-      url.username !== 'pokemon' || url.pathname.slice(1) !== expectedDatabase ||
+-      !/^pokemon_cards_be05_test_[a-z0-9]+$/i.test(expectedDatabase)) {
+-    throw new Error('RECOVERY_HARNESS_DATABASE_GUARD');
+-  }
+-}
+-
+-class HarnessMail implements RecoveryMailPort {
+-  readonly available = true;
+-  private generation = 1;
+-  private readonly messages = new Map<string, RecoveryMail>();
+-  private readonly leases = new Map<string, ReturnType<typeof setTimeout>>();
+-  private readonly waiters = new Map<string, Set<{ finish(mail: RecoveryMail): void; fail(): void }>>();
+-  private suppressionWaiters: Array<() => void> = [];
+-  private suppressed = 0;
+-  private candidateToken: string | null = null;
+-  private candidateLease: ReturnType<typeof setTimeout> | null = null;
+-  private nextDelayMs = 0;
+-  private nextGate: { entered(): void; wait: Promise<void> } | null = null;
+-
+-  get caseGeneration(): number { return this.generation; }
+-  allowDelay(milliseconds: number): void { this.nextDelayMs = milliseconds; }
+-  holdNextDelivery(): { entered: Promise<void>; release(): void } {
+-    let entered!: () => void;
+-    let release!: () => void;
+-    const enteredPromise = new Promise<void>((resolve) => { entered = resolve; });
+-    const wait = new Promise<void>((resolve) => { release = resolve; });
+-    this.nextGate = { entered, wait };
+-    return { entered: enteredPromise, release };
+-  }
+-  waitForSuppression(): Promise<void> {
+-    if (this.suppressed > 0) return Promise.resolve();
+-    return new Promise((resolve) => this.suppressionWaiters.push(resolve));
+-  }
+-  takeCandidateToken(): string {
+-    const candidate = this.candidateToken;
+-    if (this.candidateLease) clearTimeout(this.candidateLease);
+-    this.candidateLease = null;
+-    this.candidateToken = null;
+-    if (!candidate) throw new Error('RECOVERY_HARNESS_NO_CANDIDATE');
+-    return candidate;
+-  }
+-
+-  async deliver(mail: RecoveryMail, signal: AbortSignal, authorizeHandoff: () => Promise<boolean>): Promise<void> {
+-    if (![registeredEmail, absentEmail].includes(mail.recipient) || signal.aborted ||
+-        mail.caseGeneration !== this.generation || this.messages.size >= 32) return;
+-    const workDelay = this.nextDelayMs;
+-    this.nextDelayMs = 0;
+-    if (workDelay > 0) {
+-      if (!await this.wait(workDelay, signal)) return;
+-    }
+-    const gate = this.nextGate;
+-    this.nextGate = null;
+-    if (gate) {
+-      gate.entered();
+-      if (!await this.waitForGate(gate.wait, signal)) return;
+-    }
+-    this.candidateToken = mail.token;
+-    if (this.candidateLease) clearTimeout(this.candidateLease);
+-    this.candidateLease = setTimeout(() => { this.candidateToken = null; this.candidateLease = null; }, 120_000);
+-    if (!await authorizeHandoff()) {
+-      this.suppressed += 1;
+-      for (const resolve of this.suppressionWaiters) resolve();
+-      this.suppressionWaiters = [];
+-      return;
+-    }
+-    if (signal.aborted || mail.caseGeneration !== this.generation || ![registeredEmail].includes(mail.recipient)) return;
+-    this.messages.set(mail.recipient, mail);
+-    this.leases.set(mail.recipient, setTimeout(() => this.messages.delete(mail.recipient), 120_000));
+-    for (const waiter of this.waiters.get(mail.recipient) ?? []) waiter.finish(mail);
+-    this.waiters.delete(mail.recipient);
+-  }
+-
+-  async take(recipient: string): Promise<RecoveryMail> {
+-    const existing = this.messages.get(recipient);
+-    if (existing) { this.discard(recipient); return existing; }
+-    return new Promise<RecoveryMail>((resolve, reject) => {
+-      let timeout: ReturnType<typeof setTimeout>;
+-      const waiter = {
+-        finish: (mail: RecoveryMail): void => { clearTimeout(timeout); this.waiters.get(recipient)?.delete(waiter); this.discard(recipient); resolve(mail); },
+-        fail: (): void => { clearTimeout(timeout); this.waiters.get(recipient)?.delete(waiter); reject(new Error('RECOVERY_MAIL_DEADLINE')); },
+-      };
+-      timeout = setTimeout(waiter.fail, 1_700);
+-      const current = this.waiters.get(recipient) ?? new Set();
+-      current.add(waiter);
+-      this.waiters.set(recipient, current);
+-    });
+-  }
+-
+-  teardown(): void {
+-    this.generation += 1;
+-    for (const timer of this.leases.values()) clearTimeout(timer);
+-    this.leases.clear();
+-    this.messages.clear();
+-    for (const waiters of this.waiters.values()) for (const waiter of waiters) waiter.fail();
+-    this.waiters.clear();
+-    this.nextDelayMs = 0;
+-    this.nextGate = null;
+-    if (this.candidateLease) clearTimeout(this.candidateLease);
+-    this.candidateLease = null;
+-    this.suppressed = 0;
+-    this.candidateToken = null;
+-    for (const resolve of this.suppressionWaiters) resolve();
+-    this.suppressionWaiters = [];
+-  }
+-
+-  private discard(recipient: string): void {
+-    this.messages.delete(recipient);
+-    const timer = this.leases.get(recipient);
+-    if (timer) clearTimeout(timer);
+-    this.leases.delete(recipient);
+-  }
+-
+-  private async wait(milliseconds: number, signal: AbortSignal): Promise<boolean> {
+-    return new Promise((resolve) => {
+-      const finish = (complete: boolean): void => {
+-        clearTimeout(timer);
+-        signal.removeEventListener('abort', cancelled);
+-        resolve(complete);
+-      };
+-      const cancelled = (): void => finish(false);
+-      const timer = setTimeout(() => finish(true), milliseconds);
+-      signal.addEventListener('abort', cancelled, { once: true });
+-      if (signal.aborted) cancelled();
+-    });
+-  }
+-
+-  private async waitForGate(gate: Promise<void>, signal: AbortSignal): Promise<boolean> {
+-    if (signal.aborted) return false;
+-    return new Promise((resolve) => {
+-      const cancelled = (): void => { signal.removeEventListener('abort', cancelled); resolve(false); };
+-      signal.addEventListener('abort', cancelled, { once: true });
+-      void gate.then(() => {
+-        signal.removeEventListener('abort', cancelled);
+-        resolve(!signal.aborted);
+-      });
+-    });
+-  }
+-}
+-
+ describe('recuperación HTTP en sandbox aislado', () => {
+   let app: INestApplication<Parameters<typeof request>[0]>;
+-  let mail: HarnessMail;
+-  let ownerMarker: string;
++  let mail: RecoveryMailHarness;
+   let auth: AuthService;
++  let recovery: PasswordRecoveryService;
++  let ownershipVerified = false;
++  let oldPassword: string;
++  let replacementPassword: string;
++  const newFixturePassword = (): string => randomBytes(18).toString('base64url');
+ 
+   beforeAll(async () => {
+     const databaseUrl = process.env.DATABASE_URL;
+@@ -181,19 +47,11 @@
+     assertOwnedLoopbackDatabase(databaseUrl, expectedDatabase);
+     const ownerMarkerFile = process.env.BE05_OWNER_MARKER_PATH;
+     if (!ownerMarkerFile) throw new Error('RECOVERY_HARNESS_OWNER_MARKER_GUARD');
+-    ownerMarker = readFileSync(ownerMarkerFile, 'utf8').trim();
+-    const markerRows = await prisma.$queryRaw<Array<{ count: bigint; total: bigint }>>`SELECT
+-      count(*) FILTER (WHERE marker = ${ownerMarker})::bigint AS count,
+-      count(*)::bigint AS total FROM be05_harness_owner`;
+-    const databaseIdentity = await prisma.$queryRaw<Array<{ database: string; role: string }>>`SELECT
+-      current_database() AS database, current_user AS role`;
+-    const userCount = await prisma.user.count();
+-    if (Number(markerRows[0]!.count) !== 1 || Number(markerRows[0]!.total) !== 1 || userCount !== 0 ||
+-        databaseIdentity[0]!.database !== expectedDatabase || databaseIdentity[0]!.role !== 'pokemon') {
+-      throw new Error('RECOVERY_HARNESS_OWNERSHIP_GUARD');
+-    }
+-
+-    mail = new HarnessMail();
++    mail = await createOwnedRecoveryMailHarness(prisma, {
++      databaseUrl, expectedDatabase, markerPath: ownerMarkerFile,
++      fixtures: [{ id: registeredId, email: registeredEmail }],
++    });
++    ownershipVerified = true;
+     const module = await Test.createTestingModule({
+       imports: [ConfigModule.forRoot({ isGlobal: true }), JwtModule.register({
+         secret: 'be05-isolated-harness-test-secret', signOptions: { expiresIn: '15m' },
+@@ -217,30 +75,62 @@
+     if (!address || typeof address === 'string' || address.address !== '127.0.0.1' || address.port <= 0) {
+       throw new Error('RECOVERY_HARNESS_LOOPBACK_LISTENER_GUARD');
+     }
++    mail.bindVerifiedListener(server);
++    if (process.env.BE05_RUNTIME_EVIDENCE_PATH) writeFileSync(process.env.BE05_RUNTIME_EVIDENCE_PATH, JSON.stringify({
++      pid: process.pid, address: address.address, port: address.port, authorityVerified: true, started: true,
++    }));
+     auth = module.get(AuthService);
++    recovery = module.get(PasswordRecoveryService);
+   });
+ 
+   beforeEach(async () => {
++    mail.teardown();
++    await idleJobs();
+     await prisma.user.deleteMany({ where: { email: registeredEmail } });
+     await prisma.recoveryRateLimitHit.deleteMany();
+-    mail.teardown();
++    oldPassword = newFixturePassword(); replacementPassword = newFixturePassword();
+     // Cada respuesta sigue una entrada allowlisted sintética de este caso.
+     await prisma.user.create({ data: {
+       id: registeredId, email: registeredEmail, username: 'be05recoveryfixture', displayName: 'Fixture BE05',
+-      passwordHash: await argon2.hash('FixtureOldPassword123'),
++      passwordHash: await argon2.hash(oldPassword),
+     } });
+   });
+ 
+   afterAll(async () => {
++    if (!ownershipVerified) { await prisma.$disconnect(); return; }
+     mail?.teardown();
+     await app?.close();
++    const drain = recovery?.drainStatus();
++    if (!drain || drain.pendingJobs !== 0 || drain.tickets !== 0 || drain.quarantined || drain.deadlineExceeded) {
++      throw new Error('RECOVERY_HARNESS_DRAIN_NOT_COMPLETE');
++    }
++    if (mail.counts().messages || mail.counts().leases || mail.counts().waits || mail.counts().candidate || mail.counts().gate) {
++      throw new Error('RECOVERY_HARNESS_MAIL_CLEANUP_FAILED');
++    }
+     await prisma.user.deleteMany({ where: { email: { in: [registeredEmail, absentEmail] } } });
+     await prisma.recoveryRateLimitHit.deleteMany();
+     const leftoverUsers = await prisma.user.count();
+     if (leftoverUsers !== 0) throw new Error('RECOVERY_HARNESS_USER_CLEANUP_FAILED');
++    const queries = await prisma.$queryRaw<Array<{ active: bigint; transactions: bigint }>>`SELECT
++      count(*) FILTER (WHERE state = 'active' AND pid <> pg_backend_pid())::bigint AS active,
++      count(*) FILTER (WHERE state = 'idle in transaction')::bigint AS transactions
++      FROM pg_stat_activity WHERE datname = current_database()`;
++    if (Number(queries[0]?.active) || Number(queries[0]?.transactions)) throw new Error('RECOVERY_HARNESS_SQL_NOT_QUIESCENT');
++    const counts = { users: leftoverUsers, recoveryTokens: await prisma.passwordRecoveryToken.count(),
++      refreshTokens: await prisma.refreshToken.count(), hits: await prisma.recoveryRateLimitHit.count() };
+     await prisma.$disconnect();
+-  });
+-
++    if (process.env.BE05_RUNTIME_EVIDENCE_PATH) writeFileSync(process.env.BE05_RUNTIME_EVIDENCE_PATH, JSON.stringify({
++      pid: process.pid, stopped: true, serverListening: (app.getHttpServer() as unknown as Server).listening,
++      drain, receiver: mail.counts(), queries: { active: Number(queries[0]?.active), transactions: Number(queries[0]?.transactions) }, counts,
++    }));
++  });
++
++  const idleJobs = async (): Promise<void> => {
++    const deadline = Date.now() + 4_000;
++    const jobs = recovery as unknown as { pendingJobs: Set<Promise<void>> };
++    while (jobs.pendingJobs.size && Date.now() < deadline) await delay(20);
++    if (jobs.pendingJobs.size) throw new Error('RECOVERY_JOB_DRAIN_DEADLINE');
++  };
+   const requestRecovery = (email: string) => request(app.getHttpServer()).post('/api/auth/password-recovery-requests')
+     .set('X-Session-Request', '1').send({ email });
+   const consume = (token: string, newPassword: string) => request(app.getHttpServer()).post('/api/auth/password-recoveries')
+@@ -273,18 +163,18 @@
+     expect(accepted.status).toBe(202);
+     const envelope = await mail.take(registeredEmail);
+     const before = await prisma.user.findUniqueOrThrow({ where: { email: registeredEmail }, select: { authVersion: true } });
+-    const oldSession = await auth.login({ email: registeredEmail, password: 'FixtureOldPassword123' });
++    const oldSession = await auth.login({ email: registeredEmail, password: oldPassword });
+ 
+     const badPassword = await consume(envelope.token, 'short');
+     expect(badPassword.status).toBe(400);
+     expect(badPassword.body.code).toBe('INPUT_INVALID');
+     checkNoStore(badPassword.headers);
+     const malformedToken = await request(app.getHttpServer()).post('/api/auth/password-recoveries')
+-      .set('X-Session-Request', '1').send({ newPassword: 'FixtureNewPassword123' });
++      .set('X-Session-Request', '1').send({ newPassword: replacementPassword });
+     expect(malformedToken.status).toBe(400);
+     expect(malformedToken.body.code).toBe('RECOVERY_LINK_INVALID');
+ 
+-    const changed = await consume(envelope.token, 'FixtureNewPassword123');
++    const changed = await consume(envelope.token, replacementPassword);
+     expect(changed.status).toBe(200);
+     expect(changed.body).toEqual({ success: true });
+     checkNoStore(changed.headers);
+@@ -295,15 +185,15 @@
+     expect(after.authVersion - before.authVersion).toBe(1);
+     expect(refreshCount).toBe(0);
+     expect(recovery.usedAt).not.toBeNull();
+-    await expect(auth.login({ email: registeredEmail, password: 'FixtureOldPassword123' })).rejects.toThrow();
+-    const newSession = await auth.login({ email: registeredEmail, password: 'FixtureNewPassword123' });
++    await expect(auth.login({ email: registeredEmail, password: oldPassword })).rejects.toThrow();
++    const newSession = await auth.login({ email: registeredEmail, password: replacementPassword });
+     await expect(auth.refresh({ refreshToken: oldSession.refreshToken })).rejects.toThrow();
+     const newRefreshCount = await prisma.refreshToken.count({
+       where: { tokenHash: hashToken(newSession.refreshToken), revokedAt: null },
+     });
+     expect(newRefreshCount).toBe(1);
+ 
+-    const replay = await consume(envelope.token, 'FixtureAnotherPassword123');
++    const replay = await consume(envelope.token, newFixturePassword());
+     expect(replay.status).toBe(400);
+     expect(replay.body.code).toBe('RECOVERY_LINK_INVALID');
+     checkNoStore(replay.headers);
+@@ -340,6 +230,10 @@
+     expect(limited.body.code).toBe('RECOVERY_RATE_LIMITED');
+     expect(Number(limited.headers['retry-after'])).toBeGreaterThan(0);
+     checkNoStore(limited.headers);
++    expect(await prisma.recoveryRateLimitHit.count({ where: { scope: 'identifier-hour' } })).toBe(1);
++    expect(await prisma.recoveryRateLimitHit.count({ where: { scope: 'identifier-gap' } })).toBe(1);
++    expect(await prisma.recoveryRateLimitHit.count({ where: { scope: 'ip' } })).toBe(5);
++    expect(await prisma.recoveryRateLimitHit.count({ where: { scope: 'global' } })).toBe(5);
+   });
+ 
+   it('serializa consumos concurrentes de tokens distintos: uno solo confirma el reset', async () => {
+@@ -349,7 +243,7 @@
+     await prisma.passwordRecoveryToken.createMany({ data: tokens.map((token) => ({
+       userId: current.id, tokenHash: hashToken(token), issuedAuthVersion: current.authVersion, expiresAt,
+     })) });
+-    const results = await Promise.all(tokens.map((token, index) => consume(token, `FixtureConcurrentPassword${index}X`)));
++    const results = await Promise.all(tokens.map((token) => consume(token, newFixturePassword())));
+     expect(results.map((result) => result.status).sort((left, right) => left - right)).toEqual([200, 400]);
+     expect(results.filter((result) => result.body.success === true)).toHaveLength(1);
+     expect(results.filter((result) => result.body.code === 'RECOVERY_LINK_INVALID')).toHaveLength(1);
+@@ -364,11 +258,11 @@
+ 
+     const started = Date.now();
+     while (Date.now() - started < 60_100) await delay(250);
+-    const deliveryGate = mail.holdNextDelivery();
++    const deliveryGate = mail.holdNextDelivery(true);
+     const second = await requestRecovery(registeredEmail);
+     expect(second.status).toBe(202);
+     await deliveryGate.entered;
+-    const successfulReset = await consume(firstEnvelope.token, 'FixtureResetAfterDelay123');
++    const successfulReset = await consume(firstEnvelope.token, newFixturePassword());
+     expect(successfulReset.status).toBe(200);
+     deliveryGate.release();
+     await mail.waitForSuppression();
+@@ -377,12 +271,291 @@
+       where: { tokenHash: hashToken(lateToken) }, select: { revokedAt: true },
+     });
+     expect(suppressedRow.revokedAt).not.toBeNull();
+-    const lateUse = await consume(lateToken, 'FixtureLateTokenPassword123');
++    const lateUse = await consume(lateToken, newFixturePassword());
+     expect(lateUse.status).toBe(400);
+     expect(lateUse.body.code).toBe('RECOVERY_LINK_INVALID');
+     checkNoStore(lateUse.headers);
+   }, 70_000);
+ 
++  it.each(['reject', 'drop', 'never-resolve'] as const)('mantiene 202 genérico y cancela recursos del modo %s', async (mode) => {
++    mail.mode(mode);
++    const accepted = await requestRecovery(registeredEmail);
++    expect(accepted.status).toBe(202);
++    checkNoStore(accepted.headers);
++    await idleJobs();
++    expect(mail.counts()).toEqual({ messages: 0, leases: 0, waits: 0, candidate: false, gate: false });
++    const stored = await prisma.passwordRecoveryToken.findMany({ where: { userId: registeredId }, select: { usedAt: true, revokedAt: true } });
++    expect(stored.length === 1 && stored[0]?.usedAt === null && stored[0]?.revokedAt === null).toBe(true);
++  });
++
++  it('el lease vence retirando mensaje y timer; un gate abortado no conserva callbacks', async () => {
++    mail.useReceiverLease(25);
++    expect((await requestRecovery(registeredEmail)).status).toBe(202);
++    await idleJobs();
++    await delay(40);
++    expect(mail.counts()).toEqual({ messages: 0, leases: 0, waits: 0, candidate: false, gate: false });
++    // Receptor ejercitado en memoria sin emitir ni saltar cuotas de la API.
++    const gate = mail.holdNextDelivery();
++    const controller = new AbortController();
++    const envelope: RecoveryMail = { recipient: registeredEmail, recipientUserId: registeredId,
++      token: randomBytes(32).toString('base64url'), expiresAt: new Date(Date.now() + 60_000), caseGeneration: mail.caseGeneration };
++    const pending = mail.deliver(envelope, controller.signal, async () => true);
++    await gate.entered;
++    controller.abort(); await pending; gate.release();
++    expect(mail.counts()).toEqual({ messages: 0, leases: 0, waits: 0, candidate: false, gate: false });
++  });
++
++  it('rechaza JSON malformado también en consumo y deja cookie/token intactos', async () => {
++    const malformed = await request(app.getHttpServer()).post('/api/auth/password-recoveries')
++      .set('X-Session-Request', '1').set('Content-Type', 'application/json').send('{');
++    expect(malformed.status).toBe(400); expect(malformed.body.code).toBe('INPUT_INVALID');
++    expect(Object.keys(malformed.body.fields).every((key) => ['request', 'newPassword'].includes(key))).toBe(true);
++    expect(malformed.headers['set-cookie'] === undefined).toBe(true); checkNoStore(malformed.headers);
++    const invalidOrigin = await request(app.getHttpServer()).post('/api/auth/password-recoveries')
++      .set('X-Session-Request', '1').set('Origin', 'https://evil.example.test')
++      .send({ token: randomBytes(32).toString('base64url'), newPassword: newFixturePassword() });
++    expect(invalidOrigin.status).toBe(403); expect(invalidOrigin.body.code).toBe('SESSION_REQUEST_FORBIDDEN'); checkNoStore(invalidOrigin.headers);
++  });
++
++  it('consume un enlace recibido aunque el transporte deje de estar disponible', async () => {
++    expect((await requestRecovery(registeredEmail)).status).toBe(202);
++    const envelope = await mail.take(registeredEmail); mail.unavailableForCase(true);
++    try { expect((await consume(envelope.token, newFixturePassword())).status).toBe(200); }
++    finally { mail.unavailableForCase(false); }
++  });
++
++  it('una solicitud en backend sin puerto falla antes del lookup para ambos emails', async () => {
++    mail.unavailableForCase(true);
++    const lookup = vi.spyOn(prisma.user, 'findUnique');
++    try {
++      const responses = await Promise.all([requestRecovery(registeredEmail), requestRecovery(absentEmail)]);
++      expect(responses.map((response) => response.status)).toEqual([503, 503]);
++      expect(JSON.stringify(responses[0]?.body) === JSON.stringify(responses[1]?.body)).toBe(true);
++      for (const response of responses) { expect(response.body.code).toBe('RECOVERY_UNAVAILABLE'); checkNoStore(response.headers); }
++      expect(lookup).not.toHaveBeenCalled();
++    } finally { lookup.mockRestore(); mail.unavailableForCase(false); }
++  });
++
++  it('normaliza email antes de validar y no busca input que no sea string', async () => {
++    expect((await requestRecovery(`  ${registeredEmail.toUpperCase()}  `)).status).toBe(202);
++    await mail.take(registeredEmail);
++    const lookup = vi.spyOn(prisma.user, 'findUnique');
++    try {
++      const invalid = await request(app.getHttpServer()).post('/api/auth/password-recovery-requests')
++        .set('X-Session-Request', '1').send({ email: { arbitrary: true } });
++      expect(invalid.status).toBe(400); expect(invalid.body.code).toBe('INPUT_INVALID');
++      expect(Object.keys(invalid.body.fields)).toEqual(['email']); expect(lookup).not.toHaveBeenCalled();
++    } finally { lookup.mockRestore(); }
++  });
++
++  it('rechaza formularios no JSON, conserva errores ajenos y GET no consume', async () => {
++    for (const route of ['password-recovery-requests', 'password-recoveries']) {
++      const nonJson = await request(app.getHttpServer()).post('/api/auth/' + route)
++        .set('X-Session-Request', '1').type('form').send({ email: registeredEmail, newPassword: newFixturePassword() });
++      expect(nonJson.status).toBe(400); expect(nonJson.body.code).toBe('INPUT_INVALID');
++      expect(Object.keys(nonJson.body.fields)).toEqual(['request']); checkNoStore(nonJson.headers);
++    }
++    const alias = await request(app.getHttpServer()).post('/api/auth/password-recoveries/')
++      .set('X-Session-Request', '1').send({});
++    expect(alias.status).toBe(400); expect(alias.body.code).toBe('RECOVERY_LINK_INVALID'); checkNoStore(alias.headers);
++    for (const route of ['password-recovery-requests/', 'password-recoveries/']) {
++      const validBody = route.startsWith('password-recovery-requests') ? { email: registeredEmail } :
++        { token: randomBytes(32).toString('base64url'), newPassword: newFixturePassword() };
++      const forbidden = await request(app.getHttpServer()).post('/api/auth/' + route).send(validBody);
++      expect(forbidden.status).toBe(403); expect(forbidden.body.code).toBe('SESSION_REQUEST_FORBIDDEN'); checkNoStore(forbidden.headers);
++      const malformed = await request(app.getHttpServer()).post('/api/auth/' + route)
++        .set('X-Session-Request', '1').set('Content-Type', 'application/json').send('{');
++      expect(malformed.status).toBe(400); expect(malformed.body.code).toBe('INPUT_INVALID'); checkNoStore(malformed.headers);
++    }
++    const nonRecovery = await request(app.getHttpServer()).get('/api/unrelated');
++    expect(nonRecovery.status).toBe(404); expect(nonRecovery.body.error).toBe('Not Found');
++    expect(nonRecovery.body.code === undefined).toBe(true);
++    const get = await request(app.getHttpServer()).get('/api/auth/password-recoveries');
++    expect(get.status).toBe(404); checkNoStore(get.headers);
++    expect(await prisma.passwordRecoveryToken.count({ where: { userId: registeredId, usedAt: { not: null } } })).toBe(0);
++  });
++
++  it('el error posterior al handoff conserva el enlace ya recibido', async () => {
++    mail.mode('reject-after-handoff');
++    const response = await requestRecovery(registeredEmail);
++    expect(response.status).toBe(202);
++    const received = await mail.take(registeredEmail);
++    await idleJobs();
++    const consumed = await consume(received.token, newFixturePassword());
++    expect(consumed.status).toBe(200); expect(consumed.body.success).toBe(true);
++  });
++
++  it('la factory refutada no muta ni habilita un receptor y exige listener antes del secreto', async () => {
++    const before = await prisma.user.count();
++    const mutation = vi.spyOn(prisma.user, 'deleteMany');
++    try {
++      let rejected = false;
++      try {
++        await createOwnedRecoveryMailHarness(prisma, { databaseUrl: process.env.DATABASE_URL!,
++          expectedDatabase: 'pokemon_cards_test', markerPath: process.env.BE05_OWNER_MARKER_PATH!,
++          fixtures: [{ id: registeredId, email: registeredEmail }] });
++      } catch { rejected = true; }
++      expect(rejected).toBe(true); expect(mutation).not.toHaveBeenCalled();
++      expect(await prisma.user.count()).toBe(before);
++    } finally { mutation.mockRestore(); }
++    await prisma.user.delete({ where: { id: registeredId } });
++    const inert = await createOwnedRecoveryMailHarness(prisma, { databaseUrl: process.env.DATABASE_URL!,
++      expectedDatabase: process.env.BE05_EXPECTED_DATABASE!, markerPath: process.env.BE05_OWNER_MARKER_PATH!,
++      fixtures: [{ id: registeredId, email: registeredEmail }] });
++    let reads = 0;
++    await inert.deliver({ recipient: registeredEmail, recipientUserId: registeredId,
++      get token() { reads += 1; return ''; }, expiresAt: new Date(), caseGeneration: inert.caseGeneration },
++    new AbortController().signal, async () => true);
++    expect(reads).toBe(0); expect(inert.available).toBe(false);
++    expect(() => inert.bindVerifiedListener(createServer())).toThrow('RECOVERY_HARNESS_LOOPBACK_LISTENER_GUARD');
++    inert.teardown();
++  });
++
++  const prepareTokens = async (count: number, expiresAt = new Date(Date.now() + 60_000)): Promise<string[]> => {
++    const tokens = Array.from({ length: count }, () => randomBytes(32).toString('base64url'));
++    const current = await prisma.user.findUniqueOrThrow({ where: { id: registeredId }, select: { authVersion: true } });
++    await prisma.passwordRecoveryToken.createMany({ data: tokens.map((token) => ({ userId: registeredId,
++      tokenHash: hashToken(token), issuedAuthVersion: current.authVersion, expiresAt })) });
++    return tokens;
++  };
++  const heldUser = async () => {
++    let entered!: () => void; let release!: () => void;
++    const enteredPromise = new Promise<void>((resolve) => { entered = resolve; });
++    const hold = new Promise<void>((resolve) => { release = resolve; });
++    const done = prisma.$transaction(async (tx) => {
++      await tx.$queryRaw(Prisma.sql`SELECT id FROM users WHERE id = ${registeredId} FOR UPDATE`);
++      entered(); await hold;
++    }, { timeout: 4_000 });
++    await enteredPromise; return { done, release };
++  };
++  const waitForUserLock = async (expected = 1): Promise<void> => {
++    const deadline = Date.now() + 1_500;
++    while (Date.now() < deadline) {
++      const rows = await prisma.$queryRaw<Array<{ waiting: bigint }>>`SELECT count(*)::bigint AS waiting
++        FROM (SELECT 1 FROM pg_stat_activity WHERE datname = current_database() AND wait_event_type = 'Lock'
++        AND query LIKE '%FOR UPDATE%') AS waiting_rows`;
++      if (Number(rows[0]?.waiting) >= expected) return;
++      await delay(15);
++    }
++    throw new Error('RECOVERY_LOCK_BARRIER_NOT_REACHED');
++  };
++
++  it('mismo token concurrente confirma una sola vez', async () => {
++    const [token] = await prepareTokens(1);
++    const results = await Promise.all([consume(token!, newFixturePassword()), consume(token!, newFixturePassword())]);
++    expect(results.map((response) => response.status).sort()).toEqual([200, 400]);
++    expect(await prisma.user.findUnique({ where: { id: registeredId }, select: { authVersion: true } }).then((user) => user?.authVersion)).toBe(1);
++  });
++
++  it('vencimiento de recuperación y refresh se reevalúan después del lock real PG', async () => {
++    const session = await auth.login({ email: registeredEmail, password: oldPassword });
++    const [token] = await prepareTokens(1, new Date(Date.now() + 250));
++    await prisma.refreshToken.update({ where: { tokenHash: hashToken(session.refreshToken) }, data: { expiresAt: new Date(Date.now() + 250) } });
++    const held = await heldUser();
++    const recoveryResult = consume(token!, newFixturePassword()).then((response) => response.status);
++    const refreshResult = auth.refresh({ refreshToken: session.refreshToken }).then(() => false, () => true);
++    try { await waitForUserLock(); await delay(350); } finally { held.release(); await held.done; }
++    expect(await recoveryResult).toBe(400); expect(await refreshResult).toBe(true);
++    expect(await prisma.user.findUnique({ where: { id: registeredId }, select: { authVersion: true } }).then((user) => user?.authVersion)).toBe(0);
++  });
++
++  it('un fallo luego de actualizar User revierte hash/versión/uso/refresh y no borra cookie', async () => {
++    const [token] = await prepareTokens(1);
++    const session = await auth.login({ email: registeredEmail, password: oldPassword });
++    const before = await prisma.user.findUniqueOrThrow({ where: { id: registeredId }, select: { passwordHash: true, authVersion: true } });
++    await prisma.$executeRawUnsafe(`CREATE FUNCTION be05_review_reject_use() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN IF NEW."usedAt" IS NOT NULL THEN RAISE EXCEPTION 'BE05_CONTROLLED_ROLLBACK'; END IF; RETURN NEW; END $$`);
++    await prisma.$executeRawUnsafe('CREATE TRIGGER be05_review_reject_use BEFORE UPDATE ON password_recovery_tokens FOR EACH ROW EXECUTE FUNCTION be05_review_reject_use()');
++    let response;
++    try { response = await consume(token!, newFixturePassword()); }
++    finally {
++      await prisma.$executeRawUnsafe('DROP TRIGGER be05_review_reject_use ON password_recovery_tokens');
++      await prisma.$executeRawUnsafe('DROP FUNCTION be05_review_reject_use()');
++    }
++    expect(response?.status).toBe(503); expect(response?.body.code).toBe('RECOVERY_UNAVAILABLE');
++    expect(response?.headers['set-cookie'] === undefined).toBe(true);
++    const after = await prisma.user.findUniqueOrThrow({ where: { id: registeredId }, select: { passwordHash: true, authVersion: true } });
++    expect(before.passwordHash === after.passwordHash && before.authVersion === after.authVersion).toBe(true);
++    expect(await prisma.passwordRecoveryToken.count({ where: { userId: registeredId, usedAt: null, revokedAt: null } })).toBe(1);
++    expect(await prisma.refreshToken.count({ where: { tokenHash: hashToken(session.refreshToken), revokedAt: null } })).toBe(1);
++  });
++
++  it('login/refresh/emisión que observaron versión vieja no sobreviven a un reset real en vuelo', async () => {
++    const [token] = await prepareTokens(1);
++    const oldSession = await auth.login({ email: registeredEmail, password: oldPassword });
++    type TxAction = <T>(action: (tx: Prisma.TransactionClient) => Promise<T>, options?: { maxWait?: number; timeout?: number }) => Promise<T>;
++    const client = prisma as unknown as { $transaction: TxAction };
++    const original = client.$transaction.bind(prisma);
++    let entered!: () => void; let release!: () => void;
++    const enteredPromise = new Promise<void>((resolve) => { entered = resolve; });
++    const hold = new Promise<void>((resolve) => { release = resolve; });
++    const wrapped: TxAction = async (action, options) => original(async (tx) => {
++      const delegate = tx.user as unknown as { update(args: Prisma.UserUpdateArgs): Promise<{ id: string }> };
++      const update = delegate.update.bind(tx.user);
++      const paused = vi.spyOn(delegate, 'update').mockImplementation(async (args) => {
++        const value = await update(args);
++        if (typeof args.data.passwordHash === 'string') { entered(); await hold; }
++        return value;
++      });
++      try { return await action(tx); } finally { paused.mockRestore(); }
++    }, options);
++    const spy = vi.spyOn(client, '$transaction').mockImplementation(wrapped);
++    const resetPassword = newFixturePassword();
++    const reset = consume(token!, resetPassword);
++    try {
++      // Supertest inicia sólo al consumir el thenable; la promesa ya está en vuelo.
++      const resetting = reset.then((response) => response);
++      await enteredPromise;
++      const login = auth.login({ email: registeredEmail, password: oldPassword }).then(() => false, () => true);
++      const refresh = auth.refresh({ refreshToken: oldSession.refreshToken }).then(() => false, () => true);
++      expect((await requestRecovery(registeredEmail)).status).toBe(202);
++      await waitForUserLock(3);
++      release(); expect((await resetting).status).toBe(200);
++      expect(await login).toBe(true); expect(await refresh).toBe(true);
++      await idleJobs();
++      expect(mail.counts().messages).toBe(0);
++      expect(await prisma.passwordRecoveryToken.count({ where: { userId: registeredId, usedAt: null, revokedAt: null } })).toBe(0);
++      const current = await auth.login({ email: registeredEmail, password: resetPassword });
++      expect(await prisma.refreshToken.count({ where: { tokenHash: hashToken(current.refreshToken), revokedAt: null } })).toBe(1);
++    } finally { release(); spy.mockRestore(); }
++  });
++
++  it('un lock PG detenido termina SQL de emisión, no deja token ni se acredita timeout como cancelación', async () => {
++    const held = await heldUser();
++    try {
++      expect((await requestRecovery(registeredEmail)).status).toBe(202);
++      await waitForUserLock(); await idleJobs();
++      const rows = await prisma.$queryRaw<Array<{ waiting: bigint }>>`SELECT count(*)::bigint AS waiting
++        FROM pg_stat_activity WHERE datname = current_database() AND wait_event_type = 'Lock' AND query LIKE '%FOR UPDATE%'`;
++      expect(Number(rows[0]?.waiting)).toBe(0);
++      expect(await prisma.passwordRecoveryToken.count({ where: { userId: registeredId } })).toBe(0);
++      expect(recovery.drainStatus().pendingJobs).toBe(0);
++    } finally { held.release(); await held.done; }
++  });
++
++  it('shutdown aborta trabajo de mail y observa drain sin referencias pendientes', async () => {
++    // Servicio separado del módulo, con la misma DB/factory acreditadas.
++    const service = new PasswordRecoveryService(prisma as unknown as PrismaService, app.get(ConfigService), mail);
++    mail.mode('never-resolve');
++    await service.request(registeredEmail, 'fixture-shutdown-ip');
++    const deadline = Date.now() + 1_000;
++    while (mail.counts().waits === 0 && Date.now() < deadline) await delay(10);
++    expect(mail.counts().waits > 0).toBe(true);
++    await service.onModuleDestroy();
++    expect(service.drainStatus()).toEqual({ pendingJobs: 0, tickets: 0, quarantined: false, deadlineExceeded: false });
++    expect(mail.counts()).toEqual({ messages: 0, leases: 0, waits: 0, candidate: false, gate: false });
++  });
++
++  it('el cap3 no desaloja enlaces ni el rechazo global quema identidad/IP', async () => {
++    await prepareTokens(3);
++    expect((await requestRecovery(registeredEmail)).status).toBe(202); await idleJobs();
++    expect(await prisma.passwordRecoveryToken.count({ where: { userId: registeredId, usedAt: null, revokedAt: null } })).toBe(3);
++    const before = await prisma.recoveryRateLimitHit.count();
++    await prisma.recoveryRateLimitHit.createMany({ data: Array.from({ length: 1_000 }, () => ({ scope: 'global', keyHash: 'all' })) });
++    const denied = await requestRecovery(absentEmail);
++    expect(denied.status).toBe(429); expect(Number(denied.headers['retry-after']) > 0).toBe(true); checkNoStore(denied.headers);
++    expect(await prisma.recoveryRateLimitHit.count()).toBe(before + 1_000);
++  });
++
+   it('refuta URL no loopback antes de crear un adaptador habilitado', () => {
+     expect(() => assertOwnedLoopbackDatabase('postgresql://pokemon:password@remote.example.test/db', 'db')).toThrow('RECOVERY_HARNESS_DATABASE_GUARD');
+     expect(() => assertOwnedLoopbackDatabase('postgresql://pokemon:password@localhost:55432/pokemon_cards_test', 'pokemon_cards_be05_test_20261009a')).toThrow('RECOVERY_HARNESS_DATABASE_GUARD');
+--- received/backend/docs/api.md
++++ review/backend/docs/api.md
+@@ -250,7 +250,7 @@
+ 
+ ### Recuperación de cuenta
+ 
+-`POST /api/auth/password-recovery-requests` recibe `{ "email": string }` y
++`POST /api/auth/password-recovery-requests` recibe JSON `{ "email": string }` y
+ responde `202` con un texto genérico tanto si la cuenta existe como si no. La
+ entrega corre en background dentro de un ticket de 2 s; la respuesta no espera
+ la búsqueda de cuenta ni al adaptador de correo. El correo queda deshabilitado
+@@ -260,6 +260,9 @@
+ más 60 s entre admisiones del mismo identificador y 1000 operaciones/min
+ globales. Los topes de IP/global responden `429` con `Retry-After`; los topes
+ por identidad mantienen la respuesta `202` genérica.
++El DTO normaliza `trim().toLowerCase()` antes de validar. El `202` acredita
++recepción, no entrega; saturación local, cuenta ausente o fallo de transporte
++mantienen ese cuerpo. No se promete igualdad de latencias.
+ 
+ `POST /api/auth/password-recoveries` recibe `{ "token": string,
+ "newPassword": string }`; no requiere sesión y devuelve `{ "success": true }`
+@@ -268,9 +271,19 @@
+ `400 INPUT_INVALID`. Ambos endpoints exigen el header de sesión y Origin
+ permitidos, están exentos del throttler en memoria y envían
+ `Cache-Control: no-store`, `Pragma: no-cache` y `Expires: 0` también en errores.
++La ausencia de `Origin` sigue permitida; si está presente debe coincidir con
++la política vigente. El header `X-Session-Request: 1` es obligatorio.
+ El token tiene 32 bytes aleatorios, se almacena únicamente su SHA-256, vence a
+ los 30 min por defecto (configurable con `RECOVERY_TOKEN_TTL_SECONDS`) y se
+ limitan a tres tokens activos por cuenta sin expulsar tokens anteriores.
++El TTL configurado acepta enteros de 60 a 86400 s; fuera de rango usa 1800 s.
++Cambiar esa configuración no altera el vencimiento persistido de otros enlaces.
++El consumo de un enlace recibido no depende de la disponibilidad posterior
++del correo. Un fallo de transporte conserva el token ya confirmado: no prueba
++que nadie lo recibió. El reenvío requiere un nuevo pedido sujeto a las cuotas.
++Formularios no JSON y JSON malformado reciben `400 INPUT_INVALID` sin eco;
++los campos públicos del error se limitan a `email`, `newPassword` y `request`.
++La contraseña no se recorta. La cookie se limpia sólo después del commit.
+ 
+ El reset incrementa `User.authVersion`, bloquea la fila de usuario y consume el
+ token, revoca otros tokens de recuperación y refresh en una transacción. Los
+@@ -279,6 +292,9 @@
+ `JWT_LEGACY_CUTOFF` tiene una fecha fija válida, `iat` es anterior y la cuenta
+ conserva versión cero; sin cutoff se rechazan. Un refresh emitido antes de un
+ reset no revoca sesiones nuevas al ser reutilizado.
++Login relee hash y versión bajo el mismo lock antes de emitir una sesión;
++refresh comprueba vencimiento con reloj PostgreSQL después del lock. El guard
++rechaza payloads JWT no objeto con `401`; si PostgreSQL falla, responde `503`.
+ 
+ El adaptador de correo de prueba sólo se inyecta en el harness aislado, sin
+ endpoint de debug ni SMTP. Su ensayo requiere una base propia marcada y vacía;
+--- received/backend/docs/database.md
++++ review/backend/docs/database.md
+@@ -85,11 +85,20 @@
+ puede mantener hasta tres tokens activos; el cuarto pedido no expulsa ninguno.
+ Resetear contraseña, consumir el token, revocar otros tokens y refresh e
+ incrementar `authVersion` ocurre en una transacción con lock de `users`.
++La fila de usuario se bloquea primero; token, versión y vencimiento se releen
++con `clock_timestamp()` dentro de la transacción. Login, refresh y emisión
++usan ese orden para impedir una sesión o enlace emitido desde credenciales
++anteriores a un reset concurrente. Ninguna solicitud expulsa enlaces vigentes.
++Las dos migraciones BE-05 son aditivas; no alteran catálogo ni índices GIN.
+ 
+ `recovery_rate_limit_hits` guarda ventanas compartidas en PostgreSQL. `keyHash`
+ es HMAC-SHA-256 de IP o identificador; no guarda emails ni IPs en claro. Los
+ registros se podan al cumplir una hora en cada admisión; el limitador no depende
+ de Redis ni de estado sólo local.
++Un rechazo IP/global no agrega hits; un pedido silenciado por identificador
++no extiende su ventana de 60 s. La capacidad local de 32 tickets se reserva
++antes de buscar cuentas y vence a los 2 s por reloj monotónico; jobs que no
++settlearon también cuentan para evitar crecimiento sin cota.
+ 
+ ### CardSet (`card_sets`)
+ 
+--- received/backend/docs/testing.md
++++ review/backend/docs/testing.md
+@@ -425,11 +425,16 @@
+ `test/password-recovery-harness.ts` se ejecuta sólo mediante
+ `vitest.config.recovery-harness.ts`; queda fuera del glob normal para que la
+ suite global no requiera un marcador ni una base vacía. El harness exige una
+-base PostgreSQL loopback en puerto 55432 con nombre `pokemon_cards_be05_test_*`,
++base PostgreSQL loopback en puerto 55432 con nombre `pokemon_cards_be05_test_*`
++o `be05_review_<hex>_test`, siempre coincidente con el nombre exacto esperado,
+ un marcador de ownership preexistente y cero usuarios antes de iniciar. No crea
+-el marcador ni altera bases compartidas. El adaptador de buzón es privado al
+-test, limitado a dos destinatarios, 32 mensajes y leases de 120 s; teardown
+-aborta entregas y libera esperas.
++el marcador ni altera bases compartidas. La factory privada reutilizable
++`test/password-recovery-mail-harness.ts` verifica URL, rol/owner, comentario y
++fila única del marcador, cero usuarios y allowlist exacta id/email. La instancia
++queda inerte hasta acreditar un listener `127.0.0.1`; no exporta un constructor
++habilitado. Conserva hasta 32 mensajes con leases de 120 s; teardown aborta
++entregas, gates cooperativos y esperas. El caso negativo tardío tiene una copia
++adicional opt-in con lease de 2 s; no forma parte de una entrega normal.
+ 
+ El ensayo completo usa un clon aislado del TEST y tarda más de un minuto porque
+ espera 60,1 s reales antes de una nueva admisión del mismo identificador. Las
+@@ -450,11 +455,24 @@
+ después de un reset, y que el token tardío falle consultando PostgreSQL. Para
+ limpieza, verificar el marcador exacto antes de eliminar exclusivamente el
+ clon propio.
++El reset no cambia `caseGeneration`: ésta pertenece sólo al teardown del
++harness. El caso tardío usa un primer enlace válido preparado antes del ticket
++pendiente y espera realmente 60,1 s para otra emisión. Fixtures SQL declaradas
++preparan carreras de vencimiento y capacidad sin acreditar por ello emisión.
++Barreras de locks PostgreSQL prueban consumo concurrente, login/refresh/emisión
++durante reset, vencimiento tras espera y rollback por trigger propio. No usar
++asserts que impriman tokens, cookies, contraseñas, emails o digests.
++
++`drainStatus()` es control privado para el runner, sin ruta HTTP. Shutdown
++aborta tickets y espera hasta 2100 ms; si quedan jobs, señala cuarentena y
++deadline excedido. No equivale a cancelar el driver. El cleanup exige settle
++real, receptor vacío, Prisma desconectado y cero conexiones al clon. Un doble
++detenido prueba esa distinción; el ensayo SQL real prueba el timeout local.
+ 
+ `vitest.config.e2e.ts` corre `**/*.e2e-spec.ts` (no tiene
+ `fileParallelism: false` porque hoy hay un solo archivo).
+ 
+-Hoy existe **uno**: `test/app.e2e-spec.ts`, que levanta el `AppModule` completo
++`test/app.e2e-spec.ts` levanta el `AppModule` completo
+ con supertest y checkea `GET /api/health`:
+ 
+ ```ts
+--- received/backend/docs/gotchas.md
++++ review/backend/docs/gotchas.md
+@@ -1373,6 +1373,22 @@
+ 429 de IP/global no agrega filas. Redis o una cuota local por proceso no son
+ sustitutos de este control.
+ 
++## 39. Timeout de entrega no significa cancelar ni borrar memoria
++
++Recuperación limita las transacciones de admisión/emisión/handoff a 1500 ms
++con espera de pool de 500 ms y timeouts SQL locales de 1200 ms. Los tickets
++usan `performance.now()` para sus 2 s; el vencimiento del enlace usa el reloj
++PostgreSQL. Esas cotas no acreditan cancelación de un driver que no devuelve.
++Shutdown señala jobs pendientes y cuarentena tras 2100 ms; no borrar ese estado
++ni retirar el clon hasta comprobar settle y cero conexiones.
++
++El emisor borra su referencia al secreto al abortar y en `finally`. Un receptor
++que copie el enlace debe gestionar su propio lease/cancelación. Desreferenciar
++strings no promete zeroización ni momento de GC. `never-resolve` en el harness
++es cooperativo: abortar resuelve su espera y elimina callbacks; `Promise.race`
++por sí sola no haría eso. Un error después del handoff conserva la vigencia
++del token confirmado, porque la entrega puede haber ocurrido.
++
+ ## Cross-references
+ 
+ - [api.md](api.md) — los endpoints y sus formas
+--- received/backend/src/modules/auth/auth.service.spec.ts
++++ review/backend/src/modules/auth/auth.service.spec.ts
+@@ -102,8 +102,8 @@
+     });
+ 
+     expect(stored).toHaveLength(1);
+-    expect(stored[0]!.tokenHash).not.toBe(refreshToken);
+-    expect(stored[0]!.tokenHash).toBe(sha256(refreshToken));
++    expect(stored[0]!.tokenHash !== refreshToken).toBe(true);
++    expect(stored[0]!.tokenHash === sha256(refreshToken)).toBe(true);
+     expect(stored[0]!.expiresAt.getTime()).toBeGreaterThan(Date.now());
+   });
+ 
+@@ -140,7 +140,7 @@
+ 
+     expect(oldStored!.revokedAt).not.toBeNull();
+     expect(newStored!.revokedAt).toBeNull();
+-    expect(rotated.refreshToken).not.toBe(oldToken);
++    expect(rotated.refreshToken !== oldToken).toBe(true);
+     expect(rotated.accessToken).toEqual(expect.any(String));
+   });
+ 
+--- /dev/null
++++ review/backend/src/modules/auth/recovery-json.guard.ts
+@@ -0,0 +1,18 @@
++import { Injectable } from '@nestjs/common';
++import type { CanActivate, ExecutionContext } from '@nestjs/common';
++import type { Request } from 'express';
++import { RecoveryException, RECOVERY_CODES } from './recovery-errors.js';
++
++@Injectable()
++export class RecoveryJsonGuard implements CanActivate {
++  canActivate(context: ExecutionContext): boolean {
++    const request = context.switchToHttp().getRequest<Request>();
++    const mediaType = request.headers['content-type']?.split(';')[0]?.trim().toLowerCase();
++    if (mediaType !== 'application/json') {
++      throw new RecoveryException(400, RECOVERY_CODES.inputInvalid, 'Revisá los datos ingresados.', {
++        request: 'Enviá los datos en formato JSON.',
++      });
++    }
++    return true;
++  }
++}
+--- /dev/null
++++ review/backend/src/modules/auth/password-recovery.service.spec.ts
+@@ -0,0 +1,71 @@
++import { randomUUID } from 'node:crypto';
++import type { ConfigService } from '@nestjs/config';
++import type { PrismaService } from '../../prisma/index.js';
++import type { RecoveryMailPort } from './recovery-mail.port.js';
++import { PasswordRecoveryService } from './password-recovery.service.js';
++
++describe('admisión y shutdown de recuperación con motor detenido', () => {
++  afterEach(() => { vi.restoreAllMocks(); vi.useRealTimers(); });
++
++  it('el ticket usa tiempo transcurrido aunque el reloj civil salte', async () => {
++    vi.useFakeTimers();
++    let release!: (value: null) => void;
++    const pending = new Promise<null>((resolve) => { release = resolve; });
++    const service = new PasswordRecoveryService({ $transaction: vi.fn(() => pending) } as unknown as PrismaService,
++      {} as ConfigService, { available: true, caseGeneration: 1, deliver: async () => undefined });
++    const internal = service as unknown as {
++      admit(): Promise<{ ipRetry: number; globalRetry: number; identifierDenied: boolean }>;
++      tickets: Map<object, { controller: AbortController }>;
++      live(ticket: object, generation: number, signal: AbortSignal): boolean;
++    };
++    vi.spyOn(internal, 'admit').mockResolvedValue({ ipRetry: 0, globalRetry: 0, identifierDenied: false });
++    await service.request(`${randomUUID()}@example.invalid`, 'fixture-ip');
++    const [ticket, reservation] = [...internal.tickets.entries()][0]!;
++    vi.spyOn(Date, 'now').mockReturnValue(9_000_000_000_000);
++    expect(internal.live(ticket, 1, reservation.controller.signal)).toBe(true);
++    await vi.advanceTimersByTimeAsync(2_001);
++    expect(internal.live(ticket, 1, reservation.controller.signal)).toBe(false);
++    release(null); await vi.advanceTimersByTimeAsync(0); await service.onModuleDestroy();
++  });
++
++  it('202 no espera lookup detenido, y el deadline de drain produce cuarentena observable', async () => {
++    vi.useFakeTimers();
++    let release!: (value: null) => void;
++    const pending = new Promise<null>((resolve) => { release = resolve; });
++    const prisma = { $transaction: vi.fn(() => pending) } as unknown as PrismaService;
++    const mail: RecoveryMailPort = { available: true, caseGeneration: 1, deliver: async () => undefined };
++    const service = new PasswordRecoveryService(prisma, {} as ConfigService, mail);
++    const internal = service as unknown as { admit(): Promise<{ ipRetry: number; globalRetry: number; identifierDenied: boolean }> };
++    vi.spyOn(internal, 'admit').mockResolvedValue({ ipRetry: 0, globalRetry: 0, identifierDenied: false });
++    await service.request(`${randomUUID()}@example.invalid`, 'fixture-ip');
++    expect(service.drainStatus().pendingJobs).toBe(1);
++    const shutdown = service.onModuleDestroy();
++    await vi.advanceTimersByTimeAsync(2_101); await shutdown;
++    expect(service.drainStatus()).toEqual({ pendingJobs: 1, tickets: 0, quarantined: true, deadlineExceeded: true });
++    // El estado no se borra para fingir cancelación del driver: sólo settle real.
++    release(null); await vi.advanceTimersByTimeAsync(0);
++    expect(service.drainStatus().pendingJobs).toBe(0);
++    expect(service.drainStatus().quarantined).toBe(false);
++  });
++
++  it('la capacidad común detiene más lookup aun si jobs previos no devolvieron', async () => {
++    vi.useFakeTimers();
++    let release!: (value: null) => void;
++    const pending = new Promise<null>((resolve) => { release = resolve; });
++    const transaction = vi.fn(() => pending);
++    const service = new PasswordRecoveryService({ $transaction: transaction } as unknown as PrismaService,
++      {} as ConfigService, { available: true, caseGeneration: 1, deliver: async () => undefined });
++    const internal = service as unknown as { admit(): Promise<{ ipRetry: number; globalRetry: number; identifierDenied: boolean }> };
++    vi.spyOn(internal, 'admit').mockResolvedValue({ ipRetry: 0, globalRetry: 0, identifierDenied: false });
++    const replies: Array<{ message: string }> = [];
++    for (let index = 0; index < 34; index += 1) replies.push(await service.request(`${randomUUID()}@example.invalid`, 'fixture-ip'));
++    expect(transaction.mock.calls.length).toBe(32);
++    expect(replies.every((reply) => reply.message === replies[0]?.message)).toBe(true);
++    await vi.advanceTimersByTimeAsync(2_001);
++    await service.request(`${randomUUID()}@example.invalid`, 'fixture-ip');
++    expect(transaction.mock.calls.length).toBe(32);
++    release(null); await vi.advanceTimersByTimeAsync(0);
++    await service.onModuleDestroy();
++    expect(service.drainStatus().pendingJobs).toBe(0);
++  });
++});
+--- /dev/null
++++ review/backend/test/password-recovery-mail-harness.ts
+@@ -0,0 +1,200 @@
++import { readFileSync } from 'node:fs';
++import type { Server } from 'node:http';
++import type { PrismaClient } from '@prisma/client';
++import type { RecoveryMail, RecoveryMailPort } from '../src/modules/auth/recovery-mail.port.js';
++
++export function assertOwnedLoopbackDatabase(rawUrl: string, expectedDatabase: string): void {
++  const url = new URL(rawUrl);
++  if (!['localhost', '127.0.0.1', '::1'].includes(url.hostname) || url.port !== '55432' ||
++      url.username !== 'pokemon' || url.pathname.slice(1) !== expectedDatabase ||
++      !(/^(pokemon_cards_be05_test_[a-z0-9]+|be05_review_[a-f0-9]+_test)$/i.test(expectedDatabase))) {
++    throw new Error('RECOVERY_HARNESS_DATABASE_GUARD');
++  }
++}
++
++type DeliveryMode = 'deliver' | 'reject' | 'reject-after-handoff' | 'drop' | 'never-resolve';
++type DeliveryGate = { entered(): void; released: boolean; listeners: Set<() => void> };
++
++class HarnessMail implements RecoveryMailPort {
++  private armed = false;
++  private listenerVerified = false;
++  get available(): boolean { return this.armed; }
++  constructor(private readonly fixtures: ReadonlyMap<string, string>) {}
++  private generation = 1;
++  private sequence = 0;
++  private readonly messages = new Map<number, RecoveryMail>();
++  private readonly leases = new Map<number, ReturnType<typeof setTimeout>>();
++  private readonly activeCancels = new Set<() => void>();
++  private readonly waiters = new Set<{ recipient: string; finish(mail: RecoveryMail): void; fail(): void }>();
++  private suppressionWaiters = new Set<() => void>();
++  private suppressed = 0;
++  private candidateToken: string | null = null;
++  private candidateCancel: (() => void) | null = null;
++  private candidateLease: ReturnType<typeof setTimeout> | null = null;
++  private captureRejected = false;
++  private nextDelayMs = 0;
++  private nextMode: DeliveryMode = 'deliver';
++  private nextGate: DeliveryGate | null = null;
++  private receiverLeaseMs = 120_000;
++
++  get caseGeneration(): number { return this.generation; }
++  bindVerifiedListener(server: Server): void {
++    const address = server.address();
++    if (!server.listening || !address || typeof address === 'string' || address.address !== '127.0.0.1' || address.port <= 0) {
++      this.armed = false; throw new Error('RECOVERY_HARNESS_LOOPBACK_LISTENER_GUARD');
++    }
++    this.listenerVerified = true; this.armed = true;
++  }
++  unavailableForCase(unavailable: boolean): void { if (!this.listenerVerified) throw new Error('RECOVERY_HARNESS_NOT_ARMED'); this.armed = !unavailable; }
++  mode(mode: DeliveryMode): void { this.nextMode = mode; }
++  allowDelay(milliseconds: number): void { this.nextDelayMs = milliseconds; }
++  useReceiverLease(milliseconds: number): void { this.receiverLeaseMs = milliseconds; }
++  counts(): { messages: number; leases: number; waits: number; candidate: boolean; gate: boolean } {
++    return { messages: this.messages.size, leases: this.leases.size, waits: this.activeCancels.size + this.waiters.size,
++      candidate: this.candidateToken !== null, gate: this.nextGate !== null };
++  }
++  holdNextDelivery(captureRejected = false): { entered: Promise<void>; release(): void } {
++    let entered!: () => void;
++    const enteredPromise = new Promise<void>((resolve) => { entered = resolve; });
++    const gate: DeliveryGate = { entered, released: false, listeners: new Set() };
++    this.nextGate = gate;
++    this.captureRejected = captureRejected;
++    return { entered: enteredPromise, release: () => { gate.released = true; for (const listener of gate.listeners) listener(); gate.listeners.clear(); } };
++  }
++  async waitForSuppression(): Promise<void> {
++    if (this.suppressed > 0) return;
++    await new Promise<void>((resolve, reject) => {
++      const finish = (): void => { clearTimeout(timer); this.suppressionWaiters.delete(finish); resolve(); };
++      const timer = setTimeout(() => { this.suppressionWaiters.delete(finish); reject(new Error('RECOVERY_SUPPRESSION_DEADLINE')); }, 1_700);
++      this.suppressionWaiters.add(finish);
++    });
++  }
++  takeCandidateToken(): string {
++    const candidate = this.candidateToken;
++    this.clearCandidate();
++    if (!candidate) throw new Error('RECOVERY_HARNESS_NO_CANDIDATE');
++    return candidate;
++  }
++
++  async deliver(mail: RecoveryMail, signal: AbortSignal, authorizeHandoff: () => Promise<boolean>): Promise<void> {
++    // Instancia inerte hasta acreditar DB/marker/listener. El id y destinatario
++    // exactos se verifican antes de leer o copiar el secreto del envelope.
++    if (!this.available || this.fixtures.get(mail.recipientUserId) !== mail.recipient || signal.aborted ||
++        mail.caseGeneration !== this.generation || this.messages.size >= 32) return;
++    const mode = this.nextMode; this.nextMode = 'deliver';
++    const workDelay = this.nextDelayMs; this.nextDelayMs = 0;
++    const gate = this.nextGate; this.nextGate = null;
++    const capture = this.captureRejected; this.captureRejected = false;
++    if (workDelay > 0 && !await this.wait(signal, workDelay)) return;
++    if (mode === 'never-resolve') { await this.wait(signal); return; }
++    if (mode === 'reject') throw new Error('RECOVERY_MAIL_REJECTED');
++    if (mode === 'drop') return;
++    if (gate) { gate.entered(); if (!await this.wait(signal, undefined, gate)) return; }
++    if (signal.aborted || mail.caseGeneration !== this.generation) return;
++    if (capture) {
++      // Sólo el caso de enlace tardío conserva una copia en memoria para el POST
++      // negativo. Tiene lease 2 s y cancelación; no existe en entrega normal.
++      this.clearCandidate(); this.candidateToken = mail.token;
++      const clear = (): void => { this.clearCandidate(); };
++      this.candidateCancel = () => signal.removeEventListener('abort', clear);
++      this.candidateLease = setTimeout(clear, 2_000);
++      signal.addEventListener('abort', clear, { once: true });
++    }
++    if (!await authorizeHandoff()) {
++      this.suppressed += 1;
++      for (const finish of this.suppressionWaiters) finish();
++      return;
++    }
++    if (signal.aborted || mail.caseGeneration !== this.generation || !mail.token) return;
++    const copy: RecoveryMail = { ...mail, token: mail.token };
++    const id = ++this.sequence;
++    this.messages.set(id, copy);
++    this.leases.set(id, setTimeout(() => this.discard(id), this.receiverLeaseMs));
++    const waiter = [...this.waiters].find((candidate) => candidate.recipient === mail.recipient);
++    if (waiter) { this.discard(id); waiter.finish(copy); }
++    if (mode === 'reject-after-handoff') throw new Error('RECOVERY_MAIL_UNCERTAIN_AFTER_HANDOFF');
++  }
++
++  async take(recipient: string): Promise<RecoveryMail> {
++    const existing = [...this.messages].find(([, mail]) => mail.recipient === recipient);
++    if (existing) { this.discard(existing[0]); return existing[1]; }
++    return new Promise<RecoveryMail>((resolve, reject) => {
++      const waiter = {
++        recipient,
++        finish: (mail: RecoveryMail): void => { clearTimeout(timer); this.waiters.delete(waiter); resolve(mail); },
++        fail: (): void => { clearTimeout(timer); this.waiters.delete(waiter); reject(new Error('RECOVERY_MAIL_DEADLINE')); },
++      };
++      const timer = setTimeout(waiter.fail, 1_700);
++      this.waiters.add(waiter);
++    });
++  }
++
++  teardown(): void {
++    this.generation += 1;
++    for (const cancel of this.activeCancels) cancel();
++    for (const id of this.messages.keys()) this.discard(id);
++    for (const waiter of this.waiters) waiter.fail();
++    this.nextDelayMs = 0; this.nextMode = 'deliver'; this.nextGate = null;
++    this.captureRejected = false; this.clearCandidate(); this.suppressed = 0; this.receiverLeaseMs = 120_000;
++    for (const finish of this.suppressionWaiters) finish();
++  }
++
++  private clearCandidate(): void {
++    this.candidateCancel?.(); this.candidateCancel = null;
++    if (this.candidateLease) clearTimeout(this.candidateLease);
++    this.candidateLease = null; this.candidateToken = null;
++  }
++  private discard(id: number): void {
++    this.messages.delete(id);
++    const timer = this.leases.get(id);
++    if (timer) clearTimeout(timer);
++    this.leases.delete(id);
++  }
++  private async wait(signal: AbortSignal, milliseconds?: number, gate?: DeliveryGate): Promise<boolean> {
++    if (signal.aborted) return false;
++    return new Promise((resolve) => {
++      let timer: ReturnType<typeof setTimeout> | undefined;
++      const finish = (complete: boolean): void => {
++        if (timer) clearTimeout(timer);
++        signal.removeEventListener('abort', cancel); gate?.listeners.delete(released);
++        this.activeCancels.delete(cancel); resolve(complete);
++      };
++      const cancel = (): void => finish(false);
++      const released = (): void => finish(true);
++      this.activeCancels.add(cancel); signal.addEventListener('abort', cancel, { once: true });
++      if (gate) { gate.listeners.add(released); if (gate.released) released(); }
++      else if (milliseconds !== undefined) timer = setTimeout(released, milliseconds);
++      if (signal.aborted) cancel();
++    });
++  }
++}
++
++export interface RecoveryHarnessAuthority {
++  databaseUrl: string;
++  expectedDatabase: string;
++  markerPath: string;
++  fixtures: ReadonlyArray<{ id: string; email: string }>;
++}
++
++// Única entrada pública al receptor: no existe constructor exportado habilitado.
++export async function createOwnedRecoveryMailHarness(prisma: PrismaClient, authority: RecoveryHarnessAuthority): Promise<HarnessMail> {
++  assertOwnedLoopbackDatabase(authority.databaseUrl, authority.expectedDatabase);
++  const marker = readFileSync(authority.markerPath, 'utf8').trim();
++  if (!marker || !authority.fixtures.length || new Set(authority.fixtures.map((fixture) => fixture.id)).size !== authority.fixtures.length ||
++      authority.fixtures.some((fixture) => !fixture.id || !fixture.email || !/\.(test|invalid)$/.test(fixture.email))) {
++    throw new Error('RECOVERY_HARNESS_FIXTURE_GUARD');
++  }
++  const rows = await prisma.$queryRaw<Array<{ count: bigint; total: bigint }>>`SELECT
++    count(*) FILTER (WHERE marker = ${marker})::bigint AS count, count(*)::bigint AS total FROM be05_harness_owner`;
++  const identity = await prisma.$queryRaw<Array<{ database: string; role: string; owner: string; marker: string | null }>>`SELECT
++    current_database() AS database, current_user AS role, pg_get_userbyid(datdba) AS owner,
++    shobj_description(oid, 'pg_database') AS marker FROM pg_database WHERE datname = current_database()`;
++  const users = await prisma.user.count();
++  if (rows[0]?.count !== 1n || rows[0]?.total !== 1n || users !== 0 || identity[0]?.database !== authority.expectedDatabase ||
++      identity[0]?.role !== 'pokemon' || identity[0]?.owner !== 'pokemon' || identity[0]?.marker !== marker) {
++    throw new Error('RECOVERY_HARNESS_OWNERSHIP_GUARD');
++  }
++  return new HarnessMail(new Map(authority.fixtures.map((fixture) => [fixture.id, fixture.email])));
++}
++
++export type RecoveryMailHarness = Awaited<ReturnType<typeof createOwnedRecoveryMailHarness>>;

@@ -1,0 +1,30 @@
+{
+  "setId": "me2pt5",
+  "groupId": 24541,
+  "localCards": 295,
+  "mappedCards": 292,
+  "unmappedCards": 3,
+  "observations": 328,
+  "variants": [
+    "normal",
+    "holofoil",
+    "reverseHolofoil"
+  ],
+  "feedPublishedAt": "2026-10-13T20:06:44.000Z",
+  "examples": [
+    {
+      "cardId": "me2pt5-18",
+      "variant": "normal",
+      "marketUsd": 0.18,
+      "externalProduct": 675830
+    },
+    {
+      "cardId": "me2pt5-132",
+      "variant": "normal",
+      "marketUsd": 0.14,
+      "externalProduct": 675944
+    }
+  ],
+  "strictProductionAdapterUsed": true,
+  "noDatabaseWrites": true
+}

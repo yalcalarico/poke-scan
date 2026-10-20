@@ -22,6 +22,7 @@ export {
   type PriceDeltaTone,
 } from './price-delta';
 export { NO_PRICE_COPY, PriceHero, type PriceHeroProps } from './price-hero';
+export { PriceReferenceDetails, ValuationEvidence } from './price-evidence';
 export { Sparkline, type SparklinePoint, type SparklineProps } from './sparkline';
 export {
   countPricelessVariants,

@@ -1,0 +1,1 @@
+{"pid":27892,"stopped":true,"serverListening":false,"drain":{"pendingJobs":0,"tickets":0,"quarantined":false,"deadlineExceeded":false},"receiver":{"messages":0,"leases":0,"waits":0,"candidate":false,"gate":false},"queries":{"active":0,"transactions":0},"counts":{"users":0,"recoveryTokens":0,"refreshTokens":0,"hits":0}}

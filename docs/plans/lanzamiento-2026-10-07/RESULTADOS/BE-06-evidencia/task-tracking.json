@@ -1,0 +1,29 @@
+{
+  "task": "BE-06",
+  "authorization": "human Si following BE-06 proposal",
+  "delegatedAssignments": 2,
+  "correctionCycles": 1,
+  "capacityEscalations": 0,
+  "implementationOwner": "/root",
+  "centralAndRuntimeOwner": "/root",
+  "ownedResources": "db-owner.json",
+  "checkRequired": true,
+  "nextStepNeedsHumanReply": true,
+  "implementationReleased": true,
+  "rootCorrections": [
+    {
+      "problem": "fake worker in resilience test acknowledged generation2 despite new service generation1",
+      "evidence": "initial-focal.log:44passed1failed",
+      "fix": "acknowledge generation1 in new-service fixture; focal45passed"
+    },
+    {
+      "problem": "frontend counters optional versus backend required",
+      "fix": "strict DTO mirror Record, typecheck passed"
+    },
+    {
+      "problem": "Nest TS7053 Object.entries string index into typed histogram",
+      "evidence": "initial-current-check.log;996tests green but Nestbuild failed",
+      "fix": "iterate fixed typed histogram names; new check required on changed source"
+    }
+  ]
+}

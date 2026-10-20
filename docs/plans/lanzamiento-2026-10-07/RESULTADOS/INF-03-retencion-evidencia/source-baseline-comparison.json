@@ -1,0 +1,26 @@
+{
+  "selectedBaselineFiles": 516,
+  "capturedAfterImplementationDispatch": true,
+  "notCompletePreTaskDirtySnapshot": true,
+  "changedSelectedFiles": [
+    "scripts/inf03-backup.mjs",
+    "scripts/inf03-restore.mjs",
+    "scripts/inf03-smoke.mjs",
+    "infra/inf03/README.md",
+    "backend/src/modules/account-deletion/account-deletion-restore.ts",
+    "package.json"
+  ],
+  "taskFilesNotInSelectedBaseline": [
+    "scripts/inf03-inventory-common.mjs",
+    "scripts/inf03-inventory.mjs",
+    "scripts/inf03-retention.mjs",
+    "scripts/inf03-inventory-common.test.mjs",
+    "scripts/inf03-retention.test.mjs",
+    "scripts/inf03-inventory-restore.test.mjs",
+    "scripts/inf03-inventory-test-fixture.mjs",
+    "backend/src/modules/account-deletion/restore-policy.ts",
+    "backend/src/modules/account-deletion/restore-policy.spec.ts",
+    "backend/src/modules/account-deletion/account-deletion-restore.spec.ts"
+  ],
+  "noUnrelatedSelectedChanges": true
+}

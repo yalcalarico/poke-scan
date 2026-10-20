@@ -1,0 +1,21 @@
+{
+  "receivedAtUtc": "2026-10-10T02:02:19.456967+00:00",
+  "status": "received_not_accepted",
+  "artifactsSha256": {
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/FE-04-implementacion.md": "4bf26a8b25e76a62cc4f4a6feb3b04a4c216ff85634a04cdea600ceba4cf834e",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/FE-04-implementacion-evidencia.json": "0d82002b5b487bfded93e1d1046301f238534afb4c9a091a0cd3d3144f00ea9d",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/FE-04-implementacion-anexos/validacion.txt": "cf7ed55fececf25a6b71e6f4ff1e008cd75ad58b53c0cd623f97801796146916",
+    "/private/tmp/fe04-status-baseline.txt": "7d247dfb0f3df3d3a442ec91b1a8f982ab0cbe9189c59534a812cf2749558b3d",
+    "/private/tmp/fe04-focal-baseline.diff": "9ce162cf3a16f9f07f6dfd64c7e290755c8c5f208a8e60013f290797464214ec",
+    "/private/tmp/fe04-focal-baseline-hashes.txt": "d05428f454194f132e53cfdfbcb17527399d4ca96de604314a52818617390bec",
+    "/private/tmp/fe04-more-baseline.diff": "32f5be74f7a355081762b2a43a8278f7fcf1649991383277074666cfca39a455",
+    "/private/tmp/fe04-more-baseline-hashes.txt": "9f8f6dd27493eae92ce87633013cc1484c88694782656354a72c6da11a4b04bf",
+    "/private/tmp/fe04-doc-baseline.diff": "f684aeef6bf32e5c483b359b764f930d8bb83a02d619beff8e366d0e8409d276",
+    "/private/tmp/fe04-doc-baseline-hashes.txt": "b6953511264c489956514c191e86c3f1d17773cda0767021ec3b8d96bf93c204"
+  },
+  "producerDeclaredFrontendTests": 503,
+  "rawExecutionLogsDelivered": false,
+  "baselineLimitation": "staggered snapshots; repeated layout/use-auth hashes differ between focal and more stages",
+  "idsClosed": false,
+  "next": "exclusive Sol HIGH review/corrections then lot gate after root acceptance"
+}

@@ -1,0 +1,16 @@
+{
+  "corpus.json": "e2787b7cf684f89d07d931234b29aff794b9c54ccf9f85e54fa87ed4f2616e44",
+  "recognition-diagnostic.json": "541d7cff751bac7a7f8c9b686f3be9baaff4ca2211a2f4fa16bb3a66135a0268",
+  "runtime-persisted-final.json": "fd5647b8436b85ab115744f948665ceec3ad22d953b2d0b68c4aeb86ad4601af",
+  "product-hashes.json": "f4dc7a59047302f2bbc953af7c6dcdf0b38f51806a874353390cf816310e413d",
+  "focused-final.log": "0cb9155acc9dd0a2f2094de6791fa1cdf241c63b194b8c025aeb8a19c514e7ac",
+  "results.json": "3b237a635865b4af289b87d7e7dadc47f48a03f6c92e014fdb72b9ac0abb3268",
+  "cleanup.json": "5fcd62dd6323a2585ad98ef43c25c8ee8fafaf95a01ccde5c61f77f3b982eb47",
+  "focused-corrected.log": "cfc9e6071d7fe2708c8056c934e18e24afb2b909af152edb9f75ea4e5567d04a",
+  "runtime-cleanup.json": "10a7cb061deb9527e5913990501a9c483106ec5bb776e9436d3852cba8f4ddb6",
+  "regression-before.log": "ea16d509fa262de089f535bd0c480d77c3aecac137b70f88c72bada86ea772d0",
+  "check.log": "f6caa72b85eb0e58e7092657c22f9ce17609f9e9cab8345ade011fe137aeb1c6",
+  "runtime-saved-items.json": "ca615bc6ac7d00ce4ed3a6693eda7b0fd93e4aa1ef208067de436b4388dd2456",
+  "focused.log": "210a9ca087e3954b26f640c6e028d31b7e5dae8eda1d1948e0abe28c437904ac",
+  "receipt.json": "5fd7f0379561c3b264c69c43859d57801e7b60cf39fc21ec8833c38e3915ae23"
+}

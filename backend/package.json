@@ -14,7 +14,7 @@
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
     "lint": "oxlint --type-aware src/ test/",
-    "test": "vitest run && node --test scripts/scanner-visual-index.test.mjs",
+    "test": "vitest run && node --test scripts/scanner-visual-index.test.mjs scripts/scanner-evaluation-metrics.test.mjs scripts/scanner-reference-cache.test.mjs scripts/prices-control.test.mjs scripts/prices-sets.test.mjs",
     "test:watch": "vitest",
     "test:cov": "vitest run --coverage",
     "test:debug": "vitest --inspect-brk --no-file-parallelism",
@@ -36,7 +36,11 @@
     "scanner:sets": "node --env-file-if-exists=.env scripts/scanner-visual-spike.mjs sets",
     "scanner:index:sets": "node --env-file-if-exists=.env scripts/scanner-index-sets.mjs",
     "scanner:validate": "node --env-file-if-exists=.env scripts/scanner-validate-sets.mjs",
-    "db:fix-images": "node --env-file-if-exists=.env scripts/fix-card-images.mjs"
+    "db:fix-images": "node --env-file-if-exists=.env scripts/fix-card-images.mjs",
+    "scanner:evaluate:current": "node --env-file-if-exists=.env scripts/scanner-evaluate-current.mjs",
+    "prices:sync": "node --env-file-if-exists=.env scripts/prices-sync.mjs sync",
+    "prices:status": "node --env-file-if-exists=.env scripts/prices-sync.mjs status",
+    "prices:sets": "node --env-file-if-exists=.env scripts/prices-sets.mjs"
   },
   "dependencies": {
     "@nestjs/common": "^12.0.1",

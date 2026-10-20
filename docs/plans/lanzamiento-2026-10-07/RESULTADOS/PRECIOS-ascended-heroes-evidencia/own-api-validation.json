@@ -1,0 +1,29 @@
+{
+  "checks": [
+    {
+      "cardId": "me2pt5-18",
+      "variant": "normal",
+      "marketUsd": 0.18,
+      "groupId": 24541,
+      "points": 1
+    },
+    {
+      "cardId": "me2pt5-132",
+      "variant": "normal",
+      "marketUsd": 0.14,
+      "groupId": 24541,
+      "points": 1
+    },
+    {
+      "cardId": "me2pt5-183",
+      "variant": "normal",
+      "marketUsd": null,
+      "groupId": 24541,
+      "points": 0
+    }
+  ],
+  "ready": true,
+  "ownCloneOnly": true,
+  "externalCallsDuringConsumer": 0,
+  "ingestionDisabledForOwnConsumer": true
+}

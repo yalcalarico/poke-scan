@@ -38,6 +38,7 @@ export interface RarityFilterProps {
   value: string;
   onChange: (rarity: string) => void;
   className?: string;
+  layout?: 'scroll' | 'wrap';
 }
 
 /**
@@ -81,21 +82,21 @@ export interface RarityFilterProps {
  * padding vertical cero. La migración al `outline` duplicó el aire que hace
  * falta, y esta fila era la única de las dos que no lo tenía.
  */
-export function RarityFilter({ value, onChange, className }: RarityFilterProps) {
+export function RarityFilter({ value, onChange, className, layout = 'scroll' }: RarityFilterProps) {
   return (
     <div
       role="group"
       aria-label="Filtros por rareza"
       className={cn(
-        '-mx-4 flex snap-x gap-2 overflow-x-auto px-4 py-1 scroll-pl-4 sm:-mx-6 sm:px-6 sm:scroll-pl-6',
-        NO_SCROLLBAR,
+        layout === 'wrap' ? 'flex flex-wrap gap-2 py-1' : '-mx-4 flex snap-x gap-2 overflow-x-auto px-4 py-1 scroll-pl-4 sm:-mx-6 sm:px-6 sm:scroll-pl-6',
+        layout === 'scroll' && NO_SCROLLBAR,
         className,
       )}
     >
       <Chip
         active={value === ''}
         onClick={() => onChange('')}
-        className="snap-start"
+        className={cn('snap-start', layout === 'wrap' && 'h-auto min-h-11 max-w-full whitespace-normal py-2 text-left')}
         aria-label="Todas las rarezas"
       >
         Todas
@@ -106,7 +107,7 @@ export function RarityFilter({ value, onChange, className }: RarityFilterProps) 
           key={rarity}
           active={value === rarity}
           onClick={() => onChange(value === rarity ? '' : rarity)}
-          className="snap-start"
+          className={cn('snap-start', layout === 'wrap' && 'h-auto min-h-11 max-w-full whitespace-normal py-2 text-left')}
         >
           {rarity}
         </Chip>

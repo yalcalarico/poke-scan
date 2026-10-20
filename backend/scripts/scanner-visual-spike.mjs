@@ -6,7 +6,6 @@ import {
   writeFile,
   open,
   unlink,
-  rename,
 } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { createHash } from 'node:crypto';
@@ -15,6 +14,7 @@ import { PrismaClient } from '@prisma/client';
 import { embedding as computeEmbedding } from './scanner-visual-engine.mjs';
 import { InferenceSession } from 'onnxruntime-node';
 import { referenceUrl, isAllowedReference } from './scanner-reference-url.mjs';
+import { loadReferenceImage } from './scanner-reference-cache.mjs';
 
 const args = process.argv.slice(2);
 const command = args.shift();
@@ -160,9 +160,10 @@ try {
 
   const entries = new Map();
   try {
-    for (const line of (await readFile(indexPath, 'utf8'))
-      .split('\n')
-      .filter(Boolean)) {
+    const content = await readFile(indexPath, 'utf8');
+    if (content && !content.endsWith('\n'))
+      throw new Error('Índice inválido: hay una línea incompleta. Conservá una copia y reconstruí antes de continuar.');
+    for (const line of content.split('\n').filter(Boolean)) {
       const entry = JSON.parse(line);
       if (
         entry === null ||
@@ -318,25 +319,9 @@ try {
               .update(card.id + url)
               .digest('hex') + '.image',
           );
-          let bytes;
-          try {
-            bytes = await readFile(imagePath);
-            cachedImages++;
-          } catch (error) {
-            if (error.code !== 'ENOENT') throw error;
-            const response = await fetch(url, {
-              signal: AbortSignal.timeout(30000),
-              redirect: 'error',
-            });
-            if (!response.ok) throw new Error(`HTTP ${response.status}`);
-            bytes = Buffer.from(await response.arrayBuffer());
-            if (bytes.length > 10 * 1024 * 1024)
-              throw new Error('Referencia demasiado grande.');
-            const temporaryPath = imagePath + '.tmp';
-            await writeFile(temporaryPath, bytes);
-            await rename(temporaryPath, imagePath);
-            downloads++;
-          }
+          const { bytes, cached } = await loadReferenceImage(imagePath, url);
+          if (cached) cachedImages++;
+          else downloads++;
           const entry = {
             id: card.id,
             name: card.name,

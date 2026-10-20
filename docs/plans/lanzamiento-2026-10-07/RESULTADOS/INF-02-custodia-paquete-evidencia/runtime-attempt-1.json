@@ -1,0 +1,52 @@
+{
+  "run": "pkg-3be0c0d44c50",
+  "checks": [
+    {
+      "id": "image-is-owned-current-arm64-runner",
+      "pass": true
+    },
+    {
+      "id": "namespace-provisioned-explicitly-as-uid1001",
+      "pass": true
+    },
+    {
+      "id": "own-postgres-ready",
+      "pass": true
+    }
+  ],
+  "cleanup": {
+    "complete": true,
+    "errors": []
+  },
+  "sharedBefore": [
+    {
+      "id": "18aa2f6937521ae010930ae98cbee45f2fa435b554c65cf90daaffba0c641ba8",
+      "name": "/pokemon-scanner-db",
+      "health": "healthy"
+    },
+    {
+      "id": "f2d2ca0ad580fe8ca3e94a59b4b6d5a53d761036ba1d14e45b8543a978bbb15f",
+      "name": "/pokemon-scanner-redis",
+      "health": "healthy"
+    }
+  ],
+  "image": {
+    "id": "sha256:b69d75a79ddaa04218e7091aef41ed813f053bc53c4d1831ac4de00c3418f098",
+    "user": "nextjs",
+    "architecture": "arm64"
+  },
+  "testResult": "failed",
+  "error": "OWN_DOCKER_OPERATION_FAILED",
+  "sharedAfter": [
+    {
+      "id": "18aa2f6937521ae010930ae98cbee45f2fa435b554c65cf90daaffba0c641ba8",
+      "name": "/pokemon-scanner-db",
+      "health": "healthy"
+    },
+    {
+      "id": "f2d2ca0ad580fe8ca3e94a59b4b6d5a53d761036ba1d14e45b8543a978bbb15f",
+      "name": "/pokemon-scanner-redis",
+      "health": "healthy"
+    }
+  ]
+}

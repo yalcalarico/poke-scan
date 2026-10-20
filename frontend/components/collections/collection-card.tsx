@@ -1,8 +1,9 @@
 import Image from 'next/image';
-import Link from 'next/link';
+import { PreviewLink as Link } from '@/components/visual-preview/preview-link';
 import { ChevronRight, Grid3x3, Layers } from 'lucide-react';
 
 import { Money } from '@/components/cards/money';
+import { ValuationEvidence } from '@/components/prices/price-evidence';
 import { Badge, Surface } from '@/components/ui';
 import { cn } from '@/lib/cn';
 import { pluralize } from '@/lib/format';
@@ -83,7 +84,7 @@ export function CollectionCard({ collection, cover, className }: CollectionCardP
           </p>
 
           <div className="mt-auto flex items-center justify-between gap-2 pt-2">
-            <Money usd={collection.totalValueUsd} tone="positive" size="md" />
+            {collection.valuation ? <Money usd={collection.valuation.amount} tone={collection.valuation.amount === null ? 'default' : 'positive'} size="md" /> : <span className="text-body text-warning">Valuación no disponible</span>}
             <ChevronRight
               aria-hidden="true"
               focusable="false"
@@ -92,6 +93,7 @@ export function CollectionCard({ collection, cover, className }: CollectionCardP
             />
           </div>
         </div>
+        <div className="px-4 pb-3"><ValuationEvidence valuation={collection.valuation} /></div>
         {hasCover ? <div className="flex h-40 items-center justify-center gap-2 bg-surface-2 p-3">
           {images.map((image, index) => <div key={`${image.imageSmall}-${index}`} className="relative h-full min-w-0 flex-1">
             <Image src={image.imageSmall} alt="" fill sizes="(max-width: 639px) 22vw, 10vw" className="object-contain" />

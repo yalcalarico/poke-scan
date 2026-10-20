@@ -1,0 +1,14 @@
+{
+  "capturedAt": "2026-10-09T00:29:05.554461+00:00",
+  "files": {
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/MKT-01-copy.md": "d12287eb65d1feff484201f069f518018ad79e543d3832d440dc9bab55157f6d",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/MKT-01-review.md": "905a34f980c40aa245d6019cc2936a9898ae491057d7032970145521aa828d4c",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/evidencia-mkt01-review/MKT-01-copy-recibido.md": "8d20ec317e15942dc3028c73b2b26f747fee56de2efc78ca7078cb2beb0bf465",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/evidencia-mkt01-review/baseline.json": "8a9e50ae2f23dcd1e980ace9aef604649561e8443428501d44502de191dadd67",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/evidencia-mkt01-review/correcciones.diff": "445cfda37f906717a94787c88a1b9003826877413fb9a36d9cf1d40c6bf3584c",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/evidencia-mkt01-review/dirty-antes.txt": "00dbda71d83137c17ec6d3fec028722b7f2485ed1fd26cf676389ccba760a17b",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/evidencia-mkt01-review/dirty-despues.txt": "00dbda71d83137c17ec6d3fec028722b7f2485ed1fd26cf676389ccba760a17b",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/evidencia-mkt01-review/fuentes-verificadas.json": "4247a900ffaca265eba11c348aff118b5a55e94910ec9d444280d77ecaf47357",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/evidencia-mkt01-review/validacion.json": "de696279b612255506d1e5e35a4a38711cc4172a09b391619418d249e58beb47"
+  }
+}

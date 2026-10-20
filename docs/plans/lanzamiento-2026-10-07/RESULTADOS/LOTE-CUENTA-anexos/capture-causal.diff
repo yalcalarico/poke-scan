@@ -1,0 +1,66 @@
+--- baseline/frontend/lib/recovery/recovery-capture-script.test.ts
++++ frontend/lib/recovery/recovery-capture-script.test.ts
+@@ -5,7 +5,7 @@
+ import { getRecoverySnapshot } from './recovery-view';
+ 
+ function createCapture(href: string, initialState: Record<string, unknown> = {}, failReplace = false) {
+-  const listeners = new Map<string, ((event?: { persisted?: boolean }) => void)[]>();
++  const listeners = new Map<string, ((event?: { persisted?: boolean; newURL?: string }) => void)[]>();
+   const location = {
+     href,
+     get origin() { return new URL(this.href).origin; },
+@@ -27,7 +27,7 @@
+   };
+   const window = {
+     __pcsRecoveryManager: undefined as undefined | { snapshot: () => { mode: string; token: string | null }; startRequest: () => void; inspectEntry: () => void; discardLink: () => void },
+-    addEventListener(type: string, callback: (event?: { persisted?: boolean }) => void) {
++    addEventListener(type: string, callback: (event?: { persisted?: boolean; newURL?: string }) => void) {
+       listeners.set(type, [...(listeners.get(type) ?? []), callback]);
+     },
+     dispatchEvent() { return true; },
+@@ -105,6 +105,30 @@
+     expect(env.window.__pcsRecoveryManager?.snapshot()).toMatchObject({ mode: 'invalid', token: null });
+   });
+ 
++  it.each(['#token=' + token, '#token='])('preserva la captura tras popstate y hashchange obsoleto de la misma navegación', (fragment) => {
++    const env = createCapture('https://pokescan.app/recuperar');
++    const navigatedHref = 'https://pokescan.app/recuperar' + fragment;
++    env.location.href = navigatedHref;
++    for (const callback of env.listeners.get('popstate') ?? []) callback();
++    expect(env.location.hash).toBe('');
++    const captured = env.window.__pcsRecoveryManager?.snapshot();
++    for (const callback of env.listeners.get('hashchange') ?? []) callback({ newURL: navigatedHref });
++    expect(env.window.__pcsRecoveryManager?.snapshot()).toEqual(captured);
++    expect(captured?.mode).toBe(fragment === '#token=' ? 'invalid' : 'link');
++    env.window.__pcsRecoveryManager?.inspectEntry();
++    env.window.__pcsRecoveryManager?.inspectEntry();
++    expect(env.window.__pcsRecoveryManager?.snapshot()).toEqual(captured);
++  });
++
++  it('un hashchange vigente captura el enlace y su remoción deliberada lo descarta', () => {
++    const env = createCapture('https://pokescan.app/recuperar');
++    env.location.href += '#token=' + token;
++    for (const callback of env.listeners.get('hashchange') ?? []) callback({ newURL: env.location.href });
++    expect(env.window.__pcsRecoveryManager?.snapshot().mode).toBe('link');
++    for (const callback of env.listeners.get('hashchange') ?? []) callback({ newURL: env.location.href });
++    expect(env.window.__pcsRecoveryManager?.snapshot()).toMatchObject({ mode: 'unavailable', token: null });
++  });
++
+   it('borra el token al pagehide y cambia el marcador a enlace no disponible', () => {
+     const env = createCapture(`https://pokescan.app/recuperar#token=${token}`);
+     for (const callback of env.listeners.get('pagehide') ?? []) callback();
+--- baseline/frontend/lib/recovery/recovery-capture-script.ts
++++ frontend/lib/recovery/recovery-capture-script.ts
+@@ -89,7 +89,11 @@
+     checkNavigation(before);
+   };
+   window.addEventListener('popstate', () => publishEntry());
+-  window.addEventListener('hashchange', () => publishEntry());
++  window.addEventListener('hashchange', (event) => {
++    // popstate puede haber capturado y saneado esta navegación antes del hashchange.
++    if (event.newURL && event.newURL !== location.href) return;
++    publishEntry();
++  });
+   window.addEventListener('pageshow', (event) => { if (event.persisted) publishEntry(); });
+   window.addEventListener('pagehide', () => { token = null; entry += 1; if (snapshot.mode === 'link') emit('unavailable'); else emit(snapshot.mode); });
+   publishEntry();

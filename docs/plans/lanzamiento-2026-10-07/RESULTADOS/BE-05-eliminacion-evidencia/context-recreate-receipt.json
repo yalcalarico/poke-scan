@@ -1,0 +1,19 @@
+{
+  "ownerMarkerFullIDAndSQL0Verified": true,
+  "oldOwnCloneContext": {
+    "users": 13,
+    "friendships": 3,
+    "migrations": 13,
+    "priced": 7
+  },
+  "newStandardCloneBeforeMigrate": {
+    "users": 2,
+    "friendships": 0,
+    "migrations": 11,
+    "priced": 7
+  },
+  "onlyOwnCloneRecreated": true,
+  "sourceAndDevWritten": false,
+  "reason": "Read-only Sol review identified 2 harness friendships plus last-test blocked friendship; fresh standard fixture, no product/test relaxation",
+  "atUtc": "2026-10-11T23:14:03.977325+00:00"
+}

@@ -1,0 +1,17 @@
+{
+  "phase": "frontend-focused",
+  "command": [
+    "pnpm",
+    "--dir",
+    "frontend",
+    "exec",
+    "vitest",
+    "run",
+    "lib/api/comparison.test.ts",
+    "components/prices/comparison-chart.test.tsx",
+    "components/prices/comparison-panel.test.tsx"
+  ],
+  "exitCode": 1,
+  "startedAtUtc": "2026-10-13T19:46:42.970579+00:00",
+  "finishedAtUtc": "2026-10-13T19:46:44.934670+00:00"
+}

@@ -1,0 +1,25 @@
+{
+  "registration": true,
+  "loginAfterLogout": true,
+  "scanner": {
+    "input": "existing public catalog reference base1-58",
+    "firstCandidate": "base2-87",
+    "correctCandidateAvailable": true,
+    "manuallyConfirmed": "base1-58",
+    "saved": {
+      "quantity": 1,
+      "variant": "normal",
+      "condition": "NM"
+    },
+    "physicalPhotoAccuracy": false
+  },
+  "export": true,
+  "shareReadOnly": true,
+  "revokedUnavailable": true,
+  "setProgress": {
+    "owned": 1,
+    "total": 102,
+    "missing": 101
+  },
+  "mobileWidth": 390
+}

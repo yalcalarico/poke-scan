@@ -1,0 +1,112 @@
+{
+  "inventory": {
+    "users": [
+      {
+        "rows": 22,
+        "hash": "766ab5df0ab885a39ce7b83175f66f96"
+      }
+    ],
+    "collections": [
+      {
+        "rows": 22,
+        "hash": "59b9d1bafdd76c8e74ea7339c063eb5f"
+      }
+    ],
+    "collection_items": [
+      {
+        "rows": 69,
+        "hash": "f723750dd3dbc91337830427ba4c60a1"
+      }
+    ],
+    "share_links": [
+      {
+        "rows": 13,
+        "hash": "614a0f5bc85c774254e174f7887d3c5d"
+      }
+    ],
+    "cards": [
+      {
+        "rows": 20670,
+        "hash": "062662767783a494f5a4af852c8a4f35"
+      }
+    ],
+    "card_sets": [
+      {
+        "rows": 176,
+        "hash": "9d4bdf4933aad247ef5d1f54701ed4b7"
+      }
+    ],
+    "price_refresh_jobs": [
+      {
+        "rows": 18721,
+        "hash": "6ecb1987f0b3a0e0f3580ae90cf2e0fb"
+      }
+    ],
+    "_prisma_migrations": [
+      {
+        "rows": 14,
+        "hash": "c218eb202b5c49166c1cceab62bf4f86"
+      }
+    ],
+    "card_prices": [
+      {
+        "rows": 29149,
+        "hash": "30bcc2a2813b16e0a81421f779592161"
+      }
+    ],
+    "card_external_ids": [
+      {
+        "rows": 20670,
+        "hash": "e3fabbcab2139f658c74efa4af2122f1"
+      }
+    ],
+    "gin": [
+      {
+        "indexname": "card_sets_name_trgm_idx",
+        "indexdef": "CREATE INDEX card_sets_name_trgm_idx ON public.card_sets USING gin (name gin_trgm_ops)"
+      },
+      {
+        "indexname": "cards_artist_trgm_idx",
+        "indexdef": "CREATE INDEX cards_artist_trgm_idx ON public.cards USING gin (artist gin_trgm_ops)"
+      },
+      {
+        "indexname": "cards_name_trgm_idx",
+        "indexdef": "CREATE INDEX cards_name_trgm_idx ON public.cards USING gin (name gin_trgm_ops)"
+      },
+      {
+        "indexname": "users_display_name_trgm_idx",
+        "indexdef": "CREATE INDEX users_display_name_trgm_idx ON public.users USING gin (\"displayName\" gin_trgm_ops)"
+      },
+      {
+        "indexname": "users_username_trgm_idx",
+        "indexdef": "CREATE INDEX users_username_trgm_idx ON public.users USING gin (username gin_trgm_ops)"
+      }
+    ],
+    "classic": [
+      {
+        "groupId": 24837,
+        "status": "pending",
+        "availableAt": "2026-10-14T20:30:00.000Z",
+        "lockedBy": null,
+        "leaseUntil": null,
+        "downloadStartedAt": "2026-10-13T19:29:03.999Z",
+        "publishedBuild": null,
+        "lastError": null,
+        "updatedAt": "2026-10-13T20:34:09.212Z"
+      }
+    ]
+  },
+  "priorJob": [
+    {
+      "groupId": 24722,
+      "status": "pending",
+      "availableAt": "2026-10-14T14:22:14.533Z",
+      "lockedBy": null,
+      "leaseUntil": null,
+      "downloadStartedAt": "2026-10-13T14:22:14.533Z",
+      "publishedBuild": null,
+      "lastError": null,
+      "updatedAt": "2026-10-13T23:09:12.055Z"
+    }
+  ]
+}

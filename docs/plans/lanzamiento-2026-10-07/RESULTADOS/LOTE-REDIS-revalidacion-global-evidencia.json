@@ -1,0 +1,520 @@
+{
+  "schemaVersion": 1,
+  "runId": "be07-global-469af22a0f8f",
+  "recordedAtUtc": "2026-10-09T19:49:34.173811+00:00",
+  "authorization": "bueno, avanza entonces con la validacion global",
+  "result": {
+    "globalCheck": "passed",
+    "runtimeMatrix": "passed",
+    "cleanup": "passed",
+    "rootAcceptanceRequired": true,
+    "historicalSocketHangupCauseLocated": false
+  },
+  "check": {
+    "command": "pnpm run check",
+    "pid": 20637,
+    "startedAtUtc": "2026-10-09T19:42:21.862058+00:00",
+    "finishedAtUtc": "2026-10-09T19:43:42.021970+00:00",
+    "exitCode": 0,
+    "standardCounts": {
+      "backend": 405,
+      "scripts": 13,
+      "e2e": 6,
+      "frontend": 486,
+      "total": 910,
+      "skipped": 0
+    },
+    "lint": "passed",
+    "typecheck": "passed",
+    "buildBackend": "passed",
+    "buildFrontend": "passed",
+    "standardCommandUnmodified": true,
+    "checkExecutions": 1
+  },
+  "runtime": {
+    "assertions": 34,
+    "passed": true,
+    "startupRecoveryMs": 14994,
+    "cutRecoveryMs": 7957,
+    "apiPID": 21371,
+    "apiNonce": "be07-global-469af22a0f8f-api-one-process",
+    "redisSameContainerMemoryThroughoutMatrix": true,
+    "additionalRejectedConnectionsStartup": 4,
+    "additionalRejectedConnectionsCut": 4,
+    "staleExpiryFixtureInjectedInPostgres": true,
+    "fullClockTTLExpiryMeasured": false,
+    "externalNodeFetchAttemptsObserved": 0,
+    "resultArtifact": "LOTE-REDIS-revalidacion-global-anexos/runtime-results.json",
+    "attempt1": "Syntax error in own runner before requests/fixtures; retained, cleaned; own helper corrected, node --check passed; no app edits"
+  },
+  "ownership": {
+    "owner": "/root/be05_account_draft_review_sol",
+    "runId": "be07-global-469af22a0f8f",
+    "tmp": "/private/tmp/be07-global-469af22a0f8f",
+    "annex": "/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/docs/plans/lanzamiento-2026-10-07/RESULTADOS/LOTE-REDIS-revalidacion-global-anexos",
+    "database": "be07_global_469af22a0f8f_test",
+    "databaseComment": "be07-global-469af22a0f8f-owned",
+    "redis": "be07-global-469af22a0f8f-redis",
+    "redisLabel": "be07-global-469af22a0f8f",
+    "redisPort": 56391,
+    "proxyPort": 56392,
+    "resources": [
+      {
+        "role": "database",
+        "name": "be07_global_469af22a0f8f_test",
+        "pgContainer": "18aa2f6937521ae010930ae98cbee45f2fa435b554c65cf90daaffba0c641ba8",
+        "comment": "be07-global-469af22a0f8f-owned"
+      },
+      {
+        "role": "redis",
+        "name": "be07-global-469af22a0f8f-redis",
+        "id": "06e0661bf4edda67fc9e6207fb4d39719e27a382bf6e9b06887fc050336b5d31",
+        "label": "be07-global-469af22a0f8f",
+        "bind": "127.0.0.1:56391",
+        "tmpfs": true
+      }
+    ],
+    "liveResources": [],
+    "authorization": "Pedido humano directo nuevo: bueno, avanza entonces con la validacion global; stop/check exacto y runtime BE07 aislado si verde.",
+    "at": "2026-10-09T19:41:15.923388+00:00",
+    "plannedResources": [
+      {
+        "role": "database",
+        "name": "be07_global_469af22a0f8f_test",
+        "comment": "be07-global-469af22a0f8f-owned"
+      },
+      {
+        "role": "redis",
+        "name": "be07-global-469af22a0f8f-redis",
+        "label": "be07-global-469af22a0f8f",
+        "bind": "127.0.0.1:56391"
+      }
+    ],
+    "processes": [
+      {
+        "role": "proxy",
+        "port": 56392,
+        "pid": 21364,
+        "parentPID": 21357,
+        "command": [
+          "node",
+          "/private/tmp/be07-global-469af22a0f8f/proxy.mjs"
+        ],
+        "nonce": null
+      },
+      {
+        "role": "api",
+        "port": 3001,
+        "pid": 21371,
+        "parentPID": 21357,
+        "command": [
+          "node",
+          "--import",
+          "/private/tmp/be07-global-469af22a0f8f/network-guard.mjs",
+          "backend/dist/main.js"
+        ],
+        "nonce": "be07-global-469af22a0f8f-api-one-process"
+      },
+      {
+        "role": "web",
+        "port": 3000,
+        "pid": 21384,
+        "parentPID": 21357,
+        "command": [
+          "node",
+          "--import",
+          "/private/tmp/be07-global-469af22a0f8f/network-guard.mjs",
+          "frontend/node_modules/next/dist/bin/next",
+          "start",
+          "frontend",
+          "--hostname",
+          "127.0.0.1",
+          "--port",
+          "3000"
+        ],
+        "nonce": null
+      }
+    ],
+    "runtimeStartedAtUtc": "2026-10-09T19:46:37.789091+00:00",
+    "runtimeStarted": false,
+    "processesAliveAfterMatrix": [
+      {
+        "role": "proxy",
+        "pid": 21364,
+        "stillAlive": true,
+        "listenerPID": [
+          21364
+        ]
+      },
+      {
+        "role": "api",
+        "pid": 21371,
+        "stillAlive": true,
+        "listenerPID": [
+          21371
+        ]
+      },
+      {
+        "role": "web",
+        "pid": 21384,
+        "stillAlive": true,
+        "listenerPID": [
+          21384
+        ]
+      }
+    ],
+    "processesStopVerification": [
+      {
+        "role": "web",
+        "pid": 21384,
+        "parentPID": 21357,
+        "commandVerified": true,
+        "listenerVerified": true
+      },
+      {
+        "role": "api",
+        "pid": 21371,
+        "parentPID": 21357,
+        "commandVerified": true,
+        "listenerVerified": true
+      },
+      {
+        "role": "proxy",
+        "pid": 21364,
+        "parentPID": 21357,
+        "commandVerified": true,
+        "listenerVerified": true
+      }
+    ],
+    "processesStopped": [
+      21364,
+      21371,
+      21384
+    ],
+    "runtimeExitCode": 0,
+    "databaseCommentVerifiedBeforeDrop": true,
+    "databaseConnectionsBeforeDrop": 0,
+    "cloneDropped": true,
+    "redisRemoved": true,
+    "sourceCountsUnchanged": true,
+    "sourceInfraIDsUnchangedHealthy": true,
+    "cleanupAt": "2026-10-09T19:47:48.737802+00:00"
+  },
+  "cleanupFixture": {
+    "exactFixtureOnly": true,
+    "users": 2,
+    "prices": 1,
+    "jobs": 1,
+    "cards": 1,
+    "sets": 1
+  },
+  "before": {
+    "dev": {
+      "cards": 20670,
+      "sets": 176,
+      "migrations": 11,
+      "users": 22,
+      "collections": 22,
+      "items": 69,
+      "shares": 13,
+      "prices": 29325,
+      "jobs": 18721,
+      "snapshots": 1,
+      "gin": 5
+    },
+    "test": {
+      "cards": 20670,
+      "sets": 176,
+      "migrations": 11,
+      "users": 2,
+      "collections": 3,
+      "items": 2,
+      "shares": 1,
+      "prices": 188,
+      "jobs": 0,
+      "snapshots": 0,
+      "gin": 5
+    },
+    "infra": {
+      "postgres": {
+        "id": "18aa2f6937521ae010930ae98cbee45f2fa435b554c65cf90daaffba0c641ba8",
+        "name": "pokemon-scanner-db",
+        "image": "sha256:d394728dee24b7791f1969c683f8b8410fe57450713a1db2aff5a500f0f98ab0",
+        "state": "running",
+        "health": "healthy",
+        "ports": {
+          "5432/tcp": [
+            {
+              "HostIp": "127.0.0.1",
+              "HostPort": "55432"
+            }
+          ]
+        },
+        "labels": {
+          "com.docker.compose.config-hash": "93cf41e7b45130925a2386b80c4d5cf46c7beca59118492f48bc78a47a6e2a04",
+          "com.docker.compose.container-number": "1",
+          "com.docker.compose.depends_on": "",
+          "com.docker.compose.image": "sha256:d394728dee24b7791f1969c683f8b8410fe57450713a1db2aff5a500f0f98ab0",
+          "com.docker.compose.oneoff": "False",
+          "com.docker.compose.project": "pokemon-cards-scanner-app",
+          "com.docker.compose.project.config_files": "/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/docker-compose.yml",
+          "com.docker.compose.project.working_dir": "/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app",
+          "com.docker.compose.replace": "pokemon-scanner-db",
+          "com.docker.compose.service": "db",
+          "com.docker.compose.version": "5.5.1"
+        },
+        "mounts": [
+          {
+            "Type": "volume",
+            "Name": "pokemon-cards-scanner-app_pgdata",
+            "Destination": "/var/lib/postgresql/data"
+          }
+        ]
+      },
+      "redisDev": {
+        "id": "f2d2ca0ad580fe8ca3e94a59b4b6d5a53d761036ba1d14e45b8543a978bbb15f",
+        "name": "pokemon-scanner-redis",
+        "image": "sha256:ec4f171e9ff071bb2a1c936057d3be00206069b028b6c0d61df2477e1dd02c42",
+        "state": "running",
+        "health": "healthy",
+        "ports": {
+          "6379/tcp": [
+            {
+              "HostIp": "127.0.0.1",
+              "HostPort": "6379"
+            }
+          ]
+        },
+        "labels": {
+          "com.docker.compose.config-hash": "4c58a6fa0b1d368d639d13c5cfa973eec38ee32666e41ab90a67fad28be6d7ed",
+          "com.docker.compose.container-number": "1",
+          "com.docker.compose.depends_on": "",
+          "com.docker.compose.image": "sha256:ec4f171e9ff071bb2a1c936057d3be00206069b028b6c0d61df2477e1dd02c42",
+          "com.docker.compose.oneoff": "False",
+          "com.docker.compose.project": "pokemon-cards-scanner-app",
+          "com.docker.compose.project.config_files": "/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/docker-compose.yml",
+          "com.docker.compose.project.working_dir": "/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app",
+          "com.docker.compose.replace": "pokemon-scanner-redis",
+          "com.docker.compose.service": "redis",
+          "com.docker.compose.version": "5.5.1"
+        },
+        "mounts": [
+          {
+            "Type": "volume",
+            "Name": "pokemon-cards-scanner-app_redisdata",
+            "Destination": "/data"
+          }
+        ]
+      }
+    },
+    "databaseAbsent": true,
+    "redisAbsent": true,
+    "sourceTestConnections": 0
+  },
+  "after": {
+    "dev": {
+      "cards": 20670,
+      "sets": 176,
+      "migrations": 11,
+      "users": 22,
+      "collections": 22,
+      "items": 69,
+      "shares": 13,
+      "prices": 29325,
+      "jobs": 18721,
+      "snapshots": 1,
+      "gin": 5
+    },
+    "test": {
+      "cards": 20670,
+      "sets": 176,
+      "migrations": 11,
+      "users": 2,
+      "collections": 3,
+      "items": 2,
+      "shares": 1,
+      "prices": 188,
+      "jobs": 0,
+      "snapshots": 0,
+      "gin": 5
+    },
+    "infra": {
+      "postgres": {
+        "id": "18aa2f6937521ae010930ae98cbee45f2fa435b554c65cf90daaffba0c641ba8",
+        "name": "pokemon-scanner-db",
+        "image": "sha256:d394728dee24b7791f1969c683f8b8410fe57450713a1db2aff5a500f0f98ab0",
+        "state": "running",
+        "health": "healthy",
+        "ports": {
+          "5432/tcp": [
+            {
+              "HostIp": "127.0.0.1",
+              "HostPort": "55432"
+            }
+          ]
+        },
+        "labels": {
+          "com.docker.compose.config-hash": "93cf41e7b45130925a2386b80c4d5cf46c7beca59118492f48bc78a47a6e2a04",
+          "com.docker.compose.container-number": "1",
+          "com.docker.compose.depends_on": "",
+          "com.docker.compose.image": "sha256:d394728dee24b7791f1969c683f8b8410fe57450713a1db2aff5a500f0f98ab0",
+          "com.docker.compose.oneoff": "False",
+          "com.docker.compose.project": "pokemon-cards-scanner-app",
+          "com.docker.compose.project.config_files": "/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/docker-compose.yml",
+          "com.docker.compose.project.working_dir": "/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app",
+          "com.docker.compose.replace": "pokemon-scanner-db",
+          "com.docker.compose.service": "db",
+          "com.docker.compose.version": "5.5.1"
+        },
+        "mounts": [
+          {
+            "Type": "volume",
+            "Name": "pokemon-cards-scanner-app_pgdata",
+            "Destination": "/var/lib/postgresql/data"
+          }
+        ]
+      },
+      "redisDev": {
+        "id": "f2d2ca0ad580fe8ca3e94a59b4b6d5a53d761036ba1d14e45b8543a978bbb15f",
+        "name": "pokemon-scanner-redis",
+        "image": "sha256:ec4f171e9ff071bb2a1c936057d3be00206069b028b6c0d61df2477e1dd02c42",
+        "state": "running",
+        "health": "healthy",
+        "ports": {
+          "6379/tcp": [
+            {
+              "HostIp": "127.0.0.1",
+              "HostPort": "6379"
+            }
+          ]
+        },
+        "labels": {
+          "com.docker.compose.config-hash": "4c58a6fa0b1d368d639d13c5cfa973eec38ee32666e41ab90a67fad28be6d7ed",
+          "com.docker.compose.container-number": "1",
+          "com.docker.compose.depends_on": "",
+          "com.docker.compose.image": "sha256:ec4f171e9ff071bb2a1c936057d3be00206069b028b6c0d61df2477e1dd02c42",
+          "com.docker.compose.oneoff": "False",
+          "com.docker.compose.project": "pokemon-cards-scanner-app",
+          "com.docker.compose.project.config_files": "/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/docker-compose.yml",
+          "com.docker.compose.project.working_dir": "/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app",
+          "com.docker.compose.replace": "pokemon-scanner-redis",
+          "com.docker.compose.service": "redis",
+          "com.docker.compose.version": "5.5.1"
+        },
+        "mounts": [
+          {
+            "Type": "volume",
+            "Name": "pokemon-cards-scanner-app_redisdata",
+            "Destination": "/data"
+          }
+        ]
+      }
+    }
+  },
+  "integrity": {
+    "sourceFilesVerified": 501,
+    "sourceChanges": [],
+    "outputs": {
+      "backend/dist": {
+        "files": 277,
+        "runtimeAdded": [],
+        "runtimeRemoved": [],
+        "runtimeChanged": []
+      },
+      "frontend/.next": {
+        "files": 2082,
+        "runtimeAdded": [],
+        "runtimeRemoved": [],
+        "runtimeChanged": []
+      }
+    },
+    "portsAfter": {
+      "3000": {
+        "free": true,
+        "listeners": ""
+      },
+      "3001": {
+        "free": true,
+        "listeners": ""
+      },
+      "56391": {
+        "free": true,
+        "listeners": ""
+      },
+      "56392": {
+        "free": true,
+        "listeners": ""
+      }
+    }
+  },
+  "selectedGlobalFlags": {
+    "launcherInherited": {
+      "PRICE_QUEUE_ENABLED": null,
+      "ENABLE_CATALOG_SYNC_CRON": null,
+      "ENABLE_PRICE_BACKFILL_CRON": null,
+      "ENABLE_RETENTION_CRON": null,
+      "SCANNER_VISUAL_ENABLED": null,
+      "NODE_OPTIONS": null
+    },
+    "envFilesSelectedFlags": {
+      ".env": {},
+      "backend/.env": {
+        "SCANNER_VISUAL_ENABLED": "1"
+      }
+    }
+  },
+  "reportSha256": "0f96c8f2807d3f7b2ffa5b26113ae19549ab96fde2c2fb24a95a6d848c30f48f",
+  "annexSha256": {
+    "LOTE-REDIS-revalidacion-global-anexos/api-runtime.log": "3d0937609fc3a5a4172157d793b169b0f9f2742eea8315f7215eb6a7bdc6b7f2",
+    "LOTE-REDIS-revalidacion-global-anexos/check-process.json": "04a7873df6238c8a1a8151a933b5212d70ddc8c8a5d362a55a7ff6cc7042891d",
+    "LOTE-REDIS-revalidacion-global-anexos/check-result.json": "f972ab6d6c8449f5a47d8d738280addc39e347dd57081d1916bbfc75dba0cf1f",
+    "LOTE-REDIS-revalidacion-global-anexos/check-standard.log": "b6e135919662fca172bb35770af9bee8cfd3616bb2e9e088a994bb96e2e0b590",
+    "LOTE-REDIS-revalidacion-global-anexos/compiled-backend-before-runtime.json": "104e44d202baadbea8549b162957872ff4ddfff33c01a871b5b724987cb15dfe",
+    "LOTE-REDIS-revalidacion-global-anexos/compiled-next-before-runtime.json": "e0ae931bd19d564300ca3ce6a75890eba06e2fcf131daa18cb2bed0e6860d178",
+    "LOTE-REDIS-revalidacion-global-anexos/final-backend-dist-sha256.json": "104e44d202baadbea8549b162957872ff4ddfff33c01a871b5b724987cb15dfe",
+    "LOTE-REDIS-revalidacion-global-anexos/final-integrity.json": "d1352866c05788cd2feeb652562fdbfb1f287d953f8a9a0d5176a804f7469269",
+    "LOTE-REDIS-revalidacion-global-anexos/final-next-sha256.json": "e0ae931bd19d564300ca3ce6a75890eba06e2fcf131daa18cb2bed0e6860d178",
+    "LOTE-REDIS-revalidacion-global-anexos/final-source-sha256.json": "736f80f32749863358c72987278bfe6837d691b57d736163ab94f26859d95d05",
+    "LOTE-REDIS-revalidacion-global-anexos/fixture-cleanup.json": "4032cc3a213f8a8b1859d2054d8621891607b65050e18ec50f251218daa3bede",
+    "LOTE-REDIS-revalidacion-global-anexos/fixture-identifiers.json": "06000ef34dbc439b442018ffad49e677c958ec638e203725c5e55faac7e11c34",
+    "LOTE-REDIS-revalidacion-global-anexos/infra-created.json": "57015a7034baafe81ca41b22e82672a9dec9f87c54440dc1c269c204e5286969",
+    "LOTE-REDIS-revalidacion-global-anexos/infra.py": "88c049dfd4e5663c01b7bf97ce77bae35dd7f7f3bdbbee113a161cc93ae2e544",
+    "LOTE-REDIS-revalidacion-global-anexos/network-guard.mjs": "3aa73c28362e8efdb14c44194b46e5cb678228b5afd7b68d812d1edb62885c20",
+    "LOTE-REDIS-revalidacion-global-anexos/ownership.json": "30176f302f324b322dc2a741dcafb8793fc9df19d666e7ca0be53dee77d02486",
+    "LOTE-REDIS-revalidacion-global-anexos/ports-after.json": "544f24c0f81d15c47cfeb3d5b72cf11d263970f3df22427ca7e1a9c7bd66dd31",
+    "LOTE-REDIS-revalidacion-global-anexos/ports-before.json": "77cc25e544c4a667702e96ba7ea64710ec0af4d164f9191ec4fe6f8c49dabb21",
+    "LOTE-REDIS-revalidacion-global-anexos/proxy-runtime.log": "10c69c0c3e2e9f62eddba571526de07ba1f2d70ea82634f77096b5b818bac82d",
+    "LOTE-REDIS-revalidacion-global-anexos/proxy-stats.json": "c743ba50bdeddd99ffd08c097a0f0b350bf919fa2d47ec6e5759c9b43b2827e2",
+    "LOTE-REDIS-revalidacion-global-anexos/proxy.mjs": "ec856b249306e1a585dfc85876ff23adb8c8af10aa25b7d6fa805af6e72cef3e",
+    "LOTE-REDIS-revalidacion-global-anexos/received-backend-dist-sha256.json": "104e44d202baadbea8549b162957872ff4ddfff33c01a871b5b724987cb15dfe",
+    "LOTE-REDIS-revalidacion-global-anexos/received-git-status.txt": "f50eef9e455328ca63ba0e2ddf38cf514204b14dac959e48e5df7b1be493a6c2",
+    "LOTE-REDIS-revalidacion-global-anexos/received-next-sha256.json": "f58a6fa87274dfc329e343d61b2a89411ec09b5e1d7171d56f0cc4776c8d4696",
+    "LOTE-REDIS-revalidacion-global-anexos/received-source-sha256.json": "736f80f32749863358c72987278bfe6837d691b57d736163ab94f26859d95d05",
+    "LOTE-REDIS-revalidacion-global-anexos/run-check.py": "3cc09e234a32e9da4bc275ead9ee48244e263cdd430bda2429ca4dea99d83173",
+    "LOTE-REDIS-revalidacion-global-anexos/run-runtime.py": "7e1151faca1c9d07d24510d87955f924b9aef604ca08ffa4aa95de6072d8b0b3",
+    "LOTE-REDIS-revalidacion-global-anexos/runtime-attempt-1/api-runtime.log": "c1b54b9bf842909143fe7aa37cfd8650564103e41ffb965f00c3ce55f567709e",
+    "LOTE-REDIS-revalidacion-global-anexos/runtime-attempt-1/ownership.json": "b399ac7d9413bd625caa11bc681f0612569275577b3b5a317b1da146ea221904",
+    "LOTE-REDIS-revalidacion-global-anexos/runtime-attempt-1/proxy-runtime.log": "24daff4a507a30fec63e9ce30e1d48fc1402623a5fff88a1e0def41ef4367a37",
+    "LOTE-REDIS-revalidacion-global-anexos/runtime-attempt-1/proxy-stats.json": "6502a070c9ecede649386b6475717c2f11a6e6d761554c115f788f573536fdca",
+    "LOTE-REDIS-revalidacion-global-anexos/runtime-attempt-1/run-runtime.py": "7e1151faca1c9d07d24510d87955f924b9aef604ca08ffa4aa95de6072d8b0b3",
+    "LOTE-REDIS-revalidacion-global-anexos/runtime-attempt-1/runtime-flow.log": "ae9dc66ca8fe6533390951a2276b29756abd45a9661939101ce3c81e2419d6e8",
+    "LOTE-REDIS-revalidacion-global-anexos/runtime-attempt-1/runtime-flow.mjs": "22be9d8b415f965a1c783042c76b0939febb1e1a71fc4e394ddfd39f945bae4f",
+    "LOTE-REDIS-revalidacion-global-anexos/runtime-attempt-1/web-runtime.log": "c5a90850416bf234565a5b5706d47d94ed2d38b258822051b07b4306f1c9e136",
+    "LOTE-REDIS-revalidacion-global-anexos/runtime-flow.log": "5d3324a14c79ea84e899c1e98472cade283dc134a66fba2ecc6d9d0806a9934f",
+    "LOTE-REDIS-revalidacion-global-anexos/runtime-flow.mjs": "5273f7483bf0a9c8e313aac85f25cb5779c4431a218a2a83e58bf732b468d76e",
+    "LOTE-REDIS-revalidacion-global-anexos/runtime-results.json": "9873bbb483fe8ff7c7019178b96fdee1a90afb66e98b97f64d7920ab9e284df6",
+    "LOTE-REDIS-revalidacion-global-anexos/selected-global-environment-flags.json": "0b6a3d84fee0bb18f8b3aecd6eed863a597033e8bb03c4ad423798708fce8a8f",
+    "LOTE-REDIS-revalidacion-global-anexos/source-inventory-after.json": "cbc3dedfcce4289532045d3b0d03e0335960ffff2d723bceec458b60142829d6",
+    "LOTE-REDIS-revalidacion-global-anexos/source-inventory-before.json": "aa134e3f44801fec691203575a4f3043a2908fc80200e24b177066b2ef7de311",
+    "LOTE-REDIS-revalidacion-global-anexos/stop-before-check.log": "12970d8b80d3abdcde47fae9061ffb349a3b7e3e0b1f7f8391e3c2cbc1c55e29",
+    "LOTE-REDIS-revalidacion-global-anexos/web-runtime.log": "43ff2a34cf51a31afce6c08ed82f708b9355fcbd586ceb1e9b03aa1370d02bf1"
+  },
+  "limits": [
+    "Historical readiness socket hang up cause remains unlocalized.",
+    "Counts are bounded aggregates, not full-row snapshot.",
+    "Expiry validated via controlled stale PG fixture, not a whole-day clock/TTL wait.",
+    "Runtime scanner/worker/crons disabled only for isolated provider-safe execution.",
+    "Network guard records Node fetch attempts, not a universal network audit.",
+    "No repeated browser/viewport/theme QA; unchanged UI and HTTP/SSR covered."
+  ]
+}

@@ -4,6 +4,7 @@ export {
   buildQueryString,
   getApiBaseUrl,
   refreshSession,
+  recoveryFetch,
 } from './api-client';
 export type { ApiFetchOptions } from './api-client';
 
@@ -11,6 +12,7 @@ export {
   clearTokens,
   getAccessToken,
   hasSession,
+  getSessionEpoch,
   setTokens,
 } from './token-storage';
 
@@ -20,6 +22,8 @@ export {
   logout,
   register,
   refreshSessionTokens,
+  requestPasswordRecovery,
+  recoverPassword,
 } from './auth';
 export type { RegisterPayload } from './auth';
 

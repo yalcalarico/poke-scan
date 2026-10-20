@@ -1,0 +1,16 @@
+{
+  "command": [
+    "pnpm",
+    "--dir",
+    "backend",
+    "exec",
+    "vitest",
+    "run",
+    "src/modules/account-deletion/account-suppression-custody.spec.ts",
+    "src/modules/account-deletion/suppression-custody.spec.ts",
+    "src/modules/account-deletion/suppression-custody-process.spec.ts",
+    "src/modules/account-deletion/account-deletion.service.spec.ts",
+    "src/modules/account-deletion/suppression-custody-authority.spec.ts"
+  ],
+  "exitCode": 0
+}

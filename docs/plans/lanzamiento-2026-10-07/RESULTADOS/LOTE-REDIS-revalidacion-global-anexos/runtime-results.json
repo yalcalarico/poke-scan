@@ -1,0 +1,375 @@
+{
+  "checks": [
+    {
+      "name": "startup-offline-ready-health",
+      "passed": true
+    },
+    {
+      "name": "startup-more-than-three-retries",
+      "passed": true,
+      "rejectedConnections": 4
+    },
+    {
+      "name": "startup-recovered-ready-health",
+      "passed": true
+    },
+    {
+      "name": "real-register-refresh-cookie",
+      "passed": true
+    },
+    {
+      "name": "real-login-cookie-bearer",
+      "passed": true
+    },
+    {
+      "name": "warm-USD-and-synthetic-ARS",
+      "passed": true
+    },
+    {
+      "name": "auth-and-ownership",
+      "passed": true
+    },
+    {
+      "name": "warm-valid-public-allowlist",
+      "passed": true
+    },
+    {
+      "name": "warm-valid-SSR-consumer",
+      "passed": true
+    },
+    {
+      "name": "warm-revoked-public-allowlist",
+      "passed": true
+    },
+    {
+      "name": "warm-revoked-SSR-consumer",
+      "passed": true
+    },
+    {
+      "name": "warm-expired-public-allowlist",
+      "passed": true
+    },
+    {
+      "name": "warm-expired-SSR-consumer",
+      "passed": true
+    },
+    {
+      "name": "sustained-cut-ready-health",
+      "passed": true
+    },
+    {
+      "name": "down-card-Postgres-new-price",
+      "passed": true,
+      "status": 200,
+      "ms": 6
+    },
+    {
+      "name": "down-ARS-unknown-USD-reference-kept",
+      "passed": true,
+      "status": 200,
+      "ms": 5
+    },
+    {
+      "name": "down-collection-Postgres-valuation",
+      "passed": true,
+      "status": 200,
+      "ms": 5
+    },
+    {
+      "name": "down-items-Postgres-reference",
+      "passed": true,
+      "status": 200,
+      "ms": 8
+    },
+    {
+      "name": "down-public-Postgres-new-price",
+      "passed": true,
+      "status": 200,
+      "ms": 9
+    },
+    {
+      "name": "down-NextSSR-real-consumer",
+      "passed": true,
+      "status": 200,
+      "ms": 19
+    },
+    {
+      "name": "down-revoke-best-effort-cache-invalidation",
+      "passed": true
+    },
+    {
+      "name": "down-revoked-api-SSR-bot",
+      "passed": true,
+      "apiStatus": 404,
+      "ssrStatus": 200,
+      "botSSRStatus": 200
+    },
+    {
+      "name": "down-expired-api-SSR-bot",
+      "passed": true,
+      "apiStatus": 404,
+      "ssrStatus": 200,
+      "botSSRStatus": 200
+    },
+    {
+      "name": "old-hot-payloads-preserved-through-cut",
+      "passed": true
+    },
+    {
+      "name": "cut-more-than-three-retries-same-process",
+      "passed": true,
+      "rejectedConnections": 4
+    },
+    {
+      "name": "cut-recovered-ready-health",
+      "passed": true
+    },
+    {
+      "name": "old-hot-payloads-present-before-recovered-GET",
+      "passed": true
+    },
+    {
+      "name": "recovered-revoked-old-cache-does-not-revive",
+      "passed": true,
+      "apiStatus": 404,
+      "ssrStatus": 200,
+      "botSSRStatus": 200
+    },
+    {
+      "name": "recovered-expired-old-cache-does-not-revive",
+      "passed": true,
+      "apiStatus": 404,
+      "ssrStatus": 200,
+      "botSSRStatus": 200
+    },
+    {
+      "name": "recovered-valid-NextSSR",
+      "passed": true
+    },
+    {
+      "name": "recovered-ARS-cache-reference",
+      "passed": true
+    },
+    {
+      "name": "own-jobs-unexecuted",
+      "passed": true
+    },
+    {
+      "name": "zero-external-Node-fetch-attempts",
+      "passed": true
+    },
+    {
+      "name": "real-session-logout",
+      "passed": true
+    }
+  ],
+  "transitions": [
+    {
+      "name": "startup-offline",
+      "apiPID": 21371,
+      "nonce": "be07-global-469af22a0f8f-api-one-process",
+      "ready": {
+        "status": "ready",
+        "degraded": true,
+        "detail": {
+          "database": {
+            "state": "ready"
+          },
+          "scanner": {
+            "state": "disabled",
+            "busy": false
+          },
+          "redis": {
+            "state": "degraded"
+          }
+        }
+      },
+      "health": {
+        "status": "ok",
+        "degraded": true,
+        "detail": {
+          "redis": {
+            "configured": true,
+            "available": false,
+            "degradedSince": "2026-10-09T19:46:37.242Z",
+            "lastErrorAt": "2026-10-09T19:46:37.752Z"
+          }
+        }
+      },
+      "at": "2026-10-09T19:46:37.918Z"
+    },
+    {
+      "name": "startup-recovered",
+      "apiPID": 21371,
+      "nonce": "be07-global-469af22a0f8f-api-one-process",
+      "ready": {
+        "status": "ready",
+        "degraded": false,
+        "detail": {
+          "database": {
+            "state": "ready"
+          },
+          "scanner": {
+            "state": "disabled",
+            "busy": false
+          },
+          "redis": {
+            "state": "ready"
+          }
+        }
+      },
+      "health": {
+        "status": "ok",
+        "degraded": false,
+        "detail": {
+          "redis": {
+            "configured": true,
+            "available": true,
+            "degradedSince": null,
+            "lastErrorAt": "2026-10-09T19:46:52.776Z"
+          }
+        }
+      },
+      "at": "2026-10-09T19:47:07.884Z"
+    },
+    {
+      "name": "sustained-cut",
+      "apiPID": 21371,
+      "nonce": "be07-global-469af22a0f8f-api-one-process",
+      "ready": {
+        "status": "ready",
+        "degraded": true,
+        "detail": {
+          "database": {
+            "state": "ready"
+          },
+          "scanner": {
+            "state": "disabled",
+            "busy": false
+          },
+          "redis": {
+            "state": "degraded"
+          }
+        }
+      },
+      "health": {
+        "status": "ok",
+        "degraded": true,
+        "detail": {
+          "redis": {
+            "configured": true,
+            "available": false,
+            "degradedSince": "2026-10-09T19:47:08.434Z",
+            "lastErrorAt": "2026-10-09T19:46:52.776Z"
+          }
+        }
+      },
+      "at": "2026-10-09T19:47:08.542Z"
+    },
+    {
+      "name": "cut-recovered",
+      "apiPID": 21371,
+      "nonce": "be07-global-469af22a0f8f-api-one-process",
+      "ready": {
+        "status": "ready",
+        "degraded": false,
+        "detail": {
+          "database": {
+            "state": "ready"
+          },
+          "scanner": {
+            "state": "disabled",
+            "busy": false
+          },
+          "redis": {
+            "state": "ready"
+          }
+        }
+      },
+      "health": {
+        "status": "ok",
+        "degraded": false,
+        "detail": {
+          "redis": {
+            "configured": true,
+            "available": true,
+            "degradedSince": null,
+            "lastErrorAt": "2026-10-09T19:47:15.949Z"
+          }
+        }
+      },
+      "at": "2026-10-09T19:47:23.976Z"
+    }
+  ],
+  "latencies": [
+    {
+      "name": "down-card-Postgres-new-price",
+      "ms": 6,
+      "state": "client-not-ready"
+    },
+    {
+      "name": "down-ARS-unknown-USD-reference-kept",
+      "ms": 5,
+      "state": "client-not-ready"
+    },
+    {
+      "name": "down-collection-Postgres-valuation",
+      "ms": 5,
+      "state": "client-not-ready"
+    },
+    {
+      "name": "down-items-Postgres-reference",
+      "ms": 8,
+      "state": "client-not-ready"
+    },
+    {
+      "name": "down-public-Postgres-new-price",
+      "ms": 9,
+      "state": "client-not-ready"
+    },
+    {
+      "name": "down-NextSSR-real-consumer",
+      "ms": 19,
+      "state": "client-not-ready"
+    }
+  ],
+  "apiIdentity": {
+    "role": "api",
+    "port": 3001,
+    "pid": 21371,
+    "parentPID": 21357,
+    "command": [
+      "node",
+      "--import",
+      "/private/tmp/be07-global-469af22a0f8f/network-guard.mjs",
+      "backend/dist/main.js"
+    ],
+    "nonce": "be07-global-469af22a0f8f-api-one-process"
+  },
+  "cacheEvidence": [
+    {
+      "phase": "before-cut",
+      "entries": [
+        {
+          "label": "revoked",
+          "sha256": "12209eda1c3bc874232271f9f4a2bb64768a5997c2cec3d858c2ca571c812756"
+        },
+        {
+          "label": "valid",
+          "sha256": "a9ac4ccdc5d774ba2606373d668155952d7bd57f1a2db51c8480be206f24c342"
+        },
+        {
+          "label": "expired",
+          "sha256": "5de9d50d4377e0ccdb11fa2e7bd47036a958100fdcb01a11a37685f4f0f3d061"
+        }
+      ]
+    }
+  ],
+  "fixture": {
+    "synthetic": true,
+    "jobs": 1
+  },
+  "externalNodeFetchAttempts": 0,
+  "startupRecoveryMs": 14994,
+  "cutRecoveryMs": 7957
+}

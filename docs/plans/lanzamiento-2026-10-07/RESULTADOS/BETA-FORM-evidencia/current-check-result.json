@@ -1,0 +1,27 @@
+{
+  "purpose": "Standalone beta form validation",
+  "records": [
+    {
+      "phase": "stop",
+      "command": [
+        "pnpm",
+        "run",
+        "stop"
+      ],
+      "exitCode": 0,
+      "startedAtUtc": "2026-10-13T10:29:25.479933+00:00",
+      "finishedAtUtc": "2026-10-13T10:29:25.735664+00:00"
+    },
+    {
+      "phase": "check",
+      "command": [
+        "pnpm",
+        "run",
+        "check"
+      ],
+      "exitCode": 0,
+      "startedAtUtc": "2026-10-13T10:29:25.736113+00:00",
+      "finishedAtUtc": "2026-10-13T10:31:17.352374+00:00"
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+[
+  {
+    "case": "capture-diagnostic",
+    "ownedHitsReset": true
+  },
+  {
+    "case": "primary",
+    "ownedHitsReset": true
+  },
+  {
+    "case": "concurrent",
+    "ownedHitsReset": true
+  },
+  {
+    "case": "uncertain",
+    "ownedHitsReset": true
+  },
+  {
+    "case": "navigation",
+    "ownedHitsReset": true
+  },
+  {
+    "case": "rate",
+    "ownedHitsReset": true
+  },
+  {
+    "case": "http-errors",
+    "ownedHitsReset": true
+  }
+]

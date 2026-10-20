@@ -1,0 +1,8 @@
+{
+  "scope": "same Nest/controller/mock dependencies; Supertest auto-listen/close sequential",
+  "pid": 11860,
+  "requests": 300,
+  "failures": [],
+  "boundedMax": 300,
+  "serverListeningAfterClose": false
+}

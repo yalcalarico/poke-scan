@@ -4,6 +4,8 @@ import { Layers } from 'lucide-react';
 
 import { Badge, StatValue, Surface } from '@/components/ui';
 import { useCurrency } from '@/hooks/use-currency';
+import { ValuationEvidence } from '@/components/prices/price-evidence';
+import type { ValueAggregateDto } from '@/types/api';
 import type { CollectionStatsResponse } from '@/lib/api/collections';
 
 import { formatCount } from './collection-options';
@@ -12,10 +14,8 @@ export interface CollectionSummaryProps {
   name: string;
   /** Bajada del nombre: cantidad de cartas y fecha de creación. */
   subtitle: string;
-  /** Valor total en **USD**. Lo formatea `useCurrency`; el crudo nunca sale de acá. */
-  totalValueUsd: number | null;
+  valuation?: ValueAggregateDto;
   isDefault?: boolean;
-  isPartial?: boolean;
 }
 
 /**
@@ -34,9 +34,8 @@ export interface CollectionSummaryProps {
 export function CollectionSummary({
   name,
   subtitle,
-  totalValueUsd,
+  valuation,
   isDefault = false,
-  isPartial = false,
 }: CollectionSummaryProps) {
   const { formatMoney } = useCurrency();
 
@@ -64,12 +63,11 @@ export function CollectionSummary({
       </div>
 
       <div className="flex min-w-0 flex-col items-start sm:items-end">
-        {/*
-          `text-overline` ya trae `uppercase`, así que el copy va en minúscula y
-          se ve en caja alta sola.
-        */}
-        <p className="text-overline text-tertiary">{isPartial ? 'Valor parcial' : 'Valor'}</p>
-        <p className="break-all text-display text-positive tabular-nums">{totalValueUsd === null ? '—' : formatMoney(totalValueUsd)}</p>
+        <div className="flex min-w-0 flex-col items-start sm:items-end">
+          <p className="text-overline text-tertiary">{valuation?.amount === null ? 'Sin referencia de precio' : 'Valor'}</p>
+          <p className="break-all text-display text-positive tabular-nums">{!valuation ? '—' : valuation.amount === null ? '—' : formatMoney(valuation.amount)}</p>
+        </div>
+        <ValuationEvidence valuation={valuation} className="sm:text-right" announceChanges />
       </div>
     </Surface>
   );

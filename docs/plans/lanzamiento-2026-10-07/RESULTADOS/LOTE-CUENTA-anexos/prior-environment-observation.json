@@ -1,0 +1,61 @@
+{
+  "identity": {
+    "database": "be05_review_3aaf105723d3_test",
+    "role": "pokemon",
+    "owner": "pokemon",
+    "comment": "cuenta-gate-3aaf105723d3-owned",
+    "marker": "cuenta-gate-3aaf105723d3-owned"
+  },
+  "initialCoreCounts": {
+    "cards": 20670,
+    "sets": 176,
+    "migrations": 11,
+    "users": 2,
+    "collections": 3,
+    "items": 2,
+    "shares": 1,
+    "prices": 188,
+    "jobs": 0,
+    "snapshots": 0,
+    "gin": 5
+  },
+  "observedCoreCounts": {
+    "cards": 20670,
+    "sets": 176,
+    "migrations": 13,
+    "users": 8,
+    "collections": 0,
+    "items": 0,
+    "shares": 0,
+    "prices": 188,
+    "jobs": 0,
+    "snapshots": 0,
+    "gin": 5
+  },
+  "coreDifferences": {
+    "migrations": {
+      "initial": 11,
+      "observed": 13
+    },
+    "users": {
+      "initial": 2,
+      "observed": 8
+    },
+    "collections": {
+      "initial": 3,
+      "observed": 0
+    },
+    "items": {
+      "initial": 2,
+      "observed": 0
+    },
+    "shares": {
+      "initial": 1,
+      "observed": 0
+    }
+  },
+  "initialRedisKeys": 0,
+  "observedRedisKeys": 0,
+  "redisID": "31003d3c622fd04c9a669438888e744340808efb9b2ab7cbbe6128864c6006ba",
+  "roleAndMarkersVerified": true
+}

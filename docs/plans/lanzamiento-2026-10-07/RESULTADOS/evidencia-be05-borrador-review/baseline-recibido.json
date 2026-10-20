@@ -1,0 +1,91 @@
+{
+  "scope": "lectura estática selectiva; no env/secrets ni runtime",
+  "sources": [
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/02-backend.md",
+      "sha256": "db45d0e7ac7f38678a82b74f958e2593c58b2fd1cb3b64faad5e9c6d8204594e",
+      "bytes": 15519
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/10-decisiones-y-contratos.md",
+      "sha256": "a040c6d51aa674adc7449b9dc683e1d1f5fa0cc6aaf0b6f2377991827a2ab6e5",
+      "bytes": 19459
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/NEG-03-cuenta-requisitos.md",
+      "sha256": "79365783583653359d4abcf9c682dfd9b06cf6def20158b5f23aeef914afe20b",
+      "bytes": 23869
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/NEG-03-cuenta-review.md",
+      "sha256": "775420f054f3edb318dc21ea4c8b43d4fc395437c29f45ec94eaca6876698ef1",
+      "bytes": 6737
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/NEG-03-cuenta-aceptacion-root.json",
+      "sha256": "10577800046c1171be539657f40c29365bfc5081ddef39718db6ca007901db7b",
+      "bytes": 455
+    },
+    {
+      "path": "backend/src/modules/auth/auth.controller.ts",
+      "sha256": "6e1418e90f41739a7aaf6be807498caa46491fc92beef554ad58d9c8fa29a7c5",
+      "bytes": 3369
+    },
+    {
+      "path": "backend/src/modules/auth/auth.service.ts",
+      "sha256": "0a254e70b586234adb0273e5ab6f038e92629161c6aea305de6de87120dd7502",
+      "bytes": 6216
+    },
+    {
+      "path": "backend/src/modules/auth/session-security.ts",
+      "sha256": "d2389954d9106d797fc19a2a7af9d88077ea740383cb5271056bafae2973aa99",
+      "bytes": 2923
+    },
+    {
+      "path": "backend/src/modules/auth/auth.module.ts",
+      "sha256": "a088b427e35b791b70c30aaf85e0e88cb4a91e1c1aafd93274da692f157387dc",
+      "bytes": 988
+    },
+    {
+      "path": "backend/src/common/guards/jwt-auth.guard.ts",
+      "sha256": "ae56011d88cfeeba08eaf3df29b8314ad00dc2d0008fa0aa0a9cb439cbf41fc1",
+      "bytes": 1581
+    },
+    {
+      "path": "backend/prisma/schema.prisma",
+      "sha256": "aa1a08ba649e542444fd79e724e497d8304c469b33a1cc0966646e831e6b3624",
+      "bytes": 12473
+    },
+    {
+      "path": "backend/src/modules/share/share.service.ts",
+      "sha256": "306b6290135591dbdeee63b22b0d015eb44bed5fc640f8ce4eb056ff70fb8c62",
+      "bytes": 19207
+    },
+    {
+      "path": "backend/src/modules/share/public-share.controller.ts",
+      "sha256": "acf9b7ef58255bff779152981f94faca44b4b155ec8f9d10e621c5bc23a8d2ee",
+      "bytes": 931
+    },
+    {
+      "path": "frontend/hooks/use-auth.tsx",
+      "sha256": "8e59872c612fc20d66f5503464b8ca83e7319f0876e75498297705cca7681745",
+      "bytes": 3414
+    },
+    {
+      "path": "docs/security.md",
+      "sha256": "77ca6e0ad62b3b100f6f6e2190e77cb708d5ad310bc546fcba9e331140b9af28",
+      "bytes": 4601
+    },
+    {
+      "path": "frontend/docs/scanner.md",
+      "sha256": "cd5646940492469583b428c1911a7f7820538742764abfb254b50f630adcbf52",
+      "bytes": 15476
+    },
+    {
+      "path": "infra/inf03/README.md",
+      "sha256": "7176efc0c91de25d8d62932c7c252b89dac23fca5972763a222526a3896dbe90",
+      "bytes": 9665
+    }
+  ],
+  "excluded": "No se extrapola estabilidad a Redis, DB, runtime, outputs concurrentes ni checkout global."
+}

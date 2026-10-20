@@ -1,5 +1,4 @@
 import Image from 'next/image';
-import Link from 'next/link';
 import { Check } from 'lucide-react';
 import type { ReactNode } from 'react';
 
@@ -7,6 +6,8 @@ import { cn } from '@/lib/cn';
 import type { CardDto } from '@/types/api';
 
 import { ShowOrDash } from './money';
+import { VisualCard } from '@/components/visual-preview/holo-card';
+import { PreviewLink } from '@/components/visual-preview/preview-link';
 import { rarityAccent } from './rarity-accent';
 
 export type CardTileVariant = 'catalog' | 'collection';
@@ -173,7 +174,7 @@ export interface CardTileProps {
 /**
  * Lo primero que hay que entender de este componente: **el tile es la imagen, no
  * un contenedor** (§0.2). Por eso no lleva `border` ni `bg-surface`: la carta
- * flota sobre el canvas con `shadow-sm` y sube medio píxel en hover. Con un
+ * flota sobre el canvas con `shadow-sm` y se inclina suavemente en hover. Con un
  * `rounded-xl border bg-surface p-2` el resultado eran 20 cajas de gris
  * compitiendo con 20 obras de arte.
  *
@@ -199,12 +200,8 @@ export interface CardTileProps {
  * link—, y por eso la franja va con `title` para que un mouse la pueda leer.
  * Los tres niveles y el por qué están en `rarity-accent.ts`.
  *
- * ## Sin `'use client'`
- *
- * No tiene estado, efectos ni handlers: es un Server Component. Vive en
- * `/carta/[id]`, en `/share/[slug]` y en `/colecciones/[id]`, que son server,
- * y ponerlo en client los obligaría a todos a ser client para mostrar una
- * imagen.
+ * La imagen se compone en el servidor y pasa como children a la isla
+ * decorativa CardTilt. La navegación y el control accesible siguen acá.
  *
  * @example
  * // Catálogo: la fila de precio no aparece porque el endpoint no la trae.
@@ -242,63 +239,65 @@ export function CardTile({
    * El cuerpo va a una variable y no a un fragmento inline: es lo que permite
    * que el `<Link>` y el `<button>` compartan el mismo markup sin duplicarlo.
    */
+  const cardArt = (
+    <div
+      className={cn(
+        'relative aspect-[63/88] overflow-hidden rounded-surface bg-surface-2 shadow-sm',
+        'group-focus-visible:shadow-md',
+      )}
+    >
+      <Image
+        src={card.imageSmall || card.imageLarge}
+        alt={alt}
+        fill
+        // `63/88` son los mm reales de una carta (§14). Fijar el ratio en el
+        // contenedor es lo que evita que la grilla salte cuando cada imagen
+        // termina de cargar.
+        sizes={sizes ?? SIZES[variant]}
+        priority={priority}
+        className="object-cover"
+      />
+
+      {/*
+        La señal de rareza. Va **adentro** de la imagen y no como borde de la
+        celda: §0.2 dice que el tile ES la imagen, y un `border` en la celda la
+        devuelve a ser una caja de gris compitiendo con el arte.
+
+        `aria-hidden`: la rareza ya está en el `alt` de la imagen, que es parte
+        del nombre accesible del link. Si el elemento no fuera decorativo, el
+        lector anunciaría "Rare Holo" dos veces por tile.
+      */}
+      {rarity.bar ? (
+        <span
+          aria-hidden="true"
+          title={card.rarity ?? undefined}
+          className={cn('absolute inset-y-0 left-0 w-0.5', rarity.bar)}
+        />
+      ) : null}
+
+      {/* La marca de selección: dentro de la imagen, no como borde de la celda,
+          por el mismo motivo que la franja de rareza (§0.2). */}
+      {isSelected ? (
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute left-1.5 top-1.5 grid size-5 place-items-center rounded-full bg-brand text-on-brand shadow-sm"
+        >
+          <Check strokeWidth={3} className="h-3 w-3" />
+        </span>
+      ) : null}
+
+      {isSelected ? (
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 rounded-surface ring-2 ring-brand ring-inset"
+        />
+      ) : null}
+    </div>
+  );
+
   const tileBody = (
     <>
-      <div
-        className={cn(
-          'relative aspect-[63/88] overflow-hidden rounded-surface bg-surface-2 shadow-sm',
-          'transition-[transform,box-shadow] duration-fast ease-standard',
-          'group-hover:-translate-y-0.5 group-hover:shadow-md',
-          'group-focus-visible:-translate-y-0.5 group-focus-visible:shadow-md',
-        )}
-      >
-        <Image
-          src={card.imageSmall || card.imageLarge}
-          alt={alt}
-          fill
-          // `63/88` son los mm reales de una carta (§14). Fijar el ratio en el
-          // contenedor es lo que evita que la grilla salte cuando cada imagen
-          // termina de cargar.
-          sizes={sizes ?? SIZES[variant]}
-          priority={priority}
-          className="object-cover"
-        />
-
-        {/*
-          La señal de rareza. Va **adentro** de la imagen y no como borde de la
-          celda: §0.2 dice que el tile ES la imagen, y un `border` en la celda la
-          devuelve a ser una caja de gris compitiendo con el arte.
-
-          `aria-hidden`: la rareza ya está en el `alt` de la imagen, que es parte
-          del nombre accesible del link. Si el elemento no fuera decorativo, el
-          lector anunciaría "Rare Holo" dos veces por tile.
-        */}
-        {rarity.bar ? (
-          <span
-            aria-hidden="true"
-            title={card.rarity ?? undefined}
-            className={cn('absolute inset-y-0 left-0 w-0.5', rarity.bar)}
-          />
-        ) : null}
-
-        {/* La marca de selección: dentro de la imagen, no como borde de la celda,
-            por el mismo motivo que la franja de rareza (§0.2). */}
-        {isSelected ? (
-          <span
-            aria-hidden="true"
-            className="pointer-events-none absolute left-1.5 top-1.5 grid size-5 place-items-center rounded-full bg-brand text-on-brand shadow-sm"
-          >
-            <Check strokeWidth={3} className="h-3 w-3" />
-          </span>
-        ) : null}
-
-        {isSelected ? (
-          <span
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-0 rounded-surface ring-2 ring-brand ring-inset"
-          />
-        ) : null}
-      </div>
+      <VisualCard variant="catalog" plainCurrent={isCollection}>{cardArt}</VisualCard>
 
       {variant === 'catalog' ? (
         <div className="flex min-w-0 flex-col gap-0.5">
@@ -395,13 +394,13 @@ export function CardTile({
           {selectionAria ? <span className="sr-only">{selectionAria}</span> : null}
         </button>
       ) : (
-        <Link
+        <PreviewLink
           href={href ?? `/carta/${encodeURIComponent(card.id)}`}
           className={CONTROL_CLASSES}
         >
           {tileBody}
           {selectionAria ? <span className="sr-only">{selectionAria}</span> : null}
-        </Link>
+        </PreviewLink>
       )}
 
       {action ? <div className="mt-1.5 flex shrink-0 justify-end">{action}</div> : null}

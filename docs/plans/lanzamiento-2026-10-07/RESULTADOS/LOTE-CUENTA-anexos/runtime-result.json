@@ -1,0 +1,15 @@
+{
+  "exitCode": 0,
+  "checks": 10,
+  "passed": 10,
+  "failed": 0,
+  "external": {
+    "nodeBlocked": 0,
+    "browserBlocked": 0
+  },
+  "apiNodeEnv": "test",
+  "nextNodeEnv": "production",
+  "cookieSecureHTTPSNotAccredited": true,
+  "rateHitsFixtureControlledBetweenCases": true,
+  "scope": "sw-offline-final"
+}

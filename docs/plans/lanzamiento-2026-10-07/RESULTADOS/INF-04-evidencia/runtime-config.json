@@ -1,0 +1,18 @@
+{
+  "purpose": "bounded local demonstration, not production policy",
+  "intervalMs": 1000,
+  "timeoutMs": 3000,
+  "debounce": 1,
+  "minSamples": 1,
+  "busyRate": 0.1,
+  "errorRate": 0.1,
+  "maxQueueDepth": 0,
+  "maxQueueAgeMs": 1000,
+  "defaultsTestedSeparately": {
+    "debounce": 2,
+    "minSamples": 5
+  },
+  "ownPGPathProxyPort": 56403,
+  "ownRedisPort": 56401,
+  "providersBlocked": true
+}

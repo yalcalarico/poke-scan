@@ -1,0 +1,11 @@
+{
+  "exitCode": 1,
+  "checks": 44,
+  "passed": 44,
+  "failed": 0,
+  "phase": "sw",
+  "external": {
+    "nodeBlocked": 0,
+    "browserBlocked": 0
+  }
+}

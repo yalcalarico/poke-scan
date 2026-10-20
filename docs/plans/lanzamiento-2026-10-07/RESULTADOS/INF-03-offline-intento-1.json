@@ -1,0 +1,93 @@
+{
+  "runId": "inf03-64ff4551dd20",
+  "kind": "offline-postgresql-filesystem-only",
+  "startedAt": "2026-10-08T11:46:50.754Z",
+  "checks": [
+    "pgpass-rejects-CRLF",
+    "file-size-bound",
+    "parent-symlink",
+    "tar-imposes-0600-from-0644",
+    "tar-traversal",
+    "tar-absolute",
+    "tar-duplicate",
+    "tar-hardlink",
+    "tar-oversize-entry",
+    "tar-truncated-tar",
+    "source-ownership-isolation-role-version"
+  ],
+  "cryptoAgeTested": false,
+  "resources": [
+    {
+      "kind": "network",
+      "name": "inf03-64ff4551dd20-source-net",
+      "role": "source"
+    },
+    {
+      "kind": "volume",
+      "name": "inf03-64ff4551dd20-source-pgdata",
+      "role": "source"
+    },
+    {
+      "kind": "container",
+      "name": "inf03-64ff4551dd20-source-pg",
+      "role": "source"
+    },
+    {
+      "kind": "network",
+      "name": "inf03-64ff4551dd20-destination-net",
+      "role": "destination"
+    },
+    {
+      "kind": "volume",
+      "name": "inf03-64ff4551dd20-destination-pgdata",
+      "role": "destination"
+    },
+    {
+      "kind": "container",
+      "name": "inf03-64ff4551dd20-destination-pg",
+      "role": "destination"
+    }
+  ],
+  "cleanup": {
+    "errors": [],
+    "remaining": [],
+    "complete": true,
+    "hostTemporaryRemoved": true
+  },
+  "sharedBefore": [
+    {
+      "name": "pokemon-scanner-db",
+      "id": "18aa2f693752",
+      "status": "Up 3 days (healthy)"
+    },
+    {
+      "name": "pokemon-scanner-redis",
+      "id": "f2d2ca0ad580",
+      "status": "Up 3 days (healthy)"
+    }
+  ],
+  "tooling": {
+    "node": "v22.20.0",
+    "pnpm": "10.17.1",
+    "platform": "darwin",
+    "arch": "arm64",
+    "image": "postgres@sha256:0ea6700a3b4f0ae6ce746519073558aed4d88a79d8d07622a9a644946c7319c4",
+    "imageId": "sha256:4b5d4fd438e2c1ce13106e4996fc604f0a1cff39cde48b546fcac3cf1a233c3a"
+  },
+  "status": "failed",
+  "error": "Proceso docker rechazado (2); salida sanitizada.",
+  "sharedAfter": [
+    {
+      "name": "pokemon-scanner-db",
+      "id": "18aa2f693752",
+      "status": "Up 3 days (healthy)"
+    },
+    {
+      "name": "pokemon-scanner-redis",
+      "id": "f2d2ca0ad580",
+      "status": "Up 3 days (healthy)"
+    }
+  ],
+  "endedAt": "2026-10-08T11:46:54.774Z",
+  "durationMs": 4020
+}

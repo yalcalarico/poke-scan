@@ -1,0 +1,31 @@
+{
+  "purpose": "Account deletion and restore local validation",
+  "records": [
+    {
+      "phase": "stop",
+      "command": [
+        "pnpm",
+        "run",
+        "stop"
+      ],
+      "exitCode": 0,
+      "startedAtUtc": "2026-10-11T23:07:55.831832+00:00",
+      "finishedAtUtc": "2026-10-11T23:07:56.090904+00:00"
+    },
+    {
+      "phase": "focused-frontend",
+      "command": [
+        "pnpm",
+        "--dir",
+        "frontend",
+        "exec",
+        "vitest",
+        "run",
+        "lib/__tests__/service-worker-routing.test.ts"
+      ],
+      "exitCode": 1,
+      "startedAtUtc": "2026-10-11T23:07:56.091329+00:00",
+      "finishedAtUtc": "2026-10-11T23:07:56.724521+00:00"
+    }
+  ]
+}

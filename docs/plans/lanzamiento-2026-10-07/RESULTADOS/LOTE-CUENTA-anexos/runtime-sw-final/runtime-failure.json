@@ -1,0 +1,8 @@
+{
+  "phase": "sw",
+  "kind": "Error",
+  "gateId": null,
+  "stackFrames": [
+    "    at /private/tmp/cuenta-gate-a4b26947b392/runtime.mjs:67:1249"
+  ]
+}

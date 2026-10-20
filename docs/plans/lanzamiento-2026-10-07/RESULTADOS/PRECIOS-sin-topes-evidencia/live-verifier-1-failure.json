@@ -1,0 +1,6 @@
+{
+  "scope": "private receipt helper; no product failure",
+  "error": "Python3.9 fromisoformat rejected two-digit fractional seconds in PostgreSQL JSON timestamp",
+  "sample": "2026-10-14T01:00:35.78",
+  "correction": "pad fractional seconds to6digits; preserve exact instant"
+}

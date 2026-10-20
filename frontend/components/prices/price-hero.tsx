@@ -4,8 +4,11 @@ import { BarChart3 } from 'lucide-react';
 
 import { useCurrency } from '@/hooks/use-currency';
 import { cn } from '@/lib/cn';
-import { formatPrice } from '@/lib/format';
+import { formatDate, formatPrice } from '@/lib/format';
+import { variantLabel } from '@/lib/variants';
 import { Alert, Skeleton, Surface } from '@/components/ui';
+
+import { AnimatedNumber } from '@/components/visual-preview/effects';
 
 import { PriceDelta, type PriceDeltaProps } from './price-delta';
 import { PriceHistory } from './price-history';
@@ -29,6 +32,7 @@ export interface PriceHeroProps
    * consumidor futuro que muestre una cifra sin serie.
    */
   cardId?: string;
+  variant?: import('@/types/api').CardVariant;
   /** El precio todavía está viajando: `Skeleton`, no un guion (§9.2). */
   isLoading?: boolean;
   /**
@@ -57,25 +61,14 @@ export interface PriceHeroProps
  * ## Sin precio
  *
  * `—` en `text-tertiary` con `aria-label="Sin precio"` y un `Alert` de
- * `warning`. **Nunca `$0.00`**: un precio de cero es un dato falso y una carta
- * sin precio es un dato que todavía no tenemos (§9.2, §2.3). El aviso va
+ * `warning` cuando no hay market. Un cero conocido se muestra formateado:
+ * ausencia y cero son estados diferentes (§9.2, §2.3). El aviso va
  * adentro del hero y no en la pantalla porque el estado "no hay precio" es
  * inseparable de la cifra que falta: cualquier otro consumidor del componente
  * lo tiene que seguir teniendo.
  *
- * ## La serie va adentro del `Surface`, no al lado
- *
- * Abajo del `PriceDelta`, y **dentro** del mismo bloque, incluso del mismo
- * `<button>` cuando hay detalles para abrir. Un bloque hermano abriría un hueco
- * de 12 px entre la cifra y su contexto y haría que la línea pareciera otra
- * tarjeta. Y no hay problema de semántica: el `Sparkline` es un `<figure>` con
- * nombre accesible y sin nada enfocable adentro, así que el botón sigue siendo
- * un control con un único nombre, que es lo que ya se anunciaba.
- *
- * La composición es de mayor a menor de tamaño hacia abajo —cifra `display`, delta
- * de `label`, línea de 32 px con `stroke` de 2— y por eso la línea no compite
- * con el número ni con la carta (§0.2). Es contexto, no un dashboard: sin ejes,
- * sin leyenda, sin tooltip.
+ * La serie conserva su contexto en la misma Surface. Su detalle de procedencia
+ * tiene un control propio, por lo que queda fuera del botón que abre variantes.
  *
  * ## Por qué el `outline` del foco va hacia adentro
  *
@@ -90,6 +83,7 @@ export interface PriceHeroProps
 export function PriceHero({
   usd,
   cardId,
+  variant,
   isLoading = false,
   changeUsd,
   changePercent,
@@ -98,7 +92,7 @@ export function PriceHero({
   onOpenDetails,
   className,
 }: PriceHeroProps) {
-  const { currency, formatMoney } = useCurrency();
+  const { currency, formatMoney, activeRate, fetchedAt, isStale: rateIsStale } = useCurrency();
 
   const hasPrice = typeof usd === 'number' && Number.isFinite(usd);
   const showUsdSecondary = hasPrice && currency === 'ARS';
@@ -106,7 +100,7 @@ export function PriceHero({
   const content = (
     <>
       <div className="flex w-full items-center justify-between gap-3">
-        <p className="text-overline text-tertiary">Precio medio</p>
+        <p className="text-overline text-tertiary">{variant ? `Referencia · ${variantLabel(variant)}` : 'Referencia de mercado'}</p>
         {onOpenDetails ? (
           <BarChart3
             aria-hidden="true"
@@ -118,13 +112,16 @@ export function PriceHero({
       </div>
 
       {isLoading ? (
-        <Skeleton className="mt-1 h-9 w-40" />
+        <div role="status" aria-label="Cargando referencia de precio" className="mt-1">
+          <Skeleton className="h-9 w-40" />
+        </div>
       ) : hasPrice ? (
         <>
-          <p className="text-display text-positive tabular-nums">{formatMoney(usd)}</p>
+          <p className="text-display text-positive tabular-nums"><AnimatedNumber value={usd} format={formatMoney} /></p>
           {showUsdSecondary ? (
             <p className="-mt-1 text-caption text-tertiary tabular-nums">{formatPrice(usd, 'USD')}</p>
           ) : null}
+          {currency === 'ARS' ? <p className="text-caption text-secondary">Referencia internacional convertida</p> : null}
         </>
       ) : (
         <p className="text-display text-tertiary" aria-label="Sin precio">
@@ -141,15 +138,7 @@ export function PriceHero({
         />
       </div>
 
-      {/*
-        La serie solo se dibuja si hay `cardId` **y** hay cifra. Una línea de
-        tendencia sobre un precio que todavía no se sabe, o sobre el guion de
-        "sin precio", es una afirmación que la pantalla no puede sostener: el
-        `Sparkline` es un contexto, y no hay contexto de un dato que no existe.
-      */}
-      {cardId && !isLoading && hasPrice ? (
-        <PriceHistory cardId={cardId} className="mt-1" />
-      ) : null}
+      {currency === 'ARS' ? <p className="text-caption text-tertiary">{activeRate ? `1 USD = ${formatPrice(activeRate.rate, 'ARS')} (${activeRate.rateType})${fetchedAt ? ` · cotización del ${formatDate(fetchedAt)}` : ''}${rateIsStale ? ' · cotización cambiaria anterior' : ''}` : 'Cotización cambiaria actual no disponible'}</p> : null}
 
       {!isLoading && !hasPrice ? (
         <Alert tone="warning" size="sm" className="mt-3 w-full">
@@ -159,16 +148,6 @@ export function PriceHero({
     </>
   );
 
-  /*
-   * El `PriceHistory` va **adentro** del `<button>`, no al lado.
-   *
-   * Parece raro meter un gráfico en un botón, pero la alternativa —un bloque
-   * hermano debajo del `Surface`— abre un hueco de 12 px entre la cifra y su
-   * contexto y hace que la línea parezca otra tarjeta. Y no hay problema de
-   * semántica: el `Sparkline` es un `<figure aria-label>` sin nada
-   * enfocable adentro, así que sigue siendo un único control con un único
-   * nombre accesible (el nombre del botón), que es lo que ya se anunciaba.
-   */
   return (
     <Surface as="section" padded={false} className={cn('overflow-hidden', className)}>
       {onOpenDetails ? (
@@ -187,6 +166,9 @@ export function PriceHero({
       ) : (
         <div className="flex w-full flex-col items-start gap-1 p-4">{content}</div>
       )}
+      {cardId && !isLoading && hasPrice ? (
+        <div className="px-4 pb-4"><PriceHistory cardId={cardId} /></div>
+      ) : null}
     </Surface>
   );
 }

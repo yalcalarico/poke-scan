@@ -1,0 +1,10 @@
+{
+  "purpose": "Intentional local preview of beta questionnaire requested by user",
+  "pid": 7752,
+  "port": 53094,
+  "bind": "127.0.0.1",
+  "url": "http://127.0.0.1:53094/evaluacion.html",
+  "servesOnly": "/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/docs/beta",
+  "htmlSha256": "e2429380861b75cf5a9f348a78ba32a85ebda6878a8c8072645b0efe6a378c8a",
+  "doesNotSaveResponses": true
+}

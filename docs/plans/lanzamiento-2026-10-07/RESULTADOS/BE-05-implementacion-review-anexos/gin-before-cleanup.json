@@ -1,0 +1,86 @@
+{
+  "capturedAtUtc": "2026-10-10T01:41:43.356383+00:00",
+  "identities": {
+    "pokemon_cards": [
+      {
+        "name": "card_sets_name_trgm_idx",
+        "table": "card_sets",
+        "definition": "CREATE INDEX card_sets_name_trgm_idx ON public.card_sets USING gin (name gin_trgm_ops)"
+      },
+      {
+        "name": "cards_artist_trgm_idx",
+        "table": "cards",
+        "definition": "CREATE INDEX cards_artist_trgm_idx ON public.cards USING gin (artist gin_trgm_ops)"
+      },
+      {
+        "name": "cards_name_trgm_idx",
+        "table": "cards",
+        "definition": "CREATE INDEX cards_name_trgm_idx ON public.cards USING gin (name gin_trgm_ops)"
+      },
+      {
+        "name": "users_display_name_trgm_idx",
+        "table": "users",
+        "definition": "CREATE INDEX users_display_name_trgm_idx ON public.users USING gin (\"displayName\" gin_trgm_ops)"
+      },
+      {
+        "name": "users_username_trgm_idx",
+        "table": "users",
+        "definition": "CREATE INDEX users_username_trgm_idx ON public.users USING gin (username gin_trgm_ops)"
+      }
+    ],
+    "pokemon_cards_test": [
+      {
+        "name": "card_sets_name_trgm_idx",
+        "table": "card_sets",
+        "definition": "CREATE INDEX card_sets_name_trgm_idx ON public.card_sets USING gin (name gin_trgm_ops)"
+      },
+      {
+        "name": "cards_artist_trgm_idx",
+        "table": "cards",
+        "definition": "CREATE INDEX cards_artist_trgm_idx ON public.cards USING gin (artist gin_trgm_ops)"
+      },
+      {
+        "name": "cards_name_trgm_idx",
+        "table": "cards",
+        "definition": "CREATE INDEX cards_name_trgm_idx ON public.cards USING gin (name gin_trgm_ops)"
+      },
+      {
+        "name": "users_display_name_trgm_idx",
+        "table": "users",
+        "definition": "CREATE INDEX users_display_name_trgm_idx ON public.users USING gin (\"displayName\" gin_trgm_ops)"
+      },
+      {
+        "name": "users_username_trgm_idx",
+        "table": "users",
+        "definition": "CREATE INDEX users_username_trgm_idx ON public.users USING gin (username gin_trgm_ops)"
+      }
+    ],
+    "be05_review_2af1fb6f7757_test": [
+      {
+        "name": "card_sets_name_trgm_idx",
+        "table": "card_sets",
+        "definition": "CREATE INDEX card_sets_name_trgm_idx ON public.card_sets USING gin (name gin_trgm_ops)"
+      },
+      {
+        "name": "cards_artist_trgm_idx",
+        "table": "cards",
+        "definition": "CREATE INDEX cards_artist_trgm_idx ON public.cards USING gin (artist gin_trgm_ops)"
+      },
+      {
+        "name": "cards_name_trgm_idx",
+        "table": "cards",
+        "definition": "CREATE INDEX cards_name_trgm_idx ON public.cards USING gin (name gin_trgm_ops)"
+      },
+      {
+        "name": "users_display_name_trgm_idx",
+        "table": "users",
+        "definition": "CREATE INDEX users_display_name_trgm_idx ON public.users USING gin (\"displayName\" gin_trgm_ops)"
+      },
+      {
+        "name": "users_username_trgm_idx",
+        "table": "users",
+        "definition": "CREATE INDEX users_username_trgm_idx ON public.users USING gin (username gin_trgm_ops)"
+      }
+    ]
+  }
+}

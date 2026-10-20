@@ -1,0 +1,123 @@
+{
+  "runId": "inf03-370200abbf0c",
+  "startedAt": "2026-10-08T11:32:07.637Z",
+  "steps": {
+    "sourceBootstrapMs": 1495,
+    "backupMs": 523,
+    "restoreMs": 884
+  },
+  "tests": {
+    "positive": 1,
+    "negative": 10
+  },
+  "ownedResources": [
+    {
+      "type": "network",
+      "name": "inf03-370200abbf0c-source-net",
+      "runId": "inf03-370200abbf0c",
+      "role": "source"
+    },
+    {
+      "type": "volume",
+      "name": "inf03-370200abbf0c-source-pgdata",
+      "runId": "inf03-370200abbf0c",
+      "role": "source"
+    },
+    {
+      "type": "container",
+      "name": "inf03-370200abbf0c-source-pg",
+      "runId": "inf03-370200abbf0c",
+      "role": "source"
+    },
+    {
+      "type": "network",
+      "name": "inf03-370200abbf0c-destination-net",
+      "runId": "inf03-370200abbf0c",
+      "role": "destination"
+    },
+    {
+      "type": "volume",
+      "name": "inf03-370200abbf0c-destination-pgdata",
+      "runId": "inf03-370200abbf0c",
+      "role": "destination"
+    },
+    {
+      "type": "container",
+      "name": "inf03-370200abbf0c-destination-pg",
+      "runId": "inf03-370200abbf0c",
+      "role": "destination"
+    }
+  ],
+  "cleanup": {
+    "attempted": true,
+    "complete": true
+  },
+  "tooling": {
+    "age": "v1.2.1",
+    "ageRelease": "https://github.com/FiloSottile/age/releases/download/v1.2.1/age-v1.2.1-darwin-arm64.tar.gz",
+    "postgresImage": "postgres:16.15-bookworm",
+    "postgresImageId": "sha256:4b5d4fd438e2c1ce13106e4996fc604f0a1cff39cde48b546fcac3cf1a233c3a",
+    "postgresRepoDigests": [
+      "postgres@sha256:0ea6700a3b4f0ae6ce746519073558aed4d88a79d8d07622a9a644946c7319c4"
+    ]
+  },
+  "sharedContainersBefore": [
+    "pokemon-scanner-db 18aa2f693752",
+    "pokemon-scanner-redis f2d2ca0ad580"
+  ],
+  "backup": {
+    "backupId": "9162c87a-c71d-46f9-adde-79a3aec8c347",
+    "ciphertextBytes": 51400,
+    "ciphertextSha256": "ee077f288199b298ab462a7115530c8590b317eb2b6756dc20978653d14bc57e",
+    "durationMs": 488,
+    "migrations": 11,
+    "dumpBytes": 42672,
+    "dumpSha256": "e69f57e41ceb6ba5b0c3af81998efa77038f75eff1de52e2fd7494ad2db6e0ce",
+    "receiptSha256": "83a6463faa3306bbee711627ab47f30fd0697a536fd6a0d8707855b1118b6384",
+    "lastIncludedSyntheticCommit": "2026-10-08T11:32:20.347000Z",
+    "incidentPoint": "2026-10-08T11:32:21.064Z",
+    "pointRecovered": "2026-10-08T11:32:20.347000Z",
+    "observedGapMs": 717
+  },
+  "sourceDestroyedAfterCiphertext": true,
+  "restore": {
+    "restored": true,
+    "backupId": "9162c87a-c71d-46f9-adde-79a3aec8c347",
+    "migrations": 11,
+    "dumpBytes": 42672,
+    "schemaFingerprint": "0a8503f1d810aa44e8c73d29d1eace41cc4fec5772c1a40c0d30fef185c65d3e",
+    "pgTrgm": "1.6",
+    "validTrigramIndexes": 5,
+    "validatedConstraints": 143
+  },
+  "localRecoveryMs": 14311,
+  "verification": {
+    "expectedFixtureSet": true,
+    "migrations": 11,
+    "pgTrgm": true,
+    "validTrigramIndexes": 5,
+    "validatedConstraints": 143,
+    "schemaFingerprint": "0a8503f1d810aa44e8c73d29d1eace41cc4fec5772c1a40c0d30fef185c65d3e",
+    "checks": 11
+  },
+  "negativeRestoreBeforeSQL": {
+    "altered": true,
+    "truncatedFinalChunk": true,
+    "wrongIdentity": true,
+    "wrongReceiptDigest": true,
+    "wrongTargetMarker": true,
+    "wrongDumpDigest": true,
+    "incompatibleManifest": true,
+    "extraTarEntry": true,
+    "symlinkTarEntry": true,
+    "occupiedTarget": true,
+    "pgRestoreInvocationCount": 1,
+    "verifiedDestinationUnchanged": true
+  },
+  "endedAt": "2026-10-08T11:32:25.710Z",
+  "testResult": "passed",
+  "sharedContainersAfter": [
+    "pokemon-scanner-db 18aa2f693752",
+    "pokemon-scanner-redis f2d2ca0ad580"
+  ]
+}

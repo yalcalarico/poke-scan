@@ -1,0 +1,11 @@
+{
+  "hashes": {
+    "FE-04-review.md": "ca2bfb63c26e3b33494ccfcc20d4c4317141a94348690cbfae35cfa40d857975",
+    "FE-04-review-evidencia.json": "32b58f5f042025d48677c417e64be2c2535a8dfe76acc990b08661914eb867a1",
+    "FE-04-review-aceptacion-root.json": "96cd82cdfdab6e45cad58c17f8092224129380651effd49fe06099f288fdd422",
+    "BE-05-implementacion-review.md": "34f63a19fb8ed3552ff8a53a7aa73d7039da23db052c5ae88a5206aa81d897ea",
+    "BE-05-implementacion-review-evidencia.json": "7e7a0b5e0e2b398f629695677b82d85a8af872317db0cc6f69d8f6acb8b4802b",
+    "BE-05-implementacion-review-aceptacion-root.json": "052bf19422dea34edea56bb5f09244bb071d4fa2a462d0247133f54dd4fa5ac2"
+  },
+  "unchanged": true
+}

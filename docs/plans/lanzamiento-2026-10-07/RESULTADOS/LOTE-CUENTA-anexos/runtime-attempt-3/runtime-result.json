@@ -1,0 +1,11 @@
+{
+  "exitCode": 1,
+  "checks": 47,
+  "passed": 46,
+  "failed": 1,
+  "phase": "http-errors-and-rate",
+  "external": {
+    "nodeBlocked": 0,
+    "browserBlocked": 24
+  }
+}

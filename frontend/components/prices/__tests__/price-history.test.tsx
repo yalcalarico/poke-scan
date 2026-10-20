@@ -193,7 +193,7 @@ describe('PriceHistory: la geometría se dibuja siempre que haya datos', () => {
     await waitFor(() =>
       expect(
         screen.getByText(
-          /Todavía no hay historial de precio para comparar · tcgplayer · TCGdex\./,
+          /Todavía no hay historial de precio para comparar · tcgplayer · TCGdex ·/,
         ),
       ).toBeInTheDocument(),
     );
@@ -246,7 +246,7 @@ describe('PriceHistory: la geometría se dibuja siempre que haya datos', () => {
 
     render(<PriceHistory cardId="base1-4" />);
     await screen.findByText(
-      /Todavía no hay historial de precio para comparar · tcgplayer · TCGdex\./,
+      /Todavía no hay historial de precio para comparar · tcgplayer · TCGdex ·/,
     );
 
     expect(document.querySelector('svg')).toBeNull();
@@ -434,14 +434,13 @@ describe('PriceHistory: el tono sale solo del change del backend', () => {
 });
 
 describe('PriceHistory: estados de degradación', () => {
-  it('si la serie no llega no renderiza nada, sin romper la pantalla', async () => {
+  it('si la serie no llega muestra su error separado del precio de la carta', async () => {
     // Un error de la serie **no** es un error de la pantalla: la cifra de arriba
     // ya está y el usuario puede hacer lo que venía a hacer sin ver la línea.
     getCardPriceHistory.mockRejectedValue(new Error('404'));
-    const { container } = render(<PriceHistory cardId="base1-4" />);
-
-    await waitFor(() => expect(getCardPriceHistory).toHaveBeenCalled());
-    expect(container).toBeEmptyDOMElement();
+    render(<PriceHistory cardId="base1-4" />);
+    expect(await screen.findByRole('alert')).toHaveTextContent('No pudimos cargar el historial de referencia');
+    expect(screen.queryByText(/Todavía no hay historial/)).not.toBeInTheDocument();
   });
 
   it('no hace doble request por el doble montaje de StrictMode antes de resolver', async () => {
@@ -464,4 +463,12 @@ describe('PriceHistory: estados de degradación', () => {
       variant: undefined,
     });
   });
+});
+
+it('los días UTC no se convierten en el día anterior y variant null no se vuelve fija', async () => {
+  getCardPriceHistory.mockResolvedValue(oneDayHistory());
+  render(<PriceHistory cardId="base1-4" />);
+  expect(await screen.findByRole('img')).toHaveAccessibleName(/27.*sept.*2026/);
+  expect(screen.getByText(/1 día de precio registrado/)).toHaveTextContent('Mejor referencia disponible por día; puede cambiar de variante');
+  expect(screen.getByText(/29.90/)).toHaveTextContent(/27.*sept.*2026/);
 });

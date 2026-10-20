@@ -1,0 +1,16 @@
+{
+  "verifiedAt": "2026-10-08T11:52:19.051Z",
+  "runIds": [
+    "inf03-370200abbf0c",
+    "inf03-64ff4551dd20",
+    "inf03-199c552cc3b5"
+  ],
+  "ownResources": 0,
+  "ownedTemporaryDirectories": 0,
+  "blockedMetadataCreated": false,
+  "sharedContainers": [
+    "pokemon-scanner-db 18aa2f693752 Up 3 days (healthy)",
+    "pokemon-scanner-redis f2d2ca0ad580 Up 3 days (healthy)"
+  ],
+  "imagesCacheRetained": true
+}

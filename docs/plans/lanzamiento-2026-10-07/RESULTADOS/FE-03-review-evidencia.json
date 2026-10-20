@@ -1,0 +1,698 @@
+{
+  "task": "FE-03",
+  "reviewer": "Sol HIGH",
+  "date": "2026-10-08",
+  "status": "reviewed_integrated_gate_pending",
+  "scopeExtension": {
+    "authorizedBy": "root coordination",
+    "paths": [
+      "frontend/components/ui/sheet.tsx",
+      "frontend/components/ui/__tests__/sheet.test.tsx"
+    ],
+    "reason": "Shift+Tab escaped from initial dialog panel"
+  },
+  "received": {
+    "initialCapturedFiles": 27,
+    "extensionCapturedBeforeEdit": 2,
+    "manifest": "/private/tmp/fe03-sol-review-20261008/received-sha256.json"
+  },
+  "lunaBaselineAudit": {
+    "initialManifestEntries": 21,
+    "completeEntries": 27,
+    "storedFiles": 24,
+    "declaredAbsent": 3,
+    "allVerified": true,
+    "initialShaMatchesComplete": true,
+    "rows": [
+      {
+        "path": "frontend/components/prices/__tests__/card-price-section.test.tsx",
+        "declared": "f34aa6a25e05577537b74d61a74c7db098f4a23dfa06fb274f1bfd2e195225b8",
+        "present": true,
+        "verified": true,
+        "initialManifest": true,
+        "headMatchesStored": true
+      },
+      {
+        "path": "frontend/components/prices/__tests__/price-evidence.test.tsx",
+        "declared": "ABSENT",
+        "present": false,
+        "verified": true,
+        "initialManifest": false,
+        "headMatchesStored": null
+      },
+      {
+        "path": "frontend/components/prices/__tests__/price-history.test.tsx",
+        "declared": "6890dd841d000e48f685ebc0f1805366ada9904ceaace6a8c339bd8ad9e14d24",
+        "present": true,
+        "verified": true,
+        "initialManifest": true,
+        "headMatchesStored": true
+      },
+      {
+        "path": "frontend/components/prices/card-price-section.tsx",
+        "declared": "64557df0eefbf9c21b1897d14ce0e04c88822ba393698068a8886723fe4d8b9b",
+        "present": true,
+        "verified": true,
+        "initialManifest": true,
+        "headMatchesStored": true
+      },
+      {
+        "path": "frontend/components/prices/index.ts",
+        "declared": "29e8d34570c4ba868b94d8d7051d8ef6e8237ca3d55d3b3a983d9dd8ef55abb0",
+        "present": true,
+        "verified": true,
+        "initialManifest": false,
+        "headMatchesStored": true
+      },
+      {
+        "path": "frontend/components/prices/price-delta.tsx",
+        "declared": "dbecc1c00f7439c9d11bfe6e447c8cf88a21a20bfbbbf175c20985ff85225df1",
+        "present": true,
+        "verified": true,
+        "initialManifest": false,
+        "headMatchesStored": true
+      },
+      {
+        "path": "frontend/components/prices/price-evidence.tsx",
+        "declared": "ABSENT",
+        "present": false,
+        "verified": true,
+        "initialManifest": false,
+        "headMatchesStored": null
+      },
+      {
+        "path": "frontend/components/prices/price-hero.tsx",
+        "declared": "5fca755a7b6a8a9b774bb9d9e840452572c8f902b06e3cfcd8966369a903f41c",
+        "present": true,
+        "verified": true,
+        "initialManifest": true,
+        "headMatchesStored": true
+      },
+      {
+        "path": "frontend/components/prices/price-history.tsx",
+        "declared": "3b42c149f96b76a8bb8be024eea38dfa9875d8c134c6b1ba90a8d9ed8d7e18ef",
+        "present": true,
+        "verified": true,
+        "initialManifest": true,
+        "headMatchesStored": true
+      },
+      {
+        "path": "frontend/components/prices/price-table.tsx",
+        "declared": "50d3c721e5a61ef00fd6127ec2e06e8cb65c5efc61a28d96a4ab34182d27c543",
+        "present": true,
+        "verified": true,
+        "initialManifest": true,
+        "headMatchesStored": true
+      },
+      {
+        "path": "frontend/components/prices/sparkline.tsx",
+        "declared": "93f298a5695762e2e4e482dfc4034d98843fe1cb096fad59b103f7cb86b852bc",
+        "present": true,
+        "verified": true,
+        "initialManifest": false,
+        "headMatchesStored": true
+      },
+      {
+        "path": "frontend/components/collections/collection-card.tsx",
+        "declared": "7b7c95f04631fc9d1460758608341c9c13a67aeded34e4cf35d855414649b85d",
+        "present": true,
+        "verified": true,
+        "initialManifest": true,
+        "headMatchesStored": true
+      },
+      {
+        "path": "frontend/components/collections/collection-summary.tsx",
+        "declared": "cdbe7fb4ea6fba29450917cdefe17d0470b89db51aba0573ab27ac393354a17d",
+        "present": true,
+        "verified": true,
+        "initialManifest": true,
+        "headMatchesStored": true
+      },
+      {
+        "path": "frontend/components/collections/collection-detail.tsx",
+        "declared": "67eec4a332665f7c58547c5aa6a23957af005da982919f7e87f4e490fe6d29f9",
+        "present": true,
+        "verified": true,
+        "initialManifest": true,
+        "headMatchesStored": true
+      },
+      {
+        "path": "frontend/components/collections/collection-item-details.tsx",
+        "declared": "d002e6063b0d33fdce937c8afb8aa10ceea455ccb09433d9241a3513328e23fd",
+        "present": true,
+        "verified": true,
+        "initialManifest": true,
+        "headMatchesStored": true
+      },
+      {
+        "path": "frontend/components/collections/item-sheet.tsx",
+        "declared": "7b2bee0997eb03477461cdbc83d32ef4e3c922cd574df65e6ac6cb4029b13661",
+        "present": true,
+        "verified": true,
+        "initialManifest": true,
+        "headMatchesStored": true
+      },
+      {
+        "path": "frontend/components/collections/portfolio-overview.tsx",
+        "declared": "c19a6fac1fa67f0bf975313dc126a84b4cc692777f4fbc6051c066bf2268c5a2",
+        "present": true,
+        "verified": true,
+        "initialManifest": true,
+        "headMatchesStored": true
+      },
+      {
+        "path": "frontend/components/collections/__tests__/collection-card.test.tsx",
+        "declared": "1a8be6a2a33d8a4e4ed065bb2392af1a9d3a49bd3b4ae37605903b6063a6fd38",
+        "present": true,
+        "verified": true,
+        "initialManifest": true,
+        "headMatchesStored": true
+      },
+      {
+        "path": "frontend/components/collections/__tests__/portfolio-overview.test.tsx",
+        "declared": "02cfdf2a4b5058ee224a820173da73ca08e41dfa6147d698a753c44d41f9a630",
+        "present": true,
+        "verified": true,
+        "initialManifest": true,
+        "headMatchesStored": true
+      },
+      {
+        "path": "frontend/components/share/public-collection-view.tsx",
+        "declared": "019568533a357445a6a12778ca0a42de24df9c9803663a672cb6b2a5b5d1775c",
+        "present": true,
+        "verified": true,
+        "initialManifest": true,
+        "headMatchesStored": false
+      },
+      {
+        "path": "frontend/components/share/public-card-grid.tsx",
+        "declared": "710e89ca043cd9ab1f5861af17a15e87096280db3bcbb0d885f547382d7c1920",
+        "present": true,
+        "verified": true,
+        "initialManifest": true,
+        "headMatchesStored": false
+      },
+      {
+        "path": "frontend/components/share/__tests__/public-collection-view.test.tsx",
+        "declared": "1ad482a95bcc377e786609aa1344f55fb8aade058822c055199e32432616daf7",
+        "present": true,
+        "verified": true,
+        "initialManifest": true,
+        "headMatchesStored": null
+      },
+      {
+        "path": "frontend/components/share/__tests__/public-card-grid.test.tsx",
+        "declared": "df7c698b1ab1edf9611c74d2af1b1ba94beba543f54db2ccca201cde3389b8b5",
+        "present": true,
+        "verified": true,
+        "initialManifest": true,
+        "headMatchesStored": null
+      },
+      {
+        "path": "frontend/docs/components.md",
+        "declared": "236245ac15337ce30c2626ba8caf9009459b586b5fd6f9cf1412f96fa62c0ba7",
+        "present": true,
+        "verified": true,
+        "initialManifest": true,
+        "headMatchesStored": true
+      },
+      {
+        "path": "frontend/docs/api-client.md",
+        "declared": "22f8020dd84ad16ea6853a149740b178e955d312c357eb0929c46e004a38941b",
+        "present": true,
+        "verified": true,
+        "initialManifest": true,
+        "headMatchesStored": false
+      },
+      {
+        "path": "frontend/docs/portfolio.md",
+        "declared": "62133b655a0729d55ea6cee1b9da2cb14c309e77ebab082a5560fa4225fad2cf",
+        "present": true,
+        "verified": true,
+        "initialManifest": true,
+        "headMatchesStored": true
+      },
+      {
+        "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/FE-03-implementacion.md",
+        "declared": "ABSENT",
+        "present": false,
+        "verified": true,
+        "initialManifest": false,
+        "headMatchesStored": null
+      }
+    ]
+  },
+  "lunaOwnDiff": {
+    "path": "/private/tmp/fe03-luna-baseline-20261008/own-reserved.diff",
+    "sha256": "378602a4b7669c77644ef48e20939d1dc28926696bae4d7cf544c6cb1612af52",
+    "expectedMatch": true
+  },
+  "reviewDiff": {
+    "path": "/private/tmp/fe03-sol-review-20261008/review-code-and-docs.diff",
+    "sha256": "1a35c47d8a8fd9ea33c8a789cd8b764da4fbe594379669786282c5239ee8291e",
+    "excludes": "This central JSON evidence file to avoid a self-referential hash."
+  },
+  "finalFiles": [
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/FE-03-implementacion.md",
+      "sha256": "25aefedc75e590003053190d88362ab061fe2a72a96778f5c8f16aa3ecde92c4",
+      "changedFromReceived": true,
+      "origin": "received"
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/FE-03-review.md",
+      "sha256": "408aa64df819aacaeabada04f06512304d3b8c3a7db8609f76899c07fcfaaef8",
+      "changedFromReceived": true,
+      "origin": "createdDuringReview"
+    },
+    {
+      "path": "frontend/components/collections/__tests__/collection-card.test.tsx",
+      "sha256": "d241dce97c37ef8b7abbdf3c9996bf583d35854477daba1942b43a42e9ecb005",
+      "changedFromReceived": false,
+      "origin": "received"
+    },
+    {
+      "path": "frontend/components/collections/__tests__/collection-item-details.test.tsx",
+      "sha256": "194843e8765d31e7c1e4cda5dbe57e91374b26e9a26a28c67de2987096a43547",
+      "changedFromReceived": true,
+      "origin": "createdDuringReview"
+    },
+    {
+      "path": "frontend/components/collections/__tests__/portfolio-overview.test.tsx",
+      "sha256": "c659a0987996acf9df475800490338e90d6b31f4bbe0d47bf180935ad63603fc",
+      "changedFromReceived": true,
+      "origin": "received"
+    },
+    {
+      "path": "frontend/components/collections/collection-card.tsx",
+      "sha256": "3e3c2d4c6b78f603e940541d9e1ffb1d5f9cec87c1e675399dc6d7a2ec26256e",
+      "changedFromReceived": false,
+      "origin": "received"
+    },
+    {
+      "path": "frontend/components/collections/collection-detail.tsx",
+      "sha256": "c08b6f32d04da340318156ed10527015c9c7d6589101e85bf63ac3d2c18872a6",
+      "changedFromReceived": false,
+      "origin": "received"
+    },
+    {
+      "path": "frontend/components/collections/collection-item-details.tsx",
+      "sha256": "548d7b38de6e3f52fbf2ea85089a3c3f43adbc6687f8ade2fdc6e381e16e51bb",
+      "changedFromReceived": true,
+      "origin": "received"
+    },
+    {
+      "path": "frontend/components/collections/collection-summary.tsx",
+      "sha256": "199c90e00a9659798046c225b2a5f62db43a1da6f7d94921d025c55c1d63e6d8",
+      "changedFromReceived": false,
+      "origin": "received"
+    },
+    {
+      "path": "frontend/components/collections/item-sheet.tsx",
+      "sha256": "5b0b40e8390ee4d364d2d44223c4717d00c7147f30fb933e91d08e98120ae04a",
+      "changedFromReceived": true,
+      "origin": "received"
+    },
+    {
+      "path": "frontend/components/collections/portfolio-overview.tsx",
+      "sha256": "f6376743c33a5fed84624c5d730ae9ba0f00524f738794a8df15e6c0c72f4d19",
+      "changedFromReceived": true,
+      "origin": "received"
+    },
+    {
+      "path": "frontend/components/prices/__tests__/card-price-section.test.tsx",
+      "sha256": "190f29810887b25bc9ec3b0900eff5481c9be56af44ce80b2159a03d37d49427",
+      "changedFromReceived": true,
+      "origin": "received"
+    },
+    {
+      "path": "frontend/components/prices/__tests__/price-evidence.test.tsx",
+      "sha256": "03d2abdbcc16448b21e40b167fcce425c4c615e8c21a351b33610ed89c1c3939",
+      "changedFromReceived": true,
+      "origin": "received"
+    },
+    {
+      "path": "frontend/components/prices/__tests__/price-history.test.tsx",
+      "sha256": "328e22c2f5bf4d64e9b1a43fe21080b6396e6a6f60cbddf61d8cfa1d6fda8a4e",
+      "changedFromReceived": true,
+      "origin": "received"
+    },
+    {
+      "path": "frontend/components/prices/card-price-section.tsx",
+      "sha256": "35bfda5694ca053d62d6e804070fa1d629536ea7c93be270c80b3265505f1074",
+      "changedFromReceived": true,
+      "origin": "received"
+    },
+    {
+      "path": "frontend/components/prices/index.ts",
+      "sha256": "49f46651044d11076e9d7af7a1880536cc2adbe49f847d5653a5f9a9fabd6244",
+      "changedFromReceived": false,
+      "origin": "received"
+    },
+    {
+      "path": "frontend/components/prices/price-delta.tsx",
+      "sha256": "54175517695aa5852881618f340a8e15055a712bcfed5ab96f1c35495aa50d97",
+      "changedFromReceived": true,
+      "origin": "received"
+    },
+    {
+      "path": "frontend/components/prices/price-evidence.tsx",
+      "sha256": "736f53c422995afe8368ecf0c4a36135cb99c5e7dc73109849eb9a65434075ed",
+      "changedFromReceived": true,
+      "origin": "received"
+    },
+    {
+      "path": "frontend/components/prices/price-hero.tsx",
+      "sha256": "4ab795257b6a3c3cbe19d8c42207266b71a8954aa28ba64107afbf275c2c607c",
+      "changedFromReceived": true,
+      "origin": "received"
+    },
+    {
+      "path": "frontend/components/prices/price-history.tsx",
+      "sha256": "3ed4a87dea3a5a7a0ee2d67ff473a6efb78eadabdddec76e91cae0f7902625bf",
+      "changedFromReceived": true,
+      "origin": "received"
+    },
+    {
+      "path": "frontend/components/prices/price-table.tsx",
+      "sha256": "2d79228c0bfec2a993dae70312837b6e6b7bb9b98d3e56890591f80a3b703b55",
+      "changedFromReceived": true,
+      "origin": "received"
+    },
+    {
+      "path": "frontend/components/prices/sparkline.tsx",
+      "sha256": "93f298a5695762e2e4e482dfc4034d98843fe1cb096fad59b103f7cb86b852bc",
+      "changedFromReceived": false,
+      "origin": "received"
+    },
+    {
+      "path": "frontend/components/prices/valuation-metadata.tsx",
+      "sha256": "4119953cde5aaef1aed89aa14fd97bc905048c989c942edfe56df45275058b9d",
+      "changedFromReceived": true,
+      "origin": "createdDuringReview"
+    },
+    {
+      "path": "frontend/components/share/__tests__/public-card-grid.test.tsx",
+      "sha256": "1b2692364a0ad61da299009de8290b3f691495f08400cd9c5dad11fda6747e96",
+      "changedFromReceived": true,
+      "origin": "received"
+    },
+    {
+      "path": "frontend/components/share/__tests__/public-collection-view.test.tsx",
+      "sha256": "557286971b644a191d9a33aace2adaa9ecef338fc7f875aaa102033489fca677",
+      "changedFromReceived": true,
+      "origin": "received"
+    },
+    {
+      "path": "frontend/components/share/public-card-grid.tsx",
+      "sha256": "b75bb5259a190def1fa053a497bf5d70492e79a290d703d5da8839b822fbdfbb",
+      "changedFromReceived": true,
+      "origin": "received"
+    },
+    {
+      "path": "frontend/components/share/public-collection-view.tsx",
+      "sha256": "2b3a5ab6c1851a19a587b2e70ec04b8277db7479aa194dd8a3b810884c270c54",
+      "changedFromReceived": true,
+      "origin": "received"
+    },
+    {
+      "path": "frontend/components/ui/__tests__/sheet.test.tsx",
+      "sha256": "8c142156a78d7da2a09935cb327af809e880bddb1ea7ae5150566aeb2ca8b453",
+      "changedFromReceived": true,
+      "origin": "received"
+    },
+    {
+      "path": "frontend/components/ui/sheet.tsx",
+      "sha256": "f99688d3306df44c58ff748497cc0ab0a450323210aa45d4e9240e50711f1c19",
+      "changedFromReceived": true,
+      "origin": "received"
+    },
+    {
+      "path": "frontend/docs/api-client.md",
+      "sha256": "0757c4f4807ba36c5eea0c5364d0127b281bcf6908fe32c4824c98fe8ee47a14",
+      "changedFromReceived": false,
+      "origin": "received"
+    },
+    {
+      "path": "frontend/docs/components.md",
+      "sha256": "63d488adbd5ae6064568450ec7b3342dac24c16f0965d06c3f356e9b698c8c81",
+      "changedFromReceived": true,
+      "origin": "received"
+    },
+    {
+      "path": "frontend/docs/portfolio.md",
+      "sha256": "8e6b0ffb6becf29ad531e82608795cd4e5f3a0163cb274aec31e37db8c181816",
+      "changedFromReceived": true,
+      "origin": "received"
+    },
+    {
+      "path": "frontend/lib/prices/format.ts",
+      "sha256": "deabe3caa801af44392df8d783b9f112ca7111e9842373c3f1efaf8a8f193d64",
+      "changedFromReceived": true,
+      "origin": "createdDuringReview"
+    }
+  ],
+  "verification": {
+    "stop": {
+      "command": "pnpm run stop",
+      "passed": true
+    },
+    "initialRegression": {
+      "files": 5,
+      "failed": 8,
+      "passed": 15,
+      "log": "/private/tmp/fe03-sol-review-20261008/regression-before.log"
+    },
+    "sheetRegressionBefore": {
+      "files": 1,
+      "failed": 1,
+      "passed": 17,
+      "log": "/private/tmp/fe03-sol-review-20261008/sheet-before.log"
+    },
+    "invalidDateBefore": {
+      "files": 1,
+      "failed": 1,
+      "passed": 4,
+      "log": "/private/tmp/fe03-sol-review-20261008/invalid-date-before.log"
+    },
+    "finalFocused": {
+      "command": "pnpm --dir frontend run test components/prices/__tests__ components/collections/__tests__/portfolio-overview.test.tsx components/collections/__tests__/collection-card.test.tsx components/collections/__tests__/collection-item-details.test.tsx components/share/__tests__/public-card-grid.test.tsx components/share/__tests__/public-collection-view.test.tsx components/ui/__tests__/sheet.test.tsx",
+      "files": 9,
+      "passed": 78,
+      "failed": 0,
+      "domainTests": 60,
+      "sheetTests": 18,
+      "log": "/private/tmp/fe03-sol-review-20261008/focused-final.log"
+    },
+    "lint": {
+      "command": "pnpm --dir frontend run lint",
+      "passed": true,
+      "log": "/private/tmp/fe03-sol-review-20261008/lint-final.log"
+    },
+    "types": {
+      "command": "pnpm run typecheck",
+      "scope": "frontend",
+      "passed": true,
+      "log": "/private/tmp/fe03-sol-review-20261008/typecheck-final.log"
+    },
+    "buildStandard": {
+      "command": "pnpm --dir frontend run build",
+      "passed": false,
+      "attempts": [
+        {
+          "environment": "use_default sandbox",
+          "reason": "Google Fonts fetch failed",
+          "log": "/private/tmp/fe03-sol-review-20261008/build.log"
+        },
+        {
+          "environment": "require_escalated accepted",
+          "reason": "Turbopack EPERM binding internal port during CSS evaluation",
+          "log": "/private/tmp/fe03-sol-review-20261008/build-network.log"
+        }
+      ],
+      "autoReviewRejected": false
+    },
+    "buildAlternativeFinal": {
+      "command": "pnpm --dir frontend run build --webpack",
+      "environment": "require_escalated accepted",
+      "passed": true,
+      "log": "/private/tmp/fe03-sol-review-20261008/build-webpack-final.log",
+      "doesNotReplaceStandard": true
+    },
+    "harnessFailures": [
+      "initial local bind EPERM, escalated bind succeeded",
+      "missing React jsx-dev-runtime alias",
+      "real HTTP client process env unsupported, replaced with explicit mock"
+    ],
+    "testHarnessFailures": [
+      "ItemSheet portal queried before mount: fixed async query",
+      "formatMoney mock rejected null: fixed mock only"
+    ]
+  },
+  "visual": {
+    "engine": "Codex in-app browser via CUA",
+    "harness": "/private/tmp/fe03-sol-review-20261008/harness",
+    "realRoutes": false,
+    "mocked": [
+      "API cards",
+      "API collections",
+      "HTTP client blocked",
+      "currency",
+      "Next Link/Image",
+      "card art",
+      "font fallback Arial"
+    ],
+    "viewports": [
+      {
+        "width": 390,
+        "height": 844,
+        "themes": [
+          "light",
+          "dark"
+        ],
+        "scrollWidths": [
+          390,
+          390
+        ]
+      },
+      {
+        "width": 1280,
+        "height": 844,
+        "themes": [
+          "light",
+          "dark"
+        ],
+        "scrollWidths": [
+          1280,
+          1280
+        ]
+      }
+    ],
+    "keyboardChecked": [
+      "history summary Enter independently of variants",
+      "hero Enter opens variants",
+      "Shift+Tab from initial Sheet panel remains inside after fix",
+      "Tab from Cerrar remains inside",
+      "Escape returns focus to hero"
+    ],
+    "screenshots": "Emitted by CUA tool; no durable screenshot files saved",
+    "notCertified": [
+      "actual Next SSR/hydration",
+      "real route layouts",
+      "phones/PWA",
+      "screen readers",
+      "virtual keyboard",
+      "zoom/forced-colors/reduced-motion execution",
+      "measured contrast",
+      "participants",
+      "real offline",
+      "API/web integration"
+    ]
+  },
+  "cleanup": {
+    "checkedAt": "2026-10-08T17:24:12.132876+00:00",
+    "ports": {
+      "3000": {
+        "free": true,
+        "lsofExitCode": 1
+      },
+      "3001": {
+        "free": true,
+        "lsofExitCode": 1
+      },
+      "3313": {
+        "free": true,
+        "lsofExitCode": 1
+      }
+    },
+    "harnessSessionEnded": true,
+    "browserTabClosed": true,
+    "viewportReset": true,
+    "dbRedisProviderUsed": false
+  },
+  "logs": [
+    {
+      "path": "/private/tmp/fe03-sol-review-20261008/build-network.log",
+      "sha256": "5d722e7d26b6711d753ef9ea3ec64461d830ef72cdd83567a31610ef33e9ea85"
+    },
+    {
+      "path": "/private/tmp/fe03-sol-review-20261008/build-webpack-final.log",
+      "sha256": "8f70e3ec0bcf5a95e08e55f42752d9ea36fbc3ce3f27ce4a5a705a9998c2612f"
+    },
+    {
+      "path": "/private/tmp/fe03-sol-review-20261008/build-webpack.log",
+      "sha256": "92bf777a830a079885bd25c590d870f68734718153cb4436514265efcc896fc6"
+    },
+    {
+      "path": "/private/tmp/fe03-sol-review-20261008/build.log",
+      "sha256": "2fc6b2201b077106a687223801c6ea040c0e678d27eace1564af1cdc3dbac33b"
+    },
+    {
+      "path": "/private/tmp/fe03-sol-review-20261008/focused-after.log",
+      "sha256": "43a3dad637a81a32747f0f180d803170c4921ce5fb54e7780784a628f5004660"
+    },
+    {
+      "path": "/private/tmp/fe03-sol-review-20261008/focused-final.log",
+      "sha256": "ebed1f29b1d272d700bc0ee2c3fe375d1bdf74a04f3459d57a4acf0d6b0f6b76"
+    },
+    {
+      "path": "/private/tmp/fe03-sol-review-20261008/harness-final.log",
+      "sha256": "800ddeb837113ee0d73ab4f76cbe786e9dc9a7217bbcaf90002da5260a25e370"
+    },
+    {
+      "path": "/private/tmp/fe03-sol-review-20261008/harness-network.log",
+      "sha256": "8b8e8d395dd0849629b90c7526bfc4750f6a0be7a5fc543ac9aed32117d88acc"
+    },
+    {
+      "path": "/private/tmp/fe03-sol-review-20261008/harness.log",
+      "sha256": "916bb582e78bc9e626218e9d8ee60d37148ace37ae693d97fde16394c9445e30"
+    },
+    {
+      "path": "/private/tmp/fe03-sol-review-20261008/invalid-date-before.log",
+      "sha256": "0a087a5e6e13ded896b3452b326070d7aa905dcc0bb2bd1a4bfcb5f4fc5d569a"
+    },
+    {
+      "path": "/private/tmp/fe03-sol-review-20261008/item-sheet-regression-after.log",
+      "sha256": "125ff438b6c3188b466cc46a3eb055d6b1d9994b8ea1e92de6957e4d09ae3c32"
+    },
+    {
+      "path": "/private/tmp/fe03-sol-review-20261008/item-sheet-regression-final.log",
+      "sha256": "2adeb877bc5edfe019f7a5a6ea67fca282bb5f6bb5b5bce2d0af9228012e12d3"
+    },
+    {
+      "path": "/private/tmp/fe03-sol-review-20261008/item-sheet-regression.log",
+      "sha256": "6f179a88022ab0244f0c71c7f0aafbe5f27ba9251d3f9528c0f0217b6c4efb4f"
+    },
+    {
+      "path": "/private/tmp/fe03-sol-review-20261008/lint-final.log",
+      "sha256": "56678bc3ca9cd33417dcaf1d63158470a271db09e738d37023cd0fb7ae2428ff"
+    },
+    {
+      "path": "/private/tmp/fe03-sol-review-20261008/lint.log",
+      "sha256": "56678bc3ca9cd33417dcaf1d63158470a271db09e738d37023cd0fb7ae2428ff"
+    },
+    {
+      "path": "/private/tmp/fe03-sol-review-20261008/regression-before.log",
+      "sha256": "3ceebd163d82f570cf146a6cec58c6908fc6c3b0075daf45ed80c717d4e715fd"
+    },
+    {
+      "path": "/private/tmp/fe03-sol-review-20261008/sheet-before.log",
+      "sha256": "8936e0d0836fb98afe9c03e30e091c0f560f3144bfb1528a0f44b595e62b7c46"
+    },
+    {
+      "path": "/private/tmp/fe03-sol-review-20261008/typecheck-final.log",
+      "sha256": "68872bc0105c4ae103012c438c6f7e3fc71522510374403852882dddf795613b"
+    },
+    {
+      "path": "/private/tmp/fe03-sol-review-20261008/typecheck.log",
+      "sha256": "68872bc0105c4ae103012c438c6f7e3fc71522510374403852882dddf795613b"
+    }
+  ],
+  "harnessManifest": "/private/tmp/fe03-sol-review-20261008/harness-sha256.json",
+  "pending": [
+    "pnpm run check standard integrated gate",
+    "real isolated API/web flow and cleanup",
+    "participant comprehension validation"
+  ],
+  "resourcesReleased": true
+}

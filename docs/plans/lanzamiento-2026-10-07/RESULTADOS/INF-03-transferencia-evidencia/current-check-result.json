@@ -1,0 +1,27 @@
+{
+  "purpose": "Local backup transfer validation",
+  "records": [
+    {
+      "phase": "stop",
+      "command": [
+        "pnpm",
+        "run",
+        "stop"
+      ],
+      "exitCode": 0,
+      "startedAtUtc": "2026-10-12T04:11:03.373344+00:00",
+      "finishedAtUtc": "2026-10-12T04:11:03.655049+00:00"
+    },
+    {
+      "phase": "check",
+      "command": [
+        "pnpm",
+        "run",
+        "check"
+      ],
+      "exitCode": 0,
+      "startedAtUtc": "2026-10-12T04:11:03.655517+00:00",
+      "finishedAtUtc": "2026-10-12T04:12:31.223845+00:00"
+    }
+  ]
+}

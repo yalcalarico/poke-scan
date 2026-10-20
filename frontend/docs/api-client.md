@@ -10,6 +10,7 @@
 | `token-storage.ts` | `getAccessToken`, `setTokens`, `clearTokens`, `hasSession` |
 | `auth.ts` | `register`, `login`, `logout`, `getMe`, `refreshSessionTokens` |
 | `cards.ts` | `searchCards`, `getCard`, `getCardPrices`, `getSets`, `buildCardsSearchPath` |
+| `comparison.ts` | `getCardComparison`, `getCollectionComparison` y validación estricta de DTOs |
 | `collections.ts` | `listCollections`, `getCollection`, `createCollection`, `updateCollection`, `deleteCollection`, `listItems`, `addItem`, `getDuplicates`, `getStats`, `updateItem`, `deleteItem` |
 | `share.ts` | `listShareLinks`, `createShareLink`, `updateShareLink`, `revokeShareLink`, `getPublicCollection` |
 | `currency.ts` | `getUsdArsRate`, `updateCurrencyPreference`, `buildUsdArsPath`, `isRateType`, `RATE_TYPES`, `PREFERRED_CURRENCIES`, `DEFAULT_RATE_TYPE` |
@@ -18,6 +19,10 @@
 
 > Todo se importa por el barrel (`@/lib/api`) salvo `share.ts`, `currency.ts` y
 > `collections.ts`, que tienen tipos propios que se importan del módulo directo.
+
+La comparación pasa por `apiFetch` con `AbortSignal` y `cache: 'no-store'`. Solo
+la ficha es pública (`skipAuth`); colección y portafolio usan la sesión activa.
+Contrato y semántica visual: [`comparison.md`](comparison.md).
 
 ---
 
@@ -30,13 +35,36 @@ const BASE_URL =
   process.env.NEXT_PUBLIC_API_URL?.replace(/\/+$/, '') ?? 'http://localhost:3001/api';
 ```
 
-Se evalúa **una vez al cargar el módulo** y el `??` es el fallback de desarrollo.
-`replace(/\/+$/, '')` evita el `//api` cuando alguien pone la env con barra final.
+La base pública se fija durante el build cuando Next reemplaza `NEXT_PUBLIC_*`.
+`replace(/\/+$/, '')` evita una barra doble cuando la env termina en `/`.
 
 > `NEXT_PUBLIC_*` se embebe en el bundle **en build**. Cambiarla en runtime no
 > tiene efecto: hay que rebuildar. En el `Dockerfile` es un `ARG`.
 
-`getApiBaseUrl()` la expone para los tres casos de server component / fetch crudo.
+`getApiBaseUrl()` elige la base según el runtime:
+
+| Runtime | Base |
+|---|---|
+| Browser (todos los entornos) | `NEXT_PUBLIC_API_URL` (por ejemplo `/api`) |
+| Server development | `DEV_API_PROXY_TARGET`, o el fallback público |
+| Server production | `API_INTERNAL_URL`, o el fallback público si no está configurada |
+
+`API_INTERNAL_URL` es una env privada del proceso Node. Debe contener la base
+completa, incluido `/api`; por ejemplo `http://backend:3001/api`. Se consulta al
+llamar `getApiBaseUrl()`, no al importar el módulo, y se normalizan sus barras
+finales. El browser siempre ignora esa variable y conserva el origen público.
+El resolver concatena rutas que ya parten de esa base; no agrega otro `/api`.
+Ausente o vacía, la env privada conserva el fallback anterior: con una base
+pública relativa `/api`, ese fallback solo no alcanza para SSR en Node. INF-02
+debe configurar `API_INTERNAL_URL` al arrancar el servidor de producción.
+Next documenta que las env sin prefijo `NEXT_PUBLIC_` solo están disponibles en
+Node; las variables `NEXT_PUBLIC_*` se insertan en el bundle al hacer build.
+
+El valor privado habilita que los Server Components consulten el backend por la
+red interna durante production SSR. La confirmación con imagen final, fixtures
+reales de `/share/<slug>` y `/carta/<id>`, y búsqueda del hostname privado en el
+bundle queda a cargo del gate INF-02; los tests unitarios del cliente no prueban
+esa integración.
 
 En `pnpm run dev:lan`, el browser usa `/api` mediante un proxy HTTPS de Next.
 `getApiBaseUrl()` devuelve `DEV_API_PROXY_TARGET` en el server y solo en desarrollo,
@@ -82,6 +110,26 @@ Flujo:
    no parsea devuelve el texto crudo (así un error HTML de un proxy no se pierde
    en silencio).
 
+`requestPasswordRecovery()` y `recoverPassword()` usan `recoveryFetch()`: un único
+POST con cookie y `X-Session-Request`, sin bearer, refresh ni replay. Fijan
+`redirect: 'error'` y `cache: 'no-store'`: una redirección tampoco reenvía el body.
+La solicitud exige HTTP 202 y `{ message: string }`; acredita recepción, no entrega.
+El cambio exige HTTP 200 y exactamente `{ success: true }`. Cualquier otro shape,
+status o resultado de red deja incertidumbre sin limpiar la sesión ni repetir POST.
+Los pares status/código conocidos se allowlistan, los campos usan copy local seguro
+y `safeRetryAfter` sólo admite segundos enteros positivos seguros. Nunca se propaga
+el mensaje arbitrario del servidor en estos errores.
+
+Login, registro, logout, reset y refresh usan `session-mutations.ts`: cola por pestaña
+y Web Lock `pcs.session-mutation` cuando está disponible. Sin Web Locks sólo hay
+serialización local. No hay locks anidados ni imports circulares. El refresh relee
+la generación al entrar en la cola/lock; `apiFetch` la relee después de esperarlo,
+antes de reintentar o navegar. La generación es local a la pestaña.
+El callback de limpieza del reset corre únicamente tras éxito confirmado, dentro
+de la cola, antes de liberar al login siguiente. El provider cerca bootstrap,
+refreshUser y login/register/logout tardíos; toma el inicio efectivo de la mutación
+cuando entra en la cola, para permitir una sesión nueva posterior al reset.
+
 `buildQueryString(params)` arma el query string saltando `null`, `undefined`,
 strings vacíos, `NaN`/`Infinity` e incluye booleanos. Sirve para no mandar
 `?q=&page=NaN`.
@@ -108,9 +156,9 @@ return `Request failed with status ${status}`;
 ### El single-flight del refresh
 
 `refreshSession()` conserva una promesa por pestaña; otras llamadas esperan
-la misma renovación. Cuando el browser soporta Web Locks también serializa
-renovaciones entre pestañas con `pcs.session-refresh`. El backend detecta
-reuso y revoca las sesiones, así que esto evita carreras legítimas.
+la misma renovación de su generación. Comparte la cola y el Web Lock de
+las mutaciones de sesión; una generación distinta no se une al vuelo viejo.
+El backend conserva la protección contra reutilización del refresh actual.
 
 El refresh usa `fetch` directo, `credentials: include`,
 `X-Session-Request: 1` y un body vacío. El token lo envía automáticamente el
@@ -226,6 +274,12 @@ true })`, que además pagina. El filtro "para intercambiar" va por
 `listItems({ forTradeOnly: true })` y compone con `duplicatesOnly`; no lo
 resuelvas filtrando la página en el cliente, porque el `total` y la página
 quedan desincronizados.
+
+### Metadata de valuación (BE-04 / FE-03)
+
+Los parsers de colección, portafolio, ficha, historia e items admiten los campos de valuación aditivos. `valuation.amount` es el monto canónico de agregados; `coverage` cuenta copias y `recency` es la evaluación del servidor. Los snapshots históricos llevan `evaluatedAt: null` y `recency: null`, aunque su cobertura corresponda exactamente a ese día. Un bloque nuevo presente se valida completo; si el bloque legacy está ausente, la UI presenta valuación/cobertura/antigüedad como desconocidas y no deriva esos datos de `totalValueUsd`, `valueUsd` o `isStale`.
+
+Cada precio individual conserva `market`, `provider`, `source`, `currency`, `fetchedAt` y metadata temporal opcional. `fetchedAt` registra la consulta, `evaluatedAt` cuándo se clasificó el dato y `upstreamUpdatedAt` la fecha verificable de la fuente. Un cache hit conserva esas fechas. No se llama a la API de precios desde la UI para agregar metadata; la lectura sigue por los métodos existentes de este cliente.
 
 ---
 

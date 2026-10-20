@@ -1,8 +1,9 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import Link from 'next/link';
-import { ArrowLeftRight, Layers, ListChecks, Search, Settings2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { PreviewLink as Link } from '@/components/visual-preview/preview-link';
+import { ArrowLeftRight, Layers, ListChecks, Search, Trash2 } from 'lucide-react';
 
 import { CardGrid, type CardGridEntry } from '@/components/cards/card-grid';
 import { ScreenContainer } from '@/components/layout/screen-container';
@@ -39,14 +40,20 @@ import { formatDate, pluralize } from '@/lib/format';
 import { conditionShort, variantLabel } from '@/lib/variants';
 import type { CollectionDto, CollectionItemDto } from '@/types/api';
 
+import { CollectionPriceRefresh } from './collection-price-refresh';
 import { CollectionActions } from './collection-actions';
 import { CollectionItemDetails } from './collection-item-details';
 import { CollectionFilters, type CollectionScope } from './collection-filters';
 import { COLLECTION_CHUNK, COLLECTION_PAGE_SIZE, formatCount } from './collection-options';
+import { CollectionDeleteSheet } from './collection-delete-sheet';
 import { CollectionRenameSheet } from './collection-rename-sheet';
 import { CollectionDetailSkeleton } from './collection-skeletons';
+import { CollectionComparisonPanel } from '@/components/prices/comparison-panel';
 import { CollectionStats, CollectionSummary } from './collection-summary';
 import { ItemSheet } from './item-sheet';
+import { MotionGrid } from '@/components/visual-preview/effects';
+import { previewHref } from '@/components/visual-preview/preview-link';
+import { useVisualPreview } from '@/components/visual-preview/visual-preview';
 
 /**
  * El copy de la acción masiva, en un solo lugar.
@@ -193,6 +200,8 @@ export interface CollectionDetailScreenProps {
  * y no acepta un parámetro de sentido (ver `SORTS`).
  */
 export function CollectionDetailScreen({ collectionId }: CollectionDetailScreenProps) {
+  const router = useRouter();
+  const visual = useVisualPreview();
   const { isLoading: isAuthLoading, isAuthenticated } = useAuth();
 
   const [search, setSearch] = useState('');
@@ -206,8 +215,15 @@ export function CollectionDetailScreen({ collectionId }: CollectionDetailScreenP
   const [forTradeOnly, setForTradeOnly] = useState(false);
   const [sort, setSort] = useState<SortValue>('none');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [isItemSheetOpen, setIsItemSheetOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<CollectionItemDto | null>(null);
+  const [comparisonRevision, setComparisonRevision] = useState(0);
+  const [priceRevision, setPriceRevision] = useState(0);
+  const refreshPrices = useCallback(() => {
+    setPriceRevision((value) => value + 1);
+    setComparisonRevision((value) => value + 1);
+  }, []);
 
   const overview = useAsync<CollectionOverview>(async () => {
     if (isAuthLoading || !isAuthenticated) return { kind: 'anonymous' };
@@ -221,7 +237,13 @@ export function CollectionDetailScreen({ collectionId }: CollectionDetailScreenP
       if (caught instanceof ApiError && caught.status === 404) return { kind: 'missing' };
       throw caught;
     }
-  }, [collectionId, isAuthenticated, isAuthLoading]);
+  }, [collectionId, isAuthenticated, isAuthLoading, priceRevision]);
+
+  const reloadOverview = overview.reload;
+  const reloadAfterItemChange = useCallback(() => {
+    reloadOverview();
+    setComparisonRevision((revision) => revision + 1);
+  }, [reloadOverview]);
 
   const isMissing = overview.data?.kind === 'missing';
 
@@ -238,7 +260,7 @@ export function CollectionDetailScreen({ collectionId }: CollectionDetailScreenP
    * ya cargadas —la página 3 de "por precio" no es la página 3 de "por nombre"—,
    * y remontar es la forma de que eso no requiera un efecto.
    */
-  const listKey = `${collectionId}|${scope}|${forTradeOnly ? 'trade' : 'all'}|${sort}|${query}`;
+
 
   const ready = overview.data?.kind === 'ready' ? overview.data : null;
 
@@ -262,6 +284,13 @@ export function CollectionDetailScreen({ collectionId }: CollectionDetailScreenP
 
   const collection = ready?.collection ?? lastGood?.collection ?? null;
   const stats = ready?.stats ?? lastGood?.stats ?? null;
+  const priceSignature = `${stats?.valuation?.amount}|${stats?.valuation?.coverage.pricedCopies}|${stats?.valuation?.recency?.newestFetchedAt}`;
+  const [gridPrices, setGridPrices] = useState({ signature: null as string | null, revision: 0 });
+  if (stats && gridPrices.signature !== priceSignature) {
+    setGridPrices({ signature: priceSignature, revision: gridPrices.signature === null ? 0 : gridPrices.revision + 1 });
+  }
+  // La primera valoración no repite el fetch inicial; sólo una cotización nueva invalida la grilla.
+  const listKey = `${collectionId}|${scope}|${forTradeOnly ? 'trade' : 'all'}|${sort}|${query}|${gridPrices.revision}`;
   const missingPriceCount = stats?.cardsMissingPrice ?? 0;
 
   /**
@@ -316,13 +345,14 @@ export function CollectionDetailScreen({ collectionId }: CollectionDetailScreenP
             />
           )
         }
-        back={{ href: `/colecciones`, label: 'las colecciones' }}
+        back={{ href: previewHref('/colecciones', visual), label: 'las colecciones' }}
         action={
           collection ? (
             <IconButton
-              icon={Settings2}
-              label="Editar la colección"
-              onClick={() => setIsSettingsOpen(true)}
+              icon={Trash2}
+              label="Eliminar colección"
+              className="text-negative"
+              onClick={() => setIsDeleteOpen(true)}
             />
           ) : null
         }
@@ -424,21 +454,22 @@ export function CollectionDetailScreen({ collectionId }: CollectionDetailScreenP
                   'carta',
                   'cartas',
                 )} · creada el ${formatDate(collection.createdAt)}`}
-                totalValueUsd={stats.totalValueUsd === 0 && missingPriceCount > 0 ? null : stats.totalValueUsd}
+                valuation={stats.valuation}
                 isDefault={collection.isDefault}
-                isPartial={missingPriceCount > 0}
               />
 
               <CollectionActions collection={collection} onEdit={() => setIsSettingsOpen(true)} />
 
+              <CollectionPriceRefresh collectionIds={[collectionId]} needsRefresh={collection.itemCount > 0 && Boolean(stats.valuation?.coverage.unpricedCopies || stats.valuation?.recency?.freshness !== 'fresh')} onRefresh={refreshPrices} />
+
               <CollectionStats stats={stats} />
 
+              <CollectionComparisonPanel collectionId={collectionId} refreshKey={comparisonRevision} />
+
               {/*
-                `warning` y no `error` (§2.3): las cartas sin precio están en la
-                colección igual y el usuario puede seguir usando la pantalla. Lo que
-                no puede es confiar en el total, y el copy lo dice. El backend las
-                suma con el `LEFT JOIN` de `latestPriceJoin()`, así que un `market`
-                nulo aporta cero al valor.
+                Este contador mide cartas distintas, mientras que la cobertura
+                que acompaña al total cuenta copias. El copy mantiene explícita
+                esa diferencia para no presentar este contador como cobertura.
 
                 `cardsMissingPrice` es opcional en `CollectionStatsResponse`
                 (`?` en el tipo del cliente) porque no está en el `CollectionStatsDto`
@@ -447,14 +478,14 @@ export function CollectionDetailScreen({ collectionId }: CollectionDetailScreenP
                 `?? 0` y no un `!`.
               */}
               {missingPriceCount > 0 ? (
-                <Alert tone="warning" size="sm" title="Te faltan precios">
+                <Alert tone="warning" size="sm" title="Cartas únicas sin referencia">
                   {formatCount(missingPriceCount)}{' '}
                   {pluralize(
                     missingPriceCount,
-                    'carta no tiene precio de mercado',
-                    'cartas no tienen precio de mercado',
+                    'carta única no tiene referencia de mercado',
+                    'cartas únicas no tienen referencia de mercado',
                   )}{' '}
-                  y por eso no suman al valor.
+                  La cobertura y el subtotal de arriba cuentan copias.
                 </Alert>
               ) : null}
 
@@ -497,12 +528,20 @@ export function CollectionDetailScreen({ collectionId }: CollectionDetailScreenP
               isItemSheetOpen={isItemSheetOpen}
               onOpenItem={handleOpenItem}
               onCloseItem={handleCloseItem}
-              onItemsChanged={overview.reload}
+              onItemsChanged={reloadAfterItemChange}
             />
           ) : null}
 
         </div>
       </ScreenContainer>
+
+      {collection ? <CollectionDeleteSheet
+        key={collection.id}
+        open={isDeleteOpen}
+        onClose={() => setIsDeleteOpen(false)}
+        collection={collection}
+        onDeleted={() => router.replace(previewHref('/colecciones', visual))}
+      /> : null}
 
       {collection ? (
         <CollectionRenameSheet
@@ -1111,12 +1150,14 @@ function CollectionItems({
       {/* 5 · listo */}
       {itemsToRender.length > 0 ? (
         <div ref={gridRef}>
+          <MotionGrid scopeKey="collection">
           <CardGrid
             variant="catalog"
             entries={entries}
             label="Cartas de la colección"
             showSelection={isSelecting || selectedCount > 0 || isBulkRunning}
           />
+          </MotionGrid>
         </div>
       ) : null}
 
@@ -1178,7 +1219,7 @@ function CollectionItems({
       ) : null}
 
       <ItemSheet
-        item={selectedItem}
+        item={items.find((item) => item.id === selectedItem?.id) ?? selectedItem}
         open={isItemSheetOpen}
         onClose={onCloseItem}
         onUpdated={handleItemChanged}

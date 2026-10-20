@@ -1,0 +1,664 @@
+{
+  "validatedAt": "2026-10-09T00:28:52.539749+00:00",
+  "scope": "documental",
+  "receivedShaMatchesExpected": true,
+  "links": [
+    {
+      "from": "MKT-01-copy.md",
+      "target": "MKT-01-review.md",
+      "exists": true,
+      "anchorChecked": null,
+      "ok": true
+    },
+    {
+      "from": "MKT-01-copy.md",
+      "target": "../../../../frontend/app/(app)/buscar/page.tsx",
+      "exists": true,
+      "anchorChecked": null,
+      "ok": true
+    },
+    {
+      "from": "MKT-01-copy.md",
+      "target": "../../../../frontend/components/search/catalog-search.tsx",
+      "exists": true,
+      "anchorChecked": null,
+      "ok": true
+    },
+    {
+      "from": "MKT-01-copy.md",
+      "target": "../../../../frontend/app/(app)/escanear/page.tsx",
+      "exists": true,
+      "anchorChecked": null,
+      "ok": true
+    },
+    {
+      "from": "MKT-01-copy.md",
+      "target": "../../../../frontend/app/(app)/escanear/layout.tsx",
+      "exists": true,
+      "anchorChecked": null,
+      "ok": true
+    },
+    {
+      "from": "MKT-01-copy.md",
+      "target": "../../../../frontend/app/(marketing)/faq/page.tsx",
+      "exists": true,
+      "anchorChecked": null,
+      "ok": true
+    },
+    {
+      "from": "MKT-01-copy.md",
+      "target": "../../../../frontend/components/marketing/faq-section.tsx",
+      "exists": true,
+      "anchorChecked": null,
+      "ok": true
+    },
+    {
+      "from": "MKT-01-copy.md",
+      "target": "../../../../frontend/components/marketing/landing-page.tsx",
+      "exists": true,
+      "anchorChecked": null,
+      "ok": true
+    },
+    {
+      "from": "MKT-01-copy.md",
+      "target": "../../../../backend/src/modules/cards/visual-identify.controller.ts",
+      "exists": true,
+      "anchorChecked": null,
+      "ok": true
+    },
+    {
+      "from": "MKT-01-copy.md",
+      "target": "../../../../frontend/components/share/share-link-creator.tsx",
+      "exists": true,
+      "anchorChecked": null,
+      "ok": true
+    },
+    {
+      "from": "MKT-01-copy.md",
+      "target": "../../../../frontend/components/share/share-link-preview.tsx",
+      "exists": true,
+      "anchorChecked": null,
+      "ok": true
+    },
+    {
+      "from": "MKT-01-copy.md",
+      "target": "../../../../frontend/app/share/[slug]/page.tsx",
+      "exists": true,
+      "anchorChecked": null,
+      "ok": true
+    },
+    {
+      "from": "MKT-01-copy.md",
+      "target": "../../../../backend/src/modules/cards/cards.controller.ts",
+      "exists": true,
+      "anchorChecked": null,
+      "ok": true
+    },
+    {
+      "from": "MKT-01-copy.md",
+      "target": "../../../../frontend/lib/api/cards.ts",
+      "exists": true,
+      "anchorChecked": null,
+      "ok": true
+    },
+    {
+      "from": "MKT-01-copy.md",
+      "target": "../../../../frontend/components/prices/price-history.tsx",
+      "exists": true,
+      "anchorChecked": null,
+      "ok": true
+    },
+    {
+      "from": "MKT-01-copy.md",
+      "target": "../../../../backend/src/jobs/sync-prices.service.ts",
+      "exists": true,
+      "anchorChecked": null,
+      "ok": true
+    },
+    {
+      "from": "MKT-01-copy.md",
+      "target": "../../../../frontend/docs/portfolio.md",
+      "exists": true,
+      "anchorChecked": null,
+      "ok": true
+    },
+    {
+      "from": "MKT-01-copy.md",
+      "target": "../../../../frontend/components/collections/portfolio-overview.tsx",
+      "exists": true,
+      "anchorChecked": null,
+      "ok": true
+    },
+    {
+      "from": "MKT-01-copy.md",
+      "target": "../../../../backend/src/modules/collections/portfolio.service.ts",
+      "exists": true,
+      "anchorChecked": null,
+      "ok": true
+    },
+    {
+      "from": "MKT-01-copy.md",
+      "target": "../../../../frontend/components/collections/collection-actions.tsx",
+      "exists": true,
+      "anchorChecked": null,
+      "ok": true
+    },
+    {
+      "from": "MKT-01-copy.md",
+      "target": "../../../../frontend/lib/collections/export-collection.ts",
+      "exists": true,
+      "anchorChecked": null,
+      "ok": true
+    },
+    {
+      "from": "MKT-01-copy.md",
+      "target": "../../../../frontend/docs/scanner.md",
+      "exists": true,
+      "anchorChecked": null,
+      "ok": true
+    },
+    {
+      "from": "MKT-01-copy.md",
+      "target": "../../../../frontend/lib/scanner/visual-photo.ts",
+      "exists": true,
+      "anchorChecked": null,
+      "ok": true
+    },
+    {
+      "from": "MKT-01-copy.md",
+      "target": "../../../../backend/src/modules/cards/visual-identify.service.ts",
+      "exists": true,
+      "anchorChecked": null,
+      "ok": true
+    },
+    {
+      "from": "MKT-01-copy.md",
+      "target": "../../../../backend/scripts/scanner-visual-worker.mjs",
+      "exists": true,
+      "anchorChecked": null,
+      "ok": true
+    },
+    {
+      "from": "MKT-01-copy.md",
+      "target": "../../../../frontend/components/scanner/session-draft.ts",
+      "exists": true,
+      "anchorChecked": null,
+      "ok": true
+    },
+    {
+      "from": "MKT-01-copy.md",
+      "target": "../../../../frontend/components/search/search-controls.tsx",
+      "exists": true,
+      "anchorChecked": null,
+      "ok": true
+    },
+    {
+      "from": "MKT-01-copy.md",
+      "target": "../../../../frontend/components/search/catalog-search.tsx",
+      "exists": true,
+      "anchorChecked": null,
+      "ok": true
+    },
+    {
+      "from": "MKT-01-copy.md",
+      "target": "../../../../frontend/components/collections/collection-detail.tsx",
+      "exists": true,
+      "anchorChecked": null,
+      "ok": true
+    },
+    {
+      "from": "MKT-01-copy.md",
+      "target": "../../../../frontend/docs/redesign-2026.md",
+      "exists": true,
+      "anchorChecked": null,
+      "ok": true
+    },
+    {
+      "from": "MKT-01-copy.md",
+      "target": "../../../../frontend/public/sw.js",
+      "exists": true,
+      "anchorChecked": null,
+      "ok": true
+    },
+    {
+      "from": "MKT-01-copy.md",
+      "target": "UX-03-valores.md",
+      "exists": true,
+      "anchorChecked": null,
+      "ok": true
+    },
+    {
+      "from": "MKT-01-copy.md",
+      "target": "../10-decisiones-y-contratos.md#dec-03--qu\u00e9-significan-precio-e-historial",
+      "exists": true,
+      "anchorChecked": true,
+      "ok": true
+    },
+    {
+      "from": "MKT-01-copy.md",
+      "target": "RES-04-fuentes.md",
+      "exists": true,
+      "anchorChecked": null,
+      "ok": true
+    },
+    {
+      "from": "MKT-01-copy.md",
+      "target": "RES-01-segmento.md",
+      "exists": true,
+      "anchorChecked": null,
+      "ok": true
+    },
+    {
+      "from": "MKT-01-copy.md",
+      "target": "BUILD-GATE-diagnostico.md",
+      "exists": true,
+      "anchorChecked": null,
+      "ok": true
+    },
+    {
+      "from": "MKT-01-copy.md",
+      "target": "../11-orquestacion.md",
+      "exists": true,
+      "anchorChecked": null,
+      "ok": true
+    },
+    {
+      "from": "MKT-01-review.md",
+      "target": "evidencia-mkt01-review/MKT-01-copy-recibido.md",
+      "exists": true,
+      "anchorChecked": null,
+      "ok": true
+    },
+    {
+      "from": "MKT-01-review.md",
+      "target": "evidencia-mkt01-review/baseline.json",
+      "exists": true,
+      "anchorChecked": null,
+      "ok": true
+    },
+    {
+      "from": "MKT-01-review.md",
+      "target": "evidencia-mkt01-review/dirty-antes.txt",
+      "exists": true,
+      "anchorChecked": null,
+      "ok": true
+    },
+    {
+      "from": "MKT-01-review.md",
+      "target": "evidencia-mkt01-review/validacion.json",
+      "exists": true,
+      "anchorChecked": null,
+      "ok": true
+    },
+    {
+      "from": "MKT-01-review.md",
+      "target": "evidencia-mkt01-review/fuentes-verificadas.json",
+      "exists": true,
+      "anchorChecked": null,
+      "ok": true
+    },
+    {
+      "from": "MKT-01-review.md",
+      "target": "evidencia-mkt01-review/correcciones.diff",
+      "exists": true,
+      "anchorChecked": null,
+      "ok": true
+    },
+    {
+      "from": "MKT-01-review.md",
+      "target": "evidencia-mkt01-review/hashes-finales.json",
+      "exists": true,
+      "anchorChecked": null,
+      "ok": true
+    },
+    {
+      "from": "MKT-01-review.md",
+      "target": "MKT-01-copy.md",
+      "exists": true,
+      "anchorChecked": null,
+      "ok": true
+    },
+    {
+      "from": "MKT-01-review.md",
+      "target": "../07-marketing.md",
+      "exists": true,
+      "anchorChecked": null,
+      "ok": true
+    },
+    {
+      "from": "MKT-01-review.md",
+      "target": "RES-04-fuentes.md",
+      "exists": true,
+      "anchorChecked": null,
+      "ok": true
+    },
+    {
+      "from": "MKT-01-review.md",
+      "target": "UX-03-valores.md",
+      "exists": true,
+      "anchorChecked": null,
+      "ok": true
+    },
+    {
+      "from": "MKT-01-review.md",
+      "target": "RES-01-segmento.md",
+      "exists": true,
+      "anchorChecked": null,
+      "ok": true
+    }
+  ],
+  "matrixRows": 22,
+  "matrix": [
+    {
+      "section": "Hero \u00b7 `/` \u00b7 t\u00edtulo y bajada",
+      "columns": 6,
+      "classified": true
+    },
+    {
+      "section": "Identidad y preview \u00b7 `/`",
+      "columns": 6,
+      "classified": true
+    },
+    {
+      "section": "Hero \u00b7 CTA",
+      "columns": 6,
+      "classified": true
+    },
+    {
+      "section": "Franja de m\u00e9tricas \u00b7 `/`",
+      "columns": 6,
+      "classified": true
+    },
+    {
+      "section": "Tres beneficios \u00b7 `/`",
+      "columns": 6,
+      "classified": true
+    },
+    {
+      "section": "Introducci\u00f3n producto \u00b7 `/`",
+      "columns": 6,
+      "classified": true
+    },
+    {
+      "section": "Privacidad y conexi\u00f3n \u00b7 `/`",
+      "columns": 6,
+      "classified": true
+    },
+    {
+      "section": "Secci\u00f3n moneda \u00b7 `/`",
+      "columns": 6,
+      "classified": true
+    },
+    {
+      "section": "Tarjetas de resumen \u00b7 `/`",
+      "columns": 6,
+      "classified": true
+    },
+    {
+      "section": "Encabezado de planes \u00b7 `/`",
+      "columns": 6,
+      "classified": true
+    },
+    {
+      "section": "Planes \u00b7 Gratis",
+      "columns": 6,
+      "classified": true
+    },
+    {
+      "section": "Planes \u00b7 Pro",
+      "columns": 6,
+      "classified": true
+    },
+    {
+      "section": "CTA final \u00b7 `/`",
+      "columns": 6,
+      "classified": true
+    },
+    {
+      "section": "Encabezado FAQ y navegaci\u00f3n \u00b7 `/`, `/faq`",
+      "columns": 6,
+      "classified": true
+    },
+    {
+      "section": "FAQ \u00b7 qu\u00e9 es",
+      "columns": 6,
+      "classified": true
+    },
+    {
+      "section": "FAQ \u00b7 esc\u00e1ner/foto",
+      "columns": 6,
+      "classified": true
+    },
+    {
+      "section": "FAQ \u00b7 offline",
+      "columns": 6,
+      "classified": true
+    },
+    {
+      "section": "FAQ \u00b7 precios y condici\u00f3n",
+      "columns": 6,
+      "classified": true
+    },
+    {
+      "section": "FAQ \u00b7 moneda ARS",
+      "columns": 6,
+      "classified": true
+    },
+    {
+      "section": "FAQ \u00b7 cuenta",
+      "columns": 6,
+      "classified": true
+    },
+    {
+      "section": "FAQ \u00b7 planes",
+      "columns": 6,
+      "classified": true
+    },
+    {
+      "section": "FAQ \u00b7 otros juegos",
+      "columns": 6,
+      "classified": true
+    }
+  ],
+  "faqItems": {
+    "que-es-pokescan": true,
+    "como-identifica": true,
+    "offline": true,
+    "precios": true,
+    "ars": true,
+    "cuenta": true,
+    "planes": true,
+    "juegos": true
+  },
+  "staticProbes": {
+    "searchModesAvailable": true,
+    "catalogPassesSearchBy": true,
+    "collectionPassesForTradeOnly": true,
+    "faqProAnchorGenerated": true,
+    "landingExistingProHref": true,
+    "scannerAuthenticated": true,
+    "csvVisible": true,
+    "portfolioObservationDocumented": true
+  },
+  "baselineInputHashesUnchanged": {
+    "AGENTS.md": true,
+    "docs/plans/lanzamiento-2026-10-07/README.md": true,
+    "docs/plans/lanzamiento-2026-10-07/07-marketing.md": true,
+    "docs/plans/lanzamiento-2026-10-07/10-decisiones-y-contratos.md": true,
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/RES-04-fuentes.md": true,
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/UX-03-valores.md": true,
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/RES-01-segmento.md": true,
+    "frontend/components/marketing/landing-page.tsx": true,
+    "frontend/components/marketing/faq-section.tsx": true
+  },
+  "noRuntimeOrApplicationTests": true,
+  "passed": true,
+  "probeCorrection": "Regex original detenida por llave en comentario; se inspeccion\u00f3 llamada completa hasta }, signal).",
+  "sourceCorrespondence": [
+    {
+      "path": "AGENTS.md",
+      "unchanged": true
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/README.md",
+      "unchanged": true
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/07-marketing.md",
+      "unchanged": true
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/10-decisiones-y-contratos.md",
+      "unchanged": true
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/11-orquestacion.md",
+      "unchanged": true
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/RES-04-fuentes.md",
+      "unchanged": true
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/UX-03-valores.md",
+      "unchanged": true
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/RES-01-segmento.md",
+      "unchanged": true
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BUILD-GATE-diagnostico.md",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/components/marketing/landing-page.tsx",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/components/marketing/faq-section.tsx",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/components/search/search-controls.tsx",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/components/search/catalog-search.tsx",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/components/collections/collection-detail.tsx",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/components/collections/collection-actions.tsx",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/lib/collections/export-collection.ts",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/docs/portfolio.md",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/components/collections/portfolio-overview.tsx",
+      "unchanged": true
+    },
+    {
+      "path": "backend/src/modules/collections/portfolio.service.ts",
+      "unchanged": true
+    },
+    {
+      "path": "backend/src/modules/cards/cards.controller.ts",
+      "unchanged": true
+    },
+    {
+      "path": "backend/src/modules/cards/cards.service.ts",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/lib/api/cards.ts",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/lib/api/collections.ts",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/components/prices/price-history.tsx",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/docs/scanner.md",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/lib/scanner/visual-photo.ts",
+      "unchanged": true
+    },
+    {
+      "path": "backend/src/modules/cards/visual-identify.controller.ts",
+      "unchanged": true
+    },
+    {
+      "path": "backend/src/modules/cards/visual-identify.service.ts",
+      "unchanged": true
+    },
+    {
+      "path": "backend/scripts/scanner-visual-worker.mjs",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/components/scanner/session-draft.ts",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/components/scanner/session-storage.ts",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/docs/redesign-2026.md",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/public/sw.js",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/components/share/share-link-creator.tsx",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/components/share/share-link-preview.tsx",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/app/share/[slug]/page.tsx",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/app/(app)/buscar/page.tsx",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/app/(app)/escanear/page.tsx",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/app/(app)/escanear/layout.tsx",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/app/(marketing)/faq/page.tsx",
+      "unchanged": true
+    },
+    {
+      "path": "backend/src/jobs/sync-prices.service.ts",
+      "unchanged": true
+    }
+  ],
+  "sourceCorrespondencePassed": true
+}

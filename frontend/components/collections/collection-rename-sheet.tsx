@@ -1,8 +1,10 @@
 'use client';
 
+import { PreviewSheet as Sheet } from '@/components/visual-preview/preview-sheet';
+
 import { useCallback, useId, useState } from 'react';
 
-import { Button, Field, Input, Sheet, useFieldA11y, useToast } from '@/components/ui';
+import { Button, Field, Input, useFieldA11y, useToast } from '@/components/ui';
 import { ApiError } from '@/lib/api/api-client';
 import { updateCollection } from '@/lib/api/collections';
 import type { CollectionDto } from '@/types/api';
@@ -78,9 +80,10 @@ export function CollectionRenameSheet({
   });
 
   const handleClose = useCallback(() => {
+    if (isSaving) return;
     setError(null);
     onClose();
-  }, [onClose]);
+  }, [onClose, isSaving]);
 
   const handleSubmit = useCallback(async () => {
     const trimmed = value.trim();
@@ -111,7 +114,7 @@ export function CollectionRenameSheet({
     <Sheet
       open={open}
       onClose={handleClose}
-      title="Renombrar colección"
+      title="Editar colección"
       size="sm"
       footer={
         <>

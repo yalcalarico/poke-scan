@@ -4,9 +4,12 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { getCardPriceHistory } from '@/lib/api/cards';
 import { cn } from '@/lib/cn';
-import { formatDate } from '@/lib/format';
+import { formatPrice } from '@/lib/format';
+import { formatObservedDay } from '@/lib/prices/format';
+import { variantLabel } from '@/lib/variants';
 import type { CardVariant, PriceHistoryDto } from '@/types/api';
 
+import { PriceReferenceDetails } from './price-evidence';
 import { Sparkline, type SparklinePoint } from './sparkline';
 
 /**
@@ -58,14 +61,8 @@ const MIN_DAYS_FOR_TREND = 3;
  * inventa es una línea que conecta dos precios y los hace ver como una
  * trayectoria, y por eso el caption dice siempre cuántos días hay.
  *
- * ## Por qué no hay estado de carga ni de error
- *
- * Es la misma degradación que el resto de la sección de precio: si la serie no
- * llega, la pantalla sigue mostrando la cifra. Un error de la serie **no** es un
- * error de la pantalla —el usuario puede hacer todo lo que venía a hacer sin ver
- * la línea—, así que no hay `ErrorState` ni reintento. Lo único que se dibuja
- * cuando no hay nada es el texto que dice que todavía no hay historial, que es
- * el estado que de verdad existe.
+ * La carga y el error de la serie son complementarios: no sustituyen el
+ * valor del hero ni se presentan como una serie válida sin observaciones.
  *
  * ## Por qué el color lo pone el `className` y no una prop de tono
  *
@@ -104,7 +101,10 @@ export function PriceHistory({
   days = 30,
   className,
 }: PriceHistoryProps) {
-  const [history, setHistory] = useState<PriceHistoryDto | null>(null);
+  const queryKey = `${cardId}:${variant ?? '*'}:${days}`;
+  const [result, setResult] = useState<{ queryKey: string; history: PriceHistoryDto | null; status: 'ready' | 'error' } | null>(null);
+  const current = result?.queryKey === queryKey ? result : null;
+  const history = current?.history ?? null;
 
   useEffect(() => {
     let disposed = false;
@@ -121,27 +121,23 @@ export function PriceHistory({
       getCardPriceHistory(cardId, { days, variant })
         .then((data) => {
           if (disposed) return;
-          setHistory(data);
+          setResult({ queryKey, history: data, status: 'ready' });
         })
         .catch(() => {
-          /*
-           * 404 (la carta no existe) o corte de red. La serie es contexto, no
-           * contenido: la cifra de arriba ya está en pantalla y no hay nada
-           * que avisar. `null` es el estado que el resumen traduce en el texto
-           * honesto de abajo.
-           */
           if (disposed) return;
-          setHistory(null);
+          setResult({ queryKey, history: null, status: 'error' });
         });
     });
 
     return () => {
       disposed = true;
     };
-  }, [cardId, days, variant]);
+  }, [cardId, days, variant, queryKey]);
 
   const summary = useMemo(() => buildSummary(history), [history]);
 
+  if (!current) return <p role="status" aria-busy="true" className="text-caption text-secondary">Cargando historial de referencia…</p>;
+  if (current.status === 'error') return <p role="alert" className="text-caption text-warning">No pudimos cargar el historial de referencia. El precio de la carta sigue disponible.</p>;
   if (summary === null) return null;
 
   const hasFigure = summary.points.length >= MIN_POINTS_FOR_LINE;
@@ -174,6 +170,15 @@ export function PriceHistory({
         <span className="sr-only">{summary.label}</span>
       ) : null}
       <p className="text-caption text-tertiary">{summary.caption}</p>
+      {history ? <details className="text-caption text-secondary">
+        <summary className="flex min-h-11 cursor-pointer items-center rounded-control focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--focus-ring)]">Ver procedencia de cada observación ({history.points.length})</summary>
+        <ul className="flex flex-col gap-2 border-t border-line-subtle pt-2">
+          {history.points.map((point) => <li key={`${point.date}-${point.fetchedAt}`}>
+            <p className="text-body-strong">{formatObservedDay(point.date)} · {point.market === null ? 'Sin referencia de mercado' : formatPrice(point.market, history.currency)}</p>
+            <PriceReferenceDetails reference={{ ...point, provider: history.provider, source: history.source, currency: history.currency }} />
+          </li>)}
+        </ul>
+      </details> : null}
     </div>
   );
 }
@@ -239,7 +244,8 @@ function buildSummary(history: PriceHistoryDto | null): HistorySummary | null {
         : history.provider === 'scrydex'
           ? 'Scrydex'
           : history.provider;
-  const provenance = `${history.source} · ${providerName}`;
+  const variant = history.variant === null ? 'Mejor referencia disponible por día; puede cambiar de variante' : `Referencia histórica · ${variantLabel(history.variant)}`;
+  const provenance = `${history.source} · ${providerName} · ${variant} · moneda original ${history.currency}`;
 
   if (dayCount === 0) {
     return {
@@ -302,10 +308,10 @@ function buildSummary(history: PriceHistoryDto | null): HistorySummary | null {
    */
   const label =
     dayCount === 1
-      ? `Un solo día de precio registrado, el ${formatDate(
+      ? `Un solo día de precio registrado, el ${formatObservedDay(
           from.date,
         )}: ${from.value.toFixed(2)} dólares. Todavía no hay una tendencia.`
-      : `Precio de mercado del ${formatDate(from.date)} al ${formatDate(
+      : `Precio de mercado del ${formatObservedDay(from.date)} al ${formatObservedDay(
           to.date,
         )}: de ${from.value.toFixed(2)} a ${to.value.toFixed(
           2,
@@ -332,7 +338,7 @@ function buildSummary(history: PriceHistoryDto | null): HistorySummary | null {
         dayCount === 1 ? 'registrado' : 'registrados'
       }. Todavía no hay con qué comparar una variación · ${provenance}.`
     : isThin
-      ? `${dayCount} ${dayWord} de precio · ${direction}. La línea crece con cada consulta nueva · ${provenance}.`
+      ? `${dayCount} ${dayWord} de precio · ${direction}. La serie reúne los días observados · ${provenance}.`
       : `${dayCount} ${dayWord} de precio · ${direction} en los últimos ${windowDays} días · ${provenance}`;
 
   return { points, label, caption, toneClass };

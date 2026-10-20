@@ -1,0 +1,46 @@
+{
+  "owner": "/root/be05_account_draft_review_sol",
+  "runId": "cuenta-gate-a4b26947b392",
+  "tmp": "/private/tmp/cuenta-gate-a4b26947b392",
+  "annex": "/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/docs/plans/lanzamiento-2026-10-07/RESULTADOS/LOTE-CUENTA-anexos",
+  "database": "be05_review_a4b26947b392_test",
+  "databaseComment": "cuenta-gate-a4b26947b392-owned",
+  "redis": "cuenta-gate-a4b26947b392-redis",
+  "redisLabel": "cuenta-gate-a4b26947b392",
+  "redisPort": 56395,
+  "resources": [
+    {
+      "role": "database",
+      "name": "be05_review_a4b26947b392_test",
+      "pgContainer": "18aa2f6937521ae010930ae98cbee45f2fa435b554c65cf90daaffba0c641ba8",
+      "comment": "cuenta-gate-a4b26947b392-owned"
+    },
+    {
+      "role": "redis",
+      "name": "cuenta-gate-a4b26947b392-redis",
+      "id": "e12cec0e0a8ae88cd28345babf53fe2134d2712f6b568f93956cbf8525b4dacd",
+      "label": "cuenta-gate-a4b26947b392",
+      "bind": "127.0.0.1:56395",
+      "tmpfs": true
+    }
+  ],
+  "liveResources": [
+    "database",
+    "redis"
+  ],
+  "at": "2026-10-10T02:25:32.582739+00:00",
+  "plannedResources": [
+    {
+      "role": "database",
+      "name": "be05_review_a4b26947b392_test",
+      "comment": "cuenta-gate-a4b26947b392-owned"
+    },
+    {
+      "role": "redis",
+      "name": "cuenta-gate-a4b26947b392-redis",
+      "label": "cuenta-gate-a4b26947b392",
+      "bind": "127.0.0.1:56395"
+    }
+  ],
+  "processes": []
+}

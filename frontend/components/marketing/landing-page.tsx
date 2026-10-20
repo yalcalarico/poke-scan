@@ -19,77 +19,73 @@ const PRODUCT_POINTS = [
   {
     icon: ScanLine,
     number: '01',
-    title: 'Identificá sin tipear todo',
-    body: 'DINOv2 compara el dibujo con el catálogo y suma la primera coincidencia a la sesión. Revisás la edición al organizarla.',
+    title: 'Buscá por nombre, número o artista.',
+    body: 'Encontrá cartas y filtrá el catálogo por set.',
   },
   {
     icon: Layers,
     number: '02',
-    title: 'Ordená tu binder a tu manera',
-    body: 'Separá colecciones, controlá duplicadas y marcá cuáles querés intercambiar.',
+    title: 'Organizá tu colección.',
+    body: 'Registrá cartas, separá duplicadas y marcá las que querés intercambiar.',
   },
   {
     icon: TrendingUp,
     number: '03',
-    title: 'Entendé el valor, con contexto',
-    body: 'Consultá las cotizaciones disponibles, su variante y su actualización. Elegí USD o ARS.',
+    title: 'Consultá referencias con contexto.',
+    body: 'Cuando hay datos, mirá la variante, la fuente y cuándo se consultó. Podés ver USD o su conversión a ARS.',
   },
 ] as const;
 
 const FREE_FEATURES = [
-  'Catálogo Pokémon y búsqueda por nombre, número o artista',
-  'Escáner con confirmación antes de guardar',
+  'Catálogo y búsqueda por nombre, número o artista',
+  'Reconocimiento visual experimental con revisión antes de guardar (requiere cuenta, foto o cámara compatible y conexión; puede no identificar la carta)',
   'Colecciones, duplicadas y marcas para intercambio',
-  'Progreso por set y binder',
-  'Precios e historial cuando hay datos disponibles',
-  'Conversión a ARS: blue u oficial',
-] as const;
-
-const PRO_PREVIEW = [
-  'Evolución del valor total de tus colecciones',
-  'Alertas de precio para cartas que seguís',
-  'Exportación y reportes de tus binders',
-  'Más herramientas para organizar colecciones grandes',
+  'Progreso por set',
+  'Referencias e historial de cartas cuando hay datos',
+  'Observaciones del portafolio al consultar el resumen: incluyen cambios de cantidad y referencias',
+  'Exportación CSV de una colección',
+  'Conversión de referencias a ARS',
 ] as const;
 
 export async function LandingPage() {
   const previewCards = await fetchPreviewCards();
 
   return (
-    <main>
+    <main id="contenido">
       <section className="mx-auto grid w-full max-w-7xl items-center gap-10 px-4 pb-12 pt-12 sm:px-6 sm:pb-16 sm:pt-16 lg:grid-cols-[0.95fr_1.05fr] lg:gap-14 lg:px-8 lg:pb-20 lg:pt-20">
         <div className="flex flex-col items-start gap-6">
           <Badge tone="brand" className="rounded-pill px-3 py-1">
-            Pokémon TCG · hecha para coleccionistas de acá
+            Pokémon TCG · para organizar tu colección
           </Badge>
 
           <h1 className="max-w-2xl text-display text-primary">
-            Tu colección, carta por carta. Y su valor, con contexto.
+            Tu colección Pokémon, ordenada carta por carta.
           </h1>
 
           <p className="max-w-xl text-body text-secondary sm:text-h3">
-            Escaneá, organizá tus sets y consultá estimaciones de mercado en USD o pesos argentinos.
-            Sin planillas y sin perder de vista tus duplicadas.
+            Buscá cartas, organizá tus sets y tené a mano tus duplicadas. Cuando hay referencias
+            disponibles, consultalas en USD o convertidas a ARS.
           </p>
 
           <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
             <Link
-              href="/escanear"
+              href="/buscar"
               className={cn(buttonVariants({ variant: 'primary', size: 'lg' }), 'w-full px-6 sm:w-auto')}
             >
-              Probar el escáner
+              Explorar el catálogo
               <ArrowRight aria-hidden="true" focusable="false" className="h-5 w-5" />
             </Link>
             <Link
-              href="/buscar"
+              href="/escanear"
               className={cn(buttonVariants({ variant: 'secondary', size: 'lg' }), 'w-full px-6 sm:w-auto')}
             >
-              Explorar el catálogo
+              Probar el escáner
             </Link>
           </div>
 
           <p className="text-caption text-tertiary">
-            El catálogo y las herramientas actuales están disponibles sin suscripción.
+            Podés explorar el catálogo sin cuenta. Para escanear y guardar tu colección necesitás
+            una cuenta y conexión.
           </p>
         </div>
 
@@ -120,7 +116,7 @@ export async function LandingPage() {
                 <Badge tone="brand">Pokémon TCG</Badge>
                 <Database aria-hidden="true" focusable="false" className="h-5 w-5 text-tertiary" />
               </div>
-              <p className="max-w-sm text-h1 text-primary">Escaneá. Confirmá. Coleccioná.</p>
+              <p className="max-w-sm text-h1 text-primary">Buscá. Revisá. Coleccioná.</p>
               <p className="text-body text-secondary">Tu primer binder empieza con una carta.</p>
             </Surface>
           )}
@@ -129,10 +125,10 @@ export async function LandingPage() {
 
       <section aria-label="Datos del catálogo" className="border-y border-line-subtle bg-surface">
         <div className="mx-auto grid w-full max-w-7xl grid-cols-2 gap-px px-4 sm:px-6 md:grid-cols-4 lg:px-8">
-          <ProofPoint value="20.670" label="cartas en el catálogo" />
-          <ProofPoint value="176" label="sets para explorar" />
-          <ProofPoint value="DINOv2" label="reconocimiento visual" />
-          <ProofPoint value="USD + ARS" label="blue u oficial" />
+          <ProofPoint value="Pokémon TCG" label="Catálogo" />
+          <ProofPoint value="Por set" label="Progreso y duplicadas" />
+          <ProofPoint value="DINOv2" label="Reconocimiento visual experimental" />
+          <ProofPoint value="USD + ARS" label="Referencia y conversión" />
         </div>
       </section>
 
@@ -170,11 +166,12 @@ export async function LandingPage() {
             <ShieldCheck aria-hidden="true" focusable="false" className="h-6 w-6" />
           </span>
           <div className="flex flex-col gap-2">
-            <h2 className="text-h3 text-primary">Tu foto no se guarda.</h2>
+            <h2 className="text-h3 text-primary">Tu captura se procesa para reconocer la carta.</h2>
             <p className="max-w-3xl text-body text-secondary">
-              PokéScan envía el recorte de la carta a la API para reconocer el dibujo con DINOv2.
-              La imagen se procesa sin guardarla. Reconocer cartas, consultar precios y sincronizar tu cuenta
-              requiere conexión.
+              Para reconocer necesitás una cuenta y conexión. PokéScan envía el recorte para procesarlo
+              con DINOv2, sin guardar la foto de consulta. Podés subir una foto; la cámara se ofrece en
+              teléfonos compatibles. La sugerencia puede fallar: revisá y corregí la carta antes de
+              guardar. Buscar, consultar referencias y sincronizar también requiere conexión.
             </p>
           </div>
         </Surface>
@@ -183,22 +180,24 @@ export async function LandingPage() {
       <section className="bg-surface-2">
         <div className="mx-auto grid w-full max-w-7xl gap-8 px-4 py-14 sm:px-6 sm:py-16 lg:grid-cols-[0.8fr_1.2fr] lg:items-center lg:gap-16 lg:px-8">
           <div className="flex flex-col gap-4">
-            <p className="text-overline text-brand">PENSADA PARA ACÁ</p>
-            <h2 className="text-h1 text-primary">El valor también se entiende en pesos.</h2>
+            <p className="text-overline text-brand">REFERENCIAS DE MERCADO</p>
+            <h2 className="text-h1 text-primary">Una referencia internacional, también en ARS.</h2>
             <p className="text-body text-secondary">
-              Consultá valores de mercado disponibles en USD y miralos convertidos a ARS con la
-              cotización blue u oficial que elijas.
+              Consultá la referencia disponible de la variante y, si querés, mirala convertida al tipo
+              de cambio blue u oficial elegido. La conversión usa el cambio actual; no representa un
+              precio de venta en Argentina.
             </p>
             <p className="text-caption text-tertiary">
-              Son estimaciones de referencia: dependen de la variante, la fuente y cuándo se actualizó.
+              La fecha indica cuándo se consultó el dato. No siempre conocemos cuándo se actualizó la
+              fuente. La condición que registrás no ajusta automáticamente el importe.
             </p>
           </div>
 
           <div className="grid gap-3 sm:grid-cols-2">
-            <CurrencyCard label="Moneda de referencia" value="USD" detail="Valor de mercado disponible" />
-            <CurrencyCard label="Conversión local" value="ARS" detail="Elegí blue u oficial" />
-            <CurrencyCard label="Tu binder" value="Por set" detail="Progreso, faltantes y duplicadas" />
-            <CurrencyCard label="Para compartir" value="Un link" detail="Mostrá tu colección en solo lectura" />
+            <CurrencyCard label="Referencia internacional" value="USD" detail="Cuando hay datos para la variante" />
+            <CurrencyCard label="Conversión estimada" value="ARS" detail="Al cambio actual blue u oficial" />
+            <CurrencyCard label="Progreso por set" value="Por set" detail="Faltantes y duplicadas" />
+            <CurrencyCard label="Enlace de solo lectura" value="Un link" detail="Elegís qué colección compartir" />
           </div>
         </div>
       </section>
@@ -206,10 +205,10 @@ export async function LandingPage() {
       <section id="planes" className="scroll-mt-24 mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
         <div className="flex flex-col gap-3 md:max-w-2xl">
           <p className="text-overline text-brand">PLANES</p>
-          <h2 className="text-h1 text-primary">Empezá gratis. Pro está en preparación.</h2>
+          <h2 className="text-h1 text-primary">Empezá gratis. Pro está en evaluación.</h2>
           <p className="text-body text-secondary">
-            Hoy no hay suscripciones ni pagos activos. Primero queremos que el valor para cada tipo
-            de coleccionista esté claro.
+            Hoy no hay suscripciones ni pagos activos. Cualquier propuesta de Pro dependerá de
+            validar utilidad, costos y condiciones.
           </p>
         </div>
 
@@ -218,7 +217,7 @@ export async function LandingPage() {
             <div className="flex items-start justify-between gap-3">
               <div className="flex flex-col gap-1">
                 <h3 className="text-h2 text-primary">Gratis</h3>
-                <p className="text-body text-secondary">Lo que ya podés usar hoy.</p>
+                <p className="text-body text-secondary">Funciones disponibles sin suscripción hoy.</p>
               </div>
               <Badge tone="positive">Disponible</Badge>
             </div>
@@ -242,24 +241,24 @@ export async function LandingPage() {
             <div className="flex items-start justify-between gap-3 pt-1">
               <div className="flex flex-col gap-1">
                 <h3 className="text-h2 text-primary">Pro</h3>
-                <p className="text-body text-secondary">Para seguir colecciones grandes de cerca.</p>
+                <p className="text-body text-secondary">Una posibilidad en evaluación.</p>
               </div>
-              <Badge tone="brand">En preparación</Badge>
+              <Badge tone="brand">En evaluación</Badge>
             </div>
-            <p className="text-h2 text-primary">Próximamente</p>
-            <ul className="flex flex-1 flex-col gap-3">
-              {PRO_PREVIEW.map((feature) => (
-                <PlanFeature key={feature}>{feature}</PlanFeature>
-              ))}
-            </ul>
+            <p className="flex-1 text-body text-secondary">
+              Todavía no hay un plan Pro activo, precio, cuotas ni fecha de lanzamiento. Estamos
+              investigando qué herramientas serían útiles. El historial de cartas, las observaciones
+              del portafolio por consulta y la exportación CSV básica ya están disponibles sin
+              suscripción. No hay seguimiento automático de precios ni alertas.
+            </p>
             <Link
               href="/faq#faq-planes"
               className={cn(buttonVariants({ variant: 'secondary', size: 'lg' }), 'w-full')}
             >
-              Qué estamos preparando
+              Ver qué estamos investigando
             </Link>
             <p className="text-caption text-tertiary">
-              Estas funciones todavía no están disponibles ni tienen precio. No hay ningún cobro activo.
+              Cualquier oferta futura dependerá de validar utilidad, costos y condiciones.
             </p>
           </Surface>
         </div>
@@ -268,15 +267,18 @@ export async function LandingPage() {
       <section className="border-y border-line-subtle bg-brand-soft">
         <div className="mx-auto flex w-full max-w-7xl flex-col gap-5 px-4 py-12 sm:px-6 md:flex-row md:items-center md:justify-between lg:px-8">
           <div className="flex max-w-2xl flex-col gap-2">
-            <h2 className="text-h2 text-primary">¿Cuál es la primera carta que vas a sumar?</h2>
-            <p className="text-body text-secondary">Probá el escáner o empezá por buscar una que ya conocés.</p>
+            <h2 className="text-h2 text-primary">Empezá por encontrar una carta.</h2>
+            <p className="text-body text-secondary">
+              Explorá el catálogo o probá el reconocimiento visual con una captura. Revisá la
+              sugerencia antes de guardarla.
+            </p>
           </div>
           <div className="flex flex-col gap-2 sm:flex-row">
-            <Link href="/escanear" className={cn(buttonVariants({ variant: 'primary', size: 'lg' }), 'px-5')}>
-              Escanear una carta
+            <Link href="/buscar" className={cn(buttonVariants({ variant: 'primary', size: 'lg' }), 'px-5')}>
+              Explorar el catálogo
             </Link>
-            <Link href="/buscar" className={cn(buttonVariants({ variant: 'secondary', size: 'lg' }), 'px-5')}>
-              Buscar en catálogo
+            <Link href="/escanear" className={cn(buttonVariants({ variant: 'secondary', size: 'lg' }), 'px-5')}>
+              Probar reconocimiento visual
             </Link>
           </div>
         </div>

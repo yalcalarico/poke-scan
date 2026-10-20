@@ -1,0 +1,15 @@
+{
+  "command": [
+    "pnpm",
+    "--dir",
+    "backend",
+    "exec",
+    "vitest",
+    "run",
+    "src/modules/metrics",
+    "src/modules/cards/visual-identify.lifecycle.spec.ts",
+    "src/modules/cards/visual-identify.service.spec.ts"
+  ],
+  "exitCode": 0,
+  "finishedUtc": "2026-10-11T15:42:14.118486+00:00"
+}

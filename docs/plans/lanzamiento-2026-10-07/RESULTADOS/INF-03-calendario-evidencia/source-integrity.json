@@ -1,0 +1,16 @@
+{
+  "baselineSelectedFiles": 543,
+  "unchanged": 541,
+  "authorizedChanges": [
+    "infra/inf03/README.md",
+    "package.json"
+  ],
+  "newAuthorizedFiles": [
+    "infra/inf03/SCHEDULE.md",
+    "scripts/inf03-schedule-common.mjs",
+    "scripts/inf03-schedule.mjs",
+    "scripts/inf03-schedule.test.mjs"
+  ],
+  "otherProductChanges": [],
+  "note": "Baseline after dispatch; selected sources only, not a full dirty tree snapshot."
+}

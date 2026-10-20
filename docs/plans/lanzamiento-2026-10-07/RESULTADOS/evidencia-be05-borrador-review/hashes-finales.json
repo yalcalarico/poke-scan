@@ -1,0 +1,51 @@
+{
+  "checkedAtUtc": "2026-10-09T17:58:07.882897+00:00",
+  "scope": "Artefactos documentales reales; archivo de hashes no se hashea a sí mismo",
+  "artifacts": [
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-contrato-borrador.md",
+      "sha256": "9b0c36f8bacc6192b3dc7f8ee695e1cc0992798e1fbd15302b4ec6fc38362a74",
+      "bytes": 32309
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-borrador-review.md",
+      "sha256": "10c874de3674be711e828397e77cfab3c20003470df21a6b9ca0474a52ff1cc3",
+      "bytes": 5743
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/evidencia-be05-borrador-review/BE-05-contrato-borrador-recibido.md",
+      "sha256": "ae5afbaf1c86bf71677203245fb80474283cf8d6ed92480b62de9be4342fa70c",
+      "bytes": 13693
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/evidencia-be05-borrador-review/baseline-recibido.json",
+      "sha256": "b9c71b281b2e3ed186d0078f4979fbeefb7a6a05305a56bc61b1fade1423f8e8",
+      "bytes": 3244
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/evidencia-be05-borrador-review/baseline-review.json",
+      "sha256": "69b83e233272466fd0d4d0f508c106ba803ac364e3052444181f1630b7faf496",
+      "bytes": 7353
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/evidencia-be05-borrador-review/correcciones.diff",
+      "sha256": "0ec183885ceb027faa681edd3243d265665c6e13e3791ce21850394110f24a75",
+      "bytes": 45988
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/evidencia-be05-borrador-review/verificacion-recibida.json",
+      "sha256": "9039c57e495c598dd2d3276cc01fe3b0e96dd6fd4ab7b19c9920c6cb410b1ef0",
+      "bytes": 235
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/evidencia-be05-borrador-review/verificacion.json",
+      "sha256": "39d1b3a89536b707bb9e8ccd81329c84b73f56116709cb2a2b19ca287adb2d01",
+      "bytes": 42015
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/evidencia-be05-borrador-review/verificar-documentos.py",
+      "sha256": "b1bff0b062517da88cae3b3d7146d957a9286b34f3b9d27534773fa7595cb9ba",
+      "bytes": 10406
+    }
+  ]
+}

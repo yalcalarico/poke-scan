@@ -9,7 +9,8 @@ import type {
   PriceHistoryDto,
   SetDto,
 } from '@/types/api';
-import { apiFetch, buildQueryString } from './api-client';
+import { toPriceDto, toPriceHistory } from './schema';
+import { ApiError, apiFetch, buildQueryString } from './api-client';
 
 export type { CardSearchField, CardSort, CardSortDirection } from '@/types/api';
 
@@ -70,8 +71,15 @@ export function getCard(id: string): Promise<CardDto> {
   return apiFetch<CardDto>(`/cards/${encodeURIComponent(id)}`);
 }
 
-export function getCardPrices(id: string, signal?: AbortSignal): Promise<CardWithPricesDto> {
-  return apiFetch<CardWithPricesDto>(`/cards/${encodeURIComponent(id)}/prices`, { signal });
+export async function getCardPrices(id: string, signal?: AbortSignal): Promise<CardWithPricesDto> {
+  const result = await apiFetch<CardWithPricesDto>(`/cards/${encodeURIComponent(id)}/prices`, { signal });
+  if (!Array.isArray(result?.prices)) throw new ApiError(502, 'No pudimos leer la referencia de precio');
+  const prices = result.prices.map((price) => {
+    const parsed = toPriceDto(price);
+    if (!parsed) throw new ApiError(502, 'No pudimos leer la referencia de precio');
+    return parsed;
+  });
+  return { ...result, prices };
 }
 
 /**
@@ -87,13 +95,15 @@ export function getCardPrices(id: string, signal?: AbortSignal): Promise<CardWit
  *
  * Un 404 se propaga como `ApiError`, y solo significa "la carta no existe".
  */
-export function getCardPriceHistory(
+export async function getCardPriceHistory(
   id: string,
   params: PriceHistoryParams = {},
 ): Promise<PriceHistoryDto> {
-  return apiFetch<PriceHistoryDto>(
+  const parsed = toPriceHistory(await apiFetch<unknown>(
     `/cards/${encodeURIComponent(id)}/prices/history${buildQueryString(params)}`,
-  );
+  ));
+  if (!parsed) throw new ApiError(502, 'No pudimos leer el historial recibido');
+  return parsed;
 }
 
 export function getSets(): Promise<SetDto[]> {

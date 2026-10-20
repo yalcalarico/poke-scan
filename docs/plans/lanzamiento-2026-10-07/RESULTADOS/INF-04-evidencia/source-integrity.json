@@ -1,0 +1,21 @@
+{
+  "baselineSources": 532,
+  "intactSources": 531,
+  "authorizedChangedExistingSources": [
+    "package.json"
+  ],
+  "newMonitorSources": [
+    "scripts/inf04-monitor.mjs",
+    "scripts/inf04-monitor-common.mjs",
+    "scripts/inf04-monitor.test.mjs",
+    "docs/infra/inf04-monitor.md"
+  ],
+  "runtimeSourceAndOutputs": {
+    "files": 1429,
+    "baselineFiles": 1429,
+    "changed": [],
+    "added": [],
+    "intact": true
+  },
+  "scope": "baseline before implementation; root package ops scripts/test integration only existing source delta; backend/frontend unchanged"
+}

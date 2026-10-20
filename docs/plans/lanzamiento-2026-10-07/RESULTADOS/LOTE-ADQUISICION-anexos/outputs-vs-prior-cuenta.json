@@ -1,0 +1,25 @@
+{
+  "capturedAtUtc": "2026-10-10T14:47:56.799664+00:00",
+  "baseline": "RESULTADOS/LOTE-CUENTA-anexos/outputs-post-runtime.json",
+  "baselineSha256": "3ef2ab6167a5e9285dfef21a6c910add059ec6a9b26b1745a76b5e83ef5f2395",
+  "scope": "Comparaci\u00f3n posterior contra output de \u00faltimo gate CUENTA aceptado; no captura inicial nueva ni comparaci\u00f3n runtime de adquisici\u00f3n, que no arranc\u00f3. Builds de adquisici\u00f3n no alcanzados; no outputs actuales validados para esta fuente.",
+  "excluded": "cache",
+  "folders": {
+    "backend/dist": {
+      "priorFiles": 298,
+      "currentFiles": 298,
+      "unchanged": 298,
+      "changed": [],
+      "missing": [],
+      "new": []
+    },
+    "frontend/.next": {
+      "priorFiles": 2085,
+      "currentFiles": 2085,
+      "unchanged": 2085,
+      "changed": [],
+      "missing": [],
+      "new": []
+    }
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "capturedAt": "2026-10-09T01:00:20.554Z",
+  "results": [
+    {
+      "path": "/_next/static/chunks/077_7n6qafx7h.js",
+      "status": 404,
+      "contentType": "text/plain; charset=utf-8",
+      "bytes": 9
+    },
+    {
+      "path": "/_next/static/chunks/turbopack-0eu_9w3-bktdl.js",
+      "status": 200,
+      "contentType": "application/javascript; charset=UTF-8",
+      "bytes": 9721
+    },
+    {
+      "path": "/inicio",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 38082
+    }
+  ]
+}

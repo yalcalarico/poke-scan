@@ -1,0 +1,15 @@
+{
+  "ownImagesRemoved": [
+    {
+      "tag": "inf02-custody:pack-d74d2b31c89c",
+      "id": "sha256:b69d75a79ddaa04218e7091aef41ed813f053bc53c4d1831ac4de00c3418f098",
+      "removedAfterConsumerGone": true
+    },
+    {
+      "tag": "inf02-custody-base:pack-d74d2b31c89c",
+      "id": "sha256:de20010139cb7008d2ea08a0e37a98ce62af9408b039c8f6b854e6f5f865f07c",
+      "removedAfterConsumerGone": true
+    }
+  ],
+  "habitualBackendImageUnchanged": "sha256:1e92edf09a920cf1e42017644cf054a11b90b20d2d54ef6bf41dd58dd6c647f3"
+}

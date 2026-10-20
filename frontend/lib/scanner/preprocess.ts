@@ -1,4 +1,5 @@
 /** Detección, recorte y orientación de cartas para el reconocimiento visual. */
+import { detectCardQuadrilateral, rectifyCardPerspective, type CardQuadrilateral } from '@/lib/scanner/perspective';
 
 export type ImageInput = ImageData | HTMLCanvasElement | HTMLImageElement | ImageBitmap | OffscreenCanvas;
 
@@ -114,6 +115,8 @@ export interface NormalizedCard {
   /** Grados de rotación aplicados para dejar la carta en vertical. */
   rotation: 0 | 90 | 180 | 270;
   detected: boolean;
+  /** Sólo presente cuando cuatro lados confiables permitieron rectificar. */
+  quadrilateral?: CardQuadrilateral;
 }
 
 /** Luminancia de cada píxel, en un array de la misma área. */
@@ -433,9 +436,34 @@ function downscaleColor(imageData: ImageData, targetWidth: number): ImageData {
   return new ImageData(out, width, height);
 }
 
+function isInteriorArtwork(q: CardQuadrilateral, rect: CardRect): boolean {
+  const margin = Math.min(rect.width, rect.height) * RECT_MARGIN;
+  const contained = q.every(p => p.x >= rect.x - margin && p.x <= rect.x + rect.width + margin &&
+    p.y >= rect.y - margin && p.y <= rect.y + rect.height + margin);
+  const area = Math.abs(q.reduce((sum, p, i) =>
+    sum + p.x * q[(i + 1) % 4]!.y - p.y * q[(i + 1) % 4]!.x, 0,
+  )) / 2;
+  // El dibujo puede tener cuatro lados fuertes y aparentar una carta acostada.
+  // Si otro marco lo contiene y deja al menos 25% de área adicional, conservamos
+  // ese contorno completo en vez de deformar y girar sólo el dibujo interior.
+  return contained && area <= rect.width * rect.height * .75;
+}
+
 export function normalizeCardImageData(imageData: ImageData): NormalizedCard {
   const found = detectCardRect(imageData);
-  if (found === null) {
+  const quadrilateral = detectCardQuadrilateral(imageData);
+  const rectified = quadrilateral && !(found && isInteriorArtwork(quadrilateral, found)) &&
+    rectifyCardPerspective(imageData, quadrilateral);
+  if (rectified && quadrilateral) {
+    const xs = quadrilateral.map(p => p.x), ys = quadrilateral.map(p => p.y);
+    const rotation = rectified.width > rectified.height ? 90 : 0;
+    return {
+      image: rotation === 0 ? rectified : rotateImageData(rectified, rotation),
+      rect: { x: Math.min(...xs), y: Math.min(...ys), width: Math.max(...xs) - Math.min(...xs), height: Math.max(...ys) - Math.min(...ys) },
+      rotation, detected: true, quadrilateral,
+    };
+  }
+  if (!found) {
     return { image: capWorkingSize(imageData), rect: null, rotation: 0, detected: false };
   }
   const rect = expandRect(found, imageData);

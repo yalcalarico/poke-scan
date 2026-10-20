@@ -1,0 +1,45 @@
+--- /Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-07-review-evidencia/gotchas.md.received	2026-10-09 09:31:57
++++ /Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/backend/docs/gotchas.md	2026-10-09 09:38:54
+@@ -1332,17 +1332,33 @@
+ y la caché quedaba desconectada hasta reiniciar la API. El fallback seguía
+ funcionando, pero no había recuperación automática.
+ 
+-La estrategia ahora reintenta indefinidamente con una espera exponencial limitada
+-a 15 segundos. `enableOfflineQueue: false` y `maxRetriesPerRequest: 1` siguen
+-evitando que un request espere Redis o reproduzca comandos viejos al reconectar.
+-Los eventos `close`, `reconnecting` y `end` actualizan el estado degradado; `ready`
+-lo limpia. El cierre del módulo desconecta sin esperar a Redis y cancela el timer
+-de reconexión. Los logs no incluyen URL, mensajes crudos de error ni keys.
++La estrategia ahora reintenta indefinidamente con esperas de 500 ms, 1 s, 2 s,
++4 s, 8 s y luego 15 s como máximo. `enableOfflineQueue: false` evita encolar
++comandos nuevos mientras está desconectado y `maxRetriesPerRequest: 1` conserva
++el límite por request. **Eso no alcanza para comandos ya enviados:** ioredis
++reenvía las respuestas pendientes por otro camino. Por eso también se configura
++`autoResendUnfulfilledCommands: false` y `commandTimeout: 3000`. El timeout
++limita tanto respuestas perdidas como un socket conectado que no responde; sin
++él, desactivar el replay puede dejar una promesa pendiente al recuperar. Un
++comando incierto puede haberse aplicado en Redis antes del corte: el cliente no
++lo repite automáticamente, pero tampoco puede afirmar que no se aplicó.
+ 
+-La prueba de política usa un doble determinista; el corte/restauración de red se
+-valida con Redis aislado y un proceso de API que permanece vivo. No usar el Redis
+-de desarrollo ni `FLUSHDB` para repetirla.
++Los eventos `close`, `reconnecting` y `end` actualizan el estado degradado;
++`ready` lo limpia. Los callbacks de la promesa inicial de `connect()` no cambian
++ese estado, porque pueden ejecutarse después de otro evento. El cierre del módulo
++desconecta sin esperar respuestas y cancela el timer de reconexión; **no quita
++los listeners internos de ioredis**, que resuelven/rechazan `connect()`. Los
++handlers propios ignoran callbacks tardíos durante shutdown, incluido `error`.
++Los avisos salen como máximo una vez por minuto por operación, sin URL, mensajes
++crudos, keys ni payloads; `lastErrorAt` se actualiza también en fallos suprimidos.
+ 
++La prueba de política usa un doble determinista; la misma suite usa ioredis real
++con sockets RESP propios para el comando en vuelo, blackhole y shutdown durante
++handshake, reconexión y conexión sana. El corte/restauración de Redis y el fallback
++PostgreSQL del consumidor se validan aparte con Redis aislado y una API que
++permanece viva. Un cache miss unitario no acredita ese fallback. No usar el Redis
++de desarrollo ni `FLUSHDB` para repetir estas pruebas.
++
+ ## Cross-references
+ 
+ - [api.md](api.md) — los endpoints y sus formas

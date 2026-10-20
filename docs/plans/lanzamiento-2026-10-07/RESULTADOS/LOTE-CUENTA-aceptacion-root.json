@@ -1,0 +1,44 @@
+{
+  "acceptedAtUtc": "2026-10-10T14:15:59.722610+00:00",
+  "status": "local_recovery_lot_accepted",
+  "reportSha256": "7ab6c09cf08ac5b702d3ae490bd96d5bad167cff54afcd7e9556f727510b04e7",
+  "evidenceSha256": "236b977e04b114ca369bfae624be6c2d2588d2848ee7af8550eb16783fde49b5",
+  "artifactHashesVerified": 160,
+  "localLinksVerified": 24,
+  "sourceHashesVerified": 507,
+  "sourceChangesAuthorized": [
+    "frontend/lib/recovery/recovery-capture-script.test.ts",
+    "frontend/lib/recovery/recovery-capture-script.ts"
+  ],
+  "receiptsPreserved": 6,
+  "outputHashesVerified": {
+    "backend/dist": 298,
+    "frontend/.next": 2085
+  },
+  "outputRuntimeDifferences": 0,
+  "standardTests": 979,
+  "skips": 0,
+  "distinctIntegratedControlsByPhases": 81,
+  "visualPNGsReadByRoot": 4,
+  "rootCleanupObserved": {
+    "ownClonesAbsent": true,
+    "ownRedisAbsent": true,
+    "ports3000_3001_56395Free": true,
+    "sharedIDsOriginalHealthy": true,
+    "boundedCountsAndGINUnchanged": true
+  },
+  "IDsClosed": [
+    "FE-04"
+  ],
+  "BE-05": "recovery local accepted; full ID partial pending recorded retention/channel/operator decisions",
+  "limits": [
+    "BE-05 human retention/channel/operator pending; no ID closure by agent",
+    "historical backfill timeout cause unresolved",
+    "bfcache/StrictMode production remount not credited; prior focal synthetic coverage separate",
+    "local HTTP does not credit Secure/HTTPS/productive configuration",
+    "no physical phone or screenreader QA",
+    "initial runtime attempts lacked Next/image proxy guard; no zero external assertion for them",
+    "no promise of memory zeroization or mathematical latency equality"
+  ],
+  "nextSerialLot": "FE-07/SEO-03 acquisition implementation from accepted copy/briefs"
+}

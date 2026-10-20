@@ -1,0 +1,1451 @@
+diff --git a/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/docs/plans/lanzamiento-2026-10-07/RESULTADOS/FE-04-review-anexos/received/frontend/lib/api/auth.ts b/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/frontend/lib/api/auth.ts
+index f2f1835..25b4456 100644
+--- a/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/docs/plans/lanzamiento-2026-10-07/RESULTADOS/FE-04-review-anexos/received/frontend/lib/api/auth.ts
++++ b/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/frontend/lib/api/auth.ts
+@@ -2,6 +2,7 @@ import type { AuthResponseDto, UserDto } from '@/types/api';
+ import { apiFetch, recoveryFetch, refreshSession, ApiError } from './api-client';
+ import { clearTokens, getSessionEpoch, setTokens } from './token-storage';
+ import type { PasswordRecoveryAcceptedDto, PasswordRecoverySuccessDto } from '@/types/api';
++import { withSessionMutation } from './session-mutations';
+ 
+ export interface RegisterPayload {
+   email: string;
+@@ -10,16 +11,9 @@ export interface RegisterPayload {
+   displayName: string;
+ }
+ 
+-let authMutationQueue: Promise<void> = Promise.resolve();
+-
+-function serializeAuthMutation<T>(operation: () => Promise<T>): Promise<T> {
+-  const result = authMutationQueue.then(operation, operation);
+-  authMutationQueue = result.then(() => undefined, () => undefined);
+-  return result;
+-}
+-
+-export async function register(payload: RegisterPayload): Promise<AuthResponseDto> {
+-  return serializeAuthMutation(async () => {
++export async function register(payload: RegisterPayload, started?: () => void): Promise<AuthResponseDto> {
++  return withSessionMutation(async () => {
++    started?.();
+     const epoch = getSessionEpoch();
+     const data = await apiFetch<AuthResponseDto>('/auth/register', {
+       method: 'POST',
+@@ -32,8 +26,9 @@ export async function register(payload: RegisterPayload): Promise<AuthResponseDt
+   });
+ }
+ 
+-export async function login(email: string, password: string): Promise<AuthResponseDto> {
+-  return serializeAuthMutation(async () => {
++export async function login(email: string, password: string, started?: () => void): Promise<AuthResponseDto> {
++  return withSessionMutation(async () => {
++    started?.();
+     const epoch = getSessionEpoch();
+     const data = await apiFetch<AuthResponseDto>('/auth/login', {
+       method: 'POST',
+@@ -46,8 +41,9 @@ export async function login(email: string, password: string): Promise<AuthRespon
+   });
+ }
+ 
+-export async function logout(): Promise<void> {
+-  return serializeAuthMutation(async () => {
++export async function logout(started?: () => void): Promise<void> {
++  return withSessionMutation(async () => {
++    started?.();
+     const epoch = getSessionEpoch();
+     try {
+       await apiFetch<{ success: boolean }>('/auth/logout', {
+@@ -65,19 +61,22 @@ export async function requestPasswordRecovery(email: string): Promise<PasswordRe
+     { method: 'POST', body: { email } },
+     202,
+   );
+-  if (!data || typeof data.message !== 'string') throw new ApiError(202, 'Respuesta inválida.');
+-  return data;
++  if (!data || typeof data !== 'object' || Array.isArray(data) || Object.keys(data).length !== 1 || typeof data.message !== 'string' || !data.message.trim()) throw new ApiError(202, 'Respuesta inválida.');
++  return { message: 'Recibimos tu pedido.' };
+ }
+ 
+-export async function recoverPassword(token: string, newPassword: string): Promise<PasswordRecoverySuccessDto> {
+-  return serializeAuthMutation(async () => {
++export async function recoverPassword(token: string, newPassword: string, confirmed?: () => void): Promise<PasswordRecoverySuccessDto> {
++  return withSessionMutation(async () => {
+     const data = await recoveryFetch<PasswordRecoverySuccessDto>(
+       '/auth/password-recoveries',
+       { method: 'POST', body: { token, newPassword } },
+       200,
+     );
+-    if (!data || data.success !== true) throw new ApiError(200, 'Respuesta inválida.');
+-    return data;
++    if (!data || typeof data !== 'object' || Array.isArray(data) || Object.keys(data).length !== 1 || data.success !== true) throw new ApiError(200, 'Respuesta inválida.');
++    // Limpiar antes de liberar la cola: un login posterior crea otra sesión.
++    if (confirmed) confirmed();
++    else clearTokens(getSessionEpoch());
++    return { success: true };
+   });
+ }
+ 
+diff --git a/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/docs/plans/lanzamiento-2026-10-07/RESULTADOS/FE-04-review-anexos/received/frontend/lib/api/session-generation.test.ts b/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/frontend/lib/api/session-generation.test.ts
+index 2202c62..c9d3d17 100644
+--- a/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/docs/plans/lanzamiento-2026-10-07/RESULTADOS/FE-04-review-anexos/received/frontend/lib/api/session-generation.test.ts
++++ b/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/frontend/lib/api/session-generation.test.ts
+@@ -30,6 +30,7 @@ describe('fencing de sesiones', () => {
+     let respond: ((response: Response) => void) | undefined;
+     vi.stubGlobal('fetch', vi.fn(() => new Promise<Response>((resolve) => { respond = resolve; })));
+     const pending = refreshSession();
++    await vi.waitFor(() => expect(respond).toBeTypeOf('function'));
+     setTokens('new-login-token');
+     respond?.(new Response('{"accessToken":"stale-refresh-token"}', { status: 200 }));
+     await expect(pending).resolves.toBeNull();
+@@ -45,10 +46,12 @@ describe('fencing de sesiones', () => {
+     const fetchMock = vi.fn(() => new Promise<Response>((resolve) => { responses.push(resolve); }));
+     vi.stubGlobal('fetch', fetchMock);
+     const oldRefresh = refreshSession();
++    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+     setTokens('new-login-token');
+     const currentRefresh = refreshSession();
+-    expect(fetchMock).toHaveBeenCalledTimes(2);
++    expect(fetchMock).toHaveBeenCalledTimes(1);
+     responses[0](new Response('{"accessToken":"stale-refresh-token"}', { status: 200 }));
++    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+     responses[1](new Response('{"accessToken":"current-refresh-token"}', { status: 200 }));
+     await expect(oldRefresh).resolves.toBeNull();
+     await expect(currentRefresh).resolves.toMatchObject({ accessToken: 'current-refresh-token' });
+@@ -72,4 +75,54 @@ describe('fencing de sesiones', () => {
+     await Promise.all([logoutFlight, loginFlight]);
+     expect(getAccessToken()).toBe('current-login-token');
+   });
++
++  it('refresh/reset/login comparten cola y limpieza ocurre antes de liberar el reset', async () => {
++    vi.stubGlobal('window', {});
++    const { setTokens, clearTokens, getSessionEpoch, getAccessToken } = await import('./token-storage');
++    const { refreshSession } = await import('./api-client');
++    const { recoverPassword, login } = await import('./auth'); setTokens('fixture-old');
++    const responses: Array<(response: Response) => void> = [];
++    const fetchMock = vi.fn(() => new Promise<Response>((resolve) => { responses.push(resolve); })); vi.stubGlobal('fetch', fetchMock);
++    const refresh = refreshSession(); await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
++    let confirmed = false;
++    const reset = recoverPassword('a'.repeat(43), 'fixture-password', () => { confirmed = true; clearTokens(getSessionEpoch()); });
++    const nextLogin = login('fixture@example.invalid', 'fixture-password');
++    await Promise.resolve(); expect(fetchMock).toHaveBeenCalledTimes(1);
++    responses[0](new Response('{"accessToken":"fixture-refreshed"}'));
++    await refresh; await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
++    responses[1](new Response('{"success":true}')); await reset;
++    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(3));
++    expect(confirmed).toBe(true); expect(getAccessToken() === null).toBe(true);
++    responses[2](new Response('{"accessToken":"fixture-new","user":{"id":"fixture"}}'));
++    await nextLogin; expect(getAccessToken() === 'fixture-new').toBe(true);
++  });
++
++  it('refresh que espera Web Lock de otra generación no envía POST', async () => {
++    vi.stubGlobal('window', {});
++    let release!: () => void;
++    const lock = vi.fn((_name, run) => new Promise((resolve) => { release = () => resolve(run()); }));
++    vi.stubGlobal('navigator', { locks: { request: lock } });
++    const { setTokens, clearTokens } = await import('./token-storage');
++    const { refreshSession } = await import('./api-client'); setTokens('fixture-old');
++    const fetchMock = vi.fn(); vi.stubGlobal('fetch', fetchMock);
++    const pending = refreshSession(); await vi.waitFor(() => expect(lock).toHaveBeenCalledTimes(1));
++    clearTokens(); release(); await expect(pending).resolves.toBeNull();
++    expect(fetchMock).not.toHaveBeenCalled(); expect(lock.mock.calls[0][0]).toBe('pcs.session-mutation');
++  });
++
++  it.each(['clear', 'login'])('401 suspendido no hace replay ni redirect tras %s posterior al refresh', async (change) => {
++    const assign = vi.fn(); vi.stubGlobal('window', { location: { pathname: '/recuperar', assign } });
++    const { setTokens, clearTokens } = await import('./token-storage');
++    const { refreshSession, apiFetch } = await import('./api-client'); setTokens('fixture-old');
++    let respond!: (response: Response) => void;
++    const fetchMock = vi.fn((url: string) => url.endsWith('/auth/refresh') ? new Promise<Response>((resolve) => { respond = resolve; }) :
++      Promise.resolve(new Response('{"message":"expired"}', { status: 401 })));
++    vi.stubGlobal('fetch', fetchMock);
++    const refresh = refreshSession(); await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
++    const changeAfter = refresh.then(() => { if (change === 'clear') clearTokens(); else setTokens('fixture-new'); });
++    const oldRequest = apiFetch('/private').then(() => false, () => true);
++    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
++    respond(new Response('{"accessToken":"fixture-refreshed"}')); await changeAfter;
++    expect(await oldRequest).toBe(true); expect(fetchMock).toHaveBeenCalledTimes(2); expect(assign).not.toHaveBeenCalled();
++  });
+ });
+diff --git a/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/docs/plans/lanzamiento-2026-10-07/RESULTADOS/FE-04-review-anexos/received/frontend/lib/api/recovery-api.test.ts b/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/frontend/lib/api/recovery-api.test.ts
+index f48972d..e4006bb 100644
+--- a/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/docs/plans/lanzamiento-2026-10-07/RESULTADOS/FE-04-review-anexos/received/frontend/lib/api/recovery-api.test.ts
++++ b/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/frontend/lib/api/recovery-api.test.ts
+@@ -15,6 +15,7 @@ describe('API de recuperación', () => {
+     const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+     expect(url).toContain('/auth/password-recovery-requests');
+     expect(init.credentials).toBe('include');
++    expect(init.redirect).toBe('error'); expect(init.cache).toBe('no-store');
+     expect(new Headers(init.headers).get('X-Session-Request')).toBe('1');
+     expect(new Headers(init.headers).has('Authorization')).toBe(false);
+   });
+@@ -42,7 +43,45 @@ describe('API de recuperación', () => {
+     vi.stubGlobal('fetch', fetchMock);
+     const { requestPasswordRecovery } = await import('./auth');
+     await expect(requestPasswordRecovery('bad')).rejects.toMatchObject({
+-      status: 400, code: 'INPUT_INVALID', fields: { email: 'Inválido', newPassword: 'Débil' }, safeRetryAfter: undefined,
++      status: 400, code: 'INPUT_INVALID', fields: { email: 'Revisá el formato del email.', newPassword: 'Usá entre 8 y 72 caracteres.' }, safeRetryAfter: undefined,
+     });
+   });
++
++  it.each([[403, 'RECOVERY_LINK_INVALID'], [429, 'INPUT_INVALID'], [400, 'UNKNOWN']])('no acredita pares status/código inesperados ni texto crudo', async (status, code) => {
++    const unsafe = 'fixture-raw-value';
++    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({ code, message: unsafe,
++      fields: { newPassword: unsafe, token: unsafe } }), { status })));
++    const { recoverPassword } = await import('./auth');
++    try { await recoverPassword('a'.repeat(43), 'fixture-password'); throw new Error('EXPECTED_REJECTION'); }
++    catch (error) {
++      const safe = error as { code?: string; message: string; fields?: Record<string, string> };
++      expect(safe.code).toBeUndefined(); expect(JSON.stringify(safe).includes(unsafe)).toBe(false);
++      expect(safe.message.includes(unsafe)).toBe(false);
++    }
++  });
++
++  it.each(['', '{}', 'null', '[]', '{"success":false}', '{"success":"true"}', '{"success":true,"unexpected":1}'])('200 body malformado va a incertidumbre y no limpia sesión', async (body) => {
++    vi.stubGlobal('window', {});
++    const { setTokens, getAccessToken } = await import('./token-storage'); setTokens('fixture-session');
++    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(body, { status: 200 })));
++    const { recoverPassword } = await import('./auth');
++    await expect(recoverPassword('a'.repeat(43), 'fixture-password')).rejects.toMatchObject({ status: 200 });
++    expect(getAccessToken() === 'fixture-session').toBe(true);
++  });
++
++  it('un redirect rechazado queda incierto, sin segundo POST ni limpiar sesión', async () => {
++    vi.stubGlobal('window', {});
++    const { setTokens, getAccessToken } = await import('./token-storage'); setTokens('fixture-session');
++    const fetchMock = vi.fn().mockRejectedValue(new TypeError('redirect rejected')); vi.stubGlobal('fetch', fetchMock);
++    const { recoverPassword } = await import('./auth');
++    await expect(recoverPassword('a'.repeat(43), 'fixture-password')).rejects.toBeInstanceOf(TypeError);
++    expect(fetchMock).toHaveBeenCalledTimes(1); expect(getAccessToken() === 'fixture-session').toBe(true);
++    const init = fetchMock.mock.calls[0][1] as RequestInit; expect(init.redirect).toBe('error'); expect(init.cache).toBe('no-store');
++  });
++
++  it.each(['0', '-1', '1.5', 'Wed, 21 Oct 2015 07:28:00 GMT', '999999999999999999999'])('Retry-After %s no es segundos positivos seguros', async (value) => {
++    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('{"code":"RECOVERY_RATE_LIMITED"}', { status: 429, headers: { 'Retry-After': value } })));
++    const { requestPasswordRecovery } = await import('./auth');
++    await expect(requestPasswordRecovery('fixture@example.invalid')).rejects.toMatchObject({ safeRetryAfter: undefined });
++  });
+ });
+diff --git a/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/docs/plans/lanzamiento-2026-10-07/RESULTADOS/FE-04-review-anexos/received/frontend/lib/api/api-client.ts b/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/frontend/lib/api/api-client.ts
+index 825d477..c75f321 100644
+--- a/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/docs/plans/lanzamiento-2026-10-07/RESULTADOS/FE-04-review-anexos/received/frontend/lib/api/api-client.ts
++++ b/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/frontend/lib/api/api-client.ts
+@@ -1,5 +1,6 @@
+ import type { AuthResponseDto } from '@/types/api';
+ import { clearTokens, getAccessToken, getSessionEpoch, hasSession, setRefreshedAccessToken } from './token-storage';
++import { withSessionMutation } from './session-mutations';
+ 
+ const BASE_URL =
+   process.env.NEXT_PUBLIC_API_URL?.replace(/\/+$/, '') ?? 'http://localhost:3001/api';
+@@ -74,7 +75,7 @@ export function refreshSession(): Promise<AuthResponseDto | null> {
+   if (refreshInFlight?.epoch === epoch) return refreshInFlight.promise;
+ 
+   const run = async (): Promise<AuthResponseDto | null> => {
+-    if (!hasSession()) return null;
++    if (getSessionEpoch() !== epoch || !hasSession()) return null;
+     try {
+       const response = await fetch(`${getApiBaseUrl()}/auth/refresh`, {
+         method: 'POST',
+@@ -98,13 +99,7 @@ export function refreshSession(): Promise<AuthResponseDto | null> {
+     }
+   };
+ 
+-  const coordinated = async (): Promise<AuthResponseDto | null> => {
+-    if (typeof navigator !== 'undefined' && navigator.locks) {
+-      return await navigator.locks.request('pcs.session-refresh', run);
+-    }
+-    return run();
+-  };
+-  const promise = coordinated();
++  const promise = withSessionMutation(run);
+   refreshInFlight = { epoch, promise };
+   const release = () => {
+     if (refreshInFlight?.promise === promise) refreshInFlight = null;
+@@ -167,17 +162,19 @@ async function execute(path: string, options: Omit<ApiFetchOptions, 'isRetry'>):
+   return fetch(`${getApiBaseUrl()}${path}`, { ...rest, credentials: 'include', headers, body: payload });
+ }
+ 
+-const RECOVERY_CODES = new Set([
+-  'INPUT_INVALID', 'SESSION_REQUEST_FORBIDDEN', 'RECOVERY_RATE_LIMITED',
+-  'RECOVERY_UNAVAILABLE', 'RECOVERY_LINK_INVALID',
+-]);
+-const RECOVERY_FIELDS = new Set(['email', 'newPassword', 'request']);
++const RECOVERY_STATUS: Record<string, number> = {
++  INPUT_INVALID: 400, SESSION_REQUEST_FORBIDDEN: 403, RECOVERY_RATE_LIMITED: 429,
++  RECOVERY_UNAVAILABLE: 503, RECOVERY_LINK_INVALID: 400,
++};
++const RECOVERY_FIELDS: Record<string, string> = {
++  email: 'Revisá el formato del email.', newPassword: 'Usá entre 8 y 72 caracteres.', request: 'Revisá los datos ingresados.',
++};
+ 
+ function recoveryErrorDetails(response: Response, body: ErrorBody | undefined) {
+   const fields: Record<string, string> = {};
+   if (body?.fields && typeof body.fields === 'object') {
+     for (const [key, value] of Object.entries(body.fields)) {
+-      if (RECOVERY_FIELDS.has(key) && typeof value === 'string') fields[key] = value;
++      if (Object.hasOwn(RECOVERY_FIELDS, key) && typeof value === 'string') fields[key] = RECOVERY_FIELDS[key];
+     }
+   }
+   const rawRetryAfter = response.headers.get('Retry-After');
+@@ -185,7 +182,7 @@ function recoveryErrorDetails(response: Response, body: ErrorBody | undefined) {
+     ? Number(rawRetryAfter)
+     : undefined;
+   return {
+-    code: typeof body?.code === 'string' && RECOVERY_CODES.has(body.code) ? body.code : undefined,
++    code: typeof body?.code === 'string' && Object.hasOwn(RECOVERY_STATUS, body.code) && RECOVERY_STATUS[body.code] === response.status ? body.code : undefined,
+     fields: Object.keys(fields).length ? fields : undefined,
+     safeRetryAfter: safeRetryAfter && Number.isSafeInteger(safeRetryAfter) ? safeRetryAfter : undefined,
+   };
+@@ -197,10 +194,12 @@ export async function recoveryFetch<T>(
+   options: ApiFetchOptions,
+   expectedStatus: 200 | 202,
+ ): Promise<T> {
+-  const response = await execute(path, { ...options, skipAuth: true });
++  const headers = new Headers(options.headers);
++  headers.delete('Authorization');
++  const response = await execute(path, { ...options, headers, method: 'POST', skipAuth: true, redirect: 'error', cache: 'no-store' });
+   const body = await parseBody<ErrorBody & T>(response);
+   if (response.status !== expectedStatus || !response.ok) {
+-    throw new ApiError(response.status, extractErrorMessage(response.status, body), recoveryErrorDetails(response, body));
++    throw new ApiError(response.status, 'No pudimos confirmar el pedido.', recoveryErrorDetails(response, body));
+   }
+   return body as T;
+ }
+@@ -216,6 +215,9 @@ export async function apiFetch<T = unknown>(
+   if (response.status === 401 && !isRetry && !rest.skipAuth && requestEpoch === getSessionEpoch()) {
+     if (hasSession()) {
+       const refreshed = await refreshSession();
++      if (requestEpoch !== getSessionEpoch()) {
++        throw new ApiError(401, 'La sesión cambió. Volvé a intentarlo.');
++      }
+       if (refreshed) {
+         return apiFetch<T>(path, { ...rest, isRetry: true });
+       }
+diff --git a/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/docs/plans/lanzamiento-2026-10-07/RESULTADOS/FE-04-review-anexos/received/frontend/lib/recovery/recovery-view.ts b/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/frontend/lib/recovery/recovery-view.ts
+index 09d1628..08b5a03 100644
+--- a/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/docs/plans/lanzamiento-2026-10-07/RESULTADOS/FE-04-review-anexos/received/frontend/lib/recovery/recovery-view.ts
++++ b/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/frontend/lib/recovery/recovery-view.ts
+@@ -1,11 +1,13 @@
+ export type RecoveryViewSnapshot = {
+   mode: 'request' | 'link' | 'invalid' | 'unavailable' | 'blocked';
+   token: string | null;
++  entry: number;
+ };
+ 
+ type RecoveryManager = {
+   snapshot: () => RecoveryViewSnapshot;
+   startRequest: () => void;
++  discardLink: () => void;
+   inspectEntry: () => void;
+ };
+ 
+@@ -15,16 +17,20 @@ declare global {
+   }
+ }
+ 
+-const REQUEST_SNAPSHOT: RecoveryViewSnapshot = { mode: 'request', token: null };
++const REQUEST_SNAPSHOT: RecoveryViewSnapshot = { mode: 'request', token: null, entry: 0 };
++const BLOCKED_SNAPSHOT: RecoveryViewSnapshot = { mode: 'blocked', token: null, entry: 0 };
++const UNAVAILABLE_SNAPSHOT: RecoveryViewSnapshot = { mode: 'unavailable', token: null, entry: 0 };
+ 
+ export function getServerRecoverySnapshot(): RecoveryViewSnapshot {
+   return REQUEST_SNAPSHOT;
+ }
+ 
+ export function getRecoverySnapshot(): RecoveryViewSnapshot {
+-  return typeof window === 'undefined'
+-    ? REQUEST_SNAPSHOT
+-    : window.__pcsRecoveryManager?.snapshot() ?? REQUEST_SNAPSHOT;
++  if (typeof window === 'undefined') return REQUEST_SNAPSHOT;
++  if (window.__pcsRecoveryManager) return window.__pcsRecoveryManager.snapshot();
++  // Si no arrancó la captura, un fragmento presente no habilita ningún POST.
++  if (window.location.hash) return BLOCKED_SNAPSHOT;
++  return window.history.state?.pcsRecoveryView === 'link' ? UNAVAILABLE_SNAPSHOT : REQUEST_SNAPSHOT;
+ }
+ 
+ export function subscribeRecoveryView(listener: () => void): () => void {
+@@ -36,3 +42,7 @@ export function subscribeRecoveryView(listener: () => void): () => void {
+ export function startRecoveryRequest(): void {
+   if (typeof window !== 'undefined') window.__pcsRecoveryManager?.startRequest();
+ }
++
++export function discardRecoveryLink(): void {
++  if (typeof window !== 'undefined') window.__pcsRecoveryManager?.discardLink();
++}
+diff --git a/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/docs/plans/lanzamiento-2026-10-07/RESULTADOS/FE-04-review-anexos/received/frontend/lib/recovery/recovery-capture-script.ts b/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/frontend/lib/recovery/recovery-capture-script.ts
+index a67e384..1861873 100644
+--- a/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/docs/plans/lanzamiento-2026-10-07/RESULTADOS/FE-04-review-anexos/received/frontend/lib/recovery/recovery-capture-script.ts
++++ b/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/frontend/lib/recovery/recovery-capture-script.ts
+@@ -2,16 +2,22 @@
+ export const RECOVERY_CAPTURE_SCRIPT = `
+ (() => {
+   const key = 'pcsRecoveryView';
++  const nativePush = history.pushState.bind(history);
++  const nativeReplace = history.replaceState.bind(history);
++  let entry = 0;
+   let token = null;
+-  let snapshot = { mode: 'request', token: null };
++  let snapshot = { mode: 'request', token: null, entry };
+   const emit = (mode, value = null) => {
+-    snapshot = { mode, token: value };
++    if (snapshot.mode === mode && snapshot.token === value && snapshot.entry === entry) return;
++    snapshot = { mode, token: value, entry };
+     window.dispatchEvent(new Event('pcs:recovery-view'));
+   };
+   const isRecovery = (url) => url.origin === location.origin && url.pathname.replace(/\\/$/, '') === '/recuperar';
+-  const publishEntry = () => {
++  const publishEntry = (fresh = true) => {
++    if (fresh) entry += 1;
+     if (!isRecovery(new URL(location.href))) {
+       token = null;
++      emit('request');
+       return;
+     }
+     const hash = location.hash;
+@@ -20,7 +26,7 @@ export const RECOVERY_CAPTURE_SCRIPT = `
+       const nextState = Object.assign({}, history.state && typeof history.state === 'object' ? history.state : {});
+       nextState[key] = 'link';
+       try {
+-        history.replaceState(nextState, '', location.pathname + location.search);
++        nativeReplace(nextState, '', location.pathname + location.search);
+       } catch {
+         token = null;
+         emit('blocked');
+@@ -39,12 +45,14 @@ export const RECOVERY_CAPTURE_SCRIPT = `
+     inspectEntry: () => {
+       if (snapshot.mode === 'link' && token) return;
+       if (['invalid', 'blocked', 'unavailable'].includes(snapshot.mode)) return;
+-      publishEntry();
++      publishEntry(false);
+     },
++    discardLink: () => { token = null; emit('unavailable'); },
+     startRequest: () => {
+       token = null;
++      entry += 1;
+       const nextState = Object.assign({}, history.state && typeof history.state === 'object' ? history.state : {});
+-      delete nextState[key];
++      nextState[key] = 'request';
+       try {
+         nativeReplace(nextState, '', location.pathname + location.search);
+       } catch {
+@@ -55,19 +63,20 @@ export const RECOVERY_CAPTURE_SCRIPT = `
+     },
+   };
+   window.__pcsRecoveryManager = manager;
+-  const nativePush = history.pushState.bind(history);
+-  const nativeReplace = history.replaceState.bind(history);
+-  const checkNavigation = (before) => {
++  const checkNavigation = (before, fresh = false) => {
+     const after = new URL(location.href);
+-    if (before.pathname !== after.pathname || before.hash !== after.hash) {
++    if (fresh || before.pathname !== after.pathname || before.search !== after.search || before.hash !== after.hash) {
+       if (isRecovery(after)) publishEntry();
+-      else { token = null; emit('request'); }
++      else { entry += 1; token = null; emit('request'); }
+     }
+   };
+   history.pushState = function(state, unused, url) {
+     const before = new URL(location.href);
+-    nativePush(state, unused, url);
+-    checkNavigation(before);
++    const target = url ? new URL(String(url), location.href) : before;
++    const nextState = Object.assign({}, state && typeof state === 'object' ? state : {});
++    if (isRecovery(target) && !target.hash) nextState[key] = 'request';
++    nativePush(nextState, unused, url);
++    checkNavigation(before, true);
+   };
+   history.replaceState = function(state, unused, url) {
+     const before = new URL(location.href);
+@@ -79,10 +88,10 @@ export const RECOVERY_CAPTURE_SCRIPT = `
+     nativeReplace(nextState, unused, url);
+     checkNavigation(before);
+   };
+-  window.addEventListener('popstate', publishEntry);
+-  window.addEventListener('hashchange', publishEntry);
++  window.addEventListener('popstate', () => publishEntry());
++  window.addEventListener('hashchange', () => publishEntry());
+   window.addEventListener('pageshow', (event) => { if (event.persisted) publishEntry(); });
+-  window.addEventListener('pagehide', () => { token = null; if (snapshot.mode === 'link') emit('unavailable'); });
++  window.addEventListener('pagehide', () => { token = null; entry += 1; if (snapshot.mode === 'link') emit('unavailable'); else emit(snapshot.mode); });
+   publishEntry();
+ })();
+ `;
+diff --git a/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/docs/plans/lanzamiento-2026-10-07/RESULTADOS/FE-04-review-anexos/received/frontend/lib/recovery/recovery-capture-script.test.ts b/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/frontend/lib/recovery/recovery-capture-script.test.ts
+index 24f8cbc..1b97961 100644
+--- a/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/docs/plans/lanzamiento-2026-10-07/RESULTADOS/FE-04-review-anexos/received/frontend/lib/recovery/recovery-capture-script.test.ts
++++ b/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/frontend/lib/recovery/recovery-capture-script.test.ts
+@@ -1,7 +1,8 @@
+ import { runInNewContext } from 'node:vm';
+-import { describe, expect, it } from 'vitest';
++import { describe, expect, it, vi } from 'vitest';
+ 
+ import { RECOVERY_CAPTURE_SCRIPT } from './recovery-capture-script';
++import { getRecoverySnapshot } from './recovery-view';
+ 
+ function createCapture(href: string, initialState: Record<string, unknown> = {}, failReplace = false) {
+   const listeners = new Map<string, ((event?: { persisted?: boolean }) => void)[]>();
+@@ -25,7 +26,7 @@ function createCapture(href: string, initialState: Record<string, unknown> = {},
+     },
+   };
+   const window = {
+-    __pcsRecoveryManager: undefined as undefined | { snapshot: () => { mode: string; token: string | null }; startRequest: () => void },
++    __pcsRecoveryManager: undefined as undefined | { snapshot: () => { mode: string; token: string | null }; startRequest: () => void; inspectEntry: () => void; discardLink: () => void },
+     addEventListener(type: string, callback: (event?: { persisted?: boolean }) => void) {
+       listeners.set(type, [...(listeners.get(type) ?? []), callback]);
+     },
+@@ -38,50 +39,77 @@ function createCapture(href: string, initialState: Record<string, unknown> = {},
+ const token = 'A'.repeat(43);
+ 
+ describe('captura del enlace de recuperación', () => {
++  it('sin controlador falla cerrado ante fragmento y usa sólo marcador sin secreto', () => {
++    try {
++      vi.stubGlobal('window', { location: { hash: '#token=' }, history: { state: {} } });
++      expect(getRecoverySnapshot().mode).toBe('blocked');
++      vi.stubGlobal('window', { location: { hash: '' }, history: { state: { pcsRecoveryView: 'link' } } });
++      expect(getRecoverySnapshot().mode).toBe('unavailable');
++      vi.stubGlobal('window', { location: { hash: '' }, history: { state: {} } });
++      expect(getRecoverySnapshot().mode).toBe('request');
++    } finally { vi.unstubAllGlobals(); }
++  });
+   it('quita el fragmento válido, preserva history.state y conserva el token solo en memoria', () => {
+     const env = createCapture(`https://pokescan.app/recuperar?src=mail#token=${token}`, { next: '/buscar' });
+     expect(env.location.hash).toBe('');
+     expect(env.history.state).toEqual({ next: '/buscar', pcsRecoveryView: 'link' });
+-    expect(env.window.__pcsRecoveryManager?.snapshot()).toEqual({ mode: 'link', token });
++    expect(env.window.__pcsRecoveryManager?.snapshot()).toMatchObject({ mode: 'link', token });
+   });
+ 
+   it('trata cualquier fragmento con formato adicional como inválido y lo elimina', () => {
+     const env = createCapture(`https://pokescan.app/recuperar#token=${token}&x=1`);
+     expect(env.location.hash).toBe('');
+-    expect(env.window.__pcsRecoveryManager?.snapshot()).toEqual({ mode: 'invalid', token: null });
++    expect(env.window.__pcsRecoveryManager?.snapshot()).toMatchObject({ mode: 'invalid', token: null });
+   });
+ 
+   it('falla cerrado si replaceState no puede quitar el fragmento', () => {
+     const env = createCapture(`https://pokescan.app/recuperar#token=${token}`, {}, true);
+-    expect(env.window.__pcsRecoveryManager?.snapshot()).toEqual({ mode: 'blocked', token: null });
++    expect(env.window.__pcsRecoveryManager?.snapshot()).toMatchObject({ mode: 'blocked', token: null });
+   });
+ 
+   it('detecta entradas cliente y vuelve no disponible al regresar sin el token en memoria', () => {
+     const env = createCapture('https://pokescan.app/login');
+     env.history.pushState({}, '', `/recuperar#token=${token}`);
+-    expect(env.window.__pcsRecoveryManager?.snapshot()).toEqual({ mode: 'link', token });
++    expect(env.window.__pcsRecoveryManager?.snapshot()).toMatchObject({ mode: 'link', token });
+     const savedState = env.history.state;
+     env.history.pushState({}, '', '/login');
+-    expect(env.window.__pcsRecoveryManager?.snapshot()).toEqual({ mode: 'request', token: null });
++    expect(env.window.__pcsRecoveryManager?.snapshot()).toMatchObject({ mode: 'request', token: null });
+     env.history.state = savedState;
+     env.location.href = 'https://pokescan.app/recuperar';
+     for (const callback of env.listeners.get('popstate') ?? []) callback();
+-    expect(env.window.__pcsRecoveryManager?.snapshot()).toEqual({ mode: 'unavailable', token: null });
++    expect(env.window.__pcsRecoveryManager?.snapshot()).toMatchObject({ mode: 'unavailable', token: null });
+   });
+ 
+   it('preserva el marcador en replaceState interno y elimina el secreto al pedir un enlace nuevo', () => {
+     const env = createCapture(`https://pokescan.app/recuperar#token=${token}`);
+     env.history.replaceState({ __next: true }, '', '/recuperar');
+     expect(env.history.state).toEqual({ __next: true, pcsRecoveryView: 'link' });
+-    expect(env.window.__pcsRecoveryManager?.snapshot()).toEqual({ mode: 'link', token });
++    expect(env.window.__pcsRecoveryManager?.snapshot()).toMatchObject({ mode: 'link', token });
+     env.window.__pcsRecoveryManager?.startRequest();
+-    expect(env.history.state).toEqual({ __next: true });
+-    expect(env.window.__pcsRecoveryManager?.snapshot()).toEqual({ mode: 'request', token: null });
++    expect(env.history.state).toEqual({ __next: true, pcsRecoveryView: 'request' });
++    expect(env.window.__pcsRecoveryManager?.snapshot()).toMatchObject({ mode: 'request', token: null });
++  });
++
++  it('un push bare de la misma ruta pierde el secreto de la entrada anterior', () => {
++    const env = createCapture(`https://pokescan.app/recuperar#token=${token}`);
++    env.window.__pcsRecoveryManager?.inspectEntry();
++    env.window.__pcsRecoveryManager?.inspectEntry();
++    expect(env.window.__pcsRecoveryManager?.snapshot().token === token).toBe(true);
++    env.history.pushState(env.history.state, '', '/recuperar');
++    expect(env.window.__pcsRecoveryManager?.snapshot()).toMatchObject({ mode: 'request', token: null });
++  });
++
++  it.each(['#token=', '#token=short', '#token=' + token + '&token=' + token])('fragmento malformado queda inválido sin secreto', (fragment) => {
++    const env = createCapture('https://pokescan.app/recuperar' + fragment);
++    expect(env.location.hash).toBe('');
++    expect(env.window.__pcsRecoveryManager?.snapshot()).toMatchObject({ mode: 'invalid', token: null });
+   });
+ 
+   it('borra el token al pagehide y cambia el marcador a enlace no disponible', () => {
+     const env = createCapture(`https://pokescan.app/recuperar#token=${token}`);
+     for (const callback of env.listeners.get('pagehide') ?? []) callback();
+-    expect(env.window.__pcsRecoveryManager?.snapshot()).toEqual({ mode: 'unavailable', token: null });
++    expect(env.window.__pcsRecoveryManager?.snapshot()).toMatchObject({ mode: 'unavailable', token: null });
++    for (const callback of env.listeners.get('pageshow') ?? []) callback({ persisted: true });
++    expect(env.window.__pcsRecoveryManager?.snapshot()).toMatchObject({ mode: 'unavailable', token: null });
+   });
+ });
+diff --git a/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/docs/plans/lanzamiento-2026-10-07/RESULTADOS/FE-04-review-anexos/received/frontend/hooks/use-auth.tsx b/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/frontend/hooks/use-auth.tsx
+index bf8c48b..af6d485 100644
+--- a/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/docs/plans/lanzamiento-2026-10-07/RESULTADOS/FE-04-review-anexos/received/frontend/hooks/use-auth.tsx
++++ b/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/frontend/hooks/use-auth.tsx
+@@ -6,12 +6,14 @@ import {
+   useContext,
+   useEffect,
+   useMemo,
++  useRef,
+   useState,
+   type ReactNode,
+ } from 'react';
+ 
+ import {
+   getMe,
++  ApiError,
+   login as loginRequest,
+   logout as logoutRequest,
+   register as registerRequest,
+@@ -36,6 +38,7 @@ const AuthContext = createContext<AuthContextValue | null>(null);
+ export function AuthProvider({ children }: { children: ReactNode }) {
+   const [user, setUser] = useState<UserDto | null>(null);
+   const [isLoading, setIsLoading] = useState<boolean>(true);
++  const generation = useRef(0);
+ 
+   /**
+    * Releer el usuario desde la API.
+@@ -49,20 +52,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
+    */
+   const refreshUser = useCallback(async (): Promise<UserDto | null> => {
+     const epoch = getSessionEpoch();
++    const started = generation.current;
+     if (!hasSession()) {
+-      if (getSessionEpoch() === epoch) { setUser(null); setIsLoading(false); }
++      if (generation.current === started && getSessionEpoch() === epoch) { setUser(null); setIsLoading(false); }
+       return null;
+     }
+     try {
+       const me = await getMe();
+-      if (getSessionEpoch() !== epoch) return null;
++      if (generation.current !== started || getSessionEpoch() !== epoch) return null;
+       setUser(me);
+       return me;
+     } catch {
+-      if (getSessionEpoch() === epoch || !hasSession()) setUser(null);
++      if (generation.current === started && (getSessionEpoch() === epoch || !hasSession())) setUser(null);
+       return null;
+     } finally {
+-      if (getSessionEpoch() === epoch || !hasSession()) setIsLoading(false);
++      if (generation.current === started && (getSessionEpoch() === epoch || !hasSession())) setIsLoading(false);
+     }
+   }, []);
+ 
+@@ -70,17 +74,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
+     let cancelled = false;
+     const bootstrap = async () => {
+       const epoch = getSessionEpoch();
++      const started = generation.current;
+       if (!hasSession()) {
+-        if (!cancelled && getSessionEpoch() === epoch) setIsLoading(false);
++        if (!cancelled && generation.current === started && getSessionEpoch() === epoch) setIsLoading(false);
+         return;
+       }
+       try {
+         const me = await getMe();
+-        if (!cancelled && getSessionEpoch() === epoch) setUser(me);
++        if (!cancelled && generation.current === started && getSessionEpoch() === epoch) setUser(me);
+       } catch {
+-        if (!cancelled && (getSessionEpoch() === epoch || !hasSession())) setUser(null);
++        if (!cancelled && generation.current === started && (getSessionEpoch() === epoch || !hasSession())) setUser(null);
+       } finally {
+-        if (!cancelled && (getSessionEpoch() === epoch || !hasSession())) setIsLoading(false);
++        if (!cancelled && generation.current === started && (getSessionEpoch() === epoch || !hasSession())) setIsLoading(false);
+       }
+     };
+     void bootstrap();
+@@ -90,29 +95,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
+   }, []);
+ 
+   const login = useCallback(async (email: string, password: string) => {
+-    const data = await loginRequest(email, password);
+-    setUser(data.user);
+-    setIsLoading(false);
+-    return data.user;
++    let started = ++generation.current;
++    try {
++      const data = await loginRequest(email, password, () => { started = ++generation.current; });
++      if (generation.current !== started) throw new ApiError(401, 'La sesión cambió. Volvé a intentarlo.');
++      setUser(data.user);
++      return data.user;
++    } finally { if (generation.current === started) setIsLoading(false); }
+   }, []);
+ 
+   const register = useCallback(async (payload: RegisterPayload) => {
+-    const data = await registerRequest(payload);
+-    setUser(data.user);
+-    setIsLoading(false);
+-    return data.user;
++    let started = ++generation.current;
++    try {
++      const data = await registerRequest(payload, () => { started = ++generation.current; });
++      if (generation.current !== started) throw new ApiError(401, 'La sesión cambió. Volvé a intentarlo.');
++      setUser(data.user);
++      return data.user;
++    } finally { if (generation.current === started) setIsLoading(false); }
+   }, []);
+ 
+   const logout = useCallback(async () => {
++    let started = ++generation.current;
+     try {
+-      await logoutRequest();
++      await logoutRequest(() => { started = ++generation.current; });
+     } finally {
+-      if (!hasSession()) setUser(null);
++      if (generation.current === started && !hasSession()) { setUser(null); setIsLoading(false); }
+     }
+   }, []);
+ 
+   const clearSession = useCallback((expectedEpoch: number) => {
+     if (!clearTokens(expectedEpoch)) return false;
++    generation.current += 1;
+     setUser(null);
+     setIsLoading(false);
+     return true;
+diff --git a/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/docs/plans/lanzamiento-2026-10-07/RESULTADOS/FE-04-review-anexos/received/frontend/docs/testing.md b/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/frontend/docs/testing.md
+index c8f0f8c..dbf797f 100644
+--- a/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/docs/plans/lanzamiento-2026-10-07/RESULTADOS/FE-04-review-anexos/received/frontend/docs/testing.md
++++ b/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/frontend/docs/testing.md
+@@ -31,3 +31,13 @@ para el estado HTTP exacto, ausencia de bearer y falta de refresh/replay;
+ 401/refresh tardías. El test del service worker verifica la purga de cachés
+ actuales y viejas. La navegación real, bfcache y teclado requieren el gate de
+ navegador y no se acreditan con Vitest.
++
++La revisión FE-04 agregó cobertura del provider en `hooks/use-auth.test.tsx`,
++cola compartida refresh/reset/login, espera de Web Lock con generación vieja y
++revalidación tras refresh antes de replay/redirect. Recuperación prueba pares
++status/código y shapes inesperados, mensajes/fields seguros, redirect:error y
++no-store, pérdida de entrada incluso en la misma ruta, foco de campos, claves
++astrales, login manual y anuncio único al terminar la espera. Los stubs de fetch,
++Web Locks, history y bfcache son pruebas de frontera; no acreditan HTTP, cookies,
++correo, navegador real, contraste AA ni tamaños computados. Eso y el check estándar
++completo corresponden al gate integrado posterior.
+diff --git a/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/docs/plans/lanzamiento-2026-10-07/RESULTADOS/FE-04-review-anexos/received/frontend/docs/api-client.md b/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/frontend/docs/api-client.md
+index f444a85..c948dda 100644
+--- a/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/docs/plans/lanzamiento-2026-10-07/RESULTADOS/FE-04-review-anexos/received/frontend/docs/api-client.md
++++ b/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/frontend/docs/api-client.md
+@@ -106,14 +106,24 @@ Flujo:
+    en silencio).
+ 
+ `requestPasswordRecovery()` y `recoverPassword()` usan `recoveryFetch()`: un único
+-POST con `skipAuth`, `credentials: include` y `X-Session-Request`, sin refresh ni
+-replay. La primera operación exige HTTP 202; el cambio exige HTTP 200 y el DTO
+-`{ success: true }`. `ApiError` conserva `code`, los campos de validación
+-allowlistados y un `Retry-After` entero positivo (`safeRetryAfter`). El contador
+-de sesión en memoria también evita que un 401 o refresh viejo borre tokens de
+-una sesión iniciada después. Login, registro, cierre de sesión y cambio de
+-contraseña serializan sus mutaciones HTTP para evitar que respuestas de cookies
+-fuera de orden crucen entre ellas.
++POST con cookie y `X-Session-Request`, sin bearer, refresh ni replay. Fijan
++`redirect: 'error'` y `cache: 'no-store'`: una redirección tampoco reenvía el body.
++La solicitud exige HTTP 202 y `{ message: string }`; acredita recepción, no entrega.
++El cambio exige HTTP 200 y exactamente `{ success: true }`. Cualquier otro shape,
++status o resultado de red deja incertidumbre sin limpiar la sesión ni repetir POST.
++Los pares status/código conocidos se allowlistan, los campos usan copy local seguro
++y `safeRetryAfter` sólo admite segundos enteros positivos seguros. Nunca se propaga
++el mensaje arbitrario del servidor en estos errores.
++
++Login, registro, logout, reset y refresh usan `session-mutations.ts`: cola por pestaña
++y Web Lock `pcs.session-mutation` cuando está disponible. Sin Web Locks sólo hay
++serialización local. No hay locks anidados ni imports circulares. El refresh relee
++la generación al entrar en la cola/lock; `apiFetch` la relee después de esperarlo,
++antes de reintentar o navegar. La generación es local a la pestaña.
++El callback de limpieza del reset corre únicamente tras éxito confirmado, dentro
++de la cola, antes de liberar al login siguiente. El provider cerca bootstrap,
++refreshUser y login/register/logout tardíos; toma el inicio efectivo de la mutación
++cuando entra en la cola, para permitir una sesión nueva posterior al reset.
+ 
+ `buildQueryString(params)` arma el query string saltando `null`, `undefined`,
+ strings vacíos, `NaN`/`Infinity` e incluye booleanos. Sirve para no mandar
+@@ -141,9 +151,9 @@ return `Request failed with status ${status}`;
+ ### El single-flight del refresh
+ 
+ `refreshSession()` conserva una promesa por pestaña; otras llamadas esperan
+-la misma renovación. Cuando el browser soporta Web Locks también serializa
+-renovaciones entre pestañas con `pcs.session-refresh`. El backend detecta
+-reuso y revoca las sesiones, así que esto evita carreras legítimas.
++la misma renovación de su generación. Comparte la cola y el Web Lock de
++las mutaciones de sesión; una generación distinta no se une al vuelo viejo.
++El backend conserva la protección contra reutilización del refresh actual.
+ 
+ El refresh usa `fetch` directo, `credentials: include`,
+ `X-Session-Request: 1` y un body vacío. El token lo envía automáticamente el
+diff --git a/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/docs/plans/lanzamiento-2026-10-07/RESULTADOS/FE-04-review-anexos/received/frontend/docs/routes.md b/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/frontend/docs/routes.md
+index 7547f70..8613d2a 100644
+--- a/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/docs/plans/lanzamiento-2026-10-07/RESULTADOS/FE-04-review-anexos/received/frontend/docs/routes.md
++++ b/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/frontend/docs/routes.md
+@@ -514,3 +514,33 @@ es de Next, no de la pantalla:
+ Los workarounds (sacar el `loading.tsx` del segmento, o mover el chequeo a
+ `middleware.ts` / un route handler) siguen sin estar implementados. El detalle del
+ mecanismo está en [`gotchas.md`](gotchas.md) §10.
++
++## Recuperación de cuenta
++
++`/recuperar` es dinámica, sin navegación de la app, con metadata noindex/noarchive,
++referrer deshabilitado y headers no-store. El script de captura del layout raíz
++lee un fragmento estricto antes de hidratar y lo quita con `replaceState`; conserva
++los campos ajenos de history.state y sólo agrega un marcador sin secreto. Token y
++contraseñas quedan en memoria; el body del POST legítimo sí los necesita. No hay GET
++de validación ni consumo por mount, preview o petición de otro enlace.
++
++El HTML inicial usa method POST y campos/submit deshabilitados hasta hidratar;
++el fallback nativo no habilita un GET con email en query. Sin controlador de captura,
++un fragmento presente falla cerrado. La ruta SSR completa se verifica en el gate.
++
++Cada entrada nueva, incluso un push a la misma ruta bare, pierde los campos y el
++resultado previo. StrictMode no relee el fragmento ya quitado. Recarga, volver o
++bfcache de un enlace marcado muestran enlace no disponible; pagehide descarta el
++token y el formulario. Si no se puede quitar el fragmento, la vista falla cerrada.
++Las integraciones reales con los parches de history de Next requieren el gate.
++
++202 dice «Recibimos tu pedido», sin repetir el email ni prometer entrega. El éxito
++del cambio ofrece login manual; un resultado incierto también prioriza login y
++permite iniciar un pedido nuevo, sin repetir el POST anterior. 400 de campos enfoca
++el campo inválido; 403 requiere volver a empezar. La espera de 429 usa header seguro
++o 60 segundos de fallback: no tiene contador anunciado cada segundo ni envío al
++terminar. Los títulos tienen hasta cuatro palabras, ambas claves cuentan codepoints
++sin trim/truncamiento y los toggles tienen tamaño local propuesto de 44px.
++
++No se agregó UI de eliminación: canal, operador y retención de backups siguen las
++decisiones pendientes del procedimiento BE-05.
+diff --git a/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/docs/plans/lanzamiento-2026-10-07/RESULTADOS/FE-04-review-anexos/received/frontend/components/auth/recovery-experience.tsx b/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/frontend/components/auth/recovery-experience.tsx
+index fd4464d..ae94f39 100644
+--- a/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/docs/plans/lanzamiento-2026-10-07/RESULTADOS/FE-04-review-anexos/received/frontend/components/auth/recovery-experience.tsx
++++ b/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/frontend/components/auth/recovery-experience.tsx
+@@ -1,239 +1,142 @@
+ 'use client';
+ 
+ import Link from 'next/link';
+-import { usePathname, useRouter } from 'next/navigation';
+-import { useCallback, useEffect, useRef, useState, useSyncExternalStore, type FormEvent } from 'react';
+-
++import { useEffect, useRef, useState, useSyncExternalStore, type FormEvent } from 'react';
+ import { AuthShell } from '@/components/auth/auth-shell';
+ import { Alert, Button, Field, Input, PasswordInput, buttonVariants, useFieldA11y } from '@/components/ui';
+ import { useAuth } from '@/hooks/use-auth';
+ import { ApiError, recoverPassword, requestPasswordRecovery } from '@/lib/api';
+ import { getSessionEpoch } from '@/lib/api/token-storage';
+-import { getRecoverySnapshot, getServerRecoverySnapshot, startRecoveryRequest, subscribeRecoveryView } from '@/lib/recovery/recovery-view';
++import { discardRecoveryLink, getRecoverySnapshot, getServerRecoverySnapshot, startRecoveryRequest, subscribeRecoveryView, type RecoveryViewSnapshot } from '@/lib/recovery/recovery-view';
+ 
+-const EMAIL_ERROR = 'Ingresá un email válido.';
+-const PASSWORD_ERROR = 'Usá una contraseña de entre 8 y 72 caracteres.';
++const EMAIL_ERROR = 'Revisá el formato del email.';
++const PASSWORD_ERROR = 'Usá entre 8 y 72 caracteres.';
++const INPUT_ERROR = 'Revisá los datos ingresados.';
++const LINK_ERROR = 'El enlace no es válido o venció. Pedí uno nuevo para continuar.';
++const FORBIDDEN_ERROR = 'No pudimos procesar el pedido desde esta página. Volvé a empezar desde PokéScan.';
++const PASSWORD_CONTROL = '[&>div>button]:h-11 [&>div>button]:w-11 [&>input]:pr-14';
+ 
+-function recoveryMessage(error: unknown, step: 'request' | 'change'): string {
+-  if (!(error instanceof ApiError)) return step === 'request'
+-    ? 'No pudimos enviar la solicitud. Revisá tu conexión e intentá de nuevo.'
+-    : 'No confirmamos el cambio.';
+-  if (error.status === 429) return `Esperá ${error.safeRetryAfter ?? 60} segundos antes de volver a intentar.`;
+-  if (error.status === 503 && step === 'request') return 'No pudimos enviar la solicitud ahora. Podés reintentar manualmente.';
+-  if (error.status === 400 && error.code === 'INPUT_INVALID') return 'Revisá los datos marcados y volvé a intentar.';
+-  if (step === 'change' && error.code === 'RECOVERY_LINK_INVALID') return 'Este enlace no está disponible. Pedí uno nuevo para continuar.';
+-  if (error.status === 403) return 'No pudimos procesar la solicitud. Volvé a empezar desde PokéScan.';
+-  if (step === 'change') return 'No confirmamos el cambio.';
+-  return 'No pudimos enviar la solicitud. Revisá tu conexión e intentá de nuevo.';
++export function RecoveryExperience() {
++  const snapshot = useSyncExternalStore(subscribeRecoveryView, getRecoverySnapshot, getServerRecoverySnapshot);
++  // Una entrada nueva, incluso en la misma ruta, pierde campos y resultados previos.
++  return <RecoveryEntry key={snapshot.entry} snapshot={snapshot} />;
+ }
+ 
+-export function RecoveryExperience() {
+-  const router = useRouter();
+-  const pathname = usePathname();
++function RecoveryEntry({ snapshot }: { snapshot: RecoveryViewSnapshot }) {
+   const { clearSession } = useAuth();
+-  const snapshot = useSyncExternalStore(subscribeRecoveryView, getRecoverySnapshot, getServerRecoverySnapshot);
++  // SSR usa entry=0; la captura de navegador publica una entrada tras hidratar.
++  const ready = snapshot.entry > 0;
+   const [email, setEmail] = useState('');
+   const [newPassword, setNewPassword] = useState('');
+   const [confirmation, setConfirmation] = useState('');
+-  const [fieldErrors, setFieldErrors] = useState<{ email?: string; newPassword?: string; confirmation?: string }>({});
++  const [errors, setErrors] = useState<{ email?: string; newPassword?: string; confirmation?: string }>({});
+   const [message, setMessage] = useState<string | null>(null);
+   const [accepted, setAccepted] = useState(false);
+-  const [completed, setCompleted] = useState(false);
+-  const [outcomeUnknown, setOutcomeUnknown] = useState(false);
++  const [terminal, setTerminal] = useState<'success' | 'unknown' | 'forbidden' | null>(null);
++  const [linkRejected, setLinkRejected] = useState(false);
+   const [pending, setPending] = useState(false);
+   const [retryAt, setRetryAt] = useState<number | null>(null);
+-  const [secondsLeft, setSecondsLeft] = useState(0);
+-  const submitFlight = useRef(false);
+-  const lastFocusedMode = useRef<string>('');
+-
+-  const emailA11y = useFieldA11y({ id: 'recovery-email', error: fieldErrors.email });
+-  const passwordA11y = useFieldA11y({ id: 'recovery-password', error: fieldErrors.newPassword });
+-  const confirmationA11y = useFieldA11y({ id: 'recovery-confirmation', error: fieldErrors.confirmation });
++  const [waitAnnouncement, setWaitAnnouncement] = useState('');
++  const [invalidFocus, setInvalidFocus] = useState<{ id: string } | null>(null);
++  const flight = useRef(false);
++  const mounted = useRef(false);
++  const emailA11y = useFieldA11y({ id: 'recovery-email', error: errors.email });
++  const passwordA11y = useFieldA11y({ id: 'recovery-password', error: errors.newPassword });
++  const confirmationA11y = useFieldA11y({ id: 'recovery-confirmation', error: errors.confirmation });
++  const isChange = snapshot.mode === 'link' && Boolean(snapshot.token);
++  const linkError = linkRejected || ['invalid', 'unavailable', 'blocked'].includes(snapshot.mode);
++  const title = terminal === 'success' ? 'Cambiaste tu contraseña' : terminal === 'unknown' ? 'No confirmamos el cambio' : terminal === 'forbidden' ? 'Volvé a empezar' : isChange ? 'Elegí tu nueva contraseña' : linkError ? 'Enlace no disponible' : accepted ? 'Recibimos tu pedido' : 'Recuperá tu cuenta';
++  const description = terminal === 'success' ? 'Iniciá sesión con la nueva clave.' : terminal === 'unknown' ? 'Intentá iniciar sesión con la clave que elegiste. Si no funciona, pedí otro enlace.' : terminal === 'forbidden' ? FORBIDDEN_ERROR : isChange ? 'Usá entre 8 y 72 caracteres. Después vas a tener que iniciar sesión.' : linkError ? snapshot.mode === 'unavailable' && !linkRejected ? 'Volvé a abrirlo desde el correo o pedí uno nuevo.' : LINK_ERROR : accepted ? 'Si corresponde y el envío puede completarse, vas a recibir instrucciones. Revisá también correo no deseado.' : 'Ingresá el email de tu cuenta. Te vamos a indicar cómo seguir si el pedido puede procesarse.';
+ 
+-  const focusHeading = useCallback(() => {
++  useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
++  useEffect(() => {
+     const heading = document.getElementById('auth-title');
+     if (heading) { heading.tabIndex = -1; heading.focus(); }
+-  }, []);
+-
+-  useEffect(() => {
+-    if (pathname === '/recuperar') window.__pcsRecoveryManager?.inspectEntry();
+-  }, [pathname]);
+-
+-  useEffect(() => {
+-    if (outcomeUnknown) focusHeading();
+-  }, [outcomeUnknown, focusHeading]);
+-
+-  useEffect(() => {
+-    if (snapshot.mode !== lastFocusedMode.current && ['invalid', 'unavailable', 'blocked'].includes(snapshot.mode)) {
+-      lastFocusedMode.current = snapshot.mode;
+-      focusHeading();
+-    }
+-  }, [snapshot.mode, focusHeading]);
+-
++  }, [title]);
++  useEffect(() => { if (invalidFocus) document.getElementById(invalidFocus.id)?.focus(); }, [invalidFocus]);
+   useEffect(() => {
+     if (retryAt === null) return;
++    let timer: ReturnType<typeof setTimeout>;
+     const update = () => {
+-      const next = Math.max(0, Math.ceil((retryAt - Date.now()) / 1000));
+-      setSecondsLeft(next);
+-      if (next === 0) setRetryAt(null);
++      const remaining = retryAt - performance.now();
++      if (remaining <= 0) { setRetryAt(null); setWaitAnnouncement('Ya podés volver a intentar.'); }
++      else timer = setTimeout(update, Math.min(remaining, 2_147_483_647));
+     };
+     update();
+-    const timer = window.setInterval(update, 1000);
+-    return () => window.clearInterval(timer);
++    return () => clearTimeout(timer);
+   }, [retryAt]);
+ 
+-  function focusInvalid(field: 'email' | 'newPassword' | 'confirmation') {
+-    window.requestAnimationFrame(() => document.getElementById(`recovery-${field === 'newPassword' ? 'password' : field}`)?.focus());
+-  }
++  const current = () => mounted.current && getRecoverySnapshot().entry === snapshot.entry;
++  const clearSecrets = () => { setNewPassword(''); setConfirmation(''); discardRecoveryLink(); };
++  const wait = (seconds: number) => { setWaitAnnouncement(''); setRetryAt(performance.now() + seconds * 1000); };
++  const invalid = (id: string) => setInvalidFocus({ id });
++  const restart = () => startRecoveryRequest();
+ 
+-  async function submitRequest(event: FormEvent<HTMLFormElement>) {
++  async function submit(event: FormEvent<HTMLFormElement>) {
+     event.preventDefault();
+-    if (submitFlight.current || pending || secondsLeft > 0) return;
+-    submitFlight.current = true;
+-    setMessage(null);
+-    const errors: typeof fieldErrors = {};
+-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) errors.email = EMAIL_ERROR;
+-    setFieldErrors(errors);
+-    if (Object.keys(errors).length) { focusInvalid('email'); submitFlight.current = false; return; }
+-    setPending(true);
+-    try {
+-      await requestPasswordRecovery(email.trim());
+-      setAccepted(true);
+-      setRetryAt(Date.now() + 60_000);
+-      setMessage('Si existe una cuenta con ese email, te enviaremos instrucciones para recuperar el acceso.');
+-      focusHeading();
+-    } catch (error) {
+-      const text = recoveryMessage(error, 'request');
+-      setMessage(text);
+-      if (error instanceof ApiError && error.status === 400 && error.code === 'INPUT_INVALID') {
+-        const next: typeof fieldErrors = {};
+-        if (error.fields?.email) next.email = EMAIL_ERROR;
+-        setFieldErrors(next);
+-        if (next.email) setMessage(null);
+-        if (next.email) focusInvalid('email');
+-      }
+-      if (error instanceof ApiError && error.status === 429) setRetryAt(Date.now() + (error.safeRetryAfter ?? 60) * 1000);
+-    } finally {
+-      submitFlight.current = false;
+-      setPending(false);
++    if (!ready || flight.current || pending || retryAt !== null || terminal || linkError) return;
++    const next: typeof errors = {};
++    if (isChange) {
++      const length = Array.from(newPassword).length;
++      if (!newPassword) next.newPassword = 'Ingresá una contraseña.';
++      else if (length < 8 || length > 72) next.newPassword = PASSWORD_ERROR;
++      if (!confirmation) next.confirmation = 'Repetí la contraseña.';
++      else if (confirmation !== newPassword) next.confirmation = 'Las contraseñas no coinciden.';
++    } else {
++      const normalized = email.trim();
++      if (!normalized) next.email = 'Ingresá tu email.';
++      else if (Array.from(normalized).length > 254) next.email = 'Usá hasta 254 caracteres.';
++      else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalized)) next.email = EMAIL_ERROR;
+     }
+-  }
+-
+-  async function submitChange(event: FormEvent<HTMLFormElement>) {
+-    event.preventDefault();
+-    if (submitFlight.current || pending || secondsLeft > 0) return;
+-    submitFlight.current = true;
+-    setMessage(null);
+-    const errors: typeof fieldErrors = {};
+-    if (newPassword.length < 8 || newPassword.length > 72) errors.newPassword = PASSWORD_ERROR;
+-    if (confirmation !== newPassword) errors.confirmation = 'Las contraseñas no coinciden.';
+-    setFieldErrors(errors);
+-    const firstInvalid = errors.newPassword ? 'newPassword' : errors.confirmation ? 'confirmation' : null;
+-    if (firstInvalid) { focusInvalid(firstInvalid); submitFlight.current = false; return; }
+-    const token = snapshot.token;
+-    if (!token || snapshot.mode !== 'link') { setMessage('Este enlace no está disponible. Pedí uno nuevo para continuar.'); submitFlight.current = false; return; }
+-    setPending(true);
++    setMessage(null); setErrors(next);
++    if (Object.keys(next).length) { invalid(next.email ? 'recovery-email' : next.newPassword ? 'recovery-password' : 'recovery-confirmation'); return; }
++    flight.current = true; setPending(true);
+     try {
+-      await recoverPassword(token, newPassword);
+-      const epoch = getSessionEpoch();
+-      clearSession(epoch);
+-      setCompleted(true);
+-      setMessage('Cambiaste tu contraseña. Ya podés iniciar sesión.');
+-      focusHeading();
+-      window.setTimeout(() => router.replace('/login'), 900);
+-    } catch (error) {
+-      const knownChangeError = error instanceof ApiError && (
+-        error.status === 403 || error.status === 429 ||
+-        error.status === 400 && (error.code === 'INPUT_INVALID' || error.code === 'RECOVERY_LINK_INVALID')
+-      );
+-      if (!knownChangeError) {
+-        setOutcomeUnknown(true);
+-        setMessage(null);
+-        startRecoveryRequest();
+-        return;
+-      }
+-      const text = recoveryMessage(error, 'change');
+-      setMessage(text);
+-      if (error instanceof ApiError && error.status === 429) setRetryAt(Date.now() + (error.safeRetryAfter ?? 60) * 1000);
+-      if (error instanceof ApiError && error.status === 400 && error.code === 'INPUT_INVALID') {
+-        const safeFields = error.fields ?? {};
+-        const next: typeof fieldErrors = {};
+-        if (safeFields.newPassword) next.newPassword = PASSWORD_ERROR;
+-        setFieldErrors(next);
+-        if (next.newPassword) { setMessage(null); focusInvalid('newPassword'); }
+-      } else if (error instanceof ApiError && error.code === 'RECOVERY_LINK_INVALID') {
+-        startRecoveryRequest();
++      if (isChange) {
++        await recoverPassword(snapshot.token!, newPassword, () => clearSession(getSessionEpoch()));
++        if (!current()) return;
++        setTerminal('success'); clearSecrets();
++      } else {
++        await requestPasswordRecovery(email.trim().toLowerCase());
++        if (!current()) return;
++        setAccepted(true); wait(60);
+       }
++    } catch (error) {
++      if (!current()) return;
++      const recognized = error instanceof ApiError ? error : null;
++      if (recognized?.status === 400 && recognized.code === 'INPUT_INVALID') {
++        if (isChange && recognized.fields?.newPassword) { setErrors({ newPassword: PASSWORD_ERROR }); invalid('recovery-password'); }
++        else if (!isChange && recognized.fields?.email) { setErrors({ email: EMAIL_ERROR }); invalid('recovery-email'); }
++        else setMessage(INPUT_ERROR);
++      } else if (recognized?.status === 429 && recognized.code === 'RECOVERY_RATE_LIMITED') {
++        setMessage('Esperá un poco antes de volver a intentar.'); wait(recognized.safeRetryAfter ?? 60);
++      } else if (recognized?.status === 403 && recognized.code === 'SESSION_REQUEST_FORBIDDEN') {
++        setTerminal('forbidden'); clearSecrets();
++      } else if (isChange && recognized?.status === 400 && recognized.code === 'RECOVERY_LINK_INVALID') {
++        setLinkRejected(true); clearSecrets();
++      } else if (isChange) {
++        setTerminal('unknown'); clearSecrets();
++      } else if (recognized?.status === 503 && recognized.code === 'RECOVERY_UNAVAILABLE') {
++        setMessage('No pudimos procesar el pedido ahora. Probá más tarde.');
++      } else setMessage('No pudimos confirmar el pedido. Podés volver a intentarlo.');
+     } finally {
+-      submitFlight.current = false;
+-      setPending(false);
++      flight.current = false;
++      if (current()) setPending(false);
+     }
+   }
+ 
+-  const linkError = snapshot.mode === 'invalid' || snapshot.mode === 'unavailable' || snapshot.mode === 'blocked';
+-  const isChange = snapshot.mode === 'link' && Boolean(snapshot.token);
+-  const title = completed ? 'Contraseña cambiada' : outcomeUnknown ? 'No confirmamos el cambio' : isChange ? 'Elegí una contraseña' : linkError ? 'Enlace no disponible' : accepted ? 'Revisá tu correo' : 'Recuperá tu cuenta';
+-  const description = completed
+-    ? 'Ya podés entrar con tu contraseña nueva.'
+-    : outcomeUnknown
+-      ? 'No sabemos si el cambio se completó. Iniciá sesión o pedí un enlace nuevo.'
+-    : isChange
+-    ? 'Creá una contraseña nueva para volver a entrar.'
+-    : linkError
+-      ? 'El enlace no se puede usar. Pedí uno nuevo para continuar.'
+-      : accepted
+-        ? 'Si existe una cuenta con ese email, te enviaremos los pasos para recuperar el acceso.'
+-        : 'Te vamos a enviar instrucciones si encontramos una cuenta con ese email.';
+-
+-  const loginLink = <Link href="/login" className="text-label text-brand underline-offset-4 hover:underline">Volver a iniciar sesión</Link>;
+-  const newLink = <button type="button" onClick={() => { startRecoveryRequest(); setOutcomeUnknown(false); setFieldErrors({}); setMessage(null); }} className="min-h-11 text-label text-brand underline-offset-4 hover:underline">Pedir un enlace nuevo</button>;
+-
+-  return (
+-    <AuthShell title={title} description={description} footer={outcomeUnknown ? undefined : loginLink}>
+-      {completed ? (
+-        <p className="text-body text-positive">Cambiaste tu contraseña. Ya podés iniciar sesión.</p>
+-      ) : outcomeUnknown ? (
+-        <div className="flex flex-col gap-3">
+-          <p className="text-body text-secondary">No confirmamos el cambio. No vuelvas a enviar este formulario.</p>
+-          <Link href="/login" className={`${buttonVariants({ variant: 'primary', size: 'lg' })} w-full`}>Volver a iniciar sesión</Link>
+-          {newLink}
+-        </div>
+-      ) : isChange ? (
+-        <form onSubmit={submitChange} noValidate className="flex flex-col gap-4">
+-          <Field {...passwordA11y} label="Contraseña nueva" required>
+-            <PasswordInput className="[&>div>button]:h-11 [&>div>button]:w-11 [&>input]:pr-14" id={passwordA11y.id} name="newPassword" autoComplete="new-password" minLength={8} maxLength={72} value={newPassword} onChange={(event) => { setNewPassword(event.target.value); setFieldErrors((prev) => ({ ...prev, newPassword: undefined })); }} invalid={passwordA11y.invalid} aria-describedby={passwordA11y.describedBy} />
+-          </Field>
+-          <Field {...confirmationA11y} label="Repetí la contraseña" required>
+-            <Input id={confirmationA11y.id} name="confirmation" type="password" autoComplete="new-password" minLength={8} maxLength={72} value={confirmation} onChange={(event) => { setConfirmation(event.target.value); setFieldErrors((prev) => ({ ...prev, confirmation: undefined })); }} invalid={confirmationA11y.invalid} aria-describedby={confirmationA11y.describedBy} />
+-          </Field>
+-          {message ? <Alert tone={message.startsWith('Cambiaste') ? 'success' : 'error'}>{message}</Alert> : null}
+-          <Button type="submit" fullWidth size="lg" loading={pending} disabled={secondsLeft > 0} pendingLabel="Cambiando…">Cambiar contraseña</Button>
+-          {secondsLeft > 0 ? <p className="text-center text-caption text-secondary" aria-live="off">Podés volver a intentarlo en {secondsLeft} s.</p> : null}
+-          {message && !message.startsWith('Cambiaste') ? <div className="text-center">{newLink}</div> : null}
+-        </form>
+-      ) : linkError ? (
+-        <div className="flex flex-col gap-4">
+-          <p className="text-body text-negative">{snapshot.mode === 'blocked' ? 'No pudimos proteger el enlace en este navegador. Abrí el enlace nuevamente.' : 'Este enlace no está disponible. Pedí uno nuevo para continuar.'}</p>
+-          {newLink}
+-        </div>
+-      ) : accepted ? (
+-        <div className="flex flex-col gap-4">
+-          <p className="text-body text-secondary">{message ?? 'Si existe una cuenta con ese email, te enviaremos instrucciones para recuperar el acceso.'}</p>
+-          <Button type="button" variant="secondary" fullWidth onClick={() => { startRecoveryRequest(); setAccepted(false); setEmail(''); setMessage(null); }}>Usar otro email</Button>
+-          <Button type="button" variant="ghost" fullWidth disabled={secondsLeft > 0 || pending} onClick={() => { setAccepted(false); setMessage(null); }}>
+-            {secondsLeft > 0 ? `Podés volver a pedirlo en ${secondsLeft} s` : 'Volver al formulario para reenviar'}
+-          </Button>
+-        </div>
+-      ) : (
+-        <form onSubmit={submitRequest} noValidate className="flex flex-col gap-4">
+-          <Field {...emailA11y} label="Email" required>
+-            <Input id={emailA11y.id} name="email" type="email" inputMode="email" autoComplete="email" autoCapitalize="none" autoCorrect="off" spellCheck={false} placeholder="ash@pokemon.com" value={email} onChange={(event) => { setEmail(event.target.value); setFieldErrors((prev) => ({ ...prev, email: undefined })); }} invalid={emailA11y.invalid} aria-describedby={emailA11y.describedBy} />
+-          </Field>
+-          {message ? <Alert tone="error">{message}</Alert> : null}
+-          <Button type="submit" fullWidth size="lg" loading={pending} pendingLabel="Enviando…" disabled={secondsLeft > 0}>Enviar instrucciones</Button>
+-          {secondsLeft > 0 ? <p className="text-center text-caption text-secondary" aria-live="off">Podés volver a intentarlo en {secondsLeft} s.</p> : null}
+-        </form>
+-      )}
+-    </AuthShell>
+-  );
++  const login = (primary = false) => <Link replace href="/login" className={buttonVariants({ variant: primary ? 'primary' : 'ghost', size: primary ? 'lg' : 'md' })}>Iniciar sesión</Link>;
++  const newLink = <Button type="button" variant="ghost" fullWidth onClick={restart}>Pedir otro enlace</Button>;
++  return <AuthShell title={title} description={description} footer={terminal ? undefined : login()}>
++    {terminal ? <div className="flex flex-col gap-3">{login(true)}{terminal === 'unknown' ? newLink : null}</div> : linkError ? <div className="flex flex-col gap-3">{snapshot.mode === 'blocked' ? <Alert tone="warning">No pudimos proteger el enlace. Volvé a empezar desde PokéScan.</Alert> : null}{newLink}</div> : accepted ? <div className="flex flex-col gap-3"><Button type="button" variant="secondary" fullWidth disabled={retryAt !== null} onClick={restart}>Pedir otro enlace</Button>{retryAt !== null ? <p className="text-caption text-secondary">Podés volver a intentar cuando termine la espera.</p> : null}</div> : <form method="post" onSubmit={submit} noValidate aria-busy={pending} className="flex flex-col gap-4">
++      {isChange ? <>
++        <Field {...passwordA11y} error={errors.newPassword} label="Nueva contraseña" required><PasswordInput className={PASSWORD_CONTROL} id={passwordA11y.id} name="newPassword" disabled={!ready} autoComplete="new-password" value={newPassword} onChange={(event) => { setNewPassword(event.target.value); setErrors((prev) => ({ ...prev, newPassword: undefined })); }} invalid={passwordA11y.invalid} aria-describedby={passwordA11y.describedBy} /></Field>
++        <Field {...confirmationA11y} error={errors.confirmation} label="Repetí la contraseña" required><PasswordInput className={PASSWORD_CONTROL} showLabel="Mostrar confirmación" hideLabel="Ocultar confirmación" id={confirmationA11y.id} name="confirmation" disabled={!ready} autoComplete="new-password" value={confirmation} onChange={(event) => { setConfirmation(event.target.value); setErrors((prev) => ({ ...prev, confirmation: undefined })); }} invalid={confirmationA11y.invalid} aria-describedby={confirmationA11y.describedBy} /></Field>
++      </> : <Field {...emailA11y} error={errors.email} label="Email" required><Input id={emailA11y.id} name="email" disabled={!ready} type="email" inputMode="email" autoComplete="email" autoCapitalize="none" autoCorrect="off" spellCheck={false} value={email} onChange={(event) => { setEmail(event.target.value); setErrors((prev) => ({ ...prev, email: undefined })); }} invalid={emailA11y.invalid} aria-describedby={emailA11y.describedBy} /></Field>}
++      {message ? <Alert tone="error">{message}</Alert> : null}
++      <Button type="submit" fullWidth size="lg" loading={pending} disabled={!ready || retryAt !== null} pendingLabel={isChange ? 'Cambiando…' : 'Procesando…'}>{isChange ? 'Cambiar contraseña' : 'Pedir enlace'}</Button>
++      {retryAt !== null ? <p className="text-caption text-secondary">Podés volver a intentar cuando termine la espera.</p> : null}
++    </form>}
++    <p role="status" aria-live="polite" className="sr-only">{waitAnnouncement}</p>
++  </AuthShell>;
+ }
+diff --git a/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/docs/plans/lanzamiento-2026-10-07/RESULTADOS/FE-04-review-anexos/received/frontend/components/auth/recovery-experience.test.tsx b/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/frontend/components/auth/recovery-experience.test.tsx
+index 3a9f8c8..6255885 100644
+--- a/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/docs/plans/lanzamiento-2026-10-07/RESULTADOS/FE-04-review-anexos/received/frontend/components/auth/recovery-experience.test.tsx
++++ b/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/frontend/components/auth/recovery-experience.test.tsx
+@@ -1,81 +1,144 @@
+ // @vitest-environment jsdom
+ import { StrictMode } from 'react';
+-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+-import userEvent from '@testing-library/user-event';
+-import { beforeEach, describe, expect, it, vi } from 'vitest';
+-
+-const mocks = vi.hoisted(() => ({
+-  replace: vi.fn(),
+-  clearSession: vi.fn(),
+-  request: vi.fn(),
+-  recover: vi.fn(),
+-}));
++import { renderToString } from 'react-dom/server';
++import { act, fireEvent, render, screen } from '@testing-library/react';
++import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest';
+ 
++const mocks = vi.hoisted(() => ({ replace: vi.fn(), clearSession: vi.fn(), request: vi.fn(), recover: vi.fn() }));
+ vi.mock('next/navigation', () => ({ useRouter: () => ({ replace: mocks.replace }), usePathname: () => '/recuperar' }));
+ vi.mock('@/hooks/use-auth', () => ({ useAuth: () => ({ clearSession: mocks.clearSession }) }));
+-vi.mock('@/lib/api', async () => {
+-  const actual = await vi.importActual<typeof import('@/lib/api')>('@/lib/api');
+-  return { ...actual, requestPasswordRecovery: mocks.request, recoverPassword: mocks.recover };
+-});
+-
++vi.mock('@/lib/api', async () => ({ ...await vi.importActual<typeof import('@/lib/api')>('@/lib/api'), requestPasswordRecovery: mocks.request, recoverPassword: mocks.recover }));
++import { ApiError } from '@/lib/api';
+ import { RecoveryExperience } from './recovery-experience';
++import type { RecoveryViewSnapshot } from '@/lib/recovery/recovery-view';
+ 
+-function setSnapshot(mode: string, token: string | null = null) {
+-  const snapshot = { mode, token };
+-  Object.defineProperty(window, '__pcsRecoveryManager', {
+-    configurable: true,
+-    value: { snapshot: () => snapshot, startRequest: vi.fn(), inspectEntry: vi.fn() },
+-  });
++let snapshot: RecoveryViewSnapshot;
++const publish = (mode: RecoveryViewSnapshot['mode'], token: string | null = null, fresh = false) => {
++  snapshot = { mode, token, entry: snapshot.entry + (fresh ? 1 : 0) };
++  window.dispatchEvent(new Event('pcs:recovery-view'));
++};
++function changeFields(password = 'fixture-pass') {
++  fireEvent.change(screen.getByLabelText(/Nueva contraseña/), { target: { value: password } });
++  fireEvent.change(screen.getByLabelText(/Repetí la contraseña/), { target: { value: password } });
+ }
+-
++function submitChange() { fireEvent.click(screen.getByRole('button', { name: 'Cambiar contraseña' })); }
+ beforeEach(() => {
+-  mocks.replace.mockReset();
+-  mocks.clearSession.mockReset().mockReturnValue(true);
+-  mocks.request.mockReset();
+-  mocks.recover.mockReset();
+-  setSnapshot('request');
++  vi.clearAllMocks();
++  mocks.clearSession.mockReturnValue(true);
++  mocks.request.mockReset(); mocks.recover.mockReset();
++  snapshot = { mode: 'request', token: null, entry: 1 };
++  window.__pcsRecoveryManager = { snapshot: () => snapshot, inspectEntry: vi.fn(),
++    startRequest: () => publish('request', null, true), discardLink: () => publish('unavailable') };
+ });
++afterEach(() => { vi.useRealTimers(); delete window.__pcsRecoveryManager; });
+ 
+ describe('RecoveryExperience', () => {
+-  it('does not submit twice under StrictMode while a request is pending', async () => {
+-    let finish: (() => void) | undefined;
++  it('HTML SSR no habilita GET ni envío nativo antes de hidratar', () => {
++    const container = document.createElement('div'); container.innerHTML = renderToString(<RecoveryExperience />);
++    const form = container.querySelector('form')!;
++    expect(form.getAttribute('method')).toBe('post');
++    expect(container.querySelector('input[name=email]')?.hasAttribute('disabled')).toBe(true);
++    expect(container.querySelector('button[type=submit]')?.hasAttribute('disabled')).toBe(true);
++    expect(container.querySelector('input')?.value === '').toBe(true);
++  });
++  it('bloquea doble click y Enter bajo StrictMode y 202 no promete entrega', async () => {
++    let finish!: () => void;
+     mocks.request.mockImplementation(() => new Promise<void>((resolve) => { finish = resolve; }));
+-    const user = userEvent.setup();
+     render(<StrictMode><RecoveryExperience /></StrictMode>);
+-    await user.type(screen.getByLabelText(/Email/), 'ash@example.com');
+-    const submit = screen.getByRole('button', { name: 'Enviar instrucciones' });
+-    fireEvent.click(submit);
+-    fireEvent.click(submit);
++    fireEvent.change(screen.getByLabelText(/Email/), { target: { value: 'fixture@example.invalid' } });
++    const submit = screen.getByRole('button', { name: 'Pedir enlace' });
++    fireEvent.click(submit); fireEvent.click(submit); fireEvent.submit(submit.closest('form')!);
+     expect(mocks.request).toHaveBeenCalledTimes(1);
+-    finish?.();
+-    await screen.findByRole('heading', { name: 'Revisá tu correo' });
++    await act(async () => finish());
++    expect(screen.getByRole('heading', { name: 'Recibimos tu pedido' })).toBeTruthy();
++    expect(document.body.textContent?.includes('fixture@example.invalid')).toBe(false);
++    expect(screen.getByText(/Si corresponde y el envío puede completarse/)).toBeTruthy();
++    expect(screen.getByRole('button', { name: 'Pedir otro enlace' }).hasAttribute('disabled')).toBe(true);
++  });
++
++  it('éxito limpia dentro del callback confirmado y requiere login manual', async () => {
++    snapshot = { mode: 'link', token: 'A'.repeat(43), entry: 1 };
++    mocks.recover.mockImplementation(async (_token, _password, confirmed) => { confirmed(); return { success: true }; });
++    render(<RecoveryExperience />); changeFields(); submitChange();
++    const heading = await screen.findByRole('heading', { name: 'Cambiaste tu contraseña' });
++    expect(document.activeElement).toBe(heading);
++    expect(mocks.clearSession).toHaveBeenCalledTimes(1); expect(mocks.recover).toHaveBeenCalledTimes(1);
++    vi.useFakeTimers(); await act(async () => { await vi.advanceTimersByTimeAsync(1000); });
++    expect(mocks.replace).not.toHaveBeenCalled();
++    expect(screen.getByRole('link', { name: 'Iniciar sesión' }).getAttribute('href')).toBe('/login');
++    expect(screen.queryByRole('button', { name: 'Cambiar contraseña' })).toBeNull();
++    expect(snapshot.token === null).toBe(true);
++  });
++
++  it.each([
++    [503, 'RECOVERY_UNAVAILABLE'], [400, undefined], [400, 'UNKNOWN'],
++    [403, 'INPUT_INVALID'], [429, 'RECOVERY_LINK_INVALID'], [200, undefined],
++  ])('status/code inesperado %s/%s deja incertidumbre sin replay ni clearing', async (status, code) => {
++    snapshot = { mode: 'link', token: 'A'.repeat(43), entry: 1 };
++    mocks.recover.mockRejectedValue(new ApiError(status, 'no renderizar', { code }));
++    render(<RecoveryExperience />); changeFields(); submitChange();
++    const heading = await screen.findByRole('heading', { name: 'No confirmamos el cambio' });
++    expect(document.activeElement).toBe(heading);
++    expect(mocks.clearSession).not.toHaveBeenCalled(); expect(mocks.replace).not.toHaveBeenCalled();
++    expect(screen.queryByRole('button', { name: 'Cambiar contraseña' })).toBeNull();
++    expect(screen.getByRole('link', { name: 'Iniciar sesión' })).toBeTruthy();
++    fireEvent.click(screen.getByRole('button', { name: 'Pedir otro enlace' }));
++    expect(screen.getByRole('button', { name: 'Pedir enlace' })).toBeTruthy();
++    expect(mocks.request).not.toHaveBeenCalled(); expect(mocks.recover).toHaveBeenCalledTimes(1);
+   });
+ 
+-  it('reconoce éxito solo después de la respuesta y limpia la sesión con su epoch', async () => {
+-    setSnapshot('link', 'A'.repeat(43));
+-    mocks.recover.mockResolvedValue({ success: true });
+-    const user = userEvent.setup();
++  it('403 reconocido ofrece login y 400 INPUT conserva enlace/campos y foco', async () => {
++    snapshot = { mode: 'link', token: 'A'.repeat(43), entry: 1 };
++    mocks.recover.mockRejectedValueOnce(new ApiError(400, 'raw', { code: 'INPUT_INVALID', fields: { newPassword: 'raw' } }))
++      .mockRejectedValueOnce(new ApiError(403, 'raw', { code: 'SESSION_REQUEST_FORBIDDEN' }));
++    render(<RecoveryExperience />); changeFields(); submitChange();
++    await screen.findByText('Usá entre 8 y 72 caracteres.');
++    expect(document.activeElement).toBe(screen.getByLabelText(/Nueva contraseña/));
++    expect(snapshot.token !== null).toBe(true);
++    submitChange(); await screen.findByRole('heading', { name: 'Volvé a empezar' });
++    expect(screen.queryByRole('button', { name: 'Cambiar contraseña' })).toBeNull();
++    expect(mocks.clearSession).not.toHaveBeenCalled();
++  });
++
++  it('cuenta codepoints, permite claves astrales y no trunca por maxlength UTF16', async () => {
++    snapshot = { mode: 'link', token: 'A'.repeat(43), entry: 1 };
++    mocks.recover.mockRejectedValue(new ApiError(503, 'raw'));
+     render(<RecoveryExperience />);
+-    await user.type(screen.getByLabelText(/Contraseña nueva/), 'pikachu88');
+-    await user.type(screen.getByLabelText(/Repetí la contraseña/), 'pikachu88');
+-    await user.click(screen.getByRole('button', { name: 'Cambiar contraseña' }));
+-    await screen.findByText('Cambiaste tu contraseña. Ya podés iniciar sesión.');
++    const input = screen.getByLabelText(/Nueva contraseña/);
++    expect(input.hasAttribute('maxlength')).toBe(false);
++    changeFields('😀'.repeat(7)); submitChange(); expect(mocks.recover).not.toHaveBeenCalled();
++    expect(screen.getByRole('button', { name: 'Mostrar confirmación' })).toBeTruthy();
++    changeFields('😀'.repeat(72)); submitChange();
++    await screen.findByRole('heading', { name: 'No confirmamos el cambio' });
+     expect(mocks.recover).toHaveBeenCalledTimes(1);
+-    expect(mocks.clearSession).toHaveBeenCalledTimes(1);
+-    await waitFor(() => expect(mocks.replace).toHaveBeenCalledWith('/login'));
+   });
+ 
+-  it('muestra incertidumbre para fallos de cambio y conserva la sesión', async () => {
+-    const { ApiError } = await import('@/lib/api');
+-    setSnapshot('link', 'A'.repeat(43));
+-    mocks.recover.mockRejectedValue(new ApiError(503, 'unavailable'));
+-    const user = userEvent.setup();
++  it('espera 429 con fallback sin countdown live ni submit automático', async () => {
++    vi.useFakeTimers();
++    mocks.request.mockRejectedValue(new ApiError(429, 'raw', { code: 'RECOVERY_RATE_LIMITED' }));
+     render(<RecoveryExperience />);
+-    await user.type(screen.getByLabelText(/Contraseña nueva/), 'pikachu88');
+-    await user.type(screen.getByLabelText(/Repetí la contraseña/), 'pikachu88');
+-    await user.click(screen.getByRole('button', { name: 'Cambiar contraseña' }));
+-    expect(await screen.findByRole('heading', { name: 'No confirmamos el cambio' })).toBeTruthy();
+-    expect(mocks.clearSession).not.toHaveBeenCalled();
+-    expect(mocks.replace).not.toHaveBeenCalled();
++    fireEvent.change(screen.getByLabelText(/Email/), { target: { value: 'fixture@example.invalid' } });
++    await act(async () => { fireEvent.click(screen.getByRole('button', { name: 'Pedir enlace' })); });
++    expect(screen.getByRole('button', { name: 'Pedir enlace' }).hasAttribute('disabled')).toBe(true);
++    const before = screen.getByRole('status').textContent;
++    await act(async () => { await vi.advanceTimersByTimeAsync(1000); });
++    expect(screen.getByRole('status').textContent).toBe(before);
++    await act(async () => { await vi.advanceTimersByTimeAsync(59_000); });
++    expect(screen.getByRole('status').textContent).toBe('Ya podés volver a intentar.');
++    expect(screen.getByRole('button', { name: 'Pedir enlace' }).hasAttribute('disabled')).toBe(false);
++    expect(mocks.request).toHaveBeenCalledTimes(1);
++  });
++
++  it('una entrada nueva ignora respuesta vieja y pierde campos previos', async () => {
++    let finish!: () => void;
++    mocks.request.mockImplementation(() => new Promise<void>((resolve) => { finish = resolve; }));
++    render(<RecoveryExperience />);
++    fireEvent.change(screen.getByLabelText(/Email/), { target: { value: 'fixture@example.invalid' } });
++    fireEvent.click(screen.getByRole('button', { name: 'Pedir enlace' }));
++    act(() => publish('request', null, true));
++    expect((screen.getByLabelText(/Email/) as HTMLInputElement).value === '').toBe(true);
++    await act(async () => finish());
++    expect(screen.getByRole('heading', { name: 'Recuperá tu cuenta' })).toBeTruthy();
++    expect(screen.getByRole('button', { name: 'Pedir enlace' }).hasAttribute('disabled')).toBe(false);
+   });
+ });
+diff --git a/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/frontend/lib/api/session-mutations.ts b/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/frontend/lib/api/session-mutations.ts
+new file mode 100644
+index 0000000..3249959
+--- /dev/null
++++ b/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/frontend/lib/api/session-mutations.ts
+@@ -0,0 +1,14 @@
++let mutationQueue: Promise<void> = Promise.resolve();
++
++/** Todas las respuestas que modifican la cookie comparten la misma frontera. */
++export function withSessionMutation<T>(operation: () => Promise<T>): Promise<T> {
++  const coordinated = async (): Promise<T> => {
++    if (typeof navigator !== 'undefined' && navigator.locks) {
++      return await navigator.locks.request('pcs.session-mutation', operation);
++    }
++    return operation();
++  };
++  const result = mutationQueue.then(coordinated, coordinated);
++  mutationQueue = result.then(() => undefined, () => undefined);
++  return result;
++}
+diff --git a/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/frontend/hooks/use-auth.test.tsx b/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/frontend/hooks/use-auth.test.tsx
+new file mode 100644
+index 0000000..8a31e42
+--- /dev/null
++++ b/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/frontend/hooks/use-auth.test.tsx
+@@ -0,0 +1,63 @@
++// @vitest-environment jsdom
++import { act, renderHook } from '@testing-library/react';
++import { beforeEach, describe, expect, it, vi } from 'vitest';
++const mocks = vi.hoisted(() => ({ me: vi.fn(), login: vi.fn(), register: vi.fn(), logout: vi.fn() }));
++vi.mock('@/lib/api', async () => ({ ...await vi.importActual<typeof import('@/lib/api')>('@/lib/api'),
++  getMe: mocks.me, login: mocks.login, register: mocks.register, logout: mocks.logout }));
++import { AuthProvider, useAuth } from './use-auth';
++import { clearTokens, getSessionEpoch, setTokens } from '@/lib/api/token-storage';
++const user = { id: 'fixture', email: 'fixture@example.invalid', username: 'fixture', displayName: 'Fixture',
++  avatarUrl: null, preferredCurrency: 'USD', preferredRateType: 'blue', createdAt: '2026-10-10', updatedAt: '2026-10-10' };
++beforeEach(() => { vi.clearAllMocks(); clearTokens(); });
++
++describe('generación del AuthProvider', () => {
++  it('bootstrap anterior al clear confirmado no restaura user ni loading', async () => {
++    setTokens('fixture-access');
++    let finish!: (value: typeof user) => void;
++    mocks.me.mockImplementation(() => new Promise((resolve) => { finish = resolve; }));
++    const { result } = renderHook(useAuth, { wrapper: AuthProvider });
++    act(() => { result.current.clearSession(getSessionEpoch()); });
++    await act(async () => { finish(user); });
++    expect(result.current.user === null).toBe(true); expect(result.current.isLoading).toBe(false);
++  });
++
++  it('refreshUser anterior al clear confirmado no restaura el perfil', async () => {
++    mocks.me.mockResolvedValue(user); setTokens('fixture-access');
++    const { result } = renderHook(useAuth, { wrapper: AuthProvider });
++    await act(async () => {});
++    let finish!: (value: typeof user) => void;
++    mocks.me.mockImplementation(() => new Promise((resolve) => { finish = resolve; }));
++    let refresh!: Promise<unknown>;
++    act(() => { refresh = result.current.refreshUser(); result.current.clearSession(getSessionEpoch()); });
++    await act(async () => { finish(user); await refresh; });
++    expect(result.current.user === null).toBe(true); expect(result.current.isAuthenticated).toBe(false);
++  });
++
++  it('login que empieza después del reset confirmado sí crea perfil nuevo', async () => {
++    const { result } = renderHook(useAuth, { wrapper: AuthProvider });
++    let start!: () => void; let finish!: (value: { user: typeof user; accessToken: string }) => void;
++    mocks.login.mockImplementation((_email, _password, started) => { start = started; return new Promise((resolve) => { finish = resolve; }); });
++    let pending!: Promise<unknown>;
++    act(() => { pending = result.current.login(user.email, 'fixture-password'); result.current.clearSession(getSessionEpoch()); });
++    await act(async () => { start(); setTokens('fixture-new'); finish({ user, accessToken: 'fixture-new' }); await pending; });
++    expect(result.current.user?.id === user.id).toBe(true); expect(result.current.isAuthenticated).toBe(true);
++  });
++
++  it.each(['login', 'register'] as const)('%s viejo no restaura provider después de clear confirmado', async (kind) => {
++    const { result } = renderHook(useAuth, { wrapper: AuthProvider });
++    let finish!: (value: { user: typeof user; accessToken: string }) => void;
++    mocks[kind].mockImplementation((...args: unknown[]) => {
++      const started = args.at(-1); if (typeof started === 'function') started();
++      return new Promise((resolve) => { finish = resolve; });
++    });
++    let response!: Promise<boolean>;
++    act(() => {
++      const operation = kind === 'login' ? result.current.login(user.email, 'fixture-password') :
++        result.current.register({ email: user.email, username: user.username, displayName: user.displayName, password: 'fixture-password' });
++      response = operation.then(() => false, () => true);
++      setTokens('fixture-response'); result.current.clearSession(getSessionEpoch());
++    });
++    await act(async () => { finish({ user, accessToken: 'fixture-response' }); expect(await response).toBe(true); });
++    expect(result.current.user === null).toBe(true); expect(result.current.isLoading).toBe(false);
++  });
++});

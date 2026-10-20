@@ -1,0 +1,54 @@
+{
+  "engine": "CUA Codex in-app browser",
+  "realRoutes": true,
+  "mockHarness": false,
+  "nextBuild": "current source webpack production alternative",
+  "viewports": [
+    {
+      "width": 390,
+      "height": 844,
+      "themes": [
+        "light",
+        "dark"
+      ],
+      "horizontalOverflow": false
+    },
+    {
+      "width": 1280,
+      "height": 844,
+      "themes": [
+        "light",
+        "dark"
+      ],
+      "horizontalOverflow": false
+    }
+  ],
+  "privateCurrency": "ARS using synthetic cache rate1000",
+  "publicCurrency": "USD, same private ARS account",
+  "screenshots": "emitted inline by CUA; no persisted PNG file",
+  "checks": [
+    "real synthetic login",
+    "canonical normal hero10USD/delta8USD and distinct reverse5USD",
+    "history Enter expands details without variant dialog",
+    "hero Enter opens variant dialog",
+    "Shift+Tab initial panel and Tab inside dialog; Escape returns hero",
+    "item reverseHolofoil/MP/qty1 initially5USD; variant change retires prior reference without save",
+    "mobile item footer visible",
+    "portfolio current49USD/11pricedof15copies and old snapshot9USD/2pricedof3copies",
+    "main summary49USD/9pricedof11; fresh6/stale2/unknown1",
+    "zero2/2, absent0/2 and empty0/0 visible on collections route",
+    "public fullscope49USD/9of11 and UTC timestamps",
+    "expired refreshed route generic without previous names",
+    "no captured browser warn/error logs during sampled routes"
+  ],
+  "cleanup": {
+    "ownSessionLoggedOut": true,
+    "themeDarkRestored": true,
+    "viewportReset": true,
+    "tabClosed": true
+  },
+  "limits": [
+    "No physical phone/PWA install/screen reader/virtual keyboard/contrast measurement/forced colors/offline/motion test/participants",
+    "Desktop dark first immediate screenshot showed transient pre-auth USD; subsequent hydrated screenshot confirmed ARS"
+  ]
+}

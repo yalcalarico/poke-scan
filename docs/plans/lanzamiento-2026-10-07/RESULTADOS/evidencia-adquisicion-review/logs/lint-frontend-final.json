@@ -1,0 +1,14 @@
+{
+  "name": "lint-frontend-final",
+  "command": [
+    "pnpm",
+    "--dir",
+    "frontend",
+    "run",
+    "lint"
+  ],
+  "startedAtUtc": "2026-10-10T14:32:16.705563+00:00",
+  "finishedAtUtc": "2026-10-10T14:32:24.023014+00:00",
+  "exitCode": 0,
+  "log": "logs/lint-frontend-final.log"
+}

@@ -1,0 +1,17 @@
+{
+  "checked": 11,
+  "unchanged": 11,
+  "files": [
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-07-evidencia/legacy-retry-repro.mjs",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-07-evidencia/gotchas.before.md",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-07-evidencia/baseline.sha256",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-07-evidencia/testing.before.md",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-07-evidencia/final-source.sha256",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-07-evidencia/ownership-cleanup.json",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-07-evidencia/redis.service.before.ts",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-07-evidencia/recovery-harness.mjs",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-07-evidencia/preexisting-diff.patch",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-07-evidencia/redis.service.spec.before.ts",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-07-implementacion.md"
+  ]
+}

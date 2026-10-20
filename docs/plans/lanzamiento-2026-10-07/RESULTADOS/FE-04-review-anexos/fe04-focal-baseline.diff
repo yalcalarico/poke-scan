@@ -1,0 +1,81 @@
+diff --git a/frontend/lib/api/api-client.ts b/frontend/lib/api/api-client.ts
+index 228802d..edd4fd8 100644
+--- a/frontend/lib/api/api-client.ts
++++ b/frontend/lib/api/api-client.ts
+@@ -103,10 +103,18 @@ export function refreshSession(): Promise<AuthResponseDto | null> {
+ }
+ 
+ export function getApiBaseUrl(): string {
+-  // Los Server Components necesitan una URL absoluta; /api es solo para el browser.
+-  if (typeof window === 'undefined' && process.env.NODE_ENV === 'development') {
++  if (typeof window !== 'undefined') return BASE_URL;
++
++  if (process.env.NODE_ENV === 'development') {
++    // Los Server Components necesitan una URL absoluta; /api es solo para el browser.
+     return process.env.DEV_API_PROXY_TARGET ?? BASE_URL;
+   }
++
++  if (process.env.NODE_ENV === 'production') {
++    const internalBaseUrl = process.env.API_INTERNAL_URL;
++    return internalBaseUrl ? internalBaseUrl.replace(/\/+$/, '') : BASE_URL;
++  }
++
+   return BASE_URL;
+ }
+ 
+diff --git a/frontend/next.config.ts b/frontend/next.config.ts
+index 084731f..2b8cdb5 100644
+--- a/frontend/next.config.ts
++++ b/frontend/next.config.ts
+@@ -1,6 +1,10 @@
+ import type { NextConfig } from "next";
+ 
+ const nextConfig: NextConfig = {
++  // El IPC nativo entre threads evita abrir el socket del pool de plugins.
++  experimental: {
++    turbopackPluginRuntimeStrategy: "workerThreads",
++  },
+   allowedDevOrigins: process.env.DEV_LAN_IP ? [process.env.DEV_LAN_IP] : [],
+   async rewrites() {
+     // El celu usa HTTPS y el mismo origen; Next habla con la API local por HTTP.
+diff --git a/frontend/public/sw.js b/frontend/public/sw.js
+index dc5436f..5fbdf4c 100644
+--- a/frontend/public/sw.js
++++ b/frontend/public/sw.js
+@@ -78,6 +78,7 @@ self.addEventListener('activate', (event) => {
+           .filter((name) => name.startsWith('pokescan-') && !CURRENT_CACHES.includes(name))
+           .map((name) => caches.delete(name)),
+       );
++      await removeCachedSharePages();
+       if (self.registration.navigationPreload) {
+         await self.registration.navigationPreload.enable();
+       }
+@@ -127,6 +128,19 @@ async function trimCache(cacheName, limit) {
+   await Promise.all(keys.slice(0, keys.length - limit).map((key) => cache.delete(key)));
+ }
+ 
++async function removeCachedSharePages() {
++  const names = await caches.keys();
++  await Promise.all(names.map(async (name) => {
++    if (!name.startsWith('pokescan-')) return;
++    const cache = await caches.open(name);
++    const requests = await cache.keys();
++    await Promise.all(requests.map(async (request) => {
++      const url = new URL(request.url);
++      if (url.origin === self.location.origin && /^\/share(?:\/|$)/.test(url.pathname)) await cache.delete(request);
++    }));
++  }));
++}
++
+ async function networkFirstNavigation(request) {
+   try {
+     const response = await fetch(request);
+@@ -205,6 +219,8 @@ self.addEventListener('fetch', (event) => {
+   // además las entradas `_rsc` viejas de las instalaciones existentes.
+   if (sameOrigin && isNextRscRequest(request, url)) return;
+ 
++  if (sameOrigin && /^\/share(?:\/|$)/.test(url.pathname)) return;
++
+   if (request.mode === 'navigate') {
+     event.respondWith(networkFirstNavigation(request));
+     return;

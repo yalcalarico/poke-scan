@@ -1,0 +1,22 @@
+{
+  "checkedAtUtc": "2026-10-10T01:46:49.551947+00:00",
+  "disposition": "BE-05 backend input accepted for FE-04; IDs and lot gate pending",
+  "hashesVerified": 101,
+  "hashMismatches": 0,
+  "reportLinksVerified": 23,
+  "missingLinks": 0,
+  "ownDatabaseAbsenceRootObserved": true,
+  "ports3000And3001FreeRootObserved": true,
+  "reviewReportSha256": "34f63a19fb8ed3552ff8a53a7aa73d7039da23db052c5ae88a5206aa81d897ea",
+  "reviewEvidenceSha256": "7e7a0b5e0e2b398f629695677b82d85a8af872317db0cc6f69d8f6acb8b4802b",
+  "globalExecutedByThisAcceptance": false,
+  "idClosed": false,
+  "limitations": [
+    "46 distinct focal cases accredited across phases, not one global run",
+    "full backend tsc retains seven diagnostics outside BE-05",
+    "no production email or dev DB migrations",
+    "shared data preservation is bounded counts, not full row snapshot"
+  ],
+  "sharedBoundedCountsRootObservedUnchanged": true,
+  "sharedCountsCheckedAtUtc": "2026-10-10T01:50:53.340954+00:00"
+}

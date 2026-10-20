@@ -1,0 +1,17 @@
+{
+  "ownCloneAndRedisRemoved": true,
+  "SQLConnections": 0,
+  "sourceTESTUnchanged": true,
+  "devCountsUnchanged": true,
+  "dev": {
+    "cards": 20670,
+    "users": 22,
+    "collections": 21,
+    "items": 69,
+    "shares": 13,
+    "gin": 5,
+    "jobs": 143,
+    "priced": 18634
+  },
+  "redisSharedHealthy": true
+}

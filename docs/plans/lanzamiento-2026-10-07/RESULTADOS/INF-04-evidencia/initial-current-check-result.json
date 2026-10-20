@@ -1,0 +1,27 @@
+{
+  "purpose": "INF-04 local monitor new product validation",
+  "records": [
+    {
+      "phase": "stop",
+      "command": [
+        "pnpm",
+        "run",
+        "stop"
+      ],
+      "exitCode": 0,
+      "startedAtUtc": "2026-10-11T16:07:01.782078+00:00",
+      "finishedAtUtc": "2026-10-11T16:07:02.063818+00:00"
+    },
+    {
+      "phase": "check",
+      "command": [
+        "pnpm",
+        "run",
+        "check"
+      ],
+      "exitCode": 0,
+      "startedAtUtc": "2026-10-11T16:07:02.064324+00:00",
+      "finishedAtUtc": "2026-10-11T16:08:26.129211+00:00"
+    }
+  ]
+}

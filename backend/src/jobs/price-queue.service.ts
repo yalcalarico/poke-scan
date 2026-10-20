@@ -9,6 +9,8 @@ export interface ClaimedPriceRefresh {
   id: string;
   cardId: string;
   attempts: number;
+  origin: 'legacy' | 'daily' | 'interactive';
+  syncDate: Date | null;
 }
 
 /**
@@ -97,24 +99,71 @@ export class PriceQueueService {
    * nuevas todo el día, y si cada una la despertara el reintento sería un lazo
    * contra un proveedor que acaba de decir que no.
    */
-  async enqueueAsync(cardId: string): Promise<boolean> {
+  async enqueueAsync(cardId: string, origin: 'interactive' | 'daily' = 'interactive', syncDate?: Date): Promise<boolean> {
     const rows = await this.prisma.$queryRaw<{ cardId: string }[]>(Prisma.sql`
-      INSERT INTO price_refresh_jobs (id, "cardId", status, "availableAt", "updatedAt")
+      INSERT INTO price_refresh_jobs (id, "cardId", status, "availableAt", "updatedAt", origin, "syncDate")
       VALUES (
         gen_random_uuid()::text,
         ${cardId},
         'pending',
-        (now() AT TIME ZONE 'UTC'),
-        (now() AT TIME ZONE 'UTC')
+        NOW(),
+        NOW(),
+        ${origin}::"PriceSyncQueueOrigin",
+        ${syncDate ?? null}::date
       )
       ON CONFLICT ("cardId") DO UPDATE
-      SET status = 'pending',
-          "availableAt" = GREATEST(price_refresh_jobs."availableAt", (now() AT TIME ZONE 'UTC')),
-          "updatedAt" = (now() AT TIME ZONE 'UTC')
+      SET status = CASE WHEN price_refresh_jobs.status IN ('completed', 'failed') THEN 'pending' ELSE price_refresh_jobs.status END,
+          origin = CASE WHEN price_refresh_jobs.origin = 'interactive'::"PriceSyncQueueOrigin" OR EXCLUDED.origin = 'interactive'::"PriceSyncQueueOrigin" THEN 'interactive'::"PriceSyncQueueOrigin" ELSE EXCLUDED.origin END,
+          "syncDate" = CASE WHEN price_refresh_jobs.status = 'processing' THEN price_refresh_jobs."syncDate" ELSE COALESCE(EXCLUDED."syncDate", price_refresh_jobs."syncDate") END,
+          "availableAt" = GREATEST(price_refresh_jobs."availableAt", NOW()),
+          attempts = CASE
+            WHEN ${origin} = 'interactive' AND price_refresh_jobs.status IN ('completed', 'failed') THEN 0
+            WHEN ${origin} = 'daily' AND ${syncDate ?? null}::date IS DISTINCT FROM price_refresh_jobs."syncDate" THEN 0
+            ELSE price_refresh_jobs.attempts END,
+          "lastError" = NULL,
+          "completedAt" = CASE WHEN price_refresh_jobs.status IN ('completed', 'failed') THEN NULL ELSE price_refresh_jobs."completedAt" END,
+          "updatedAt" = NOW()
       WHERE price_refresh_jobs.status IN ('completed', 'failed')
+         OR (${origin} = 'interactive' AND price_refresh_jobs.origin <> 'interactive'::"PriceSyncQueueOrigin" AND price_refresh_jobs.status IN ('pending', 'processing'))
       RETURNING "cardId"
     `);
     return rows.length > 0;
+  }
+
+  /** Inserta recorridos grandes en una sola operación, conservando el ritmo en el worker. */
+  async enqueueMany(cardIds: readonly string[], origin: 'daily' | 'interactive' = 'interactive', syncDate?: Date): Promise<number> {
+    if (cardIds.length === 0) return 0;
+    return this.prisma.$executeRaw(Prisma.sql`
+      INSERT INTO price_refresh_jobs (id, "cardId", status, "availableAt", "updatedAt", origin, "syncDate")
+      SELECT gen_random_uuid()::text, candidate, 'pending', NOW(), NOW(), ${origin}::"PriceSyncQueueOrigin", ${syncDate ?? null}::date
+      FROM unnest(${[...cardIds]}::text[]) AS candidate
+      ON CONFLICT ("cardId") DO UPDATE
+      SET status = CASE WHEN price_refresh_jobs.status IN ('completed', 'failed') THEN 'pending' ELSE price_refresh_jobs.status END,
+          attempts = CASE WHEN EXCLUDED.origin = 'daily'::"PriceSyncQueueOrigin" AND EXCLUDED."syncDate" IS DISTINCT FROM price_refresh_jobs."syncDate"
+            AND price_refresh_jobs.origin = 'daily'::"PriceSyncQueueOrigin" THEN 0
+            WHEN EXCLUDED.origin = 'daily'::"PriceSyncQueueOrigin" AND price_refresh_jobs.status IN ('completed', 'failed') THEN 0
+            WHEN EXCLUDED.origin = 'interactive'::"PriceSyncQueueOrigin" AND price_refresh_jobs.status IN ('completed', 'failed') THEN 0
+            ELSE price_refresh_jobs.attempts END,
+          "lockedBy" = CASE WHEN price_refresh_jobs.status = 'processing' THEN price_refresh_jobs."lockedBy" ELSE NULL END,
+          "lockedAt" = CASE WHEN price_refresh_jobs.status = 'processing' THEN price_refresh_jobs."lockedAt" ELSE NULL END,
+          origin = CASE WHEN price_refresh_jobs.origin = 'interactive'::"PriceSyncQueueOrigin" OR EXCLUDED.origin = 'interactive'::"PriceSyncQueueOrigin" THEN 'interactive'::"PriceSyncQueueOrigin" ELSE EXCLUDED.origin END,
+          "syncDate" = CASE WHEN price_refresh_jobs.status = 'processing' THEN price_refresh_jobs."syncDate" ELSE COALESCE(EXCLUDED."syncDate", price_refresh_jobs."syncDate") END,
+          "availableAt" = GREATEST(price_refresh_jobs."availableAt", NOW()),
+          "lastError" = CASE WHEN price_refresh_jobs.status IN ('completed', 'failed') OR (EXCLUDED.origin = 'daily'::"PriceSyncQueueOrigin" AND price_refresh_jobs.origin = 'daily'::"PriceSyncQueueOrigin" AND EXCLUDED."syncDate" IS DISTINCT FROM price_refresh_jobs."syncDate") THEN NULL ELSE price_refresh_jobs."lastError" END,
+          "completedAt" = CASE WHEN price_refresh_jobs.status IN ('completed', 'failed') THEN NULL ELSE price_refresh_jobs."completedAt" END,
+          "updatedAt" = NOW()
+      WHERE (price_refresh_jobs.status IN ('completed', 'failed') AND (
+              (EXCLUDED.origin = 'daily'::"PriceSyncQueueOrigin" AND (
+                (price_refresh_jobs.origin = 'daily'::"PriceSyncQueueOrigin" AND EXCLUDED."syncDate" IS DISTINCT FROM price_refresh_jobs."syncDate")
+                OR (price_refresh_jobs.origin = 'legacy'::"PriceSyncQueueOrigin" AND price_refresh_jobs."availableAt" <= NOW())
+                OR (price_refresh_jobs.origin = 'interactive'::"PriceSyncQueueOrigin" AND EXCLUDED."syncDate" IS DISTINCT FROM price_refresh_jobs."syncDate")
+              ))
+              OR (EXCLUDED.origin = 'interactive'::"PriceSyncQueueOrigin" AND price_refresh_jobs."availableAt" <= NOW())))
+         OR (EXCLUDED.origin = 'daily'::"PriceSyncQueueOrigin" AND price_refresh_jobs.origin = 'legacy'::"PriceSyncQueueOrigin" AND price_refresh_jobs.status IN ('pending', 'processing'))
+         OR (EXCLUDED.origin = 'daily'::"PriceSyncQueueOrigin" AND price_refresh_jobs.origin = 'daily'::"PriceSyncQueueOrigin" AND price_refresh_jobs.status = 'pending' AND EXCLUDED."syncDate" IS DISTINCT FROM price_refresh_jobs."syncDate")
+         OR (EXCLUDED.origin = 'daily'::"PriceSyncQueueOrigin" AND price_refresh_jobs.origin = 'interactive'::"PriceSyncQueueOrigin" AND price_refresh_jobs.status IN ('pending', 'processing'))
+         OR (EXCLUDED.origin = 'interactive'::"PriceSyncQueueOrigin" AND price_refresh_jobs.origin <> 'interactive'::"PriceSyncQueueOrigin" AND price_refresh_jobs.status IN ('pending', 'processing'))
+    `);
   }
 
   /**
@@ -129,27 +178,87 @@ export class PriceQueueService {
    */
   async claimNext(lockedBy: string): Promise<ClaimedPriceRefresh | null> {
     const rows = await this.prisma.$queryRaw<
-      { id: string; cardId: string; attempts: number }[]
+      { id: string; cardId: string; attempts: number; origin: ClaimedPriceRefresh['origin']; syncDate: Date | null }[]
     >(Prisma.sql`
       UPDATE price_refresh_jobs j
       SET status = 'processing',
           "lockedBy" = ${lockedBy},
-          "lockedAt" = (now() AT TIME ZONE 'UTC'),
-          "updatedAt" = (now() AT TIME ZONE 'UTC'),
-          attempts = j.attempts + 1
+          "lockedAt" = NOW(),
+          "updatedAt" = NOW(),
+          attempts = j.attempts
       WHERE j.id = (
         SELECT q.id
         FROM price_refresh_jobs q
         WHERE q.status = 'pending'
-          AND q."availableAt" <= (now() AT TIME ZONE 'UTC')
-        ORDER BY q."availableAt" ASC, q."createdAt" ASC
+          AND q."availableAt" <= NOW()
+          AND NOT EXISTS (SELECT 1 FROM provider_rate_limits r WHERE r."providerId" = 'tcgdex' AND r."blockedUntil" > NOW())
+          AND (q.origin = 'interactive'::"PriceSyncQueueOrigin" OR (
+            q.origin = 'daily'::"PriceSyncQueueOrigin" AND q."syncDate" = (NOW() AT TIME ZONE 'UTC')::date
+            AND EXISTS (SELECT 1 FROM price_sync_sets s JOIN cards c ON c."setId" = s."setId" WHERE c.id = q."cardId" AND s.enabled)
+          ))
+        ORDER BY CASE q.origin WHEN 'interactive'::"PriceSyncQueueOrigin" THEN 0 ELSE 1 END,
+          CASE WHEN q.origin = 'daily'::"PriceSyncQueueOrigin" THEN (
+            SELECT s.priority FROM price_sync_sets s JOIN cards c ON c."setId" = s."setId" WHERE c.id = q."cardId" AND s.enabled
+          ) ELSE 0 END ASC,
+          q."availableAt" ASC, q."createdAt" ASC
         LIMIT 1
         FOR UPDATE SKIP LOCKED
       )
-      RETURNING j.id, j."cardId", j.attempts
+      RETURNING j.id, j."cardId", j.attempts, j.origin, j."syncDate"
     `);
     const row = rows[0];
-    return row ? { id: row.id, cardId: row.cardId, attempts: row.attempts } : null;
+    if (row?.syncDate) {
+      await this.prisma.$executeRaw`
+        UPDATE price_sync_card_days SET status = 'processing'::"PriceSyncCardDayStatus", "updatedAt" = NOW()
+        WHERE provider = 'tcgdex' AND "cardId" = ${row.cardId} AND "syncDate" = ${row.syncDate}::date
+          AND status = 'pending'::"PriceSyncCardDayStatus"
+      `;
+    }
+    return row ? { id: row.id, cardId: row.cardId, attempts: row.attempts, origin: row.origin, syncDate: row.syncDate } : null;
+  }
+
+  async startAttempt(jobId: string): Promise<number> {
+    const rows = await this.prisma.$queryRaw<{ attempts: number; cardId: string; origin: ClaimedPriceRefresh['origin']; syncDate: Date | null }[]>`
+      UPDATE price_refresh_jobs SET attempts = attempts + 1, "updatedAt" = NOW()
+      WHERE id = ${jobId} AND status = 'processing' RETURNING attempts, "cardId", origin, "syncDate"
+    `;
+    const row = rows[0];
+    if (row?.syncDate) {
+      await this.prisma.$executeRaw`
+        UPDATE price_sync_card_days SET attempts = attempts + 1, "updatedAt" = NOW()
+        WHERE provider = 'tcgdex' AND "cardId" = ${row.cardId} AND "syncDate" = ${row.syncDate}::date
+      `;
+    }
+    return row?.attempts ?? 0;
+  }
+
+  async requeuePendingDailyTarget(cardId: string, syncDate: Date): Promise<boolean> {
+    const targets = await this.prisma.$queryRaw<{ cardId: string }[]>(Prisma.sql`
+      SELECT d."cardId" FROM price_sync_card_days d
+      JOIN price_sync_sets s ON s."setId" = d."setId" AND s.enabled
+      WHERE d.provider = 'tcgdex' AND d."cardId" = ${cardId} AND d."syncDate" = ${syncDate}::date
+        AND d.status = 'pending'::"PriceSyncCardDayStatus"
+      LIMIT 1
+    `);
+    if (targets.length === 0) return false;
+    return this.enqueueAsync(cardId, 'daily', syncDate);
+  }
+
+  async markCrossedDayMissed(job: ClaimedPriceRefresh): Promise<void> {
+    if (!job.syncDate) return;
+    const today = new Date();
+    if (job.syncDate.toISOString().slice(0, 10) === today.toISOString().slice(0, 10)) return;
+    await this.prisma.$executeRaw(Prisma.sql`
+      UPDATE price_sync_card_days SET status = 'missed'::"PriceSyncCardDayStatus", "checkedAt" = NULL,
+        "lastError" = 'El objetivo diario venció antes de finalizar la consulta', "updatedAt" = NOW()
+      WHERE provider = 'tcgdex' AND "cardId" = ${job.cardId} AND "syncDate" = ${job.syncDate}::date
+        AND status = 'processing'::"PriceSyncCardDayStatus"
+    `);
+    await this.prisma.$executeRaw(Prisma.sql`
+      UPDATE price_sync_set_days SET status = 'missed'::"PriceSyncSetDayStatus", "updatedAt" = NOW()
+      WHERE provider = 'tcgdex' AND "syncDate" = ${job.syncDate}::date AND "setId" = (SELECT "setId" FROM cards WHERE id = ${job.cardId})
+        AND NOT EXISTS (SELECT 1 FROM price_sync_card_days d WHERE d.provider = 'tcgdex' AND d."setId" = price_sync_set_days."setId" AND d."syncDate" = price_sync_set_days."syncDate" AND d.status IN ('pending'::"PriceSyncCardDayStatus", 'processing'::"PriceSyncCardDayStatus"))
+    `);
   }
 
   /**
@@ -165,8 +274,8 @@ export class PriceQueueService {
       SET status = 'pending',
           "lockedBy" = NULL,
           "lockedAt" = NULL,
-          "availableAt" = (now() AT TIME ZONE 'UTC') + ${this.interval(delayMs)},
-          "updatedAt" = (now() AT TIME ZONE 'UTC')
+          "availableAt" = NOW() + ${this.interval(delayMs)},
+          "updatedAt" = NOW()
       WHERE id = ${jobId}
     `;
   }
@@ -204,6 +313,25 @@ export class PriceQueueService {
         updatedAt: new Date(),
       },
     });
+    const job = await this.prisma.priceRefreshJob.findUnique({ where: { id: jobId }, select: { cardId: true, origin: true, syncDate: true } });
+    if (job?.syncDate) {
+      await this.prisma.$executeRaw(Prisma.sql`
+        UPDATE price_sync_card_days SET status = ${giveUp ? 'failed' : 'pending'}::"PriceSyncCardDayStatus",
+          "lastError" = ${error.slice(0, 500)}, "updatedAt" = NOW()
+        WHERE provider = 'tcgdex' AND "cardId" = ${job.cardId} AND "syncDate" = ${job.syncDate}::date
+          AND status IN ('processing'::"PriceSyncCardDayStatus", 'failed'::"PriceSyncCardDayStatus")
+      `);
+      await this.prisma.$executeRaw(Prisma.sql`
+        UPDATE price_sync_set_days s SET status = CASE
+          WHEN EXISTS (SELECT 1 FROM price_sync_card_days c WHERE c.provider = s.provider AND c."setId" = s."setId" AND c."syncDate" = s."syncDate" AND c.status IN ('pending'::"PriceSyncCardDayStatus", 'processing'::"PriceSyncCardDayStatus")) THEN 'running'::"PriceSyncSetDayStatus"
+          WHEN EXISTS (SELECT 1 FROM price_sync_card_days c WHERE c.provider = s.provider AND c."setId" = s."setId" AND c."syncDate" = s."syncDate" AND c.status = 'quoted'::"PriceSyncCardDayStatus") THEN 'partial'::"PriceSyncSetDayStatus"
+          WHEN EXISTS (SELECT 1 FROM price_sync_card_days c WHERE c.provider = s.provider AND c."setId" = s."setId" AND c."syncDate" = s."syncDate" AND c.status = 'failed'::"PriceSyncCardDayStatus") THEN 'failed'::"PriceSyncSetDayStatus"
+          ELSE 'partial'::"PriceSyncSetDayStatus" END,
+          "finishedAt" = CASE WHEN EXISTS (SELECT 1 FROM price_sync_card_days c WHERE c.provider = s.provider AND c."setId" = s."setId" AND c."syncDate" = s."syncDate" AND c.status IN ('pending'::"PriceSyncCardDayStatus", 'processing'::"PriceSyncCardDayStatus")) THEN NULL ELSE NOW() END,
+          "updatedAt" = NOW()
+        WHERE s.provider = 'tcgdex' AND s."setId" = (SELECT "setId" FROM cards WHERE id = ${job.cardId}) AND s."syncDate" = ${job.syncDate}::date
+      `);
+    }
     return status;
   }
 

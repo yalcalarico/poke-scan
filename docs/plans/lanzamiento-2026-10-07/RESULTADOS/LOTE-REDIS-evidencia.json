@@ -1,0 +1,244 @@
+{
+  "producer": "/root/be07_review_sol \u00b7 Sol HIGH",
+  "at": "2026-10-09T13:01:50.245081+00:00",
+  "status": "gate est\u00e1ndar fallido; ronda cerrada con cleanup, BE-07 abierto",
+  "reviewFocusedAcceptedByRoot": true,
+  "tmp": "/private/tmp/be07-gate-sol-20261009",
+  "checkAttempts": [
+    {
+      "command": "pnpm run check",
+      "exit": 1,
+      "log": "check-standard.log",
+      "backendVitest": {
+        "passed": 405,
+        "failed": 0
+      },
+      "backendNode": 13,
+      "backendE2E": 6,
+      "frontend": {
+        "passed": 484,
+        "failed": 2
+      },
+      "buildReached": false
+    },
+    {
+      "command": "pnpm run check",
+      "exit": 1,
+      "log": "check-standard-corrected.log",
+      "backendVitest": {
+        "passed": 404,
+        "failed": 1
+      },
+      "frontendReached": false,
+      "buildReached": false
+    }
+  ],
+  "globalThirdAttempt": false,
+  "expectedGlobalTests": 910,
+  "defaultsWorkerCronPreserved": true,
+  "standardCommandExact": "pnpm run check",
+  "stopBeforeBoth": true,
+  "webpackAlternative": false,
+  "buildReached": false,
+  "runtimeAPIWebExecuted": false,
+  "runtimeProcessesNeverStarted": [
+    "proxy",
+    "api",
+    "next"
+  ],
+  "runtimeOwnFixturesCreated": false,
+  "runtimeCredentialsGenerated": false,
+  "preparedRuntimeHarnessExecuted": false,
+  "focusedDiagnostics": {
+    "frontendReceivedTwoCases": {
+      "passed": 2,
+      "filterExcluded": 22
+    },
+    "frontendReceivedFile": {
+      "passed": 24,
+      "skipped": 0
+    },
+    "frontendCausalOriginalAssertionWithControlledPendingPromise": {
+      "expectedFailures": 1,
+      "filterExcluded": 23,
+      "reason": "allocations2+1 antes de settle vs allocation1 original"
+    },
+    "frontendCorrectedFile": {
+      "passed": 24,
+      "skipped": 0
+    },
+    "readinessFocused": {
+      "passed": 4,
+      "skipped": 0
+    },
+    "readinessLifecycle": {
+      "scope": "same Nest/controller/mock dependencies; Supertest auto-listen/close sequential",
+      "pid": 11860,
+      "requests": 300,
+      "failures": [],
+      "boundedMax": 300,
+      "serverListeningAfterClose": false
+    }
+  },
+  "frontendCorrection": {
+    "scope": "frontend/components/scanner/__tests__/organize-sheet.test.tsx",
+    "rootAuthorized": true,
+    "receivedSha256": "d27c46ec06a9dafeee0d45c5e2a565aa963dbcbe96f7cc8a8fc7f157d4398893",
+    "finalSha256": "e4a6807e587d9ba3d4f4095886c74becdaa4bfb77ed183cf894c45e75e93fcf4",
+    "productChanged": false,
+    "timeoutsExtended": false,
+    "expectationsRelaxed": false,
+    "callsAndConfirmationSeparated": true
+  },
+  "readinessIncident": {
+    "test": "scanner ocupado conserva HTTP 200 y deja busy como dato informativo",
+    "file": "backend/src/readiness.http.spec.ts",
+    "error": "socket hang up",
+    "responseReceived": false,
+    "causeLocated": false,
+    "redisMocked": true,
+    "defaultSuperagentPooling": false,
+    "productionOrTestEdited": false,
+    "diagnosticsDoNotResolveGlobal": true
+  },
+  "sourcePreservation": {
+    "baselineFiles": 501,
+    "unchanged": 500,
+    "changedWithinRootAuthorizedExtension": {
+      "frontend/components/scanner/__tests__/organize-sheet.test.tsx": {
+        "before": "d27c46ec06a9dafeee0d45c5e2a565aa963dbcbe96f7cc8a8fc7f157d4398893",
+        "after": "e4a6807e587d9ba3d4f4095886c74becdaa4bfb77ed183cf894c45e75e93fcf4"
+      }
+    },
+    "productionEditsDuringGate": false,
+    "redisPhaseFilesUnchanged": true
+  },
+  "fiveReviewedRedisSourcesMatched": true,
+  "reviewArtifactsMatched": 35,
+  "cleanup": {
+    "clone": {
+      "name": "be07_gate_sol_20261009_test",
+      "comment": "be07-gate-sol-20261009-owned",
+      "commentVerifiedBeforeDrop": true,
+      "connectionsBeforeDrop": 0,
+      "dropped": true
+    },
+    "redis": {
+      "role": "redis",
+      "name": "be07-gate-sol-20261009-redis",
+      "id": "af3939d5374123091a129592675e5fd379c1d9963fc53db3f7a9fb1ba2dd3048",
+      "label": "be07-gate-sol-20261009",
+      "bind": "127.0.0.1:56383",
+      "tmpfs": true
+    },
+    "redisRemoved": true,
+    "liveResources": [],
+    "portsFree": [
+      3000,
+      3001,
+      56383,
+      56384
+    ],
+    "sourceCountsBefore": {
+      "dev": {
+        "cards": 20670,
+        "sets": 176,
+        "migrations": 11,
+        "users": 22,
+        "collections": 22,
+        "items": 69,
+        "shares": 13,
+        "prices": 29325,
+        "jobs": 18721,
+        "snapshots": 1,
+        "gin": 5
+      },
+      "test": {
+        "cards": 20670,
+        "sets": 176,
+        "migrations": 11,
+        "users": 2,
+        "collections": 3,
+        "items": 2,
+        "shares": 1,
+        "prices": 188,
+        "jobs": 0,
+        "snapshots": 0,
+        "gin": 5
+      }
+    },
+    "sourceCountsAfter": {
+      "dev": {
+        "cards": 20670,
+        "sets": 176,
+        "migrations": 11,
+        "users": 22,
+        "collections": 22,
+        "items": 69,
+        "shares": 13,
+        "prices": 29325,
+        "jobs": 18721,
+        "snapshots": 1,
+        "gin": 5
+      },
+      "test": {
+        "cards": 20670,
+        "sets": 176,
+        "migrations": 11,
+        "users": 2,
+        "collections": 3,
+        "items": 2,
+        "shares": 1,
+        "prices": 188,
+        "jobs": 0,
+        "snapshots": 0,
+        "gin": 5
+      }
+    },
+    "sourceCountsMatched": true,
+    "sourceInfraIDsMatchedHealthy": true,
+    "sourcePostgresFullId": "18aa2f6937521ae010930ae98cbee45f2fa435b554c65cf90daaffba0c641ba8",
+    "sourceRedisFullId": "f2d2ca0ad580fe8ca3e94a59b4b6d5a53d761036ba1d14e45b8543a978bbb15f",
+    "comparisonIsFullSnapshot": false,
+    "runtimeCredentialStateAbsent": true
+  },
+  "autoReviewRejections": 0,
+  "ownReservationsReleased": true,
+  "nextRequired": "Diagn\u00f3stico causal del socket hang up en contexto global, correcci\u00f3n s\u00f3lo con evidencia; luego nuevo est\u00e1ndar justificado y flujo API/Next aislado de recuperaci\u00f3n/fallback/vigencia, sin contar pases focales como cierre.",
+  "annexHashes": {
+    "check-standard-corrected.log": "27100d79e3f4de0963399face2a17aa4f79cf5c8e07cce2a3459cd6852d3d373",
+    "check-standard-failed-source-sha256.json": "47a27da43ce2a5b2d335ee363bbba4f35d4873367f0d243c564058b5a44eddaa",
+    "check-standard.log": "b62cd0656be784f126a5f737c405697da5dc0f68ddc2a294ce5e373bbce18dce",
+    "final-backend-dist-sha256.json": "01754efb409eac79887eeb07078cc708608b80b0274600d508092e30c454c9ff",
+    "final-next-sha256.json": "9711221a11d53260e8174d3d8b11fb5cf9ba2c411d8b20318663d8757eb27c25",
+    "final-source-sha256.json": "736f80f32749863358c72987278bfe6837d691b57d736163ab94f26859d95d05",
+    "frontend-causal-premature.log": "0b3d8b4d3702cf334f9f41487e21f82c8c5d48fb812f6923d44ffe373dc2616d",
+    "frontend-corrected-file.log": "253a1e417879f2657599d3970631ba6b1c18138b6803e990468179f7a23f67f4",
+    "frontend-diagnostico.md": "09ac20a34ef3427f0f0e3361a72d8b041adc0db25a63286e05c5a07446d1f85c",
+    "frontend-file-repro.log": "ee5d30baf8c7cdcb64b04b83aa54b43dd9809e80f175dc467ad8cde774d3a7cc",
+    "frontend-focal-repro.log": "73b988c7a457fd846e8190ec8c7f959c9b74287cad5125b9c5ac98611d2bb921",
+    "infra-cleanup.log": "4ffa8f24198e4e84e9ad5ffda27e1a0d0758ba65cbe9c5200d6ea1ecc7c972e4",
+    "infra-created.json": "670b2e3dbb99a2c84217c1659663efcc862c8c50da66b743f31368a28c5750f3",
+    "infra-setup.log": "790de72f559ade346133f070eceb2e67e81488be66ba3082c05747926878efdd",
+    "infra.py": "656d146726ac5164a0d68d01631a88898355fc8501667293142e57fbc74660d8",
+    "organize-sheet.correction.diff": "3fd191d69a20b25f5bd7f68dd02934caf61e034f4ba22aab373a565247670489",
+    "organize-sheet.received.sha256": "3abb95ac77f9c8bf33a90fb46ed053f71e81d34891939810ad6ed901edea1d43",
+    "organize-sheet.received.tsx": "d27c46ec06a9dafeee0d45c5e2a565aa963dbcbe96f7cc8a8fc7f157d4398893",
+    "ownership.json": "bc80fa139973ff4377d167687212e6f435488f712cc06982c05b345a74761ca4",
+    "ports-after.json": "2b20ed1807f4e4deb4d639a29887099edfb152bd502435af7666d5a4753d39c8",
+    "ports-before.json": "21712d3101506eb8ba35a0f1244d6401c7da355e2adeb77a0761b4b1d77ec218",
+    "readiness-focal.log": "24703158ec19e1cc1cd56afeab00c9d83cc225566f3e81b1405c3f647e5d357e",
+    "readiness-http-lifecycle-repro.mjs": "ab8aeec4bfbb0caa4c8a4045a9f16737db07b975cb6bc4b7d784c189bcfe1bcc",
+    "readiness-lifecycle-repro.json": "4f392bdfd570edbd86c882f3d6ecf278c2e31f2e288d160de79b8a4699dacb27",
+    "readiness-lifecycle-repro.log": "bb37b691693f6673e50afa2c1cbba3502c25d185e8264e54f8823bb7a4da1718",
+    "received-backend-dist-sha256.json": "01754efb409eac79887eeb07078cc708608b80b0274600d508092e30c454c9ff",
+    "received-git-status.txt": "f50eef9e455328ca63ba0e2ddf38cf514204b14dac959e48e5df7b1be493a6c2",
+    "received-next-sha256.json": "9711221a11d53260e8174d3d8b11fb5cf9ba2c411d8b20318663d8757eb27c25",
+    "received-source-sha256.json": "47a27da43ce2a5b2d335ee363bbba4f35d4873367f0d243c564058b5a44eddaa",
+    "source-inventory-after.json": "cbc3dedfcce4289532045d3b0d03e0335960ffff2d723bceec458b60142829d6",
+    "source-inventory-before.json": "aa134e3f44801fec691203575a4f3043a2908fc80200e24b177066b2ef7de311",
+    "source-preservation.json": "b77ebc068b6e657e0d6a81cdd79a6a681bb57a2d4dbb3bfee3d76fe3821d7b67",
+    "stop-before-check-corrected.log": "12970d8b80d3abdcde47fae9061ffb349a3b7e3e0b1f7f8391e3c2cbc1c55e29",
+    "stop-before-check.log": "12970d8b80d3abdcde47fae9061ffb349a3b7e3e0b1f7f8391e3c2cbc1c55e29"
+  }
+}

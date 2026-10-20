@@ -11,8 +11,8 @@ import { OfflineToast } from '@/components/layout/offline-toast';
  * de otra persona, es un convite a salir de la pantalla. En la pública además
  * puede no haber cuenta, y el "Iniciar sesión" sería un pitched fuera de lugar.
  *
- * El `OfflineToast` sí va: la lectura de una colección compartida funciona sin
- * conexión, y el visitante tiene que enterarse de por qué.
+ * El `OfflineToast` avisa si falta conexión: el enlace público necesita la red
+ * para comprobar su vigencia y no conserva copias de la colección para offline.
  */
 export function PlainShell({ children }: { children: ReactNode }) {
   return (

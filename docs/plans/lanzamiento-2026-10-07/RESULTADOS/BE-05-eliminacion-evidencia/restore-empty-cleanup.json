@@ -1,0 +1,7 @@
+{
+  "ownRestoreTargetOnlyRemoved": true,
+  "markerFullIDVerified": true,
+  "SQLConnections": 0,
+  "publicTablesBeforeDrop": 0,
+  "reason": "pg_restore stdin was closed by docker exec without -i; no rows restored, authenticated encrypted QA payload already removed"
+}

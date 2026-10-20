@@ -1,0 +1,8 @@
+{
+  "phase": "primary-real-flow",
+  "kind": "TimeoutError",
+  "gateId": null,
+  "stackFrames": [
+    "    at /private/tmp/cuenta-gate-3aaf105723d3/runtime.mjs:48:116"
+  ]
+}

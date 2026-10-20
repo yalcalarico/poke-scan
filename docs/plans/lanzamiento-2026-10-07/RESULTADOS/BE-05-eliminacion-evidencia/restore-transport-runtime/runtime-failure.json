@@ -1,0 +1,7 @@
+{
+  "phase": "restore-target-create",
+  "checksCompleted": 49,
+  "reason": "runtime-error",
+  "errorKind": "Error",
+  "firstLine": "spawnSync docker EPIPE"
+}

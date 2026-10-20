@@ -1,0 +1,52 @@
+--- /private/tmp/be07-gate-sol-20261009/organize-sheet.received.tsx	2026-10-09 09:51:44
++++ frontend/components/scanner/__tests__/organize-sheet.test.tsx	2026-10-09 09:52:05
+@@ -82,7 +82,7 @@
+     const original = addItem.mock.calls[0];
+     expect(original).toBeDefined();
+     expect(screen.getByRole('button', { name: 'Verificar este intento' })).toBeInTheDocument();
+-    expect(sessionStorage.getItem('pcs.scanDraft')).toContain('"status":"uncertain"');
++    await waitFor(() => expect(sessionStorage.getItem('pcs.scanDraft')).toContain('"status":"uncertain"'));
+     fireEvent.click(screen.getByRole('button', { name: 'Verificar este intento' }));
+     await waitFor(() => expect(addItem).toHaveBeenCalledTimes(2));
+     expect(addItem.mock.calls[1]).toEqual(original);
+@@ -105,6 +105,8 @@
+   });
+ 
+   it('persiste una separación qty 3 → 2+1 del mismo runId y guarda solo el grupo listo', async () => {
++    let confirmResponse!: (response: unknown) => void;
++    addItem.mockImplementationOnce(() => new Promise((resolve) => { confirmResponse = resolve; }));
+     const scan = entry(7, 'same-card');
+     const allocation = { id: 'allocation-original', runId: 7, cardId: 'same-card', variant: 'normal' as const, variantReviewed: true,
+       condition: 'NM' as const, conditionReviewed: true, quantity: 3, reviewed: true };
+@@ -118,7 +120,7 @@
+     await waitFor(() => expect(sessionStorage.getItem('pcs.scanDraft')).toContain('"quantity":2'));
+     firstMount.view.unmount();
+ 
+-    mount([scan]);
++    const remount = mount([scan]);
+     await screen.findAllByText('Carta 7');
+     expect(screen.getAllByRole('spinbutton', { name: 'Copias de esta lectura' })).toHaveLength(2);
+     const conditions = screen.getAllByRole('combobox', { name: 'Condición' });
+@@ -134,8 +136,20 @@
+     await waitFor(() => expect(addItem).toHaveBeenCalledTimes(1));
+     expect(addItem.mock.calls[0]?.[1]).toEqual({ cardId: 'same-card', variant: 'normal', condition: 'NM', quantity: 2 });
+     expect(firstMount.onSaved).not.toHaveBeenCalled();
+-    const savedDraft = JSON.parse(sessionStorage.getItem('pcs.scanDraft') ?? '{}') as { allocations?: Array<{ runId: number; quantity: number }> };
+-    expect(savedDraft.allocations?.map(({ runId, quantity }) => ({ runId, quantity }))).toEqual([{ runId: 7, quantity: 1 }]);
++    // La llamada todavía no confirma el alta: conserva ambas partes mientras espera.
++    const pendingDraft = JSON.parse(sessionStorage.getItem('pcs.scanDraft') ?? '{}') as { allocations: Array<{ runId: number; quantity: number }>; operations: Array<{ status: string }> };
++    expect(pendingDraft.allocations.map(({ runId, quantity }) => ({ runId, quantity }))).toEqual([{ runId: 7, quantity: 2 }, { runId: 7, quantity: 1 }]);
++    expect(pendingDraft.operations[0]?.status).toBe('saving');
++    expect(remount.onSaved).not.toHaveBeenCalled();
++    expect(success).not.toHaveBeenCalled();
++
++    confirmResponse({ id: 'item', card: { id: 'same-card' }, quantity: 2 });
++    await waitFor(() => {
++      const savedDraft = JSON.parse(sessionStorage.getItem('pcs.scanDraft') ?? '{}') as { allocations?: Array<{ runId: number; quantity: number }>; operations: Array<{ status: string }> };
++      expect(savedDraft.allocations?.map(({ runId, quantity }) => ({ runId, quantity }))).toEqual([{ runId: 7, quantity: 1 }]);
++      expect(savedDraft.operations[0]?.status).toBe('confirmed');
++      expect(success).toHaveBeenCalledWith('Guardamos 2 copias.');
++    });
+   });
+ 
+   it('guarda grupos sucesivos con claves propias y conserva ambas confirmaciones', async () => {

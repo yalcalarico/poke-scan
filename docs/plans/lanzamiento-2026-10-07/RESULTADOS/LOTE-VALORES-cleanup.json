@@ -1,0 +1,14 @@
+{
+  "ownFixturesRemaining": 0,
+  "cloneDropped": true,
+  "redisRemoved": true,
+  "ports3000and3001Free": true,
+  "sourceDevTestInventoryCountsUnchanged": true,
+  "inventoryComparisonOnlyNotFullDataSnapshot": true,
+  "browserTabClosed": true,
+  "browserSyntheticLogout": true,
+  "originalThemeDarkRestored": true,
+  "viewportReset": true,
+  "runtimeStateCredentialFileRemoved": true,
+  "sourceDevContainersStillHealthy": true
+}

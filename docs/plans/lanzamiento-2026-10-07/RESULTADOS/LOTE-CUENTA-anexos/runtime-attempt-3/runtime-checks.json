@@ -1,0 +1,192 @@
+[
+  {
+    "id": "runtime-ownership-before-fixture",
+    "pass": true
+  },
+  {
+    "id": "owned-auth-empty-before-factory",
+    "pass": true,
+    "removedOwnCopiedUsers": 5
+  },
+  {
+    "id": "factory-inert-until-listener",
+    "pass": true
+  },
+  {
+    "id": "listener-before-payload",
+    "pass": true
+  },
+  {
+    "id": "ssr-status-headers",
+    "pass": true
+  },
+  {
+    "id": "ssr-robots-native-inert",
+    "pass": true
+  },
+  {
+    "id": "owned-rate-fixture-primary",
+    "pass": true
+  },
+  {
+    "id": "login-helper-input-target",
+    "pass": true,
+    "partialPasswordLabelMatches": 2
+  },
+  {
+    "id": "real-login-httpOnly-sameSite",
+    "pass": true
+  },
+  {
+    "id": "old-access-pre-reset",
+    "pass": true
+  },
+  {
+    "id": "real-202-generic-copy",
+    "pass": true
+  },
+  {
+    "id": "capture-before-enabled",
+    "pass": true
+  },
+  {
+    "id": "mount-no-post",
+    "pass": true
+  },
+  {
+    "id": "token-no-storage-history-query",
+    "pass": true
+  },
+  {
+    "id": "password-toggles44-real",
+    "pass": true
+  },
+  {
+    "id": "password-toggle-keyboard-state",
+    "pass": true
+  },
+  {
+    "id": "confirmation-local-no-post",
+    "pass": true
+  },
+  {
+    "id": "web-lock-api-present-real",
+    "pass": true
+  },
+  {
+    "id": "cross-tab-refresh-blocks-reset-post",
+    "pass": true
+  },
+  {
+    "id": "success-manual-no-auto-login",
+    "pass": true
+  },
+  {
+    "id": "confirmed-cleanup-provider-cookie",
+    "pass": true
+  },
+  {
+    "id": "post-success-no-storage-secret",
+    "pass": true
+  },
+  {
+    "id": "old-access-guard-real",
+    "pass": true
+  },
+  {
+    "id": "old-refresh-rejected-real",
+    "pass": true
+  },
+  {
+    "id": "new-password-real-login",
+    "pass": true
+  },
+  {
+    "id": "owned-rate-fixture-concurrent",
+    "pass": true
+  },
+  {
+    "id": "mail-request-1",
+    "pass": true
+  },
+  {
+    "id": "mail-receiver-1",
+    "pass": true
+  },
+  {
+    "id": "concurrent-one-success-real",
+    "pass": true
+  },
+  {
+    "id": "owned-rate-fixture-uncertain",
+    "pass": true
+  },
+  {
+    "id": "mail-request-2",
+    "pass": true
+  },
+  {
+    "id": "mail-receiver-2",
+    "pass": true
+  },
+  {
+    "id": "lost-after-commit-no-replay",
+    "pass": true
+  },
+  {
+    "id": "uncertain-manual-actions",
+    "pass": true
+  },
+  {
+    "id": "lost-response-new-password-login-real",
+    "pass": true
+  },
+  {
+    "id": "owned-rate-fixture-navigation",
+    "pass": true
+  },
+  {
+    "id": "mail-request-3",
+    "pass": true
+  },
+  {
+    "id": "mail-receiver-3",
+    "pass": true
+  },
+  {
+    "id": "reload-loses-link-with-marker",
+    "pass": true
+  },
+  {
+    "id": "real-next-push-same-bare-loses-token",
+    "pass": true
+  },
+  {
+    "id": "back-no-secret-reconstruction",
+    "pass": true
+  },
+  {
+    "id": "navigation-no-consume-post",
+    "pass": true
+  },
+  {
+    "id": "owned-rate-fixture-rate",
+    "pass": true
+  },
+  {
+    "id": "real-429-ui-disabled",
+    "pass": true
+  },
+  {
+    "id": "owned-rate-fixture-http-errors",
+    "pass": true
+  },
+  {
+    "id": "real-malformed-input-no-store",
+    "pass": true
+  },
+  {
+    "id": "real-403-family-no-store",
+    "pass": false
+  }
+]

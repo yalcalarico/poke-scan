@@ -1,0 +1,17 @@
+{
+  "name": "regression-after",
+  "command": [
+    "pnpm",
+    "--dir",
+    "frontend",
+    "exec",
+    "vitest",
+    "run",
+    "components/marketing/__tests__/faq-section.test.tsx",
+    "lib/marketing/__tests__/acquisition-metadata.test.ts"
+  ],
+  "startedAtUtc": "2026-10-10T14:32:06.268498+00:00",
+  "finishedAtUtc": "2026-10-10T14:32:08.041922+00:00",
+  "exitCode": 0,
+  "log": "logs/regression-after.log"
+}

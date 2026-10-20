@@ -1,0 +1,28 @@
+{
+  "runId": "be05-review-2af1fb6f7757",
+  "tmp": "/private/tmp/be05-review-2af1fb6f7757",
+  "annex": "/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-implementacion-review-anexos",
+  "owner": "/root/be05_account_draft_review_sol",
+  "database": "be05_review_2af1fb6f7757_test",
+  "marker": "be05-review-2af1fb6f7757-owned",
+  "liveResources": [],
+  "pgContainerID": "18aa2f6937521ae010930ae98cbee45f2fa435b554c65cf90daaffba0c641ba8",
+  "preDropCounts": {
+    "cards": 20670,
+    "sets": 176,
+    "users": 0,
+    "collections": 0,
+    "items": 0,
+    "shares": 0,
+    "prices": 188,
+    "jobs": 0,
+    "migrations": 13,
+    "gin": 5
+  },
+  "connectionsBeforeDrop": 0,
+  "markerOwnerRoleVerified": true,
+  "cloneDropped": true,
+  "markerRemoved": true,
+  "sharedBoundedCountsAndIDsUnchanged": true,
+  "cleanupAtUtc": "2026-10-10T01:41:48.606591+00:00"
+}

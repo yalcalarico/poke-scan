@@ -1,0 +1,36 @@
+{
+  "operator": "coordinador GPT-6.1 Sol high",
+  "dateLocal": "2026-10-08",
+  "method": "CUA sobre API y Next reales; fixtures sintéticos en clon y Redis propios",
+  "viewports": ["390x844", "1280x844"],
+  "themes": ["oscuro", "claro"],
+  "checks": {
+    "anonymousCollectionLoginPrompt": true,
+    "anonymousProtectedValuesAbsent": true,
+    "routeIdOnlyInFlightNotMain": true,
+    "activeShareReadOnlyUsd49Coverage9of11": true,
+    "activeSharePrivateNoteEmailAbsent": true,
+    "cardArs10000Usd10ConversionSourceHistoryDelta": true,
+    "sheetNormal10000Reverse5000": true,
+    "sheetSixMissingCellsAreDashWithAccessibleSinPrecioLabels": true,
+    "sheetKeyboardFocusInsideEscapeReturnsFocus": true,
+    "privateCollectionArs49000Coverage9of11": true,
+    "privateVariantConditionAndQuantityCorrect": true,
+    "portfolioArs49000Coverage11of15": true,
+    "portfolioTwoObservedSnapshotsNotProfitOrHistoricalArs": true,
+    "listEmptyZeroUnknownDistinct": true,
+    "desktopLightAndDarkNoHorizontalOverflow": true,
+    "mobileNoHorizontalOverflow": true,
+    "expiredShareGenericNoOwnerCollectionOrNote": true,
+    "logoutConfirmedNewNavigationLoginPromptNoFixtureCollection": true
+  },
+  "incidents": [
+    "Primera página abierta mostró ChunkLoadError de un chunk ausente; reload explícito resolvió. HTML actual no lo referencia y assets actuales presentes según revisión runtime. Causa contextual no probada; no se oculta la incidencia.",
+    "Locator inicial por label no coincidió; textbox por role funcionó. Incidencia del harness.",
+    "Probe inicial missingNotZero=false buscaba Sin precio en innerText. AX y DOM confirmaron seis celdas con raya y doce elementos aria-label Sin precio; no sustitución por cero. Se conserva el resultado inicial en el registro de esta ronda.",
+    "Probe inmediato tras logout loginVisible=false capturó estado transitorio; nueva navegación confirmó prompt de login y ausencia de colección sintética.",
+    "Únicas privado cuenta siete grupos; público cuenta seis cardId distintos. Semántica documentada y código idéntico al baseline; copy legado ambiguo requiere handoff posterior, sin modificar contrato en este gate."
+  ],
+  "cleanupBrowser": {"syntheticSessionLoggedOut": true, "initialDarkThemeRestored": true, "temporaryViewportReset": true, "bothOwnTabsClosed": true},
+  "limits": "No teléfonos físicos, participantes, precisión DINOv2, datos reales, producción, hosting ni resultados comerciales. No se ejecutaron acciones de edición de cartas o exportación en este recorrido; cobertura adicional proviene de tests y API del gate. No se guardan credenciales, IDs privados, slug ni DOM crudo en este archivo."
+}

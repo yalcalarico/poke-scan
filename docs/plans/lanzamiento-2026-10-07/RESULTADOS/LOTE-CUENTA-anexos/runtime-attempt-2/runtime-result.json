@@ -1,0 +1,11 @@
+{
+  "exitCode": 1,
+  "checks": 11,
+  "passed": 11,
+  "failed": 0,
+  "phase": "primary-real-flow",
+  "external": {
+    "nodeBlocked": 0,
+    "browserBlocked": 0
+  }
+}

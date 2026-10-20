@@ -1,0 +1,8 @@
+{
+  "log": "focal-initial.log",
+  "reason": "Failure DOM included a synthetic password fixture; redact it from delivered evidence. No real account data.",
+  "originalSha256": "1a09a90ce683320bfe308e89ab7f9858016c1ac88238dfecaf46aeb4c1681b60",
+  "deliveredSha256": "c8974e08025d9971b7666778ffa5bf41ce4a0af0466386968e785885af58bdb6",
+  "originalPreservedPrivatePath": "/private/tmp/fe04-review-88331833f831/focal-initial-original.log",
+  "replacements": 4
+}

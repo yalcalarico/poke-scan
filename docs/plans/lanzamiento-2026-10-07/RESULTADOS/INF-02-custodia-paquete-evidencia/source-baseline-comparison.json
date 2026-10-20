@@ -1,0 +1,18 @@
+{
+  "selectedFiles": 551,
+  "baselineTiming": "Post dispatch, not full pre-task dirty snapshot",
+  "authorizedSelectedChanges": [
+    "backend/Dockerfile",
+    "infra/inf02/README.md",
+    "infra/inf02/compose.custody.yaml",
+    "package.json",
+    "scripts/infra/inf02-cleanup.mjs",
+    "scripts/infra/inf02-custody-package.mjs",
+    "scripts/infra/inf02-custody-package.test.mjs",
+    "scripts/infra/inf02-project.mjs",
+    "scripts/infra/inf02-recreate.mjs",
+    "scripts/infra/inf02-start.mjs"
+  ],
+  "taskFilesOutsideSelection": [],
+  "allOtherSelectedSourcesUnchanged": true
+}

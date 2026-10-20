@@ -1,6 +1,6 @@
 # Base de datos — modelo, migraciones y patrones de query
 
-> Los 10 modelos de Prisma, qué hace cada migración, la convención de nombres
+> Los 11 modelos de Prisma, qué hace cada migración, la convención de nombres
 > (tablas snake_case, columnas camelCase), los índices que **no** están en el
 > schema y los patrones de query que se repiten en todo el código.
 > Requisito previo: [`../../AGENTS.md`](../../AGENTS.md) §3.2 y §3.5.
@@ -30,12 +30,12 @@ crudo con `$queryRaw`, `$executeRaw` o en `psql`.
 
 | | |
 |---|---|
-| Tablas | `users`, `refresh_tokens`, `card_sets`, `cards`, `card_prices`, `collections`, `collection_items`, `share_links`, `scan_jobs`, `friendships` |
+| Tablas | `users`, `refresh_tokens`, `card_sets`, `cards`, `card_prices`, `collections`, `collection_items`, `collection_item_add_operations`, `share_links`, `scan_jobs`, `friendships` |
 | Columnas | `camelCase` siempre: `userId`, `setId`, `tokenHash`, `isActive`, `fetchedAt`, `rawJson` |
 | PK de catálogo | el id de pokemontcg.io en texto: `cards.id = 'base1-4'`, `card_sets.id = 'base1'` |
 | PK del resto | `uuid()` |
 
-## Los 10 modelos
+## Los 11 modelos
 
 ### User (`users`)
 
@@ -47,13 +47,14 @@ Cuenta, sesión y preferencias.
 | `email` | `String @unique` | se guarda normalizado a minúsculas en `register`/`login` |
 | `username` | `String @unique` | `/^[a-zA-Z0-9_]{3,20}$/` |
 | `passwordHash` | `String` | argon2id. **Nunca** en un `select` de salida |
+| `authVersion` | `Int @default(0)` | cambia al resetear clave; los JWT deben coincidir con esta versión |
 | `displayName` | `String` | |
 | `avatarUrl` | `String?` | |
 | `preferredCurrency` | `String? @default("USD")` | `'USD'` \| `'ARS'` |
 | `preferredRateType` | `String? @default("blue")` | `'blue'` \| `'oficial'` |
 | `createdAt` / `updatedAt` | `DateTime` | |
 
-Relaciones: `refreshTokens`, `collections`, `shareLinks`, `scanJobs`, y las dos
+Relaciones: `refreshTokens`, `passwordRecoveryTokens`, `collections`, `shareLinks`, `scanJobs`, y las dos
 líneas de amistad `friendshipRequests` / `friendshipReceives` (que son la misma
 tabla `friendships` vista desde los dos lados).
 
@@ -71,10 +72,33 @@ Una fila por sesión emitida.
 | `deviceInfo` | `String?` | el cliente lo manda en refresh/register |
 | `expiresAt` | `DateTime` | `JWT_REFRESH_TTL_DAYS` (30) días |
 | `revokedAt` | `DateTime?` | `null` = vigente. Base de la rotación y del detection de reuso |
+| `issuedAuthVersion` | `Int @default(0)` | versión de usuario al emitir la sesión; refresh de una versión vieja no revoca sesiones nuevas |
 | `createdAt` | `DateTime` | |
 
 Índices: `tokenHash` (unique), `userId`, `expiresAt`. Las filas revocadas
 **no se borran**: son la evidencia que permite detectar reutilización.
+
+### PasswordRecoveryToken y RecoveryRateLimitHit
+
+`password_recovery_tokens` persiste el SHA-256 de un token aleatorio de 32 bytes,
+su vencimiento, versión de autenticación y marcas de uso/revocación. Un usuario
+puede mantener hasta tres tokens activos; el cuarto pedido no expulsa ninguno.
+Resetear contraseña, consumir el token, revocar otros tokens y refresh e
+incrementar `authVersion` ocurre en una transacción con lock de `users`.
+La fila de usuario se bloquea primero; token, versión y vencimiento se releen
+con `clock_timestamp()` dentro de la transacción. Login, refresh y emisión
+usan ese orden para impedir una sesión o enlace emitido desde credenciales
+anteriores a un reset concurrente. Ninguna solicitud expulsa enlaces vigentes.
+Las dos migraciones BE-05 son aditivas; no alteran catálogo ni índices GIN.
+
+`recovery_rate_limit_hits` guarda ventanas compartidas en PostgreSQL. `keyHash`
+es HMAC-SHA-256 de IP o identificador; no guarda emails ni IPs en claro. Los
+registros se podan al cumplir una hora en cada admisión; el limitador no depende
+de Redis ni de estado sólo local.
+Un rechazo IP/global no agrega hits; un pedido silenciado por identificador
+no extiende su ventana de 60 s. La capacidad local de 32 tickets se reserva
+antes de buscar cuentas y vence a los 2 s por reloj monotónico; jobs que no
+settlearon también cuentan para evitar crecimiento sin cota.
 
 ### CardSet (`card_sets`)
 
@@ -191,10 +215,34 @@ Una fila por combinación `(carta, variante, condición)`; la cantidad vive acá
 | `addedAt` / `updatedAt` | `DateTime` | |
 
 **`@@unique([collectionId, cardId, variant, condition])`**: es lo que permite
-"agregar N copias más" con un `quantity: { increment: n }` en vez de duplicar
-filas, y obliga a manejar el `P2002` en las carreras.
+"agregar N copias más" sin duplicar filas. El alta usa
+`INSERT ... ON CONFLICT DO UPDATE` para incrementar cantidades en las carreras
+sin abortar la transacción. Conserva las notas de una fila ya existente y abre
+`isForTrade` con un OR, sin cerrar una marca anterior.
 
 Índices: el unique compuesto, `collectionId`, `cardId`.
+
+### CollectionItemAddOperation (`collection_item_add_operations`)
+
+Registro de idempotencia del `POST /collections/:id/items` cuando se envía
+`Idempotency-Key`. La clave primaria `(userId, key)` serializa requests
+concurrentes del mismo usuario e intento; `payloadHash` rechaza reutilizarla con
+otro destino o payload. `resultItemId` permite reconstruir la respuesta sin
+guardar notas ni otros campos del ítem. `expiresAt` define 30 días para repetir
+la operación; al vencer, el registro queda como tombstone y responde 410 para
+evitar que un replay antiguo vuelva a incrementar cantidades. La fila se borra
+al eliminar la cuenta (`onDelete: Cascade`).
+
+La escritura del registro, el incremento/creación de `collection_items` y el ID
+del resultado comparten una transacción. Los requests sin clave no pasan por esta
+tabla y mantienen el incremento aditivo actual.
+El UUID se canonicaliza a minúsculas. Una colisión de clave se recupera fuera de
+la transacción abortada y vuelve a comprobar ownership antes de leer el resultado.
+No hay limpieza por edad: borrar claves vencidas permitiría que una operación
+antigua vuelva a sumar. Al reintentar una clave vencida, se limpia `resultItemId`
+y se conserva el tombstone; borrar el ítem o la colección tampoco borra la clave.
+Solo eliminar la cuenta elimina sus registros. Los registros no contienen fotos,
+notas, emails ni el payload; `payloadHash` contiene su hash SHA-256.
 
 ### ShareLink (`share_links`)
 
@@ -499,3 +547,16 @@ Se agregaron las 12 URLs de mcd15 (25 correcciones totales con las anteriores) d
 ### McDonald’s Collection 2017
 
 Se corrigieron ambas URLs de mcd17-1 a mcd17-12 desde https://www.tcgcollector.com/sets/11121/mcdonalds-collection-2017. Se verificaron respuestas HTTP 200, nombres, frentes y numeración 1/12–12/12. Hay 37 correcciones totales. Sólo se actualizan las URLs en PostgreSQL y su protección en sync; no se ejecuta indexación.
+# Registro diario de precios
+
+`price_sync_sets` es el universo pequeño habilitado para mantenimiento diario;
+no reemplaza el catálogo. `price_sync_set_days` registra un ciclo por proveedor,
+set y fecha UTC. `price_sync_card_days` conserva el resultado por carta y fuente,
+incluidas cotización real, ausencia de precio, falta de asociación, falta de
+soporte, espera, reintento y fallo. Los precios siguen almacenados como
+observaciones en `card_prices`; no se impone unicidad por día porque pueden
+llegar variantes múltiples.
+
+`provider_rate_limits.blockedUntil` mantiene pausas 429 entre reinicios. Los
+trabajos preexistentes se marcan como legacy para diferir los que no correspondan
+al registro, sin borrar filas. Ver [jobs.md](jobs.md) para operación.

@@ -1,0 +1,207 @@
+{
+  "date": "2026-10-08",
+  "reviewer": "build_gate_diagnosis_sol · GPT-6.1 Sol HIGH",
+  "status": "gate abierto; causa definitiva sin localizar",
+  "versions": {
+    "node": "22.20.0",
+    "pnpm": "10.17.1",
+    "next": "16.3.6",
+    "react": "19.2.8",
+    "platform": "Darwin arm64"
+  },
+  "tmp": "/private/tmp/build-gate-diagnosis-sol-20261008",
+  "commands": [
+    {
+      "name": "harness-root-mismatch",
+      "command": "pnpm --dir frontend exec next build /private/tmp/build-gate-diagnosis-sol-20261008/no-css",
+      "exitCode": 1,
+      "log": "/private/tmp/build-gate-diagnosis-sol-20261008/no-css-root-mismatch-harness.log",
+      "logSha256": "ba807a75cde31a101ea7afb45e2e1aedb62274a36855ec132f6f46d2d76c1d46",
+      "permission": "require_escalated accepted",
+      "note": "Harness root/outputFileTracingRoot conflict; corregido sólo fixture"
+    },
+    {
+      "name": "no-css",
+      "command": "pnpm --dir frontend exec next build /private/tmp/build-gate-diagnosis-sol-20261008/no-css",
+      "exitCode": 0,
+      "log": "/private/tmp/build-gate-diagnosis-sol-20261008/no-css.log",
+      "logSha256": "d6d04e671aa01105d8c49e973bb603566bb333d53cf14d736d25ee60868841f3",
+      "permission": "require_escalated accepted",
+      "note": "Primer build efectivo"
+    },
+    {
+      "name": "css-native",
+      "command": "pnpm --dir frontend exec next build /private/tmp/build-gate-diagnosis-sol-20261008/css-native",
+      "exitCode": 0,
+      "log": "/private/tmp/build-gate-diagnosis-sol-20261008/css-native.log",
+      "logSha256": "8ef0b48dea65a7c518305354a6eba6152f41d3b53cda6a9ca7b2c5c9a3d7fb87",
+      "permission": "require_escalated accepted",
+      "note": "CSS nativo"
+    },
+    {
+      "name": "postcss-empty",
+      "command": "pnpm --dir frontend exec next build /private/tmp/build-gate-diagnosis-sol-20261008/css-postcss-empty",
+      "exitCode": 0,
+      "log": "/private/tmp/build-gate-diagnosis-sol-20261008/css-postcss-empty.log",
+      "logSha256": "21291d5075a2099f447b112172e60373430a60ab24fe9b29a01269c2c82f7e91",
+      "permission": "require_escalated accepted",
+      "note": "Config sin plugins"
+    },
+    {
+      "name": "postcss-local-plugin",
+      "command": "pnpm --dir frontend exec next build /private/tmp/build-gate-diagnosis-sol-20261008/css-postcss-plugin",
+      "exitCode": 0,
+      "log": "/private/tmp/build-gate-diagnosis-sol-20261008/css-postcss-plugin.log",
+      "logSha256": "8f0d801ce91f3bb07de5f918c81faed894e79fc5cda85b193c53b9b0ed171b0e",
+      "permission": "require_escalated accepted",
+      "note": "CSS emitido contiene diagnostic-processed"
+    },
+    {
+      "name": "tailwind",
+      "command": "pnpm --dir frontend exec next build /private/tmp/build-gate-diagnosis-sol-20261008/css-tailwind",
+      "exitCode": 0,
+      "log": "/private/tmp/build-gate-diagnosis-sol-20261008/css-tailwind.log",
+      "logSha256": "94d128d3952f1375231a28dde9ad312718d7d08ab2084b1eda6d150895a528e0",
+      "permission": "require_escalated accepted",
+      "note": "source(none), inline p-4 emitido"
+    },
+    {
+      "name": "postcss-default-permissions-warm",
+      "command": "pnpm --dir frontend exec next build /private/tmp/build-gate-diagnosis-sol-20261008/css-postcss-plugin",
+      "exitCode": 0,
+      "log": "/private/tmp/build-gate-diagnosis-sol-20261008/css-postcss-plugin-default-permissions.log",
+      "logSha256": "827e833b9af6fdb31bd2e5c3fe270dedc568b59147dac81383205fab83220003",
+      "permission": "use_default",
+      "note": "Warm: no prueba bind nuevo ni equivalencia de permisos"
+    },
+    {
+      "name": "tailwind-run-warm",
+      "command": "pnpm --dir /private/tmp/build-gate-diagnosis-sol-20261008/css-tailwind run build",
+      "exitCode": 0,
+      "log": "/private/tmp/build-gate-diagnosis-sol-20261008/css-tailwind-run-build.log",
+      "logSha256": "19fc037e37bb59732ce6106ec66ae3aadd1e2d1de42aa73c46184d02395462b6",
+      "permission": "require_escalated accepted",
+      "note": "Warm: descarta launcher simple, no prueba bind nuevo"
+    },
+    {
+      "name": "project-standard",
+      "command": "pnpm --dir frontend run build",
+      "exitCode": 1,
+      "log": "/private/tmp/build-gate-diagnosis-sol-20261008/project-standard-build.log",
+      "logSha256": "8dc000a8bb9cc0c0f8d6f3392422c35005860964770bb56d46402aa949d4f944",
+      "permission": "require_escalated accepted",
+      "note": "EPERM bind Rust CSS"
+    },
+    {
+      "name": "project-direct-exec",
+      "command": "pnpm --dir frontend exec next build",
+      "exitCode": 1,
+      "log": "/private/tmp/build-gate-diagnosis-sol-20261008/project-exec-build.log",
+      "logSha256": "868858d0ab74e56f60c890d12d9147881fef66a746863f0c164b3e21afd64914",
+      "permission": "require_escalated accepted",
+      "note": "Mismo EPERM"
+    },
+    {
+      "name": "internal-inferred-root",
+      "command": "pnpm --dir frontend exec next build /Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/frontend/.build-gate-repro-sol-20261008",
+      "exitCode": 0,
+      "log": "/private/tmp/build-gate-diagnosis-sol-20261008/internal-fixture-inferred-root.log",
+      "logSha256": "c051fff1b3a51da2d35e1add1b5e35554f45b43d2c08b148044328d67b83ecc7",
+      "permission": "require_escalated accepted",
+      "note": "Misma raíz inferida raíz repositorio; CSS Tailwind inline; output propio"
+    },
+    {
+      "name": "internal-full-css-standalone",
+      "command": "pnpm --dir frontend exec next build /Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/frontend/.build-gate-repro-sol-20261008",
+      "exitCode": 0,
+      "log": "/private/tmp/build-gate-diagnosis-sol-20261008/internal-fixture-full-css-standalone.log",
+      "logSha256": "48308f0c3571f83e6c841b78bd329546e8b922e43048fd1f9bcee17d6717197d",
+      "permission": "require_escalated accepted",
+      "note": "CSS app copiado con source(none)+inline p-4, standalone; caché propia anterior preservada por rename"
+    },
+    {
+      "name": "alternative-output-restored",
+      "command": "pnpm --dir frontend run build --webpack",
+      "exitCode": 0,
+      "log": "/private/tmp/build-gate-diagnosis-sol-20261008/project-webpack-output-restore.log",
+      "logSha256": "c73cee9fe2a6559c0ee365584fcb4d69bb085c49653cad2771b312587e7d3843",
+      "permission": "require_escalated accepted",
+      "note": "Output local; no reemplaza gate estándar"
+    }
+  ],
+  "buildCounts": {
+    "total": 13,
+    "exit0": 10,
+    "exit1": 3,
+    "successfulMinimalComparisons": 9,
+    "warmMinimalComparisons": 2,
+    "appStandardFailures": 2,
+    "harnessSetupFailures": 1,
+    "webpackRestorations": 1
+  },
+  "bindControls": {
+    "command": "node /private/tmp/build-gate-diagnosis-sol-20261008/bind-context.mjs",
+    "permission": "require_escalated accepted",
+    "exitCode": 0,
+    "checksPassed": 9,
+    "log": "/private/tmp/build-gate-diagnosis-sol-20261008/bind-context.json",
+    "logSha256": "47529c251923bf52828eb78bdd950a5b8caa98358000fa51479052eb46e4b1f2"
+  },
+  "sourcePreservation": {
+    "hashesMatchedBeforeAndAfter": 430,
+    "receivedManifest": "/private/tmp/build-gate-diagnosis-sol-20261008/received-source-sha256.json",
+    "finalManifest": "/private/tmp/build-gate-diagnosis-sol-20261008/final-source-sha256.json",
+    "productSourceConfigDependenciesMutated": false
+  },
+  "output": {
+    "receivedNextFileHashes": 3241,
+    "finalNextFileHashes": 3254,
+    "finalManifest": "/private/tmp/build-gate-diagnosis-sol-20261008/final-next-sha256.json",
+    "webpackRestoreExitCode": 0,
+    "currentOutputNewRuntimeQA": false,
+    "prior510RuntimeManifestHistorical": true
+  },
+  "causalFinding": "Fuente oficial 16.3.6: TcpListener bind 127.0.0.1:0 falla antes de cmd.spawn. App estándar y exec reproducen EPERM; fixtures noCSS/CSS/PostCSS/plugin/Tailwind/inferredRoot/standalone pasan. Causa definitiva y diferencia completa no demostradas.",
+  "limitations": [
+    "Fixtures no equivalen al grafo completo ni a autodetección de clases de la app.",
+    "Comparaciones warm no prueban un bind nuevo.",
+    "No se identifica sandbox global como causa concluyente; no autoreview rejection.",
+    "WorkerThreads es capacidad oficial disponible; no probada como corrección, no aplicada.",
+    "No pnpm check ni suites/flujo runtime repetidos; 894 pruebas/22 checks previos siguen evidencia histórica separada."
+  ],
+  "officialSources": [
+    {
+      "url": "https://raw.githubusercontent.com/vercel/next.js/v16.3.6/turbopack/crates/turbopack-node/src/process_pool/mod.rs",
+      "lines": "299-325",
+      "supports": "Rust bind previo spawn"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/vercel/next.js/v16.3.6/packages/next/src/server/config-shared.ts",
+      "lines": "698-708",
+      "supports": "childProcesses default y workerThreads mismo trabajo PostCSS"
+    },
+    {
+      "url": "https://nextjs.org/docs/app/api-reference/turbopack",
+      "supports": "PostCSS soportado en pool Node y default Turbopack"
+    }
+  ],
+  "cleanup": {
+    "ownerVerified": true,
+    "fixtureRemoved": true,
+    "preservedAt": "/private/tmp/build-gate-diagnosis-sol-20261008/internal-fixture-final",
+    "removedAt": "2026-10-08T20:43:48.899871+00:00",
+    "databaseRedisCreated": false,
+    "stackStarted": false,
+    "browserOpened": false,
+    "ownPoolProcessMatches": 0,
+    "ownPoolCheck": "pgrep -f (private/tmp own external fixture OR frontend own internal fixture)/[^ ]*\\.next/build/; require_escalated accepted; exit1 empty",
+    "defaultProcessListingUnavailable": true,
+    "ports3000And3001Free": true,
+    "allBuildSessionsFinished": true,
+    "noGlobalSuitesRepeated": true,
+    "temporaryEvidenceIntentionallyPreserved": true,
+    "bothInternalAndExternalOwnPoolsChecked": true
+  },
+  "gateClosed": false,
+  "autoReviewRejection": false
+}

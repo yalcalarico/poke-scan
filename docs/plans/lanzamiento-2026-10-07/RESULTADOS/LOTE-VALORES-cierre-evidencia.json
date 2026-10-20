@@ -1,0 +1,304 @@
+{
+  "producer": "/root/build_gate_causal_sol · GPT-6.1 Sol HIGH",
+  "status": "gate estándar completo y runtime Turbopack aprobados; cleanup completo; entrega para aceptación de coordinación",
+  "tmp": "/private/tmp/valores-cierre-sol-20261009",
+  "ownership": "/private/tmp/valores-cierre-sol-20261009/ownership.json",
+  "sourceHashesReceived": 430,
+  "sourceHashesAfterCheckMatched": 430,
+  "check": {
+    "command": "pnpm run stop; pnpm run check",
+    "stopExit": 0,
+    "checkExit": 0,
+    "backendUnit": 389,
+    "backendNodeScripts": 13,
+    "backendE2E": 6,
+    "frontend": 486,
+    "total": 894,
+    "skips": 0,
+    "backendVitestFiles": 28,
+    "backendE2EFiles": 2,
+    "frontendFiles": 59,
+    "lint": true,
+    "frontendTypes": true,
+    "nestBuild": true,
+    "nextStandardBuild": true,
+    "bundler": "Turbopack",
+    "strategy": "workerThreads",
+    "experimentalStrategy": true,
+    "globalRunPriceCronFlagsDisabled": false
+  },
+  "runtime": {
+    "apiChecks": 15,
+    "apiAllPassed": true,
+    "ssrChecksPending": false,
+    "browserCoordinatorScope": true,
+    "browserUnavailableInSubagent": true,
+    "ssrChecks": 7,
+    "ssrAllPassed": true,
+    "ownJobsPending": 6,
+    "ownJobsExecuted": 0,
+    "externalNodeFetchAttempts": 0,
+    "checkOutputManifest": "LOTE-VALORES-cierre-anexos/runtime-next-sha256.json",
+    "backendDistManifest": "LOTE-VALORES-cierre-anexos/runtime-backend-dist-sha256.json",
+    "browserComplete": true,
+    "checkOutputPreserved": true
+  },
+  "privacyFocused": {
+    "capturedAt": "2026-10-09T01:01:17.420Z",
+    "scope": "one synthetic collection anonymous SSR; current Turbopack + real API; no SEO matrix repeated",
+    "http": {
+      "anonymousNext": 200,
+      "ownerAPI": 200,
+      "anonymousAPI": 401,
+      "foreignAPI": 404
+    },
+    "markers": {
+      "routeSuppliedCollectionUUID": {
+        "completeResponse": true,
+        "literalDocumentWithoutScripts": false,
+        "flightScripts": true,
+        "otherScripts": false
+      },
+      "ownerUUID": {
+        "completeResponse": false,
+        "literalDocumentWithoutScripts": false,
+        "flightScripts": false,
+        "otherScripts": false
+      },
+      "otherUserUUID": {
+        "completeResponse": false,
+        "literalDocumentWithoutScripts": false,
+        "flightScripts": false,
+        "otherScripts": false
+      },
+      "itemUUID": {
+        "completeResponse": false,
+        "literalDocumentWithoutScripts": false,
+        "flightScripts": false,
+        "otherScripts": false
+      },
+      "privateEmail": {
+        "completeResponse": false,
+        "literalDocumentWithoutScripts": false,
+        "flightScripts": false,
+        "otherScripts": false
+      },
+      "privateNote": {
+        "completeResponse": false,
+        "literalDocumentWithoutScripts": false,
+        "flightScripts": false,
+        "otherScripts": false
+      },
+      "fixtureCollectionName": {
+        "completeResponse": false,
+        "literalDocumentWithoutScripts": false,
+        "flightScripts": false,
+        "otherScripts": false
+      },
+      "fixtureDisplayName": {
+        "completeResponse": false,
+        "literalDocumentWithoutScripts": false,
+        "flightScripts": false,
+        "otherScripts": false
+      },
+      "fixturePassword": {
+        "completeResponse": false,
+        "literalDocumentWithoutScripts": false,
+        "flightScripts": false,
+        "otherScripts": false
+      },
+      "actualAccessTokens": {
+        "completeResponse": false,
+        "literalDocumentWithoutScripts": false,
+        "flightScripts": false,
+        "otherScripts": false
+      },
+      "actualRefreshTokens": {
+        "completeResponse": false,
+        "literalDocumentWithoutScripts": false,
+        "flightScripts": false,
+        "otherScripts": false
+      },
+      "fieldNames": {
+        "completeResponse": true,
+        "literalDocumentWithoutScripts": false,
+        "flightScripts": true,
+        "otherScripts": false
+      }
+    },
+    "classification": "route-supplied collection UUID occurs only in Flight scripts; protected fixture values absent in complete response",
+    "noindexObserved": true,
+    "noindexUsedAsAuthorizationProof": false,
+    "rawOrActualValuesPersisted": false,
+    "actualAccessTokenMarkerCount": 2,
+    "actualRefreshTokenMarkerCount": 2,
+    "domPendingCoordinator": true,
+    "initialHarnessCorrection": "first capture extracted wrong cookie label; access tokens were checked but refresh values were not. Preserve first capture separately; final capture uses actual pcs.refreshToken and requires two present.",
+    "sanitizedEvidenceSha256": "3da49592676b8bd197e0d82ebbd0d8b7bdfc1d303070be52a84944c699e11c45"
+  },
+  "chunkInitialIncident": {
+    "coordinatorObserved": "ChunkLoadError inicial en documento previo; reload explícito recuperó UI",
+    "missingChunkStatus": 404,
+    "currentRuntimeStatus": 200,
+    "storedAndLiveInicioDoNotReferenceMissingChunk": true,
+    "all16CurrentInicioReferencesExist": true,
+    "definitiveCauseAttributed": false
+  },
+  "cleanupPending": false,
+  "gateClosedByProducer": false,
+  "annexHashes": {
+    "api.log": "786a355b31884649e033eea18d58315ad9e81977c6803ca3cb1652e3b1e777cc",
+    "check-standard.log": "020cdfcc3c4546ae9241828ab13e358ace026f60362ea3adbe0751e5619ada67",
+    "chunk-probe-detail.json": "8ddd6ea6ec6db042a2c51a333f2389b434983d03d60d1e5fc221ee0e9f8b1c7a",
+    "chunk-probe.json": "4674a6a90c1778076389ac6658e84365df893fb1d46ae8ac82fb37549465d843",
+    "cleanup.json": "7adcd7750770e0bef913b385b92b9d7a829b30098aa419d5e40607442f8cf2d8",
+    "final-backend-dist-sha256.json": "9a3a73262f2475e282d0c6957836d9b4c3879370b74497c904f041241cf52e0f",
+    "final-next-sha256.json": "e078f715b81a3cfac02f19ffe56e36126454a65aae7d5bd70fcbd98540805ceb",
+    "final-source-sha256.json": "58b70bcb622a91d1bc1e363d4ee3f28418c4c62b0d9556c3e51b232b6ad321ed",
+    "fixture-cleanup.log": "9d18083ad609238dabfefa84544ba5afdcb664dda4843f8caa6113776ac452e1",
+    "infra-cleanup.log": "4ffa8f24198e4e84e9ad5ffda27e1a0d0758ba65cbe9c5200d6ea1ecc7c972e4",
+    "own-fixture-counts-after.json": "6234bcf51fd962784b392d93c8fb70fae7019493739d5e9134f47d080ac42d0f",
+    "own-fixture-counts-before.json": "7a1f3e404b8ce068b4e6c19b07c989f102245d63c1b7c3860a5b23b122db2b12",
+    "ownership.json": "c4d5663af3fb9b4e403236a3548112b2e7a07ff8aff2c0b7cc7f4ad7206c7d2d",
+    "postcheck-source-sha256.json": "58b70bcb622a91d1bc1e363d4ee3f28418c4c62b0d9556c3e51b232b6ad321ed",
+    "privacy-focused-before-refresh-fix.json": "b5398a48cde27d0cba551b64a0d7a1b7f45b1bdfff826bc6c1e6017a6fa6d08c",
+    "privacy-focused-before-refresh-fix.log": "84524cdeca0b29de36a11d97fc658351267bc65e6bb56521920d54570bbf4bfd",
+    "privacy-focused.json": "50487af267671b2f2bbd23bd27692f56c13386bea0e0c605f0026ec769175bbf",
+    "privacy-focused.log": "50393286d8de036134658553841b4487cda6f418af62b68a3da3fc45fea7082d",
+    "received-source-sha256.json": "58b70bcb622a91d1bc1e363d4ee3f28418c4c62b0d9556c3e51b232b6ad321ed",
+    "runtime-api.json": "9e9d53d3b1f9efb7c50f99a57670a14c4e0afc86fcbe900aab51c5c8e31bb4f1",
+    "runtime-backend-dist-sha256.json": "9a3a73262f2475e282d0c6957836d9b4c3879370b74497c904f041241cf52e0f",
+    "runtime-flow.log": "c7e5a0b461e111560aff0166ff068ee23ad3efd7b6f79d8c8fa3db8e622d848e",
+    "runtime-next-sha256.json": "519966d43cde1866072aa9a0bfad27f359b04cd0cc09ed55bd232e60fbb46a4c",
+    "runtime-ssr.json": "804d1ea299ff9dd2198111c2a3c87a089de0a5ea17d4c6a1e56f742209f95902",
+    "runtime-ssr.log": "65e0e4fc10c201f5b81654dd1634270febb5119bd2d343fd73603244f449dc86",
+    "source-inventory-after.json": "cbc3dedfcce4289532045d3b0d03e0335960ffff2d723bceec458b60142829d6",
+    "source-inventory-before.json": "aa134e3f44801fec691203575a4f3043a2908fc80200e24b177066b2ef7de311",
+    "stop-own.log": "cee516b9678c80628a08c1b8dfaa7095be8d9b4a3756601250e38eaddc1fe01f",
+    "unique-cards-static.json": "1bd1334468402fc2d3bd75fe37f471c6da4a2c302e2cbba69f29062e9b6c398a",
+    "web.log": "fa4ed34b336db54f453fe68c6b55d94b002b55d9ed42621a38671eb00c0154b0"
+  },
+  "sourceHashesFinalMatched": 430,
+  "sourceProductEditsDuringIntegratedGate": false,
+  "cleanup": {
+    "ownFixturesZero": {
+      "phase": "after",
+      "counts": {
+        "users": 0,
+        "collections": 0,
+        "items": 0,
+        "shares": 0,
+        "cards": 0,
+        "prices": 0,
+        "jobs": 0
+      },
+      "ownJobsExecuted": 0
+    },
+    "databaseCommentVerifiedBeforeDrop": true,
+    "databaseConnectionsBeforeDrop": 0,
+    "cloneDropped": true,
+    "redisRemoved": true,
+    "sourceDevTestCountsUnchanged": true,
+    "sourceInfraIDsUnchangedHealthy": true,
+    "countsComparisonIsNotFullDataSnapshot": true,
+    "processesStopped": [
+      6235,
+      6247
+    ],
+    "processOwnershipCommandParentPortVerified": true,
+    "sessionsComplete": true,
+    "expectedSIGTERMExitCodes": {
+      "apiWrapper": 241,
+      "webWrapper": 143
+    },
+    "portsFree": [
+      3000,
+      3001,
+      3002,
+      3313,
+      56379
+    ],
+    "runtimeStateRemoved": true,
+    "browserRootEvidence": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/LOTE-VALORES-cierre-browser-root.json",
+    "browserRootEvidenceSha256": "787bc9133dedf77b696dbd9d21e3fda29a4850f21ce1526c79f8e5a285d32f77",
+    "sourceHashesMatched": 430,
+    "temporaryEvidenceIntentionallyPreserved": "/private/tmp/valores-cierre-sol-20261009",
+    "liveResources": []
+  },
+  "browserRoot": {
+    "file": "LOTE-VALORES-cierre-browser-root.json",
+    "sha256": "787bc9133dedf77b696dbd9d21e3fda29a4850f21ce1526c79f8e5a285d32f77",
+    "producer": "coordinador GPT-6.1 Sol high",
+    "allRecordedChecksTrue": true,
+    "viewports": [
+      "390x844",
+      "1280x844"
+    ],
+    "themes": [
+      "oscuro",
+      "claro"
+    ],
+    "cleanupComplete": true
+  },
+  "uniqueCardsLegacy": {
+    "classification": "legacy contract difference, no regression introduced by transport config",
+    "privateUniqueCards": "COUNT(item.id) = groups",
+    "publicUniqueCards": "COUNT(DISTINCT cardId) = card IDs",
+    "syntheticObservedPrivate": 7,
+    "syntheticObservedPublic": 6,
+    "sameSyntheticCollection": true,
+    "privateLabel": "Únicas",
+    "publicLabel": "Cartas únicas",
+    "handoff": "copy/semantic clarification of private label in a future UI scope, without DTO or product edits in this gate",
+    "sourceFiles": [
+      {
+        "path": "backend/src/modules/collections/collections.service.ts",
+        "sha256": "a2d13f3c9ecbc88fbd9a8ab4e87bc2bcb0fdd6614af651aff18612f0f1ef2a19",
+        "matchesHistoricalSource": true
+      },
+      {
+        "path": "backend/src/modules/share/share.service.ts",
+        "sha256": "306b6290135591dbdeee63b22b0d015eb44bed5fc640f8ce4eb056ff70fb8c62",
+        "matchesHistoricalSource": true
+      },
+      {
+        "path": "frontend/components/collections/collection-summary.tsx",
+        "sha256": "199c90e00a9659798046c225b2a5f62db43a1da6f7d94921d025c55c1d63e6d8",
+        "matchesHistoricalSource": true
+      },
+      {
+        "path": "frontend/components/share/public-collection-view.tsx",
+        "sha256": "2b3a5ab6c1851a19a587b2e70ec04b8277db7479aa194dd8a3b810884c270c54",
+        "matchesHistoricalSource": true
+      },
+      {
+        "path": "frontend/types/api.ts",
+        "sha256": "9e04e75166f87fc7e2e92e04201bef501da646463a5868c7ae30b80c040689cb",
+        "matchesHistoricalSource": true
+      }
+    ],
+    "documentedBy": [
+      "frontend/types/api.ts:421",
+      "backend/docs/api.md:1007"
+    ]
+  },
+  "temporaryEvidenceIntentionallyPreserved": true,
+  "ownReservationsReleased": true,
+  "ownProcessMatchesFinal": 0,
+  "outputInventoryComparison": {
+    "nextFilesAtRuntimeStart": 2061,
+    "nextFilesAtDelivery": 2076,
+    "changedExistingRuntimeOutputFiles": 0,
+    "addedRuntimeOutputFiles": 15,
+    "missingRuntimeOutputFiles": 0,
+    "sourceHashesMatched": 430
+  },
+  "privacyDOMCompletion": {
+    "producer": "coordinador GPT-6.1 Sol high",
+    "file": "LOTE-VALORES-cierre-browser-root.json",
+    "pending": false,
+    "loginPrompt": true,
+    "routeIdOnlyInScriptsNotMain": true,
+    "protectedFixtureValuesAbsent": true
+  }
+}

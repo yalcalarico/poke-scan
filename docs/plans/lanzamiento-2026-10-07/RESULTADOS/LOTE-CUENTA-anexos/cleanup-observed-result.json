@@ -1,0 +1,10 @@
+{
+  "exitCode": 0,
+  "cloneDropped": true,
+  "redisRemoved": true,
+  "sourceCountsUnchanged": true,
+  "sourceInfraIDsUnchangedHealthy": true,
+  "databaseConnectionsBeforeDrop": 0,
+  "evidence": "ownership.json + source-inventory-before/after.json + private-infra.py; CLI returned success after exact ownership assertions",
+  "runtimeDrain": "pending/tickets/messages/leases/waits0; no quarantine/deadline; browser/Next/API stopped"
+}

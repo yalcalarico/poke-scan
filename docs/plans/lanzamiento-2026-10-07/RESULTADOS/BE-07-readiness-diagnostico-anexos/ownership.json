@@ -1,0 +1,49 @@
+{
+  "owner": "be07-readiness-diagnostico-sol-20261009",
+  "createdAt": "2026-10-09T13:13:48.274718+00:00",
+  "workspace": "/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app",
+  "temporaryDirectory": "/private/tmp/be07-readiness-diagnostico-sol-20261009",
+  "resources": [
+    {
+      "role": "database",
+      "name": "be07_readiness_diagnostico_sol_20261009_test",
+      "pgContainer": "18aa2f6937521ae010930ae98cbee45f2fa435b554c65cf90daaffba0c641ba8",
+      "comment": "be07-readiness-diagnostico-sol-20261009-owned"
+    },
+    {
+      "role": "redis",
+      "name": "be07-readiness-diagnostico-sol-20261009-redis",
+      "id": "c5a6a0b72d5c719527026e4487f565d08491d44103341e70857fe2a79c3f80c2",
+      "label": "be07-readiness-diagnostico-sol-20261009",
+      "bind": "127.0.0.1:56385",
+      "tmpfs": true
+    }
+  ],
+  "runtimeReservation": "exclusive parent assigned",
+  "readinessDependencies": "mocked; no DB/Redis needed for first instrumentation",
+  "database": "be07_readiness_diagnostico_sol_20261009_test",
+  "databaseComment": "be07-readiness-diagnostico-sol-20261009-owned",
+  "redis": "be07-readiness-diagnostico-sol-20261009-redis",
+  "redisLabel": "be07-readiness-diagnostico-sol-20261009",
+  "liveResources": [],
+  "plannedResources": [
+    {
+      "role": "database",
+      "name": "be07_readiness_diagnostico_sol_20261009_test",
+      "comment": "be07-readiness-diagnostico-sol-20261009-owned"
+    },
+    {
+      "role": "redis",
+      "name": "be07-readiness-diagnostico-sol-20261009-redis",
+      "label": "be07-readiness-diagnostico-sol-20261009",
+      "bind": "127.0.0.1:56385"
+    }
+  ],
+  "databaseCommentVerifiedBeforeDrop": true,
+  "databaseConnectionsBeforeDrop": 0,
+  "cloneDropped": true,
+  "redisRemoved": true,
+  "sourceCountsUnchanged": true,
+  "sourceInfraIDsUnchangedHealthy": true,
+  "cleanupAt": "2026-10-09T13:16:50.178505+00:00"
+}

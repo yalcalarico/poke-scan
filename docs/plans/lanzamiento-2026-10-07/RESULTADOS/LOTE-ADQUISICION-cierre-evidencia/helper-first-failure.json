@@ -1,0 +1,7 @@
+{
+  "kind": "expected-canonical-normalization",
+  "expected": "http://127.0.0.1:3000/",
+  "actual": "http://127.0.0.1:3000",
+  "productChange": false,
+  "correction": "Next normalizes root canonical without trailing slash"
+}

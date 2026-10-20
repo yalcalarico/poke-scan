@@ -1,0 +1,11 @@
+e5cf09a81d2931399613eb60caac3513564f75839556e44c0bf94345929a8d9f  docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-07-evidencia/legacy-retry-repro.mjs
+d284cd40d0bd6b97b31d3e3765aacdeb81577d8b9cbde46c27d59c20b9dff0c4  docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-07-evidencia/gotchas.before.md
+f1880664f04bb92a9db5fb805b9a6aee8faf2feffac10579fd4e82c6fcaa5a7c  docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-07-evidencia/baseline.sha256
+49ee40e9d1a108e4f3a9698806c1a37a0ff13efe057f00cb6d180d2d9890be90  docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-07-evidencia/testing.before.md
+74920756c62c207246ff3377d24c21695b778b1ad1ec8e945c55fb241d7938bc  docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-07-evidencia/final-source.sha256
+0fc9c27959a90f7fd5a3423976f17c13123fd1b67612f8eec3481decb6b1b067  docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-07-evidencia/ownership-cleanup.json
+e448f1aa70e514d5dec0476efa76e7a4451c6ca475f5d242b9d50586a5686db4  docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-07-evidencia/redis.service.before.ts
+5075936ac4198de20a2fbf07f5bc5c3c47ef9fc7d40153de9d38f4ffb75019df  docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-07-evidencia/recovery-harness.mjs
+7d172fc87429b9e5709c79f74e131696ce81d714c14a530c46583e9f94caff06  docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-07-evidencia/preexisting-diff.patch
+7b00dfd99803ba7e37719fa61ae2947d8d0d9b5d282bd8650e5d8c7189a989d4  docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-07-evidencia/redis.service.spec.before.ts
+fdcb9132483f128caf16b98c52ed94b5fc6e9f04377a2b4810d04406b2375ea9  docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-07-implementacion.md

@@ -1,0 +1,17 @@
+{
+  "url": "https://tcgcsv.com/tcgplayer/3/groups",
+  "status": 200,
+  "atUtc": "2026-10-13T23:52:58.113572+00:00",
+  "sha256": "03ae91e44f56cdcb2b44c8fa866979f1918078f8af22eec8fdaf8ed99de754c1",
+  "matches": [
+    {
+      "groupId": 24541,
+      "name": "ME: Ascended Heroes",
+      "abbreviation": "ASC",
+      "isSupplemental": false,
+      "publishedOn": "2026-01-30T00:00:00",
+      "modifiedOn": "2026-10-01T19:30:44.77",
+      "categoryId": 3
+    }
+  ]
+}

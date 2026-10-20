@@ -1,0 +1,31 @@
+{
+  "purpose": "Resend simulated adapter validation",
+  "records": [
+    {
+      "phase": "stop",
+      "command": [
+        "pnpm",
+        "run",
+        "stop"
+      ],
+      "exitCode": 0,
+      "startedAtUtc": "2026-10-11T22:07:12.346555+00:00",
+      "finishedAtUtc": "2026-10-11T22:07:12.605883+00:00"
+    },
+    {
+      "phase": "focused",
+      "command": [
+        "pnpm",
+        "--dir",
+        "backend",
+        "exec",
+        "vitest",
+        "run",
+        "src/modules/auth/resend-recovery-mail.port.spec.ts"
+      ],
+      "exitCode": 0,
+      "startedAtUtc": "2026-10-11T22:07:12.606299+00:00",
+      "finishedAtUtc": "2026-10-11T22:07:13.223608+00:00"
+    }
+  ]
+}

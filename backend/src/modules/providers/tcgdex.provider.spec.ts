@@ -73,6 +73,14 @@ describe('TcgdexProvider', () => {
     expect(provider.id).toBe('tcgdex');
   });
 
+  it('propaga 429 con Retry-After sin reintento interno', async () => {
+    fetchMock.mockResolvedValueOnce(new Response('{}', { status: 429, headers: { 'retry-after': '120' } }));
+    await expect(provider.listSets()).rejects.toMatchObject({
+      providerId: 'tcgdex', retryAfterMs: 120_000, status: 429,
+    });
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
   it('getCardPrices saltea variantes con todos los valores en null', async () => {
     fetchMock.mockResolvedValueOnce(
       ok(

@@ -1,0 +1,740 @@
+{
+  "generatedAtUtc": "2026-10-10T01:44:50.428264+00:00",
+  "owner": "/root/be05_account_draft_review_sol",
+  "runId": "be05-review-2af1fb6f7757",
+  "model": "Sol6.1 HIGH",
+  "scope": "BE-05 serial backend correction and focal validation",
+  "globalOrStandardBuildExecuted": false,
+  "idClosed": false,
+  "disposition": "backend input for FE04; root consolidation and consumer/global gates pending",
+  "producerFigures": "declarations until reviewed; producer report and evidence preserved",
+  "sourcesFinalSha256": {
+    "backend/src/common/guards/jwt-auth.guard.ts": "93d18fdb63a839730b3e1612b00e2aacd9f40dcb62dc41287d753b646b2e714e",
+    "backend/src/common/guards/jwt-auth.guard.spec.ts": "8d8c220d22dca6d5c24722cd7f9e1eb9de9e4d52f247aea58e9ebb1ebec15e3b",
+    "backend/src/common/types/auth-user.ts": "6d0f622990785513f98a50ccfb92aa6a528fa2f30de3b1d17bf92972b066c3c6",
+    "backend/src/modules/auth/auth.controller.ts": "08c6855c2052f9550c43b15da73656c7bfc5aeac60966e96e51d0ba7c7714d03",
+    "backend/src/modules/auth/auth.module.ts": "e631033085a9a1d5dfb4051ead4dadd3e967db0e50efb54be1498ae5870c9bd5",
+    "backend/src/modules/auth/auth.service.ts": "c56c035df4225b0e63e9f9d26101112e548881f961882993cff8cb73541295f0",
+    "backend/src/modules/auth/dto/password-recovery-request.dto.ts": "9c5deedf57188fe5042782cdaa91dbcfdc7c45730c7a2169f7c3de59958d55bc",
+    "backend/src/modules/auth/dto/password-recovery.dto.ts": "7eaf7942955b5276e3ef1b33c550dc66a2d4bf8d018e54723f0b74095be6bef6",
+    "backend/src/modules/auth/password-recovery.service.ts": "8b0aef4e7797178d60346dc970ec2ab0a61f143b80b0ead3d0914e3c767ccf50",
+    "backend/src/modules/auth/recovery-errors.ts": "f5d0303392541f66ca41205c63f44d47899b172e7b81d43cc9a010baa7fccc36",
+    "backend/src/modules/auth/recovery-http.filter.ts": "8a88e1af8889b8d9ab282b4931b533cfd3cdef0163f6e34472486087d0e86540",
+    "backend/src/modules/auth/recovery-mail.port.ts": "88289e1dc870e8a4bd7c21054e7f7b008cb91a399b70be0b5dc5a11eea0cbf49",
+    "backend/prisma/schema.prisma": "b1408d00b5bd869ac0786788fca1e390ee041470d7730cd4871c7d2b9609602b",
+    "backend/prisma/migrations/20261009190000_add_password_recovery/migration.sql": "e6a8a5f3173fbed2a95781ab485bdf2b2e88370ebc5bd69a14499fa12b88fe9a",
+    "backend/prisma/migrations/20261009200500_add_refresh_auth_version/migration.sql": "bf956cee9f07ab20023a7275233339e2cfd27af55fbc3b12f4da35e4a3f9b425",
+    "backend/test/auth-session.e2e-spec.ts": "1edb35a07049fd0a1e127b62509e19965a78915b060020cf5ba6f6a67d25e383",
+    "backend/test/password-recovery-harness.ts": "79185461f41fcfddf10cf460dd98f2ecc3df99df6c4877029dc0598440366ab9",
+    "backend/vitest.config.recovery-harness.ts": "de45e692aa8d82c245c90760de15162bf81b047a40d4a9a5860c4d1ef80cd23f",
+    "frontend/types/api.ts": "25dda206f3c0dbe470cd03d31b14b394254f0fe8c440d4d1f5022ad46c2bc2c5",
+    "backend/docs/api.md": "fa126fcf1e61587e17e332d40bf27939b657f66a8a0ed136ecb774502d4bc325",
+    "backend/docs/database.md": "a72f02fe942e485636ed3bf69d956dbfd835bbfc8df55282b45ff0928690e070",
+    "backend/docs/testing.md": "524b8436bbe17b050e020f4183d9d102ac366a25fd16f010c364bd679fd1fa89",
+    "backend/docs/gotchas.md": "47edfcc176685a5ce3c8df142871d1f211ac555fda2674f446bd2f8b90953284",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-implementacion.md": "3aa9d2839a2697c6976530d7d4be7ab50f766a7be042e111adb22e89a4c6a3f8",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-implementacion-evidencia.json": "5acde55cca82ae855f17da6dbdc3de0e129ca2e9e4db9db5bf108f8891c38ced",
+    "backend/src/modules/auth/auth.service.spec.ts": "a21181337308c4fcf6cb1a8eb19d24d691f148e54db7ecabf28668f32b33b016",
+    "backend/src/modules/auth/session-security.spec.ts": "8506a1f64477df93783dc9e801dc06b338686d785af84c2e661c9bcbe93f8ba2",
+    "backend/src/modules/auth/session-security.ts": "d2389954d9106d797fc19a2a7af9d88077ea740383cb5271056bafae2973aa99",
+    "backend/src/modules/auth/refresh-jwt.module.ts": "28939c623f3ddbe2a90f60bf4d0243ef36abf683de953997f6c3ba0a6f1cf18c",
+    "backend/src/modules/auth/dto/login.dto.ts": "84441d49004e33cb74fe007090b7c23c9b8ac22dc33aaa16484543a3cc5c044a",
+    "backend/src/modules/auth/dto/register.dto.ts": "8854ae661ff1670e70d3c02c01fd5ce4250a1fe92b946d19dab628d3d1a4c57a",
+    "backend/src/modules/auth/dto/refresh-session.dto.ts": "53e72953cf375a0fedf7bdd8e7f4ea6a61b22f387096e51c6d01757805588df7",
+    "backend/src/modules/auth/dto/browser-session.dto.ts": "3699803d2fc153fe1314a1000bde7d1b8a2ac0d5de8ee76c303a3d18ab5ce039",
+    "backend/src/modules/auth/recovery-json.guard.ts": "38fbe33c44f269f39f552152caddd8f5a970d0de9dbce3eb1b743cd9b0c3295e",
+    "backend/src/modules/auth/password-recovery.service.spec.ts": "185820675825e2fe953c6d6d007e95ccc3752a42c72a9b3a5551079ab0164220",
+    "backend/test/password-recovery-mail-harness.ts": "5cd13848f99f52d9dc8b5d6f91d5f541f816076086b7cfb2c4d4a10761d4d2b1"
+  },
+  "artifactsSha256": {
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-implementacion-review-anexos/monotonic-final-result.json": "4f4057041ef3821ef51d0c63a14b511bdad5a188f59b7db40e51a577c2282d73",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-implementacion-review-anexos/infra-after.json": "e0fda96ebbcb78b267bc2d2c86ab1c9566843136bbce374af20c010af9487f12",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-implementacion-review-anexos/schema-final-result.json": "31414d0a59a9be1253d70bafa7f363f98420b91f70b76a23ca6cb169c67455a0",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-implementacion-review-anexos/prisma-generate-result.json": "22700b2e71e1f27ce29c3039a1cb364e95c111d6ebe01912fd3988c5cf59c2ca",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-implementacion-review-anexos/run.py": "c9a8a9aa5a4eb2ca5d7bb9e5cdbdade27ef69646daf33d7b9f89569c599c901b",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-implementacion-review-anexos/ownership.json": "b4f7e36ea50c0075ee8420800c56b63c6239a99f67eb0e59e5769f9ac8324ad3",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-implementacion-review-anexos/session-loopback-final.log": "34a8471e80a507ada637654381d70b329af39a84f68d705394530bbbdfe583fb",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-implementacion-review-anexos/aliases-corrected-result.json": "acb8d32d0605d0f3a86bdab14929ee37dcf282b307d7ffc11f7b534edb43fc1a",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-implementacion-review-anexos/infra-before.json": "e0fda96ebbcb78b267bc2d2c86ab1c9566843136bbce374af20c010af9487f12",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-implementacion-review-anexos/types-delivery-final-result.json": "d64e939be5b53fdcabdce9e704485cf0784c53babc03aed715592822b13726bf",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-implementacion-review-anexos/source501-received.json": "3b633ede32e0191f085819f30d6d40ec2dbfdd8db45b33682533780db300718e",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-implementacion-review-anexos/types-delivery-final.log": "a70e222706b0e57936746555e8da20f7ecee2be3ac0eaa75ec9dcb94342f6d19",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-implementacion-review-anexos/types-final.log": "a70e222706b0e57936746555e8da20f7ecee2be3ac0eaa75ec9dcb94342f6d19",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-implementacion-review-anexos/focused-initial.log": "06af977b14caa0421f810535d8dfb8cb5e5e4f3e8ff9832d7c4abd05626b9627",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-implementacion-review-anexos/aliases-final-runtime.json": "0fab84176f4542b165d2c3b2b51c77a7b0e9fbf78872700ef6f5920121439f68",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-implementacion-review-anexos/types-review.log": "085e72019a5f3bd4d584d1b3279fa7125f37ec5d572094bb9285c168a1c63558",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-implementacion-review-anexos/finalize-evidence.py": "a86024d81bca59f98885b53f25e052c9b82ebc9f20b59ea5a297292b550a0392",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-implementacion-review-anexos/focused-final.log": "3575c224ef6ee4f244200b9281ef4fc2f6aac38f92fb0a2b9749e057385ba30d",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-implementacion-review-anexos/session-loopback-final-result.json": "0c82fb29297fda78cda4f99b37c0fe81e0d83289b2c12d4bc759384187025831",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-implementacion-review-anexos/recovery-final-runtime.json": "95bf6040c02fc632a12cf3c572f76fbac62993513907fb2df2f0b5556ec21de8",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-implementacion-review-anexos/focused-final-result.json": "51ceebb7edda0447d97e28ac693bce15314f8b56ad52bcaf4714a05a0f6caa39",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-implementacion-review-anexos/stop-final.log": "12970d8b80d3abdcde47fae9061ffb349a3b7e3e0b1f7f8391e3c2cbc1c55e29",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-implementacion-review-anexos/lint-session-final-result.json": "df904c72a5bb8ab1637cdab9b24f46afc925f02cdf99ecff4bf47acf4276c2b7",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-implementacion-review-anexos/lint-final-result.json": "2c1ca370f5eca017b46e005f561de772b9e5b251894d33a7a32bb21464a92c32",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-implementacion-review-anexos/recovery-initial-result.json": "035787614354db308348648bb18d9eed231c37f33adb46ee621326c4968dc068",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-implementacion-review-anexos/migrate-result.json": "46ebe15504883f3013068a319a3c14732a5278e159d21fdd7fd3c6b16201f53f",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-implementacion-review-anexos/lint-delivery-final.log": "78edb68e577b88a1ea2117586d3edcce8998ca0d29107c1e6b9bf4be83cf2322",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-implementacion-review-anexos/session-final-result.json": "133c95c0db26b8bba029e67bd5c7432647f51ab030d096a877761d9f30fdfed1",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-implementacion-review-anexos/aliases-corrected-runtime.json": "19c146a08e34587083a41524046818be4e6485a10983441d3a6ca0615d56e4d6",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-implementacion-review-anexos/types-current.log": "a70e222706b0e57936746555e8da20f7ecee2be3ac0eaa75ec9dcb94342f6d19",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-implementacion-review-anexos/recovery-initial.log": "fb3c458e1e514d07483b124d6f02f7315ec2f7a5dc79e20ee85e96eb6d0c0740",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-implementacion-review-anexos/drain-corrected-result.json": "180447ef3928135158ce48a7052cbfb11356a567a8967ceb8802fdc2e5fc1ba9",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-implementacion-review-anexos/sources-final.json": "ce119fa7f8d6ce53b550043c027d16f4ec0c3cbdb9c23f7f3a24cc903e910cf6",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-implementacion-review-anexos/transport-after-final-result.json": "23aa40c7243194e79e4b9ef9b0170399357588f4eb9d6d98d418bf64ff949dfb",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-implementacion-review-anexos/monotonic-final.log": "8aac17136d35583a7d1227cd6250f99a925a4804d1b162484548c9f768e58536",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-implementacion-review-anexos/recovery-final-result.json": "bf8bdcb358d5e651691bbf20f8c5d421a079d27794d134741282fb1291378d9e",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-implementacion-review-anexos/aliases-final.log": "cb1e6ce6f5816cec870da47fba48164e3fea0120e503dccdc7e0a9e8e454ab8d",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-implementacion-review-anexos/git-status-received.txt": "b065e45169a881208053b46aff62bc6254daef4d5e82a5dea8fdb19692f6eb96",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-implementacion-review-anexos/types-current-result.json": "6fc3c64f4e26ee36208481d8b6890123f0774d4f8d5b104603902267bb5199fd",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-implementacion-review-anexos/migrate.log": "d4ee12107e74785a7fa6d11d6031d0cc1f1b61f5c0bf46e4a6b592e812910a04",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-implementacion-review-anexos/types-review-result.json": "fcb506e9e3b7898b6de3376dad71cd9f2d08ba618e3333b610d632c51b142f4c",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-implementacion-review-anexos/lint-final.log": "b172fe803ed47649f5b2c921085d8c006d768d264713d418a5257f4c6ad46898",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-implementacion-review-anexos/git-diff-received.patch": "39d5f2b224c12be7361b04858ae113dee0cb47cdabb7e89e384d342a55572081",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-implementacion-review-anexos/lint-delivery-final-result.json": "13631a1f6876fda73d64a09abc84f00fb2f7026b78c4a624272f9e31f6d227e2",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-implementacion-review-anexos/transport-after-final.log": "721729542bb316f30b5c7bc35db8c4d6d33b2e8ebbd9fdd68c7523e9d94e8eef",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-implementacion-review-anexos/cleanup-observed.json": "85e03e74703b379ae7bb680493f99e8e4d35fa58427d084d0e2a927862ded51c",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-implementacion-review-anexos/drain-corrected.log": "4b80450bd0e667375275d14a92450b0c7b89c691ae2c04c86211782b69f3d4ad",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-implementacion-review-anexos/stop-final-result.json": "c403de345a1d7752b95214a31dba028cf6ac0a67a96f31248e9af2df484eef72",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-implementacion-review-anexos/schema-final.log": "919c26cbd154c540c8a110d57d3f91dc02c8c73f4e8edb56cddc7bb0b4beea22",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-implementacion-review-anexos/infra.py": "3f7ea24017afca923505ddce9b571bcac51a6c379e03bc3f9e7acdf1be381103",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-implementacion-review-anexos/gin-before-cleanup.json": "075a5b631dc36680cb6db465443073ddafbc896f7233aa1dc2c5657e7b64072d",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-implementacion-review-anexos/focused-initial-result.json": "0ea9fe2d3cb1e9c2a9d2eff1869bfda361a6cac138164546ae33fb7214ab8a56",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-implementacion-review-anexos/received-sha256.json": "7b22670850b5cf19364902343ed4875d3087a72adaa725cb6b663b66b0555b8e",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-implementacion-review-anexos/aliases-corrected.log": "87075d36c333acfaf67fa83cb2d8d5ef1e574881690871ac8e311dd18cb5766f",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-implementacion-review-anexos/session-final.log": "8f96fcc5f7874b81701657304e0940dfce9d7473b2f788b5e7bf9cc52c695acd",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-implementacion-review-anexos/lint-session-final.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-implementacion-review-anexos/review-vs-received.patch": "ba767866a29b4dc69eba89fffb7314623d4ba56cd53333c79fb0a410c11c3033",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-implementacion-review-anexos/types-comparison.json": "5b9cde4de6b26554c1affdcd5e84ae9576f102034c3b0c943f2f63f0f30a1ac2",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-implementacion-review-anexos/transport-after-final-runtime.json": "40c60441ed2e6df25903e6a41554e8a3f73fd6d2039c91d1175bfbbafb324b82",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-implementacion-review-anexos/recovery-final.log": "6a6f3e43a81a051a9f57d2b96bfd17b726d1dc846a4f77bc429d158d8be1942e",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-implementacion-review-anexos/aliases-final-result.json": "98b259eea452ed9ca85b37df6b93b206e21b75cd06b9ffaa59ce77ee8fbb8e01",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-implementacion-review-anexos/types-final-result.json": "c2074b0b780506bd67fbf9205ef555d6609a8ef77cc73e877a5cb5722fcd4d5c",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-implementacion-review-anexos/preservation-final.json": "31f59e779554134abbb9232b272b6b911aafc80994f46ce96ebc56b43de3e202",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-implementacion-review-anexos/prisma-generate.log": "827d8d8c8389621b3a1cda065fe4079e6f5bda538460ee5397f58b49dca7e656",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-implementacion-review.md": "34f63a19fb8ed3552ff8a53a7aa73d7039da23db052c5ae88a5206aa81d897ea"
+  },
+  "executions": {
+    "monotonic-final": {
+      "command": [
+        "pnpm",
+        "exec",
+        "vitest",
+        "run",
+        "src/modules/auth/password-recovery.service.spec.ts"
+      ],
+      "exitCode": 0,
+      "finishedAtUtc": "2026-10-10T01:37:48.093706+00:00",
+      "ownDatabase": "be05_review_2af1fb6f7757_test"
+    },
+    "schema-final": {
+      "command": [
+        "pnpm",
+        "exec",
+        "prisma",
+        "validate"
+      ],
+      "exitCode": 0,
+      "finishedAtUtc": "2026-10-10T01:39:54.305254+00:00",
+      "ownDatabase": "be05_review_2af1fb6f7757_test"
+    },
+    "prisma-generate": {
+      "command": [
+        "pnpm",
+        "exec",
+        "prisma",
+        "generate"
+      ],
+      "exitCode": 0,
+      "finishedAtUtc": "2026-10-10T01:22:46.742640+00:00",
+      "ownDatabase": "be05_review_2af1fb6f7757_test"
+    },
+    "aliases-corrected": {
+      "command": [
+        "pnpm",
+        "exec",
+        "vitest",
+        "run",
+        "--config",
+        "vitest.config.recovery-harness.ts",
+        "-t",
+        "rechaza formularios no JSON"
+      ],
+      "exitCode": 0,
+      "finishedAtUtc": "2026-10-10T01:39:18.805844+00:00",
+      "ownDatabase": "be05_review_2af1fb6f7757_test"
+    },
+    "types-delivery-final": {
+      "command": [
+        "pnpm",
+        "exec",
+        "tsc",
+        "--noEmit"
+      ],
+      "exitCode": 2,
+      "finishedAtUtc": "2026-10-10T01:40:38.544857+00:00",
+      "ownDatabase": "be05_review_2af1fb6f7757_test"
+    },
+    "session-loopback-final": {
+      "command": [
+        "pnpm",
+        "exec",
+        "vitest",
+        "run",
+        "--config",
+        "vitest.config.e2e.ts",
+        "test/auth-session.e2e-spec.ts"
+      ],
+      "exitCode": 0,
+      "finishedAtUtc": "2026-10-10T01:41:08.312897+00:00",
+      "ownDatabase": "be05_review_2af1fb6f7757_test"
+    },
+    "focused-final": {
+      "command": [
+        "pnpm",
+        "exec",
+        "vitest",
+        "run",
+        "src/common/guards/jwt-auth.guard.spec.ts",
+        "src/modules/auth/auth.service.spec.ts",
+        "src/modules/auth/password-recovery.service.spec.ts"
+      ],
+      "exitCode": 1,
+      "finishedAtUtc": "2026-10-10T01:32:41.767719+00:00",
+      "ownDatabase": "be05_review_2af1fb6f7757_test"
+    },
+    "lint-session-final": {
+      "command": [
+        "pnpm",
+        "exec",
+        "oxlint",
+        "--type-aware",
+        "test/auth-session.e2e-spec.ts"
+      ],
+      "exitCode": 0,
+      "finishedAtUtc": "2026-10-10T01:41:39.852736+00:00",
+      "ownDatabase": "be05_review_2af1fb6f7757_test"
+    },
+    "lint-final": {
+      "command": [
+        "pnpm",
+        "exec",
+        "oxlint",
+        "--type-aware",
+        "src/modules/auth",
+        "src/common/guards/jwt-auth.guard.ts",
+        "src/common/guards/jwt-auth.guard.spec.ts",
+        "src/common/types/auth-user.ts",
+        "test/auth-session.e2e-spec.ts",
+        "test/password-recovery-harness.ts",
+        "test/password-recovery-mail-harness.ts",
+        "vitest.config.recovery-harness.ts"
+      ],
+      "exitCode": 0,
+      "finishedAtUtc": "2026-10-10T01:38:28.665099+00:00",
+      "ownDatabase": "be05_review_2af1fb6f7757_test"
+    },
+    "recovery-initial": {
+      "command": [
+        "pnpm",
+        "exec",
+        "vitest",
+        "run",
+        "--config",
+        "vitest.config.recovery-harness.ts"
+      ],
+      "exitCode": 0,
+      "finishedAtUtc": "2026-10-10T01:26:15.869600+00:00",
+      "ownDatabase": "be05_review_2af1fb6f7757_test"
+    },
+    "migrate": {
+      "command": [
+        "pnpm",
+        "exec",
+        "prisma",
+        "migrate",
+        "deploy"
+      ],
+      "exitCode": 0,
+      "finishedAtUtc": "2026-10-10T01:22:40.814020+00:00",
+      "ownDatabase": "be05_review_2af1fb6f7757_test"
+    },
+    "session-final": {
+      "command": [
+        "pnpm",
+        "exec",
+        "vitest",
+        "run",
+        "--config",
+        "vitest.config.e2e.ts",
+        "test/auth-session.e2e-spec.ts"
+      ],
+      "exitCode": 0,
+      "finishedAtUtc": "2026-10-10T01:37:58.312584+00:00",
+      "ownDatabase": "be05_review_2af1fb6f7757_test"
+    },
+    "drain-corrected": {
+      "command": [
+        "pnpm",
+        "exec",
+        "vitest",
+        "run",
+        "src/modules/auth/password-recovery.service.spec.ts"
+      ],
+      "exitCode": 0,
+      "finishedAtUtc": "2026-10-10T01:33:28.911883+00:00",
+      "ownDatabase": "be05_review_2af1fb6f7757_test"
+    },
+    "transport-after-final": {
+      "command": [
+        "pnpm",
+        "exec",
+        "vitest",
+        "run",
+        "--config",
+        "vitest.config.recovery-harness.ts",
+        "-t",
+        "error posterior al handoff"
+      ],
+      "exitCode": 0,
+      "finishedAtUtc": "2026-10-10T01:38:57.368232+00:00",
+      "ownDatabase": "be05_review_2af1fb6f7757_test"
+    },
+    "recovery-final": {
+      "command": [
+        "pnpm",
+        "exec",
+        "vitest",
+        "run",
+        "--config",
+        "vitest.config.recovery-harness.ts"
+      ],
+      "exitCode": 0,
+      "finishedAtUtc": "2026-10-10T01:35:34.249722+00:00",
+      "ownDatabase": "be05_review_2af1fb6f7757_test"
+    },
+    "types-current": {
+      "command": [
+        "pnpm",
+        "exec",
+        "tsc",
+        "--noEmit",
+        "--pretty",
+        "false"
+      ],
+      "exitCode": 2,
+      "finishedAtUtc": "2026-10-10T01:22:49.046249+00:00",
+      "ownDatabase": "be05_review_2af1fb6f7757_test"
+    },
+    "types-review": {
+      "command": [
+        "pnpm",
+        "exec",
+        "tsc",
+        "--noEmit",
+        "--pretty",
+        "false"
+      ],
+      "exitCode": 2,
+      "finishedAtUtc": "2026-10-10T01:32:38.467618+00:00",
+      "ownDatabase": "be05_review_2af1fb6f7757_test"
+    },
+    "lint-delivery-final": {
+      "command": [
+        "pnpm",
+        "exec",
+        "oxlint",
+        "--type-aware",
+        "src/modules/auth",
+        "src/common/guards/jwt-auth.guard.ts",
+        "src/common/guards/jwt-auth.guard.spec.ts",
+        "src/common/types/auth-user.ts",
+        "test/auth-session.e2e-spec.ts",
+        "test/password-recovery-harness.ts",
+        "test/password-recovery-mail-harness.ts",
+        "vitest.config.recovery-harness.ts"
+      ],
+      "exitCode": 0,
+      "finishedAtUtc": "2026-10-10T01:40:36.801661+00:00",
+      "ownDatabase": "be05_review_2af1fb6f7757_test"
+    },
+    "stop-final": {
+      "command": [
+        "pnpm",
+        "run",
+        "stop"
+      ],
+      "exitCode": 0,
+      "phase": "cleanup-final",
+      "finishedAtUtc": "2026-10-10T01:42:38.751189+00:00"
+    },
+    "focused-initial": {
+      "command": [
+        "pnpm",
+        "exec",
+        "vitest",
+        "run",
+        "src/common/guards/jwt-auth.guard.spec.ts",
+        "src/modules/auth/auth.service.spec.ts"
+      ],
+      "exitCode": 0,
+      "finishedAtUtc": "2026-10-10T01:23:27.085063+00:00",
+      "ownDatabase": "be05_review_2af1fb6f7757_test"
+    },
+    "aliases-final": {
+      "command": [
+        "pnpm",
+        "exec",
+        "vitest",
+        "run",
+        "--config",
+        "vitest.config.recovery-harness.ts",
+        "-t",
+        "rechaza formularios no JSON"
+      ],
+      "exitCode": 1,
+      "finishedAtUtc": "2026-10-10T01:38:21.253621+00:00",
+      "ownDatabase": "be05_review_2af1fb6f7757_test"
+    },
+    "types-final": {
+      "command": [
+        "pnpm",
+        "exec",
+        "tsc",
+        "--noEmit"
+      ],
+      "exitCode": 2,
+      "finishedAtUtc": "2026-10-10T01:38:30.428850+00:00",
+      "ownDatabase": "be05_review_2af1fb6f7757_test"
+    }
+  },
+  "runtime": {
+    "aliases-final-runtime.json": {
+      "pid": 28099,
+      "stopped": true,
+      "serverListening": false,
+      "drain": {
+        "pendingJobs": 0,
+        "tickets": 0,
+        "quarantined": false,
+        "deadlineExceeded": false
+      },
+      "receiver": {
+        "messages": 0,
+        "leases": 0,
+        "waits": 0,
+        "candidate": false,
+        "gate": false
+      },
+      "queries": {
+        "active": 0,
+        "transactions": 0
+      },
+      "counts": {
+        "users": 0,
+        "recoveryTokens": 0,
+        "refreshTokens": 0,
+        "hits": 0
+      }
+    },
+    "recovery-final-runtime.json": {
+      "pid": 27892,
+      "stopped": true,
+      "serverListening": false,
+      "drain": {
+        "pendingJobs": 0,
+        "tickets": 0,
+        "quarantined": false,
+        "deadlineExceeded": false
+      },
+      "receiver": {
+        "messages": 0,
+        "leases": 0,
+        "waits": 0,
+        "candidate": false,
+        "gate": false
+      },
+      "queries": {
+        "active": 0,
+        "transactions": 0
+      },
+      "counts": {
+        "users": 0,
+        "recoveryTokens": 0,
+        "refreshTokens": 0,
+        "hits": 0
+      }
+    },
+    "aliases-corrected-runtime.json": {
+      "pid": 28220,
+      "stopped": true,
+      "serverListening": false,
+      "drain": {
+        "pendingJobs": 0,
+        "tickets": 0,
+        "quarantined": false,
+        "deadlineExceeded": false
+      },
+      "receiver": {
+        "messages": 0,
+        "leases": 0,
+        "waits": 0,
+        "candidate": false,
+        "gate": false
+      },
+      "queries": {
+        "active": 0,
+        "transactions": 0
+      },
+      "counts": {
+        "users": 0,
+        "recoveryTokens": 0,
+        "refreshTokens": 0,
+        "hits": 0
+      }
+    },
+    "transport-after-final-runtime.json": {
+      "pid": 28185,
+      "stopped": true,
+      "serverListening": false,
+      "drain": {
+        "pendingJobs": 0,
+        "tickets": 0,
+        "quarantined": false,
+        "deadlineExceeded": false
+      },
+      "receiver": {
+        "messages": 0,
+        "leases": 0,
+        "waits": 0,
+        "candidate": false,
+        "gate": false
+      },
+      "queries": {
+        "active": 0,
+        "transactions": 0
+      },
+      "counts": {
+        "users": 0,
+        "recoveryTokens": 0,
+        "refreshTokens": 0,
+        "hits": 0
+      }
+    }
+  },
+  "distinctCases": {
+    "guardAndAuth": 16,
+    "admissionDrainMonotonic": 3,
+    "session": 2,
+    "recovery": 25,
+    "total": 46
+  },
+  "countingLimits": "Not one global run. Recovery-full24 zero-skips precedes focused monotonic and new transport case. Targeted -t excludes other tests; alias expands existing case. No diagnostic or repeat cases added.",
+  "preservation": {
+    "verifiedAtUtc": "2026-10-10T01:44:01.045683+00:00",
+    "receivedCopiesVerified": 33,
+    "receivedChanged": [
+      "backend/src/common/guards/jwt-auth.guard.ts",
+      "backend/src/common/guards/jwt-auth.guard.spec.ts",
+      "backend/src/modules/auth/auth.controller.ts",
+      "backend/src/modules/auth/auth.service.ts",
+      "backend/src/modules/auth/dto/password-recovery-request.dto.ts",
+      "backend/src/modules/auth/dto/password-recovery.dto.ts",
+      "backend/src/modules/auth/password-recovery.service.ts",
+      "backend/src/modules/auth/recovery-http.filter.ts",
+      "backend/src/modules/auth/recovery-mail.port.ts",
+      "backend/test/auth-session.e2e-spec.ts",
+      "backend/test/password-recovery-harness.ts",
+      "backend/docs/api.md",
+      "backend/docs/database.md",
+      "backend/docs/testing.md",
+      "backend/docs/gotchas.md",
+      "backend/src/modules/auth/auth.service.spec.ts"
+    ],
+    "newScopedSources": [
+      "backend/src/modules/auth/recovery-json.guard.ts",
+      "backend/src/modules/auth/password-recovery.service.spec.ts",
+      "backend/test/password-recovery-mail-harness.ts"
+    ],
+    "source501Compared": 501,
+    "source501Changed": [
+      "backend/src/common/guards/jwt-auth.guard.ts",
+      "backend/src/modules/auth/auth.controller.ts",
+      "backend/src/modules/auth/auth.service.spec.ts",
+      "backend/src/modules/auth/auth.service.ts",
+      "backend/test/auth-session.e2e-spec.ts"
+    ],
+    "outsideAllowedScopeChanged": [],
+    "historicalMigrationPathsUnchanged": [
+      "backend/prisma/migrations/20260925180500_init_users_and_catalog/migration.sql",
+      "backend/prisma/migrations/20260925180600_add_pg_trgm/migration.sql",
+      "backend/prisma/migrations/20260926010423_add_friendships/migration.sql",
+      "backend/prisma/migrations/20260927120000_add_tcgdex_set_id/migration.sql",
+      "backend/prisma/migrations/20260928160000_add_cards_artist_trgm/migration.sql",
+      "backend/prisma/migrations/20260929103000_add_card_sets_ptcgo_code/migration.sql",
+      "backend/prisma/migrations/20260930180000_add_provider_identity_and_price_provenance/migration.sql",
+      "backend/prisma/migrations/20260930204819_persistent_job_queue/migration.sql",
+      "backend/prisma/migrations/20260930210000_job_queue_explicit_utc/migration.sql",
+      "backend/prisma/migrations/20261005170000_portfolio_snapshots/migration.sql",
+      "backend/prisma/migrations/20261007090000_collection_item_add_idempotency/migration.sql",
+      "backend/prisma/migrations/migration_lock.toml"
+    ],
+    "producerReportAndEvidenceUnchanged": true,
+    "source501BaselineKind": "reconstructed after first review edits; received hashes overlaid for original baseline paths"
+  },
+  "typecheck": {
+    "initialAndLatestLogIdentical": true,
+    "diagnostics": [
+      [
+        "src/jobs/sync-prices.service.spec.ts(20,11)",
+        "TS2430"
+      ],
+      [
+        "src/jobs/tcgdex-set-mapping.service.spec.ts(10,11)",
+        "TS2430"
+      ],
+      [
+        "src/modules/cards/cards.service.spec.ts(201,53)",
+        "TS18048"
+      ],
+      [
+        "src/modules/cards/cards.service.spec.ts(433,42)",
+        "TS2322"
+      ],
+      [
+        "src/redis/redis.service.spec.ts(257,45)",
+        "TS7006"
+      ],
+      [
+        "src/redis/redis.service.spec.ts(284,45)",
+        "TS7006"
+      ],
+      [
+        "test/app.e2e-spec.ts(6,26)",
+        "TS2307"
+      ]
+    ],
+    "fullTypecheckGreen": false,
+    "baselineHistoricalExecuted": false,
+    "allDiagnosticSourcePathsOutsideScope": true
+  },
+  "cleanup": {
+    "runId": "be05-review-2af1fb6f7757",
+    "tmp": "/private/tmp/be05-review-2af1fb6f7757",
+    "annex": "/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-implementacion-review-anexos",
+    "owner": "/root/be05_account_draft_review_sol",
+    "database": "be05_review_2af1fb6f7757_test",
+    "marker": "be05-review-2af1fb6f7757-owned",
+    "liveResources": [],
+    "pgContainerID": "18aa2f6937521ae010930ae98cbee45f2fa435b554c65cf90daaffba0c641ba8",
+    "preDropCounts": {
+      "cards": 20670,
+      "sets": 176,
+      "users": 0,
+      "collections": 0,
+      "items": 0,
+      "shares": 0,
+      "prices": 188,
+      "jobs": 0,
+      "migrations": 13,
+      "gin": 5
+    },
+    "connectionsBeforeDrop": 0,
+    "markerOwnerRoleVerified": true,
+    "cloneDropped": true,
+    "markerRemoved": true,
+    "sharedBoundedCountsAndIDsUnchanged": true,
+    "cleanupAtUtc": "2026-10-10T01:41:48.606591+00:00"
+  },
+  "cleanupObserved": {
+    "checkedAtUtc": "2026-10-10T01:42:15.698395+00:00",
+    "ginSharedDefinitionsUnchanged": true,
+    "sharedGinDefinitions": {
+      "pokemon_cards": [
+        {
+          "name": "card_sets_name_trgm_idx",
+          "table": "card_sets",
+          "definition": "CREATE INDEX card_sets_name_trgm_idx ON public.card_sets USING gin (name gin_trgm_ops)"
+        },
+        {
+          "name": "cards_artist_trgm_idx",
+          "table": "cards",
+          "definition": "CREATE INDEX cards_artist_trgm_idx ON public.cards USING gin (artist gin_trgm_ops)"
+        },
+        {
+          "name": "cards_name_trgm_idx",
+          "table": "cards",
+          "definition": "CREATE INDEX cards_name_trgm_idx ON public.cards USING gin (name gin_trgm_ops)"
+        },
+        {
+          "name": "users_display_name_trgm_idx",
+          "table": "users",
+          "definition": "CREATE INDEX users_display_name_trgm_idx ON public.users USING gin (\"displayName\" gin_trgm_ops)"
+        },
+        {
+          "name": "users_username_trgm_idx",
+          "table": "users",
+          "definition": "CREATE INDEX users_username_trgm_idx ON public.users USING gin (username gin_trgm_ops)"
+        }
+      ],
+      "pokemon_cards_test": [
+        {
+          "name": "card_sets_name_trgm_idx",
+          "table": "card_sets",
+          "definition": "CREATE INDEX card_sets_name_trgm_idx ON public.card_sets USING gin (name gin_trgm_ops)"
+        },
+        {
+          "name": "cards_artist_trgm_idx",
+          "table": "cards",
+          "definition": "CREATE INDEX cards_artist_trgm_idx ON public.cards USING gin (artist gin_trgm_ops)"
+        },
+        {
+          "name": "cards_name_trgm_idx",
+          "table": "cards",
+          "definition": "CREATE INDEX cards_name_trgm_idx ON public.cards USING gin (name gin_trgm_ops)"
+        },
+        {
+          "name": "users_display_name_trgm_idx",
+          "table": "users",
+          "definition": "CREATE INDEX users_display_name_trgm_idx ON public.users USING gin (\"displayName\" gin_trgm_ops)"
+        },
+        {
+          "name": "users_username_trgm_idx",
+          "table": "users",
+          "definition": "CREATE INDEX users_username_trgm_idx ON public.users USING gin (username gin_trgm_ops)"
+        }
+      ]
+    },
+    "runtimeProcesses": [
+      {
+        "file": "aliases-final-runtime.json",
+        "pid": 28099,
+        "processAbsent": true
+      },
+      {
+        "file": "recovery-final-runtime.json",
+        "pid": 27892,
+        "processAbsent": true
+      },
+      {
+        "file": "aliases-corrected-runtime.json",
+        "pid": 28220,
+        "processAbsent": true
+      },
+      {
+        "file": "transport-after-final-runtime.json",
+        "pid": 28185,
+        "processAbsent": true
+      }
+    ],
+    "ports3000And3001Free": true
+  },
+  "limitations": [
+    "No full typecheck green; seven unchanged diagnostics outside scope; no historical baseline execution.",
+    "No SMTP/provider configured, no production recovery delivery, no frontend UI/browser consumer gate.",
+    "Bounded transactions are not proof of arbitrary driver cancellation; unresolved jobs require quarantine.",
+    "Reference cleanup does not promise GC timing or string zeroization.",
+    "Bounded shared counts/GIN/infra comparison is not a full row snapshot.",
+    "Historical JWT TTL maximum not measured; deletion/backups/retention policy pending.",
+    "Source501 receipt reconstructed after first review edits by overlaying preserved received hashes."
+  ]
+}

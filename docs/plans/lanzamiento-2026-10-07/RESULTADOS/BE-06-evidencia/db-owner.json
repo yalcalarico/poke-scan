@@ -1,0 +1,35 @@
+{
+  "runId": "be06_34d71d47a028",
+  "owner": "/root",
+  "database": "be06_34d71d47a028_test",
+  "marker": "owner=/root;run=be06_34d71d47a028;source=BE06-ops-metrics-standard-fixture",
+  "pgFullID": "18aa2f6937521ae010930ae98cbee45f2fa435b554c65cf90daaffba0c641ba8",
+  "sourceCounts": {
+    "migrations": 13,
+    "users": 22,
+    "collections": 22,
+    "items": 69,
+    "shares": 13,
+    "cards": 20670,
+    "gin": 5
+  },
+  "standardTestBefore": {
+    "migrations": 11,
+    "users": 2,
+    "collections": 3,
+    "items": 2,
+    "shares": 1,
+    "cards": 20670,
+    "gin": 5,
+    "priced": 7
+  },
+  "createdAtUtc": "2026-10-11T15:44:59.125142+00:00",
+  "liveResources": [],
+  "redis": {
+    "name": "be06_34d71d47a028-redis",
+    "id": "c9d6553fbe050636c89dcb307b6aaa07f3cf5211e94515b0ff09e628b4aa5ecd",
+    "port": 56399,
+    "label": "owner=/root;run=be06_34d71d47a028;source=BE06-ops-metrics-standard-fixture"
+  },
+  "cleanedAtUtc": "2026-10-11T15:47:41.981224+00:00"
+}

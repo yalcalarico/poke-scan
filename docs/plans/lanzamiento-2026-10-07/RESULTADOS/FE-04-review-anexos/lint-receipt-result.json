@@ -1,0 +1,14 @@
+{
+  "command": [
+    "pnpm",
+    "--dir",
+    "frontend",
+    "exec",
+    "eslint",
+    "lib/recovery/recovery-view.ts",
+    "lib/recovery/recovery-capture-script.ts",
+    "lib/recovery/recovery-capture-script.test.ts"
+  ],
+  "exitCode": 0,
+  "finishedAtUtc": "2026-10-10T02:20:05.146759+00:00"
+}

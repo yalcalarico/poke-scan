@@ -1,0 +1,4 @@
+55486e4e7e7bd0476a6e1259317224db1a7ac8df1d9f2ffa0660d690deddd709  frontend/components/auth/login-form.tsx
+ea3ff37dc713c14cf912390bede8cd9accb79a3798ccb182f800bd9730e49e2d  frontend/components/auth/auth-shell.tsx
+ff93f356467633ac2a9fcabc0bd842412adb488ee3792e3da4918bf9eebd45a4  frontend/hooks/use-auth.tsx
+9369edcb157f431618679776e82cba88b59c204d0e298f011f4e97fb146a2544  frontend/app/layout.tsx

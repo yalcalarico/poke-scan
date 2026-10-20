@@ -1,0 +1,254 @@
+{
+  "runId": "inf03-0694d0eac55a",
+  "startedAt": "2026-10-12T03:26:35.304Z",
+  "steps": {
+    "sourceBootstrapMs": 1754,
+    "backupMs": 1137
+  },
+  "tests": {
+    "positive": 0,
+    "negative": 0
+  },
+  "ownedResources": [
+    {
+      "type": "network",
+      "name": "inf03-0694d0eac55a-source-net",
+      "runId": "inf03-0694d0eac55a",
+      "role": "source"
+    },
+    {
+      "type": "volume",
+      "name": "inf03-0694d0eac55a-source-pgdata",
+      "runId": "inf03-0694d0eac55a",
+      "role": "source"
+    },
+    {
+      "type": "container",
+      "name": "inf03-0694d0eac55a-source-pg",
+      "runId": "inf03-0694d0eac55a",
+      "role": "source"
+    },
+    {
+      "type": "network",
+      "name": "inf03-0694d0eac55a-destination-net",
+      "runId": "inf03-0694d0eac55a",
+      "role": "destination"
+    },
+    {
+      "type": "volume",
+      "name": "inf03-0694d0eac55a-destination-pgdata",
+      "runId": "inf03-0694d0eac55a",
+      "role": "destination"
+    },
+    {
+      "type": "container",
+      "name": "inf03-0694d0eac55a-destination-pg",
+      "runId": "inf03-0694d0eac55a",
+      "role": "destination"
+    }
+  ],
+  "cleanup": {
+    "attempted": true,
+    "complete": true,
+    "errors": [],
+    "hostTemporaryRemoved": true
+  },
+  "tooling": {
+    "node": "v22.20.0",
+    "pnpm": "10.17.1",
+    "platform": "darwin",
+    "arch": "arm64",
+    "age": "v1.2.1",
+    "ageRelease": "https://github.com/FiloSottile/age/releases/download/v1.2.1/age-v1.2.1-darwin-arm64.tar.gz",
+    "ageArchiveSha256": null,
+    "toolSource": "provided-local-no-download",
+    "ageBinarySha256": "d2b0d4211fd9e364ea8dd1cb150653a7f21dfc08e96632de444aa209db5fc0d0",
+    "postgresImage": "postgres@sha256:0ea6700a3b4f0ae6ce746519073558aed4d88a79d8d07622a9a644946c7319c4",
+    "postgresImageId": "sha256:4b5d4fd438e2c1ce13106e4996fc604f0a1cff39cde48b546fcac3cf1a233c3a",
+    "postgresRepoDigests": [
+      "postgres@sha256:0ea6700a3b4f0ae6ce746519073558aed4d88a79d8d07622a9a644946c7319c4"
+    ]
+  },
+  "sharedHealthBefore": [
+    {
+      "name": "pokemon-scanner-db",
+      "id": "18aa2f6937521ae010930ae98cbee45f2fa435b554c65cf90daaffba0c641ba8",
+      "health": "healthy"
+    },
+    {
+      "name": "pokemon-scanner-redis",
+      "id": "f2d2ca0ad580fe8ca3e94a59b4b6d5a53d761036ba1d14e45b8543a978bbb15f",
+      "health": "healthy"
+    }
+  ],
+  "startingContainerSnapshotRecorded": true,
+  "sharedContainersBefore": [
+    "pokemon-scanner-db 18aa2f693752",
+    "pokemon-scanner-redis f2d2ca0ad580",
+    "retention_650445a871f6-redis 360c036a25c0"
+  ],
+  "backup": {
+    "backupId": "11d53e02-f99f-4601-9d45-309b8bb3c25b",
+    "ciphertextBytes": 352024,
+    "ciphertextSha256": "03118384f501a752be0117e4be7a412722d3f000c1be2d2594ebe7b95e812982",
+    "encryption": "age-v1.2.1",
+    "createdAt": "2026-10-12T03:26:41.974Z",
+    "durationMs": 985,
+    "migrations": 13,
+    "dumpBytes": 346739,
+    "dumpSha256": "b4d84c8601067d182cc465ae79ba88989970d18d4fbca38a44be7205110be51a",
+    "receiptSha256": "9379b0980cb0dc05f6b78e5c46607f63e79b286109bc23407baea7957bbdc36d",
+    "fixtureStatementAt": "2026-10-12T03:26:40.590000Z",
+    "includedCommitObservedAfterSQL": "2026-10-12T03:26:40.792Z"
+  },
+  "multichunk": {
+    "ciphertextBytes": 352024,
+    "minimumChunks": 5
+  },
+  "checks": [
+    {
+      "id": "backup-registered-durable",
+      "pass": true
+    },
+    {
+      "id": "backup-staging-clean-before-success",
+      "pass": true
+    },
+    {
+      "id": "baja-after-snapshot-current-independent-record",
+      "pass": true
+    },
+    {
+      "id": "tampered-suppression-custody",
+      "pass": true
+    },
+    {
+      "id": "tampered-suppression-custody-target-untouched",
+      "pass": true
+    },
+    {
+      "id": "tampered-inventory-custody",
+      "pass": true
+    },
+    {
+      "id": "tampered-inventory-custody-target-untouched",
+      "pass": true
+    },
+    {
+      "id": "wrong-age-key-authentication",
+      "pass": true
+    },
+    {
+      "id": "wrong-age-key-authentication-target-untouched",
+      "pass": true
+    },
+    {
+      "id": "copy-does-not-renew-or-register",
+      "pass": true
+    },
+    {
+      "id": "copy-does-not-renew-or-register-target-untouched",
+      "pass": true
+    },
+    {
+      "id": "no-restore-before-all-new-guards",
+      "pass": true
+    },
+    {
+      "id": "source-full-id-before-loss",
+      "pass": true
+    },
+    {
+      "id": "source-actually-gone",
+      "pass": true
+    },
+    {
+      "id": "restore-only-success-after-suppressions",
+      "pass": true
+    },
+    {
+      "id": "single-actual-pg-restore",
+      "pass": true
+    },
+    {
+      "id": "deleted-account-and-all-fixture-relations-stay-gone",
+      "pass": true
+    },
+    {
+      "id": "other-account-and-collection-preserved",
+      "pass": true
+    },
+    {
+      "id": "catalog-preserved",
+      "pass": true
+    },
+    {
+      "id": "migration-and-five-gin-preserved",
+      "pass": true
+    },
+    {
+      "id": "restore-plaintext-staging-removed",
+      "pass": true
+    },
+    {
+      "id": "compiled-api-ready-after-replay",
+      "pass": true
+    },
+    {
+      "id": "old-account-login-denied",
+      "pass": true
+    },
+    {
+      "id": "other-account-login-works",
+      "pass": true
+    },
+    {
+      "id": "old-signed-access-denied",
+      "pass": true
+    },
+    {
+      "id": "deleted-share-api-404",
+      "pass": true
+    },
+    {
+      "id": "other-account-api-collection-works",
+      "pass": true
+    },
+    {
+      "id": "compiled-next-started",
+      "pass": true
+    }
+  ],
+  "restore": {
+    "restored": true,
+    "backupId": "11d53e02-f99f-4601-9d45-309b8bb3c25b",
+    "migrations": 13,
+    "dumpBytes": 346739,
+    "schemaFingerprint": "1363b823a220be0f716bafbf3f90f63ccfc0a096839419ffc908da1c62876434",
+    "pgTrgm": "1.6",
+    "validTrigramIndexes": 5,
+    "validatedConstraints": 36,
+    "constraintScope": "public",
+    "ownership": true,
+    "suppressionsApplied": true
+  },
+  "testResult": "failed",
+  "error": "locator.fill: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByLabel('Email', { exact: true })\u001b[22m\n",
+  "sharedContainersAfter": [
+    "pokemon-scanner-db 18aa2f693752",
+    "pokemon-scanner-redis f2d2ca0ad580",
+    "retention_650445a871f6-redis 360c036a25c0"
+  ],
+  "sharedHealthAfter": [
+    {
+      "name": "pokemon-scanner-db",
+      "id": "18aa2f6937521ae010930ae98cbee45f2fa435b554c65cf90daaffba0c641ba8",
+      "health": "healthy"
+    },
+    {
+      "name": "pokemon-scanner-redis",
+      "id": "f2d2ca0ad580fe8ca3e94a59b4b6d5a53d761036ba1d14e45b8543a978bbb15f",
+      "health": "healthy"
+    }
+  ]
+}

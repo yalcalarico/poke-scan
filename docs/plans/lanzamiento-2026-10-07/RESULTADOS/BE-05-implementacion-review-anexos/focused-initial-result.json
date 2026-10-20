@@ -1,0 +1,13 @@
+{
+  "command": [
+    "pnpm",
+    "exec",
+    "vitest",
+    "run",
+    "src/common/guards/jwt-auth.guard.spec.ts",
+    "src/modules/auth/auth.service.spec.ts"
+  ],
+  "exitCode": 0,
+  "finishedAtUtc": "2026-10-10T01:23:27.085063+00:00",
+  "ownDatabase": "be05_review_2af1fb6f7757_test"
+}

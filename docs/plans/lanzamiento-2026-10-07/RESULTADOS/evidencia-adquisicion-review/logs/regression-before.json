@@ -1,0 +1,17 @@
+{
+  "name": "regression-before",
+  "command": [
+    "pnpm",
+    "--dir",
+    "frontend",
+    "exec",
+    "vitest",
+    "run",
+    "components/marketing/__tests__/faq-section.test.tsx",
+    "lib/marketing/__tests__/acquisition-metadata.test.ts"
+  ],
+  "startedAtUtc": "2026-10-10T14:31:31.481717+00:00",
+  "finishedAtUtc": "2026-10-10T14:31:33.037054+00:00",
+  "exitCode": 1,
+  "log": "logs/regression-before.log"
+}

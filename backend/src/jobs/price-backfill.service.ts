@@ -9,18 +9,10 @@ import { PrismaService } from '../prisma/prisma.service.js';
 import { PriceQueueService } from './price-queue.service.js';
 
 /**
- * Cuántas cartas encola una corrida del backfill, por omisión.
- *
-* El número no es un detalle de performance: es **presupuesto de requests**.
- * Cada carta encolada termina en un request a TCGdex, y el ritmo global son
- * 26/min. 300 cartas son ~12 minutos de cola, que es lo que un proceso que
- * corre cada hora puede absorber sin jorobarle la latencia a nadie.
- *
- * Con la cola persistente el costo de pasarse es bajo —la cola simplemente tarda
- * más—, así que el límite existe para que una corrida accidental no se cargue con
- * las 20.670 cartas y deprive al usuario de precios frescos durante horas.
+ * Límite superior que cubre el catálogo actual completo. El cron lo recorre
+ * una vez por hora; la cola durable y el rate gate global regulan el consumo.
  */
-export const BACKFILL_BATCH = 300;
+export const BACKFILL_BATCH = 25_000;
 
 /**
  * Rango de frescura para considerar que una carta "no necesita precio".
@@ -31,7 +23,7 @@ export const BACKFILL_BATCH = 300;
  */
 const FRESH_MS = 24 * 60 * 60 * 1000;
 /** TTL negativa: no volver a poner en backfill una carta que acaba de no cotizar. */
-const NEGATIVE_RETRY_MS = 6 * 60 * 60 * 1000;
+const NEGATIVE_RETRY_MS = 24 * 60 * 60 * 1000;
 
 export interface BackfillResult {
   /** Cartas encoladas en esta corrida. */
@@ -77,12 +69,12 @@ export interface BackfillOptions {
  *
  * ## Por qué es idempotente y autolimitado
  *
- * Cada corrida encola las N cartas **más viejas** (o sin precio), no las
- * primeras N. Así el trabajo avanza hacia adelante en vez de reprocesar las
+ * Cada corrida encola hasta el catálogo completo: las cartas **más viejas**
+ * (o sin precio) primero. Así el trabajo avanza hacia adelante en vez de reprocesar las
  * mismas, y correrlo dos veces en la misma hora no hace daño: las cartas ya
- * `pending`/`processing` no vuelven a ser candidatas. Una carta que el provider
- * no cotiza (`completed`, sin fila activa) descansa 6 h, el mismo TTL que la
- * caché negativa, así que no llena el mismo lote una vez por hora para siempre.
+ * `pending`/`processing` no vuelven a ser candidatas. Una carta que el proveedor
+ * no cotiza (`completed`, sin fila activa) descansa 24 h, así no llena la cola
+ * cada hora para siempre.
  */
 @Injectable()
 export class PriceBackfillService {
@@ -112,9 +104,9 @@ export class PriceBackfillService {
       * como si fuera del proveedor activo y la siguiente corrida la volvería a
       * encolar, para siempre.
       *
-      * Las filas ya en `pending`, `processing` o `failed` quedan fuera: el worker
+      * Las filas `pending`, `processing` o con backoff vigente quedan fuera: el worker
       * ya las tiene o ya agotaron los reintentos. Las `completed` solo descansan
-      * durante el TTL negativo de 6 h; después pueden volver al backfill si no
+      * durante el TTL diario; después pueden volver al backfill si no
       * hay precio activo. Sin ese cooldown, las cartas que el provider no cotiza
       * ocuparían siempre las primeras posiciones del lote y dejarían sin turno
       * al resto del catálogo.
@@ -133,18 +125,16 @@ export class PriceBackfillService {
       LIMIT ${limit}
     `);
 
-    for (const candidate of candidates) {
-      this.queue.enqueue(candidate.cardId);
-    }
+    const enqueued = await this.queue.enqueueMany(candidates.map((candidate) => candidate.cardId));
 
-    if (candidates.length > 0) {
+    if (enqueued > 0) {
       this.logger.log(
-        `Backfill: encoladas ${candidates.length} cartas sin precio vigente de ${this.priceProvider.id}.`,
+        `Backfill: encoladas ${enqueued} cartas sin precio vigente de ${this.priceProvider.id}.`,
       );
     }
 
     return {
-      enqueued: candidates.length,
+      enqueued,
       pending: await this.pendingCount({ cardIds }),
     };
   }
@@ -210,7 +200,8 @@ export class PriceBackfillService {
             FROM price_refresh_jobs j
             WHERE j."cardId" = c.id
               AND (
-                j.status IN ('pending', 'processing', 'failed')
+                j.status IN ('pending', 'processing')
+                OR (j.status = 'failed' AND j."availableAt" > (now() AT TIME ZONE 'UTC'))
                 OR (
                   j.status = 'completed'
                   AND j."completedAt" >= ${new Date(Date.now() - NEGATIVE_RETRY_MS)}

@@ -1,0 +1,27 @@
+{
+  "purpose": "Account deletion and restore local validation",
+  "records": [
+    {
+      "phase": "stop",
+      "command": [
+        "pnpm",
+        "run",
+        "stop"
+      ],
+      "exitCode": 0,
+      "startedAtUtc": "2026-10-11T23:09:20.220550+00:00",
+      "finishedAtUtc": "2026-10-11T23:09:20.465983+00:00"
+    },
+    {
+      "phase": "check",
+      "command": [
+        "pnpm",
+        "run",
+        "check"
+      ],
+      "exitCode": 1,
+      "startedAtUtc": "2026-10-11T23:09:20.466345+00:00",
+      "finishedAtUtc": "2026-10-11T23:10:25.677509+00:00"
+    }
+  ]
+}

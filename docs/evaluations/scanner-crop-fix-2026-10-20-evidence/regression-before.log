@@ -1,0 +1,220 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.2 /Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/frontend
+
+ ❯ lib/scanner/__tests__/perspective.test.ts (8 tests | 2 failed) 96ms
+   ❯ perspectiva del recorte (8)
+     × conserva el marco exterior aunque el dibujo interior tenga perspectiva (giro 0°) 48ms
+     × conserva el marco exterior aunque el dibujo interior tenga perspectiva (giro 90°) 15ms
+ ❯ components/scanner/__tests__/visual-result.test.tsx (3 tests | 1 failed) 108ms
+   × muestra el total impreso de la expansión aunque tenga cartas adicionales 7ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  components/scanner/__tests__/visual-result.test.tsx > muestra el total impreso de la expansión aunque tenga cartas adicionales
+TestingLibraryElementError: Unable to find an element with the text: 30th Celebration · 92 / 128. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"_reveal_a2b86a relative"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"rounded-surface border border-line bg-surface shadow-sm relative grid items-center gap-6 p-5 md:grid-cols-2"[39m
+        [33mdata-v2-scan-result[39m=[32m""[39m
+      [36m>[39m
+        [36m<span[39m
+          [33maria-hidden[39m=[32m"true"[39m
+          [33mclass[39m=[32m"_burst_a2b86a"[39m
+        [36m>[39m
+          [36m<i[39m
+            [33mstyle[39m=[32m"--angle: 0deg;"[39m
+          [36m/>[39m
+          [36m<i[39m
+            [33mstyle[39m=[32m"--angle: 25.714285714285715deg;"[39m
+          [36m/>[39m
+          [36m<i[39m
+            [33mstyle[39m=[32m"--angle: 51.42857142857143deg;"[39m
+          [36m/>[39m
+          [36m<i[39m
+            [33mstyle[39m=[32m"--angle: 77.14285714285714deg;"[39m
+          [36m/>[39m
+          [36m<i[39m
+            [33mstyle[39m=[32m"--angle: 102.85714285714286deg;"[39m
+          [36m/>[39m
+          [36m<i[39m
+            [33mstyle[39m=[32m"--angle: 128.57142857142858deg;"[39m
+          [36m/>[39m
+          [36m<i[39m
+            [33mstyle[39m=[32m"--angle: 154.28571428571428deg;"[39m
+          [36m/>[39m
+          [36m<i[39m
+            [33mstyle[39m=[32m"--angle: 180deg;"[39m
+          [36m/>[39m
+          [36m<i[39m
+            [33mstyle[39m=[32m"--angle: 205.71428571428572deg;"[39m
+          [36m/>[39m
+          [36m<i[39m
+            [33mstyle[39m=[32m"--angle: 231.42857142857142deg;"[39m
+          [36m/>[39m
+          [36m<i[39m
+            [33mstyle[39m=[32m"--angle: 257.14285714285717deg;"[39m
+          [36m/>[39m
+          [36m<i[39m
+            [33mstyle[39m=[32m"--angle: 282.85714285714283deg;"[39m
+          [36m/>[39m
+          [36m<i[39m
+            [33mstyle[39m=[32m"--angle: 308.57142857142856deg;"[39m
+          [36m/>[39m
+          [36m<i[39m
+            [33mstyle[39m=[32m"--angle: 334.2857142857143deg;"[39m
+          [36m/>[39m
+        [36m</span>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"relative mx-auto w-full max-w-56 py-4"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"_cardReveal_a2b86a"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"_holoStage_a2b86a"[39m
+              [33mdata-holo-card[39m=[32m"detail"[39m
+              [33mdata-paused[39m=[32m"false"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"_holoSurface_a2b86a"[39m
+              [36m>[39m
+                [36m<img[39m
+                  [33malt[39m=[32m"Carta propuesta: Pikachu"[39m
+                  [33msrc[39m=[32m"/pikachu.png"[39m
+                [36m/>[39m
+                [36m<span[39m
+                  [33maria-hidden[39m=[32m"true"[39m
+                  [33mclass[39m=[32m"_rainbow_a2b86a"[39m
+                [36m/>[39m
+                [36m<span[39m
+                  [33maria-hidden[39m=[32m"true"[39m
+                  [33mclass[39m=[32m"_glare_a2b86a"[39m
+                [36m/>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex min-w-0 flex-col items-start gap-3"[39m
+        [36m>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"text-overline text-brand"[39m
+          [36m>[39m
+            [0mCoincidencia propuesta[0m
+          [36m</p>[39m
+          [36m<h2[39m
+            [33mclass[39m=[32m"break-words text-h1 text-primary"[39m
+          [36m>[39m
+            [0mPikachu[0m
+          [36m</h2>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"text-body text-secondary"[39m
+          [36m>[39m
+            [0m30th Celebration[0m
+            [0m · [0m
+            [0m92 / 161[0m
+          [36m</p>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"text-caption text-secondary"[39m
+          [36m>[39m
+            [0mRevisá nombre, número y edición antes de organizar la carta.[0m
+          [36m</p>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"text-display text-positive"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"tabular-nums text-display"[39m
+            [36m>[39m
+              [0m—[0m
+            [36m</span>[39m
+            [0m [0m
+          [36m</p>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"text-caption text-secondary"[39m
+          [36m>[39m
+            [0mSin referencia de precio disponible.[0m
+          [36m</p>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"inline-flex items-center justify-center gap-2 rounded-control font-label transition-[color,background-color,border-color,transform,box-shadow] duration-fast ease-standard active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--focus-ring)] disabled:pointer-events-none disabled:active:scale-100 border border-line bg-surface text-primary shadow-xs hover:bg-surface-2 dark:bg-surface-2 h-11 px-4 text-label"[39m
+            [33mtype[39m=[32m"button"[39m
+          [36m>[39m
+            [0mRevisar coincidencia[0m
+          [36m</button>[39m
+          [36m<a[39m
+            [33mclass[39m=[32m"flex min-h-11 items-center rounded-control px-3 text-label text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--focus-ring)]"[39m
+            [33mhref[39m=[32m"/carta/base1-58?visual=v2"[39m
+          [36m>[39m
+            [0mVer detalle de la carta[0m
+          [36m</a>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ Object.getElementError node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ components/scanner/__tests__/visual-result.test.tsx:42:17
+     40|   } } };
+     41|   render(<VisualScanResult entry={proposal} onReview={vi.fn()} />);
+     42|   expect(screen.getByText('30th Celebration · 92 / 128')).toBeInTheDoc…
+       |                 ^
+     43|   expect(screen.queryByText(/92 \/ 161/)).not.toBeInTheDocument();
+     44| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  lib/scanner/__tests__/perspective.test.ts > perspectiva del recorte > conserva el marco exterior aunque el dibujo interior tenga perspectiva (giro 0°)
+AssertionError: expected 90 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 90
+
+ ❯ lib/scanner/__tests__/perspective.test.ts:35:29
+     33|     }
+     34|     const result = normalizeCardImageData(rotation ? rotateImageData(p…
+     35|     expect(result.rotation).toBe(rotation);
+       |                             ^
+     36|     expect(result.image.height).toBeGreaterThan(280);
+     37|     // El pie de la carta no forma parte del cuadrilátero del dibujo.
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  lib/scanner/__tests__/perspective.test.ts > perspectiva del recorte > conserva el marco exterior aunque el dibujo interior tenga perspectiva (giro 90°)
+AssertionError: expected +0 to be 90 // Object.is equality
+
+- Expected
++ Received
+
+- 90
++ 0
+
+ ❯ lib/scanner/__tests__/perspective.test.ts:35:29
+     33|     }
+     34|     const result = normalizeCardImageData(rotation ? rotateImageData(p…
+     35|     expect(result.rotation).toBe(rotation);
+       |                             ^
+     36|     expect(result.image.height).toBeGreaterThan(280);
+     37|     // El pie de la carta no forma parte del cuadrilátero del dibujo.
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  3 failed | 8 passed (11)
+   Start at  10:38:49
+   Duration  1.38s (environment 46%, transform 20%, tests 14%, setup 11%, import 8%)
+

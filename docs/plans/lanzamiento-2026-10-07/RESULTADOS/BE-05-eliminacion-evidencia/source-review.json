@@ -1,0 +1,18 @@
+{
+  "baselineTiming": "Captured after initial backend dispatch; not full pre-implementation dirty snapshot",
+  "baselineFiles": 453,
+  "changedSinceBaseline": [
+    "backend/src/common/guards/jwt-auth.guard.ts",
+    "backend/src/modules/auth/auth.controller.ts",
+    "backend/src/modules/auth/recovery-http.filter.ts",
+    "backend/src/modules/auth/auth.service.ts",
+    "backend/src/modules/auth/password-recovery.service.ts",
+    "backend/src/modules/auth/auth.module.ts",
+    "backend/src/modules/share/share.service.ts",
+    "frontend/app/(app)/ajustes/page.tsx",
+    "frontend/components/settings/index.ts",
+    "frontend/lib/__tests__/service-worker-routing.test.ts",
+    "frontend/types/api.ts"
+  ],
+  "missing": []
+}

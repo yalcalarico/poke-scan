@@ -1,0 +1,59 @@
+[
+  {
+    "route": "cards/base1-58",
+    "status": 200,
+    "shapeKeys": [
+      "id",
+      "name",
+      "supertype",
+      "subtypes",
+      "hp",
+      "types",
+      "number",
+      "rarity",
+      "artist",
+      "setId",
+      "set",
+      "imageSmall",
+      "imageLarge"
+    ]
+  },
+  {
+    "route": "cards/base1-58/prices",
+    "status": 200,
+    "shapeKeys": [
+      "card",
+      "prices"
+    ]
+  },
+  {
+    "route": "cards/base1-58/prices?currency=ARS",
+    "status": 200,
+    "shapeKeys": [
+      "card",
+      "prices",
+      "conversion"
+    ]
+  },
+  {
+    "route": "cards/base1-58/prices/history?days=30",
+    "status": 200,
+    "shapeKeys": [
+      "cardId",
+      "provider",
+      "source",
+      "variant",
+      "currency",
+      "windowDays",
+      "from",
+      "to",
+      "points",
+      "change"
+    ]
+  },
+  {
+    "route": "sets?search=base",
+    "status": 200,
+    "shapeKeys": "array"
+  }
+]

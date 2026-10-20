@@ -1,0 +1,1 @@
+{"command":"pnpm --dir backend exec tsx validate-local.mjs","exitCode":254,"reason":"tsx not installed; no package installed, validation moved to freshly compiled adapter after standard check","databaseWrites":false}

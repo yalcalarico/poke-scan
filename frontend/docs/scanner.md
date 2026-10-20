@@ -2,7 +2,53 @@
 
 Actualizado el 2026-10-03. DINOv2 es el único método de reconocimiento. Se retiraron la lectura de texto, su comparador, el motor del navegador y los endpoints de identificación por texto.
 
+## Rectificación de perspectiva de galería — 6 de octubre de 2026
+
+La preparación busca cuatro lados rectos en una miniatura de hasta 180 px.
+Si forman un cuadrilátero convexo con proporción y soporte de borde suficientes,
+aplica una transformación proyectiva, interpola los canales y normaliza a 63/88,
+con lado mayor de hasta 1400 px. Las cartas horizontales se rotan a vertical.
+Las esquinas utilizadas quedan disponibles en `normalized.quadrilateral`.
+
+Desde el 20 de octubre también se compara ese cuadrilátero con el marco del
+detector de rectángulos. Si queda contenido en él (con el margen habitual) y
+ocupa como máximo el 75% de su área, se conserva el marco exterior. Esto evita
+recortar y girar sólo una parte del dibujo cuando el borde completo sigue
+siendo reconocible. La propuesta, su revisión y el organizador usan el total
+impreso de la expansión para mostrar el número de carta.
+
+Una foto alineada, sin cuatro lados confiables, cortada o con geometría inválida
+conserva el detector/recorte anterior; si tampoco detecta un rectángulo, se usa
+la imagen limitada de tamaño. La cámara ya encuadrada sigue conservando los
+píxeles de su guía: no ejecuta esta detección. Los umbrales son heurísticos,
+todavía requieren validar fondos, fundas y reflejos con corpus amplio.
+
+Se verificó geometría con imágenes controladas y se compararon cinco fotos
+existentes preparadas en Node: 2/5 top-1 antes, 5/5 después. No equivale a
+certificar galería en navegador, cámara física ni precisión general. Evidencia
+en `docs/evaluations/scanner-perspective-2026-10-06.md`.
+
 ## Flujo de uso
+
+### Señales orientativas de calidad — experimental, 6 de octubre
+
+Después de preparar una foto de galería o recibir una captura de cámara se
+analiza localmente su detalle y las regiones muy claras. El análisis usa una
+miniatura de hasta 256 px, varianza del Laplaciano y superficie de píxeles
+casi blancos (incluida su región conectada mayor), excluyendo el borde.
+Los umbrales/versiones están en `lib/scanner/capture-quality.ts`.
+
+Si aparecen señales, se muestra «Revisá la foto · experimental» con consejos
+de enfoque/luz en la revisión y, para galería, también al terminar. Son
+orientativas: una carta con diseño liso o blanco puede activarlas. No impiden
+reconocer, elegir ni confirmar una carta; tampoco certifican calidad cuando
+no aparece un aviso. No alteran los bytes enviados a DINOv2.
+
+Las métricas y avisos quedan en memoria con la revisión y se incluyen como
+`quality` en el JSON descargado voluntariamente. No se mandan a la API ni se
+guardan en la sesión persistida. La cámara continúa aunque falle la
+decodificación opcional de estas métricas. La calibración con fotos reales,
+la UI móvil física y los umbrales de reflejos/desenfoque siguen pendientes.
 
 Para reconocer cartas hace falta iniciar sesión. Si no hay sesión, las acciones de cámara y galería llevan al login y, al entrar, vuelven a `/escanear`, sin capturar ni enviar una consulta antes.
 
@@ -10,7 +56,7 @@ En teléfonos, “Escanear carta” abre la cámara. El marco es rojo mientras b
 
 En escritorio y tablet no se ofrece cámara. “Subir una foto” usa el mismo reconocimiento visual. La búsqueda manual sigue disponible en todos los dispositivos.
 
-La primera predicción DINOv2 se suma automáticamente a la sesión. En la cámara, el set de esa carta aparece arriba y la coincidencia queda en un recuadro tocable abajo. Al tocarlo se abre una comparativa del recorte enviado con la carta del catálogo y las ocho alternativas: elegí otra y confirmá para reemplazar esa lectura, sin duplicarla. La captura automática queda pausada durante la revisión. Los precios se consultan sólo para la opción confirmada, mediante el cliente y la caché existentes. Revisá nombre, set y número antes de organizar; no hay rechazo calibrado. La barra muestra miniatura, nombre, set, número y valor; si falta precio muestra “Sin precio” o un guion, sin inventarlo. “Organizar” permite elegir la colección y cantidad y guardar las cartas; la hoja actual no ofrece un selector de variante. Sumar a la sesión no equivale a persistir en una colección.
+La primera predicción DINOv2 se suma como propuesta por revisar. En la cámara, el set de esa carta aparece arriba y la coincidencia queda en un recuadro tocable abajo. Al tocarlo se abre una comparativa del recorte enviado con la carta del catálogo y las ocho alternativas: elegí otra y confirmá para reemplazar esa lectura, sin duplicarla. La captura automática queda pausada durante la revisión. Los precios se consultan sólo para la opción confirmada, mediante el cliente y la caché existentes. Revisá nombre, set y número antes de organizar; no hay rechazo calibrado. La barra muestra miniatura, nombre, set, número y valor; si falta precio muestra “Sin precio” o un guion, sin inventarlo. “Organizar” requiere confirmar el destino, la variante, la condición y la carta propuesta antes de guardar. Sumar a la sesión no equivale a persistir en una colección.
 
 ## Cámara, recorte y orientación
 
@@ -30,7 +76,7 @@ La API ejecuta DINOv2 con el modelo ONNX local, compara el vector de consulta co
 
 `lib/scanner/camera-visual.ts` selecciona el candidato #1 DINOv2 y consulta `/cards/:id/prices` solo para ese ID. La falta o demora del precio no cambia la identidad. La consulta completa admite cancelación y tiene un límite de 35 s; los precios tienen un límite de 5 s. Los contadores de corrida impiden que una respuesta anterior reemplace una captura posterior.
 
-`components/scanner/visual-diagnostics.tsx` permite revisar candidatos y tiempos después de subir una foto, sin abrir un selector. La sesión usa `sessionStorage`, conserva hasta 30 entradas y se restaura después de hidratar. Cada captura es una entrada; la persistencia definitiva la hace `OrganizeSheet`.
+`components/scanner/visual-diagnostics.tsx` permite revisar candidatos y tiempos después de subir una foto, sin abrir un selector. La sesión usa `sessionStorage`, pausa nuevas capturas al llegar a 30 lecturas pendientes y se restaura después de hidratar. Un legado que excede ese límite se conserva completo para organizarlo sin perder lecturas. Cada captura conserva su `runId`; el draft de organización también se versiona como `pcs.scanDraft` y excluye fotos y recortes.
 
 ## Modelo e índice
 
@@ -64,7 +110,17 @@ Abrir la revisión en cámara pausa la captura automática hasta cerrarla, para 
 
 Al cerrar la cámara, la pantalla de entrada muestra un aviso con signo de exclamación y el botón para organizar las cartas pendientes; el inicio también resalta la sesión pendiente. La carta reconocida y su precio quedan en la cámara. Las fotos de galería mantienen el acceso «Revisar última foto» para corregir la coincidencia.
 
-«Continuar» abre la revisión de escaneos: el selector superior define una colección para todo el lote. Las lecturas del mismo ID se agrupan en una fila, con cantidad inicial igual a sus capturas; escanear otra copia incrementa esa cantidad. La cantidad sigue siendo editable. En mobile, deslizar una fila a la izquierda revela «Eliminar». Desde tablet (768 px) y en PC, se muestra la papelera y el gesto queda desactivado. La papelera también aparece al recibir foco de teclado en mobile. Eliminar retira todas las lecturas de esa fila. El guardado envía un alta por carta agrupada y retira sólo las corridas confirmadas por la API. El total incluye precios conocidos y avisa si faltan valores.
+«Continuar» abre la revisión de escaneos: el selector superior exige elegir una colección vigente de la cuenta para confirmar el destino del lote. Cada lectura inicia con variante y condición sin elegir. «No sé todavía» conserva `null` y no habilita el guardado. Los grupos visibles tienen identidad carta + variante + condición; una captura nueva no hereda atributos de otra. Cada parte retiene su `runId` y se revisa individualmente. «Separar copias / aplicar a varias» abre una vista interna con selección explícita, cantidad a mover, variante y condición. Aplicar conserva la suma y permite partes distintas del mismo `runId`. «Separar una copia» conserva los atributos elegidos de esa parte y divide su cantidad en dos. Retirar una parte pide confirmación y conserva las otras partes de esa lectura.
+
+La cantidad acepta enteros 1–999 por parte. Un input vacío, decimal, negativo o superior al límite muestra error y bloquea el grupo; no envía silenciosamente la cantidad anterior. Un grupo completo sobre 999 queda pendiente, sin recorte ni varios POST automáticos. El footer separa copias listas/pendientes y cobertura de referencia. El precio se selecciona por carta y variante exactas, admite `market=0`, muestra ausencia sin fallback singular y no aplica ajustes por condición.
+
+El snapshot canónico `pcs.scanDraft` usa `schemaVersion: 1`, `sessionId`, `entries[]`, `ownerUserId`, `selectedCollectionId`, `destinationConfirmed`, `allocations[]`, `operations[]` y `retiredRunIds[]`. Entradas y confirmación/retiro de partes se persisten juntos en una única escritura. Las entradas son una proyección validada del catálogo/precios; no incluyen fotos, crops, ranking ni campos extra. `identityReviewed` y `selectionSource` son metadata cliente de revisión: confirmar identidad no confirma variante/condición; una selección manual no tiene similitud DINOv2 medida. Sus campos numéricos de compatibilidad son cero y no se muestran como score.
+
+Cada operación conserva UUID, cuenta, destino, payload exacto y IDs de partes. Se persiste antes del POST, que requiere destino vigente y atributos explícitos. Un rechazo conocido de la primera solicitud sin escritura permite editar o crear una intención nueva. Red/5xx/cuerpo inválido quedan inciertos; recargar durante `saving` restaura `uncertain`. «Verificar este intento» repite manualmente la misma clave/payload. Un 409 o replay 400/401/404 conserva incertidumbre; 410 bloquea el intento y nunca genera otra clave ni repone copias. Una respuesta confirma el delta original, no la cantidad actual del ítem. No hay POST al montar ni reintento automático. Cambiar de cuenta durante el lote frena sus siguientes solicitudes; intentos ajenos no se verifican desde otra cuenta.
+
+La clave anterior `pcs.scanSession` solo se lee para migración, sin copiar cantidades/atributos que nunca se persistieron. Los snapshots previos de esta entrega sin `entries[]` se validan con ese legado y se migran a un único snapshot al escribir. Una confirmación canónica prevalece aunque el legado todavía contenga lecturas guardadas. Se conservan `retiredRunIds` y el máximo de corrida al recargar para no reutilizar sus IDs.
+
+Un snapshot corrupto, versión futura, payload/UUID/referencias incompletas activa protección global: conserva el string original de storage sin sobrescribirlo y bloquea todas las altas, ediciones y descarte. No interpreta evidencia ilegible como ausencia de un commit. Esa protección necesita recuperación explícita fuera del flujo de guardado; no hay botón que borre la evidencia. Storage lleno/bloqueado mantiene el draft en memoria y avisa; no inicia POST sin persistir primero su identidad. Si la confirmación local falla después del commit, conserva el intento para verificarlo con la misma clave. No hay respaldo en localStorage ni cola offline.
 
 Cerrar la cámara con lecturas pendientes pide confirmación. Cancelar mantiene la cámara y pausa las capturas mientras el aviso está abierto; salir conserva la sesión para organizarla después.
 
@@ -73,5 +129,4 @@ candidatas que la cámara y la galería. Cada lectura conserva su recorte y rank
 sólo en memoria mientras la pantalla sigue montada. Corregirla reemplaza ese
 runId y recalcula los grupos y el total, sin repetir el reconocimiento. Guardar o
 retirar lecturas libera sus recortes; las fotos no se escriben en sessionStorage.
-Tras recargar la página, las cartas pendientes siguen disponibles pero para
-recuperar una comparativa hay que volver a escanear.
+Tras recargar, las cartas pendientes siguen disponibles sin foto. «Buscar carta a mano» corrige dentro del mismo Sheet, incluso fuera del top-8, conservando `runId` y cantidades y exigiendo revisar atributos nuevamente. Cancelar conserva el lote. Para recuperar la comparación física hay que volver a escanear expresamente.

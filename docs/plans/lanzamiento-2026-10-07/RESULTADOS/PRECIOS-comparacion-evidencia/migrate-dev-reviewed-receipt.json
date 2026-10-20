@@ -1,0 +1,113 @@
+{
+  "purpose": "Authorized product implementation; additive migration after clone rehearsal, focused tests, full check and real own runtime",
+  "migration": "20261013203000_tcgcsv_comparison",
+  "beforeMigrationCount": 13,
+  "afterMigrationCount": 14,
+  "logicalDataAndGINUnchanged": true,
+  "before": {
+    "users": {
+      "rows": 22,
+      "hash": "766ab5df0ab885a39ce7b83175f66f96"
+    },
+    "collections": {
+      "rows": 22,
+      "hash": "59b9d1bafdd76c8e74ea7339c063eb5f"
+    },
+    "collection_items": {
+      "rows": 69,
+      "hash": "f723750dd3dbc91337830427ba4c60a1"
+    },
+    "share_links": {
+      "rows": 13,
+      "hash": "614a0f5bc85c774254e174f7887d3c5d"
+    },
+    "cards": {
+      "rows": 20670,
+      "hash": "062662767783a494f5a4af852c8a4f35"
+    },
+    "card_sets": {
+      "rows": 176,
+      "hash": "9d4bdf4933aad247ef5d1f54701ed4b7"
+    },
+    "card_prices": {
+      "rows": 29329,
+      "hash": "58d6c7b141e09779b8a668a5959c1a0d"
+    },
+    "card_external_ids": {
+      "rows": 20670,
+      "hash": "e3fabbcab2139f658c74efa4af2122f1"
+    },
+    "card_set_external_ids": {
+      "rows": 350,
+      "hash": "08185d14407a74c64a80ccc9adf6224b"
+    },
+    "price_refresh_jobs": {
+      "rows": 18721,
+      "hash": "b9f4b0b15de4d7e87f9e4494284e6cac"
+    },
+    "gin": [
+      "CREATE INDEX card_sets_name_trgm_idx ON public.card_sets USING gin (name gin_trgm_ops)",
+      "CREATE INDEX cards_artist_trgm_idx ON public.cards USING gin (artist gin_trgm_ops)",
+      "CREATE INDEX cards_name_trgm_idx ON public.cards USING gin (name gin_trgm_ops)",
+      "CREATE INDEX users_display_name_trgm_idx ON public.users USING gin (\"displayName\" gin_trgm_ops)",
+      "CREATE INDEX users_username_trgm_idx ON public.users USING gin (username gin_trgm_ops)"
+    ]
+  },
+  "after": {
+    "users": {
+      "rows": 22,
+      "hash": "766ab5df0ab885a39ce7b83175f66f96"
+    },
+    "collections": {
+      "rows": 22,
+      "hash": "59b9d1bafdd76c8e74ea7339c063eb5f"
+    },
+    "collection_items": {
+      "rows": 69,
+      "hash": "f723750dd3dbc91337830427ba4c60a1"
+    },
+    "share_links": {
+      "rows": 13,
+      "hash": "614a0f5bc85c774254e174f7887d3c5d"
+    },
+    "cards": {
+      "rows": 20670,
+      "hash": "062662767783a494f5a4af852c8a4f35"
+    },
+    "card_sets": {
+      "rows": 176,
+      "hash": "9d4bdf4933aad247ef5d1f54701ed4b7"
+    },
+    "card_prices": {
+      "rows": 29329,
+      "hash": "58d6c7b141e09779b8a668a5959c1a0d"
+    },
+    "card_external_ids": {
+      "rows": 20670,
+      "hash": "e3fabbcab2139f658c74efa4af2122f1"
+    },
+    "card_set_external_ids": {
+      "rows": 350,
+      "hash": "08185d14407a74c64a80ccc9adf6224b"
+    },
+    "price_refresh_jobs": {
+      "rows": 18721,
+      "hash": "b9f4b0b15de4d7e87f9e4494284e6cac"
+    },
+    "gin": [
+      "CREATE INDEX card_sets_name_trgm_idx ON public.card_sets USING gin (name gin_trgm_ops)",
+      "CREATE INDEX cards_artist_trgm_idx ON public.cards USING gin (artist gin_trgm_ops)",
+      "CREATE INDEX cards_name_trgm_idx ON public.cards USING gin (name gin_trgm_ops)",
+      "CREATE INDEX users_display_name_trgm_idx ON public.users USING gin (\"displayName\" gin_trgm_ops)",
+      "CREATE INDEX users_username_trgm_idx ON public.users USING gin (username gin_trgm_ops)"
+    ]
+  },
+  "backupFile": "/private/tmp/pokescan-tcgcsv-comparison-20261013/dev-before-additive-migration.dump",
+  "backupBytes": 8353629,
+  "backupSHA256": "de2e9db02d00c0d0d1be12ee538a40eef4944e13eea77141148fa1bd8e7a748e",
+  "finishedAtUtc": "2026-10-13T20:16:15.596712+00:00",
+  "realProviderEnabled": false,
+  "fixturesWrittenToDev": false,
+  "temporaryRollbackCopyRemovedAfterHealthyRun": true,
+  "backupRetained": false
+}

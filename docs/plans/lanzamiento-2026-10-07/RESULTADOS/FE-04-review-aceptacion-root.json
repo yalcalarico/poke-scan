@@ -1,0 +1,33 @@
+{
+  "acceptedAtUtc": "2026-10-10T02:24:17.729759+00:00",
+  "status": "review_accepted_as_input_to_integrated_gate",
+  "reviewSha256": "ca2bfb63c26e3b33494ccfcc20d4c4317141a94348690cbfae35cfa40d857975",
+  "evidenceSha256": "32b58f5f042025d48677c417e64be2c2535a8dfe76acc990b08661914eb867a1",
+  "verifiedArtifactHashes": 83,
+  "verifiedFinalSourceHashes": 26,
+  "verifiedReceivedCopies": 27,
+  "verifiedProducerBaselines": 7,
+  "verifiedReceivedFrontendInventory": 321,
+  "unchangedReceivedSources": 308,
+  "allowedChangedSources": [
+    "frontend/lib/api/auth.ts",
+    "frontend/lib/api/session-generation.test.ts",
+    "frontend/lib/api/recovery-api.test.ts",
+    "frontend/lib/api/api-client.ts",
+    "frontend/lib/recovery/recovery-view.ts",
+    "frontend/lib/recovery/recovery-capture-script.ts",
+    "frontend/lib/recovery/recovery-capture-script.test.ts",
+    "frontend/hooks/use-auth.tsx",
+    "frontend/docs/testing.md",
+    "frontend/docs/api-client.md",
+    "frontend/docs/routes.md",
+    "frontend/components/auth/recovery-experience.tsx",
+    "frontend/components/auth/recovery-experience.test.tsx"
+  ],
+  "localLinksVerified": 19,
+  "distinctFocusedCasesByPhases": 69,
+  "oneGlobalRun": false,
+  "runtimeRun": false,
+  "IDsClosed": [],
+  "remaining": "exact standard check and real isolated API/Next/mail consumer; BE-05 elimination/retention decisions remain separate"
+}

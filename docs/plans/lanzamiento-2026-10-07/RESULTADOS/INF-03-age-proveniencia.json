@@ -1,0 +1,22 @@
+{
+  "checkedAt": "2026-10-08T12:31:33.142Z",
+  "humanAuthorization": "Bueno dale descárgalo y continua",
+  "source": "https://api.github.com/repos/FiloSottile/age/releases/tags/v1.2.1",
+  "tag": "v1.2.1",
+  "publishedAt": "2024-12-18T15:26:42Z",
+  "releaseUrl": "https://github.com/FiloSottile/age/releases/tag/v1.2.1",
+  "asset": {
+    "name": "age-v1.2.1-darwin-arm64.tar.gz",
+    "bytes": 4758557,
+    "url": "https://github.com/FiloSottile/age/releases/download/v1.2.1/age-v1.2.1-darwin-arm64.tar.gz",
+    "publisherDigest": null
+  },
+  "observedArchiveSha256": "cf79875bd5970dc2dac60c87fa50cee1ff1f9a41b0eb273f65e174aff37c367a",
+  "observedBinarySha256": "d2b0d4211fd9e364ea8dd1cb150653a7f21dfc08e96632de444aa209db5fc0d0",
+  "runtimeVersion": "v1.2.1",
+  "platform": "darwin",
+  "arch": "arm64",
+  "verification": "Metadata oficial HTTPS y release fijado. Digest del publicador null; hashes observados, sin firma/attestation verificada.",
+  "originalAutoReviewRejectionResolved": true,
+  "scratchRemoved": true
+}

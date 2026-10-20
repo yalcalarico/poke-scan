@@ -1,0 +1,99 @@
+{
+  "evaluatedAt": "2026-10-06T14:39:37.311Z",
+  "scope": "HTTP autenticado local: una foto repetida, sin escrituras de colecciones/precios. Corrida acotada, no benchmark de red/dispositivo.",
+  "unauthenticatedStatus": 401,
+  "rows": [
+    {
+      "concurrency": 1,
+      "status": 200,
+      "latencyMs": 1818.853,
+      "cold": true,
+      "references": 20670,
+      "ids": [
+        "me55c-106",
+        "ex6-52",
+        "ecard3-146",
+        "ex15-93",
+        "ex11-44",
+        "swsh4-9",
+        "ex1-20",
+        "base2-6"
+      ]
+    },
+    {
+      "concurrency": 2,
+      "status": 200,
+      "latencyMs": 160.91183400000023,
+      "cold": false,
+      "references": 20670,
+      "ids": [
+        "me55c-106",
+        "ex6-52",
+        "ecard3-146",
+        "ex15-93",
+        "ex11-44",
+        "swsh4-9",
+        "ex1-20",
+        "base2-6"
+      ]
+    },
+    {
+      "concurrency": 2,
+      "status": 503,
+      "latencyMs": 46.205999999999904,
+      "error": "El motor visual está ocupado. Probá de nuevo en unos segundos."
+    },
+    {
+      "concurrency": 4,
+      "status": 200,
+      "latencyMs": 189.89049999999997,
+      "cold": false,
+      "references": 20670,
+      "ids": [
+        "me55c-106",
+        "ex6-52",
+        "ecard3-146",
+        "ex15-93",
+        "ex11-44",
+        "swsh4-9",
+        "ex1-20",
+        "base2-6"
+      ]
+    },
+    {
+      "concurrency": 4,
+      "status": 503,
+      "latencyMs": 42.086874999999964,
+      "error": "El motor visual está ocupado. Probá de nuevo en unos segundos."
+    },
+    {
+      "concurrency": 4,
+      "status": 503,
+      "latencyMs": 74.42991699999993,
+      "error": "El motor visual está ocupado. Probá de nuevo en unos segundos."
+    },
+    {
+      "concurrency": 4,
+      "status": 503,
+      "latencyMs": 58.176708999999846,
+      "error": "El motor visual está ocupado. Probá de nuevo en unos segundos."
+    },
+    {
+      "concurrency": 1,
+      "status": 200,
+      "latencyMs": 133.31854199999998,
+      "cold": false,
+      "references": 20670,
+      "ids": [
+        "me55c-106",
+        "ex6-52",
+        "ecard3-146",
+        "ex15-93",
+        "ex11-44",
+        "swsh4-9",
+        "ex1-20",
+        "base2-6"
+      ]
+    }
+  ]
+}

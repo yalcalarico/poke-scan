@@ -1,0 +1,331 @@
+{
+  "atUtc": "2026-10-09T13:39:13.876584+00:00",
+  "agent": "Sol6.1 HIGH /root/be07_readiness_diagnosis_sol",
+  "humanScope": "only focal, no405/global/stress/productfix",
+  "staticAudit": {
+    "vitest": "4.1.11",
+    "config": "isolate true/default forks/fileParallelismfalse =>maxWorkers1",
+    "isolatedTaskOneFile": true,
+    "runnerProcessReusedBetweenIsolatedFiles": false,
+    "moduleResetAndProcessIsolationDistinct": true,
+    "previousWorkerExitAwaitedBeforeNextSchedule": false,
+    "teardownMayOverlap": true,
+    "overlapProvesOriginalCause": false,
+    "restoreAllMocksRestoresTimersOrStubGlobals": false,
+    "explicitTimersGlobalsCleanupFoundInRelevantSpecs": true,
+    "nativeHTTPNetSupertestMocksFound": false,
+    "partialHistoricalLogReconstructsCompleteFileOrder": false
+  },
+  "approvedControl": "ONE original readiness4 with buffered emit delegation, no observation listeners, exact permanent config inherited",
+  "control": {
+    "cliExitCode": 0,
+    "workerPid": 14773,
+    "workerExitCodeNotObserved": true,
+    "workerTerminationStrategyFromStaticSource": "SIGTERM after graceful stop acknowledgment; SIGKILL after500ms if needed",
+    "events": 177,
+    "counts": {
+      "phase": 9,
+      "server:listening:before": 5,
+      "server:listening:after": 5,
+      "client:socket:before": 5,
+      "client:socket:after": 5,
+      "server:connection:before": 5,
+      "server:connection:after": 5,
+      "socket:connect:before": 5,
+      "socket:connect:after": 5,
+      "server:request:before": 5,
+      "server:request:after": 5,
+      "response:finish:before": 5,
+      "response:finish:after": 5,
+      "response:close:before": 5,
+      "response:close:after": 5,
+      "incoming:end:before": 10,
+      "incoming:end:after": 10,
+      "incoming:close:before": 10,
+      "incoming:close:after": 10,
+      "socket:close:before": 9,
+      "socket:close:after": 9,
+      "socket:data:before": 5,
+      "client:response:before": 5,
+      "client:response:after": 5,
+      "socket:data:after": 5,
+      "server:close:before": 6,
+      "server:close:after": 6,
+      "client:close:before": 4,
+      "client:close:after": 4
+    },
+    "noObservationListenersAdded": true,
+    "allOriginalEmitMethodsRestored": true,
+    "clientErrorListeners": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "connectionsParserPresent": [
+      true,
+      true,
+      true,
+      true,
+      true
+    ],
+    "serverRequestBytesRead": [
+      101,
+      101,
+      101,
+      102,
+      101
+    ],
+    "responseStatus": [
+      200,
+      200,
+      503,
+      200,
+      200
+    ],
+    "incomingEnds": [
+      {
+        "id": 5,
+        "method": "GET",
+        "status": null,
+        "complete": true,
+        "aborted": false
+      },
+      {
+        "id": 7,
+        "method": null,
+        "status": 200,
+        "complete": true,
+        "aborted": false
+      },
+      {
+        "id": 11,
+        "method": "GET",
+        "status": null,
+        "complete": true,
+        "aborted": false
+      },
+      {
+        "id": 13,
+        "method": null,
+        "status": 200,
+        "complete": true,
+        "aborted": false
+      },
+      {
+        "id": 17,
+        "method": "GET",
+        "status": null,
+        "complete": true,
+        "aborted": false
+      },
+      {
+        "id": 19,
+        "method": null,
+        "status": 503,
+        "complete": true,
+        "aborted": false
+      },
+      {
+        "id": 23,
+        "method": "GET",
+        "status": null,
+        "complete": true,
+        "aborted": false
+      },
+      {
+        "id": 25,
+        "method": null,
+        "status": 200,
+        "complete": true,
+        "aborted": false
+      },
+      {
+        "id": 29,
+        "method": "GET",
+        "status": null,
+        "complete": true,
+        "aborted": false
+      },
+      {
+        "id": 31,
+        "method": null,
+        "status": 200,
+        "complete": true,
+        "aborted": false
+      }
+    ],
+    "nativeErrorEvents": [],
+    "observedServerPorts": [
+      58802,
+      58804,
+      58806,
+      58808,
+      58810
+    ],
+    "flushBeforeFinalClientClose": true,
+    "errorBranchRuntimeExercised": false
+  },
+  "sourcePreservation": {
+    "sourceCount": 501,
+    "sourceMismatches": [],
+    "installedAuditedSourceCount": 9,
+    "installedAuditedSourceMismatches": []
+  },
+  "prior44AnnexPreservation": {
+    "count": 44,
+    "mismatches": [],
+    "reportHashMatches": true
+  },
+  "cleanup": {
+    "ports": {
+      "3000": {
+        "exitCode": 1,
+        "output": "",
+        "free": true
+      },
+      "3001": {
+        "exitCode": 1,
+        "output": "",
+        "free": true
+      },
+      "58802": {
+        "exitCode": 1,
+        "output": "",
+        "free": true
+      },
+      "58804": {
+        "exitCode": 1,
+        "output": "",
+        "free": true
+      },
+      "58806": {
+        "exitCode": 1,
+        "output": "",
+        "free": true
+      },
+      "58808": {
+        "exitCode": 1,
+        "output": "",
+        "free": true
+      },
+      "58810": {
+        "exitCode": 1,
+        "output": "",
+        "free": true
+      }
+    },
+    "workerPid": 14773,
+    "workerProcessAbsent": true,
+    "workerPsExitCode": 1,
+    "workerPsOutput": "",
+    "allOriginalEmitMethodsRestored": true,
+    "dbRedisResourcesCreated": false,
+    "liveResources": [],
+    "atUtc": "2026-10-09T13:37:24.936979+00:00",
+    "sandboxPsEperm": "PermissionError: [Errno 1] Operation not permitted: ps; read-only retry outside sandbox exit1/empty confirms no process"
+  },
+  "ownership": {
+    "owner": "be07-readiness-contexto-sol-20261009",
+    "createdAt": "2026-10-09T13:34:06.948469+00:00",
+    "temporaryDirectory": "/private/tmp/be07-readiness-contexto-sol-20261009",
+    "resources": [],
+    "liveResources": [],
+    "runtimeExecuted": true,
+    "scope": "human only focal, no405/DBRedisreal/global/productfix",
+    "reservation": "released after final artifact delivery",
+    "reusesPreviousResources": false,
+    "proposalApprovedByRoot": true,
+    "plannedResources": [
+      {
+        "role": "ephemeral HTTP server and sockets",
+        "owner": "original readiness spec Nest app",
+        "boundBy": "Supertest listen(0)",
+        "cleanup": "original app.close; worker termination; observer methods restored at temporary afterAll flush"
+      }
+    ],
+    "cliExitCode": 0,
+    "workerPid": 14773,
+    "cleanup": {
+      "ports": {
+        "3000": {
+          "exitCode": 1,
+          "output": "",
+          "free": true
+        },
+        "3001": {
+          "exitCode": 1,
+          "output": "",
+          "free": true
+        },
+        "58802": {
+          "exitCode": 1,
+          "output": "",
+          "free": true
+        },
+        "58804": {
+          "exitCode": 1,
+          "output": "",
+          "free": true
+        },
+        "58806": {
+          "exitCode": 1,
+          "output": "",
+          "free": true
+        },
+        "58808": {
+          "exitCode": 1,
+          "output": "",
+          "free": true
+        },
+        "58810": {
+          "exitCode": 1,
+          "output": "",
+          "free": true
+        }
+      },
+      "workerPid": 14773,
+      "workerProcessAbsent": true,
+      "workerPsExitCode": 1,
+      "workerPsOutput": "",
+      "allOriginalEmitMethodsRestored": true,
+      "dbRedisResourcesCreated": false,
+      "liveResources": [],
+      "atUtc": "2026-10-09T13:37:24.936979+00:00",
+      "sandboxPsEperm": "PermissionError: [Errno 1] Operation not permitted: ps; read-only retry outside sandbox exit1/empty confirms no process"
+    }
+  },
+  "newGlobalExecuted": false,
+  "backend405OrGroupExecuted": false,
+  "dbRedisRealUsed": false,
+  "causeOriginalLocated": false,
+  "fixProposed": false,
+  "gateStillFailed": true,
+  "ownReservationReleased": true,
+  "errata": "Previous intermediate message conflated CLIexit0 with workerexit0; individual Vitest workerexitCode/signal not observed; standalone14096exit0 remains valid.",
+  "reportSha256": "8d7b590939bf214d3a3d1af46c50989208bb99db34d18bc7db61c29f170aa1e2",
+  "annexHashes": {
+    "baseline-source501.json": "21cb7c9184328e8a1efd266b20399732f40fb6554c07b1ce287d575d7621013b",
+    "cleanup.json": "493a84fa80d2baddf01c053098648c47250982f6e11ac81b4880319a400fae18",
+    "emit-observer.mjs": "9cf7e3a3a0e1e0a084bf3f1cd14669f6c205201c5a4c3ed63234638bacad3169",
+    "emit-setup.ts": "13c9467d8ed055fdd436695e4e85620ac5980bcac8cf1866f852ccb77c260de7",
+    "emit-summary.json": "ad38130b22de33d166b7ae51ff48bc8f49d2698616abfaa501731d878a2c1bd1",
+    "emit-trace-14773.json": "ad41971fad59f222e06714c58b3b0e40f4c0a3dc34f48c067880813dc4e721d0",
+    "focal-emit.log": "eb8f0f7096823d9139a0762f39afb467fe2761e9fd86bb5a30b8cdf5b41bb935",
+    "git-status-before.txt": "f50eef9e455328ca63ba0e2ddf38cf514204b14dac959e48e5df7b1be493a6c2",
+    "ownership.json": "e07bfe9b82bd6e31d80c2f12c616010930d387ed7b416c783af9b5840df33d88",
+    "previous-annex-preservation.json": "b107f1190453168d0e2f5b95ea878986f42149283700200b064a9011488e6c3a",
+    "source-preservation.json": "fef58d786b29ed7af9c4a7397a6cf663db8296b9e93001b4b084d366498ea10a",
+    "specs-static-search.txt": "86141989169876289f0632f5a7793275307e200f4094221c4181345521475cf5",
+    "stop-before-focal.log": "12970d8b80d3abdcde47fae9061ffb349a3b7e3e0b1f7f8391e3c2cbc1c55e29",
+    "vitest-emit.config.mjs": "8ae006550d8e5e86b3b427d077a6795fef3557465d3d3857de06017a5eedcccf",
+    "vitest-static-excerpts.json": "aa67c8ec482520fa5822b3a30c854d92544aa41b53ba346af27bf6b518512ef2",
+    "worker-process-after.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+}

@@ -1,0 +1,9 @@
+Validación final FE-04
+
+pnpm run stop — aprobado
+pnpm --dir frontend exec vitest run — 63 archivos, 503 tests aprobados
+pnpm --dir frontend run lint — aprobado
+pnpm --dir frontend exec tsc --noEmit — aprobado
+
+Suite focal después de los cambios finales — 5 archivos, 19 tests aprobados.
+No se ejecutaron build, browser QA, ni pnpm run check.

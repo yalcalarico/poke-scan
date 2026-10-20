@@ -1,0 +1,72 @@
+{
+  "status": "accepted locally by root",
+  "atUtc": "2026-10-13T02:18:33.172990+00:00",
+  "clientDate": "2026-10-12 America/Argentina/Buenos_Aires",
+  "step": "Live HTTP deletion requires local independent custody confirmation before PG delete/commit/success",
+  "standardCheck": {
+    "command": "pnpm run stop then pnpm run check",
+    "runs": 1,
+    "passed": 1124,
+    "skipped": 0,
+    "counts": {
+      "backend": 489,
+      "scanner": 13,
+      "e2e": 6,
+      "frontend": 562,
+      "monitor": 15,
+      "inventoryTransferCustody": 39
+    },
+    "lintTypesNestNextTurbopack": true
+  },
+  "focusedTests": 32,
+  "newFocusedCases": 23,
+  "existingDeletionRegressions": 9,
+  "focusedOverlapGlobal": true,
+  "causalTimerBaseline": {
+    "failed": 2,
+    "unselected": 11
+  },
+  "rootMonotonicDeadlineCorrection": true,
+  "integratedDistinctControls": 64,
+  "runtimeAttempts": 2,
+  "firstRuntime": "Private checkbox selector did not include accessible description; failed before first deletion; cleaned",
+  "runtimeSelectorCorrections": 1,
+  "genuineOptInCompiledAPIWorkerJournal": true,
+  "realHTTPDeletionCases": [
+    "success confirmed in custody",
+    "missing custody head 503 before PG deletion, pending published/reconciled on restart",
+    "PG failure after confirmed custody, replay on restart",
+    "HTTP response lost after 200, single POST without replay"
+  ],
+  "restoredConsumerMode": "Legacy local-private journal after normal CLI admission/replay and root custody verify before traffic; not a second opt-in destination test",
+  "fourSuppressedUsersRemainDeletedAfterLostHostRecovery": true,
+  "screenshots": 5,
+  "sourcesAndOutputsIntactDuringBothRuntimes": 1481,
+  "delegations": 2,
+  "rootCorrectionCyclesForP2": 1,
+  "frontendDTOschemaVersionsUnchanged": true,
+  "physicalOffHostAccredited": false,
+  "B2NetworkCalls": false,
+  "realHardwareConfigured": false,
+  "physicalSIGKILLPowerLossAccredited": false,
+  "actualLongEventLoopStallAccredited": false,
+  "ownQAResourcesCleaned": true,
+  "instanceIntentionallyAlive": "http://localhost:3000",
+  "instanceListenerPIDs": {
+    "api": 91531,
+    "next": 91545
+  },
+  "state": {
+    "complete": 20,
+    "pending": 18,
+    "newIDsClosed": 0
+  },
+  "automation": "PAUSED, two hours, unchanged",
+  "nextStep": "Propose packaging custody modules for future mini PC, isolated local container validation; wait for user",
+  "rootFinalVerification": {
+    "artifactHashesVerified": 51,
+    "sourceCopiesStillCurrent": 12,
+    "reportLocalLinksVerified": 25,
+    "agentsCompleted": true
+  }
+}

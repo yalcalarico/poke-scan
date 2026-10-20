@@ -11,6 +11,6 @@ import { SetsController } from './sets.controller.js';
   imports: [JobsModule, CurrencyModule],
   controllers: [CardsController, SetsController, VisualIdentifyController],
   providers: [CardsService, VisualIdentifyService],
-  exports: [CardsService],
+  exports: [CardsService, VisualIdentifyService],
 })
 export class CardsModule {}

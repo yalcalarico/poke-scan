@@ -1,0 +1,7 @@
+{
+  "frontend/components/prices/comparison-panel.tsx": "6a7eaf90814118e3b210e13638e50ad1d25e1e33801651b650946ba22d53c2c3",
+  "frontend/components/prices/card-price-section.tsx": "4c96c22ccc515dc156ca3b1aa15c3d1b4b173f908c4b2cc8ddc13d9972d4908f",
+  "frontend/app/(app)/carta/[id]/page.tsx": "873d94a0e0ce7d676b370b2d7450a649b3bbe935064cb94a0ea3c2b4f1fae227",
+  "frontend/components/prices/comparison-panel.test.tsx": "6bfb5704f3209c68ff4d63b04e39ede18d9da929ce2cc0c3ebd8ae93fc65fe34",
+  "frontend/components/prices/__tests__/card-price-section.test.tsx": "d9aa624150a482d710c591547e8d533320224208ae3c3b279091de389acdf39f"
+}

@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useMemo, useState } from 'react';
-import Link from 'next/link';
+import { PreviewLink as Link } from '@/components/visual-preview/preview-link';
 import { Check, Layers, Plus, Search } from 'lucide-react';
 
 import { ScreenContainer } from '@/components/layout/screen-container';
@@ -23,7 +23,9 @@ import { pluralize } from '@/lib/format';
 import { cn } from '@/lib/cn';
 import type { CollectionDto } from '@/types/api';
 
+import { CollectionPriceRefresh } from './collection-price-refresh';
 import { PortfolioOverview } from './portfolio-overview';
+import { CollectionComparisonPanel } from '@/components/prices/comparison-panel';
 import { CollectionCard } from './collection-card';
 import { CollectionCreateSheet } from './collection-create-sheet';
 import { formatCount } from './collection-options';
@@ -67,6 +69,8 @@ export function CollectionsScreen() {
   const { isLoading: isAuthLoading, isAuthenticated } = useAuth();
 
   const [search, setSearch] = useState('');
+  const [priceRevision, setPriceRevision] = useState(0);
+  const refreshPrices = useCallback(() => setPriceRevision((value) => value + 1), []);
   const [sort, setSort] = useState('default');
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   /**
@@ -92,9 +96,9 @@ export function CollectionsScreen() {
     // que esta pantalla acaba de construir.
     if (!isAuthenticated) return null;
     return listCollections();
-  }, [isAuthenticated]);
+  }, [isAuthenticated, priceRevision]);
 
-  const collections = useMemo(() => [...new Map([...(data ?? []), ...created].map((collection) => [collection.id, collection])).values()], [created, data]);
+  const collections = useMemo(() => [...new Map([...created, ...(data ?? [])].map((collection) => [collection.id, collection])).values()], [created, data]);
 
   const handleCreated = useCallback((collection: CollectionDto) => {
     setCreated((current) => [collection, ...current]);
@@ -180,7 +184,7 @@ export function CollectionsScreen() {
           </div>
         ) : null}
 
-        {isAuthenticated && status === 'ready' ? <div className="mb-6"><PortfolioOverview /></div> : null}
+        {isAuthenticated && status === 'ready' ? <div className="mb-6 flex flex-col gap-4"><CollectionPriceRefresh collectionIds={collections.map((collection) => collection.id)} needsRefresh={collections.some((collection) => collection.itemCount > 0 && Boolean(collection.valuation?.coverage.unpricedCopies || collection.valuation?.recency?.freshness !== 'fresh'))} onRefresh={refreshPrices} /><PortfolioOverview refreshKey={priceRevision} /><CollectionComparisonPanel collectionId={null} refreshKey={priceRevision} /></div> : null}
 
         {/* 4 · vacío con sesión */}
         {isAuthenticated && status === 'ready' && collections.length === 0 ? (

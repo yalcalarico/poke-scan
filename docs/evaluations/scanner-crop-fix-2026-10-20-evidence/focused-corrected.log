@@ -1,0 +1,15 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.2 /Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/frontend
+
+
+ Test Files  19 passed (19)
+      Tests  133 passed (133)
+   Start at  10:41:11
+   Duration  4.39s (environment 34%, tests 33%, transform 16%, setup 10%, import 7%)
+
+    Isolate  19 workers spawned · ~471ms startup each (spawn + environment, per file)
+             at least ~523ms faster with isolate: false — reuses workers across files instead of one per file
+

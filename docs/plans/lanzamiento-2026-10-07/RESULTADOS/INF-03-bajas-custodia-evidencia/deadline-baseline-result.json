@@ -1,0 +1,15 @@
+{
+  "command": [
+    "pnpm",
+    "--dir",
+    "backend",
+    "exec",
+    "vitest",
+    "run",
+    "src/modules/account-deletion/account-suppression-custody.spec.ts",
+    "src/modules/account-deletion/suppression-custody-process.spec.ts",
+    "-t",
+    "reloj vencido"
+  ],
+  "exitCode": 1
+}

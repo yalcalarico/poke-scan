@@ -1,0 +1,303 @@
+{
+  "runId": "inf03-5cc1defa3e75",
+  "startedAt": "2026-10-08T12:41:42.361Z",
+  "steps": {
+    "sourceBootstrapMs": 1638,
+    "backupMs": 1264,
+    "restoreMs": 1923
+  },
+  "tests": {
+    "positive": 1,
+    "negative": 16
+  },
+  "ownedResources": [
+    {
+      "type": "network",
+      "name": "inf03-5cc1defa3e75-source-net",
+      "runId": "inf03-5cc1defa3e75",
+      "role": "source"
+    },
+    {
+      "type": "volume",
+      "name": "inf03-5cc1defa3e75-source-pgdata",
+      "runId": "inf03-5cc1defa3e75",
+      "role": "source"
+    },
+    {
+      "type": "container",
+      "name": "inf03-5cc1defa3e75-source-pg",
+      "runId": "inf03-5cc1defa3e75",
+      "role": "source"
+    },
+    {
+      "type": "network",
+      "name": "inf03-5cc1defa3e75-destination-net",
+      "runId": "inf03-5cc1defa3e75",
+      "role": "destination"
+    },
+    {
+      "type": "volume",
+      "name": "inf03-5cc1defa3e75-destination-pgdata",
+      "runId": "inf03-5cc1defa3e75",
+      "role": "destination"
+    },
+    {
+      "type": "container",
+      "name": "inf03-5cc1defa3e75-destination-pg",
+      "runId": "inf03-5cc1defa3e75",
+      "role": "destination"
+    },
+    {
+      "type": "container",
+      "name": "inf03-5cc1defa3e75-app-redis",
+      "runId": "inf03-5cc1defa3e75",
+      "role": "app-redis"
+    },
+    {
+      "type": "container",
+      "name": "inf03-5cc1defa3e75-app-backend",
+      "runId": "inf03-5cc1defa3e75",
+      "role": "app-backend"
+    },
+    {
+      "type": "container",
+      "name": "inf03-5cc1defa3e75-app-frontend",
+      "runId": "inf03-5cc1defa3e75",
+      "role": "app-frontend"
+    }
+  ],
+  "cleanup": {
+    "attempted": true,
+    "complete": true,
+    "errors": [],
+    "hostTemporaryRemoved": true
+  },
+  "mode": "backup-restore-with-app-flow",
+  "tooling": {
+    "node": "v22.20.0",
+    "pnpm": "10.17.1",
+    "platform": "darwin",
+    "arch": "arm64",
+    "age": "v1.2.1",
+    "ageRelease": "https://github.com/FiloSottile/age/releases/download/v1.2.1/age-v1.2.1-darwin-arm64.tar.gz",
+    "ageArchiveSha256": "cf79875bd5970dc2dac60c87fa50cee1ff1f9a41b0eb273f65e174aff37c367a",
+    "toolSource": "official-HTTPS-release",
+    "ageBinarySha256": "d2b0d4211fd9e364ea8dd1cb150653a7f21dfc08e96632de444aa209db5fc0d0",
+    "postgresImage": "postgres@sha256:0ea6700a3b4f0ae6ce746519073558aed4d88a79d8d07622a9a644946c7319c4",
+    "postgresImageId": "sha256:4b5d4fd438e2c1ce13106e4996fc604f0a1cff39cde48b546fcac3cf1a233c3a",
+    "postgresRepoDigests": [
+      "postgres@sha256:0ea6700a3b4f0ae6ce746519073558aed4d88a79d8d07622a9a644946c7319c4"
+    ]
+  },
+  "sharedHealthBefore": [
+    {
+      "name": "pokemon-scanner-db",
+      "id": "18aa2f6937521ae010930ae98cbee45f2fa435b554c65cf90daaffba0c641ba8",
+      "health": "healthy"
+    },
+    {
+      "name": "pokemon-scanner-redis",
+      "id": "f2d2ca0ad580fe8ca3e94a59b4b6d5a53d761036ba1d14e45b8543a978bbb15f",
+      "health": "healthy"
+    }
+  ],
+  "sharedContainersBefore": [
+    "pokemon-scanner-db 18aa2f693752",
+    "pokemon-scanner-redis f2d2ca0ad580"
+  ],
+  "backup": {
+    "backupId": "83bc4f02-6257-483d-9396-3a275955f127",
+    "ciphertextBytes": 347416,
+    "ciphertextSha256": "7a004dbbb63bf317a6ceb6633c71cf73c5ebd29465816e6db57f13d841fd9ca1",
+    "encryption": "age-v1.2.1",
+    "createdAt": "2026-10-08T12:41:50.550Z",
+    "durationMs": 1147,
+    "migrations": 11,
+    "dumpBytes": 342191,
+    "dumpSha256": "4c43cf9959a2fe67b5c291a72619d7a47ae926828635547fa1c273805850bc95",
+    "receiptSha256": "613d48849b069a6855581ea1102a1deb20e6f5a374fb69d2572f852feb73d56b",
+    "fixtureStatementAt": "2026-10-08T12:41:49.064000Z",
+    "includedCommitObservedAfterSQL": "2026-10-08T12:41:49.203Z",
+    "excludedCommitObservedAfterSQL": "2026-10-08T12:41:50.691Z",
+    "excludedCommitStartedAt": "2026-10-08T12:41:50.625Z",
+    "incidentPoint": "2026-10-08T12:41:51.151Z",
+    "pointRecovered": "commit fixture confirmado antes del dump; modificación posterior excluida",
+    "observedGapMs": 1948
+  },
+  "multichunk": {
+    "ciphertextBytes": 347416,
+    "minimumChunks": 5,
+    "partialOutputs": [
+      {
+        "name": "altered-final-chunk",
+        "bytes": 327680,
+        "status": 1
+      },
+      {
+        "name": "truncated-final-chunk",
+        "bytes": 327680,
+        "status": 1
+      }
+    ]
+  },
+  "backupCollisionRejected": true,
+  "backupSourceStagingClean": true,
+  "sourceDestroyedAfterCiphertext": true,
+  "rejectionStages": [
+    {
+      "name": "altered-final-chunk",
+      "reason": "age rechazó"
+    },
+    {
+      "name": "truncated-final-chunk",
+      "reason": "age rechazó"
+    },
+    {
+      "name": "wrong-identity",
+      "reason": "age rechazó"
+    },
+    {
+      "name": "wrong-receipt-digest",
+      "reason": "ciphertext no coincide"
+    },
+    {
+      "name": "wrong-target-marker",
+      "reason": "Argumentos/propiedad"
+    },
+    {
+      "name": "wrong-dump-digest",
+      "reason": "dump interno no coincide"
+    },
+    {
+      "name": "incompatible-manifest",
+      "reason": "Manifiesto incompatible"
+    },
+    {
+      "name": "manifest-extra-field",
+      "reason": "schema estricto"
+    },
+    {
+      "name": "wrong-migration-checksum",
+      "reason": "Migraciones/checksums"
+    },
+    {
+      "name": "extra-entry",
+      "reason": "Tar inseguro"
+    },
+    {
+      "name": "symlink-entry",
+      "reason": "Tar inseguro"
+    },
+    {
+      "name": "occupied-target",
+      "reason": "objetos preexistentes"
+    },
+    {
+      "name": "actual-marker-mismatch",
+      "reason": "Propietario/marcador"
+    },
+    {
+      "name": "privileged-role",
+      "reason": "Rol limitado"
+    },
+    {
+      "name": "multiple-networks",
+      "reason": "Red no exclusiva"
+    },
+    {
+      "name": "shared-name-rejected",
+      "reason": "Argumentos/propiedad"
+    }
+  ],
+  "prevalidationRestoreCount": 0,
+  "sqlRollback": {
+    "attempts": 1,
+    "emptyAfterFailure": true
+  },
+  "restore": {
+    "restored": true,
+    "backupId": "83bc4f02-6257-483d-9396-3a275955f127",
+    "migrations": 11,
+    "dumpBytes": 342191,
+    "schemaFingerprint": "c352ac6ab770d71d5343454bc7f9d5fc55562e53d533bc8194bdbf160c264d37",
+    "pgTrgm": "1.6",
+    "validTrigramIndexes": 5,
+    "validatedConstraints": 33,
+    "constraintScope": "public",
+    "ownership": true
+  },
+  "localRecoveryMs": 21796,
+  "verification": {
+    "expectedFixtureSet": true,
+    "migrations": 11,
+    "pgTrgm": true,
+    "validTrigramIndexes": 5,
+    "validatedConstraints": 33,
+    "schemaFingerprint": "c352ac6ab770d71d5343454bc7f9d5fc55562e53d533bc8194bdbf160c264d37",
+    "checks": 11,
+    "fullFixtureDigest": "666aea7674035956f41af098f4a56b4c1dcbd58f0d89e283c41ef49a2123d0e2",
+    "completeFixtureSets": true,
+    "excludedCommitAbsent": true,
+    "postgresServer": "16.15 (Debian 16.15-1.pgdg12+2)",
+    "pgDump": "pg_dump (PostgreSQL) 16.15 (Debian 16.15-1.pgdg12+2)",
+    "pgRestore": "pg_restore (PostgreSQL) 16.15 (Debian 16.15-1.pgdg12+2)"
+  },
+  "containerStagingCleanAfterSuccessAndFailure": true,
+  "localRecoveryFromIncidentMs": 13410,
+  "negativeRestoreBeforeSQL": {
+    "altered": true,
+    "truncatedFinalChunk": true,
+    "wrongIdentity": true,
+    "wrongReceiptDigest": true,
+    "wrongTargetMarker": true,
+    "wrongDumpDigest": true,
+    "incompatibleManifest": true,
+    "extraTarEntry": true,
+    "symlinkTarEntry": true,
+    "occupiedTarget": true,
+    "pgRestoreInvocationCount": 2,
+    "verifiedDestinationUnchanged": true
+  },
+  "appFlow": {
+    "mode": "restored-db-api-ssr",
+    "scanner": "disabled",
+    "authentication": "synthetic-HS256-no-login",
+    "checks": [],
+    "cleanup": {
+      "complete": false,
+      "errors": [
+        "No se retiró app-frontend.",
+        "No se acreditó ausencia app-frontend.",
+        "La red destino no volvió al aislamiento exclusivo."
+      ]
+    },
+    "images": {
+      "backend": {
+        "id": "sha256:1e92edf09a920cf1e42017644cf054a11b90b20d2d54ef6bf41dd58dd6c647f3",
+        "created": "2026-10-08T00:17:55.993249761Z"
+      },
+      "frontend": {
+        "id": "sha256:c89a6a501f8929b82ff562c8b3e06e8337f6d53beaf0f744bd0395e6d8241c5f",
+        "created": "2026-10-07T23:54:05.46903546Z"
+      }
+    }
+  },
+  "testResult": "failed",
+  "error": "Cleanup app incompleto; conservá contexto privado del run.",
+  "sharedContainersAfter": [
+    "pokemon-scanner-db 18aa2f693752",
+    "pokemon-scanner-redis f2d2ca0ad580"
+  ],
+  "sharedHealthAfter": [
+    {
+      "name": "pokemon-scanner-db",
+      "id": "18aa2f6937521ae010930ae98cbee45f2fa435b554c65cf90daaffba0c641ba8",
+      "health": "healthy"
+    },
+    {
+      "name": "pokemon-scanner-redis",
+      "id": "f2d2ca0ad580fe8ca3e94a59b4b6d5a53d761036ba1d14e45b8543a978bbb15f",
+      "health": "healthy"
+    }
+  ]
+}

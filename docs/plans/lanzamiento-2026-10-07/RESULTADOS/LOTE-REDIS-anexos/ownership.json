@@ -1,0 +1,103 @@
+{
+  "owner": "/root/be07_review_sol",
+  "run": "be07-gate-sol-20261009",
+  "createdAt": "2026-10-09T12:45:38.517280+00:00",
+  "tmp": "/private/tmp/be07-gate-sol-20261009",
+  "database": "be07_gate_sol_20261009_test",
+  "databaseComment": "be07-gate-sol-20261009-owned",
+  "redis": "be07-gate-sol-20261009-redis",
+  "redisLabel": "be07-gate-sol-20261009",
+  "redisPort": 56383,
+  "resources": [
+    {
+      "role": "database",
+      "name": "be07_gate_sol_20261009_test",
+      "pgContainer": "18aa2f6937521ae010930ae98cbee45f2fa435b554c65cf90daaffba0c641ba8",
+      "comment": "be07-gate-sol-20261009-owned"
+    },
+    {
+      "role": "redis",
+      "name": "be07-gate-sol-20261009-redis",
+      "id": "af3939d5374123091a129592675e5fd379c1d9963fc53db3f7a9fb1ba2dd3048",
+      "label": "be07-gate-sol-20261009",
+      "bind": "127.0.0.1:56383",
+      "tmpfs": true
+    }
+  ],
+  "liveResources": [],
+  "sourceHashes": 501,
+  "runtimeStarted": false,
+  "processes": [],
+  "plannedResources": [
+    {
+      "role": "database",
+      "name": "be07_gate_sol_20261009_test",
+      "comment": "be07-gate-sol-20261009-owned"
+    },
+    {
+      "role": "redis",
+      "name": "be07-gate-sol-20261009-redis",
+      "label": "be07-gate-sol-20261009",
+      "bind": "127.0.0.1:56383"
+    },
+    {
+      "role": "proxy",
+      "port": 56384,
+      "target": "127.0.0.1:56383",
+      "expectedCommand": "/private/tmp/be07-gate-sol-20261009/proxy.mjs",
+      "ownership": "process own + sockets bound loopback; outage preserves private Redis memory"
+    }
+  ],
+  "databaseCommentVerifiedBeforeDrop": true,
+  "databaseConnectionsBeforeDrop": 0,
+  "cloneDropped": true,
+  "redisRemoved": true,
+  "sourceCountsUnchanged": true,
+  "sourceInfraIDsUnchangedHealthy": true,
+  "cleanupAt": "2026-10-09T12:58:43.868638+00:00",
+  "ownReservationsReleased": true,
+  "checkAttempts": [
+    {
+      "command": "pnpm run check",
+      "exit": 1,
+      "log": "check-standard.log",
+      "backendVitest": {
+        "passed": 405,
+        "failed": 0
+      },
+      "backendNode": 13,
+      "backendE2E": 6,
+      "frontend": {
+        "passed": 484,
+        "failed": 2
+      },
+      "buildReached": false
+    },
+    {
+      "command": "pnpm run check",
+      "exit": 1,
+      "log": "check-standard-corrected.log",
+      "backendVitest": {
+        "passed": 404,
+        "failed": 1
+      },
+      "frontendReached": false,
+      "buildReached": false
+    }
+  ],
+  "runtimeProcessesNeverStarted": [
+    "proxy",
+    "api",
+    "next"
+  ],
+  "portsFree": [
+    3000,
+    3001,
+    56383,
+    56384
+  ],
+  "finalAt": "2026-10-09T12:58:44.539033+00:00",
+  "credentialStateRemoved": true,
+  "finalSourcesUnchanged": 500,
+  "finalSourcesRootAuthorizedTestChange": 1
+}

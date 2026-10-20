@@ -10,6 +10,7 @@ import {
   Query,
   Res,
   UseGuards,
+  ValidationPipe,
 } from '@nestjs/common';
 import type { Response } from 'express';
 import { CurrentUser } from '../../common/decorators/current-user.decorator.js';
@@ -24,6 +25,8 @@ import {
   type SetProgressDto,
 } from './collections.service.js';
 import { AddItemDto } from './dto/add-item.dto.js';
+import { AddItemHeadersDto } from './dto/add-item-headers.dto.js';
+import { AddItemHeaders } from './add-item-headers.decorator.js';
 import { CreateCollectionDto } from './dto/create-collection.dto.js';
 import { ListItemsDto } from './dto/list-items.dto.js';
 import { UpdateCollectionDto } from './dto/update-collection.dto.js';
@@ -93,8 +96,22 @@ export class CollectionsController {
     @CurrentUser() user: AuthUser,
     @Param('id') id: string,
     @Body() dto: AddItemDto,
+    @AddItemHeaders(
+      new ValidationPipe({
+        expectedType: AddItemHeadersDto,
+        whitelist: true,
+        transform: true,
+        validateCustomDecorators: true,
+      }),
+    )
+    headers: AddItemHeadersDto,
   ): Promise<CollectionItemDto> {
-    return this.collectionsService.addItem(user.sub, id, dto);
+    return this.collectionsService.addItem(
+      user.sub,
+      id,
+      dto,
+      headers['idempotency-key'],
+    );
   }
 
   @Get('collections/:id/duplicates')

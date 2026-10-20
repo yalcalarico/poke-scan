@@ -1,0 +1,35 @@
+{
+  "runId": "resend_9a1bd1933128",
+  "owner": "/root",
+  "database": "resend_9a1bd1933128_test",
+  "marker": "owner=/root;run=resend_9a1bd1933128;source=RESEND-simulated-standard-fixture",
+  "pgFullID": "18aa2f6937521ae010930ae98cbee45f2fa435b554c65cf90daaffba0c641ba8",
+  "sourceCounts": {
+    "migrations": 13,
+    "users": 22,
+    "collections": 22,
+    "items": 69,
+    "shares": 13,
+    "cards": 20670,
+    "gin": 5
+  },
+  "standardTestBefore": {
+    "migrations": 11,
+    "users": 2,
+    "collections": 3,
+    "items": 2,
+    "shares": 1,
+    "cards": 20670,
+    "gin": 5,
+    "priced": 7
+  },
+  "createdAtUtc": "2026-10-11T22:00:36.892502+00:00",
+  "liveResources": [],
+  "redis": {
+    "name": "resend_9a1bd1933128-redis",
+    "id": "013e9db1523e151fdaf55a01861340206a469f5c0c5ccf8fb24d201433fdc979",
+    "port": 56521,
+    "label": "owner=/root;run=resend_9a1bd1933128;source=RESEND-simulated-standard-fixture"
+  },
+  "cleanedAtUtc": "2026-10-11T22:09:42.591440+00:00"
+}

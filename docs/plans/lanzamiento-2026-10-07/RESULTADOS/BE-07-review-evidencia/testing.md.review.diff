@@ -1,0 +1,41 @@
+--- /Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-07-review-evidencia/testing.md.received	2026-10-09 09:31:57
++++ /Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/backend/docs/testing.md	2026-10-09 09:38:54
+@@ -329,14 +329,31 @@
+ 
+ #### Recuperación después de un corte
+ 
+-`redis.recovery.spec.ts` usa un doble de `ioredis` para probar la política de
+-reintentos, las transiciones `close`/`reconnecting`/`ready`/`end`, el fallback
+-inmediato y el cierre del cliente. No necesita PostgreSQL ni borra claves. Para
+-acreditar la reconexión de red, el ensayo manual de BE-07 usa un contenedor Redis
+-con puerto loopback y label propios; nunca apunta al Redis compartido ni usa
+-`FLUSHDB`. Si se reproduce esa prueba fuera del reporte, registrá el ID del
+-contenedor, el puerto y la confirmación de cleanup.
++`redis.recovery.spec.ts` prueba el backoff permanente, las transiciones
++`close`/`reconnecting`/`ready`/`end`, las carreras con la promesa inicial de
++`connect()`, los cache misses sin comandos, los timestamps y los avisos acotados.
++Usa un doble determinista para controlar el orden de callbacks, y **ioredis real
++con un servidor RESP propio en un puerto loopback efímero** para observar replay
++de un `SET` cuya respuesta se perdió, un socket que no responde y shutdown con
++handshake/comando pendientes, reconexión y conexión sana. No omite esos casos si
++el socket no puede abrirse: una restricción del entorno debe registrarse como
++fallo de ejecución, sin acreditar la prueba. El servidor destruye sus sockets y
++cierra su listener en `afterEach`; no necesita Redis ni PostgreSQL compartidos.
+ 
++La cola offline y los comandos en vuelo son dos caminos distintos: probar un
++cache miss sin comandos no verifica `autoResendUnfulfilledCommands`. El límite de
++3 s por comando permite que una respuesta perdida termine incluso al recuperar
++la conexión con replay desactivado. Los tests no afirman que un comando enviado
++no se haya aplicado antes del corte, ni acreditan el fallback PostgreSQL.
++
++Para acreditar el corte/restitución sostenidos y el fallback real del consumidor,
++el ensayo integrado de BE-07 usa un contenedor Redis con puerto loopback y labels
++propios y mantiene vivo el mismo proceso de API; nunca apunta al Redis compartido
++ni usa `FLUSHDB`. Registrá el ID completo del contenedor, el puerto, el ownership
++del proceso y el cleanup. `redis.service.spec.ts` conserva la prueba de locks y
++WRONGTYPE contra Redis real: para la revisión/gate apuntalo al Redis propio y
++exigí cero omisiones.
++
+ ### Mockear dependencias de infraestructura
+ 
+ Cuando lo que se testea no necesita la dependencia, se reemplaza por un valor

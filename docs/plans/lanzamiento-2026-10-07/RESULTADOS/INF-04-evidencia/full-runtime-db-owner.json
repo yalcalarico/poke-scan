@@ -1,0 +1,35 @@
+{
+  "runId": "inf04_556fe11cfcbd",
+  "owner": "/root",
+  "database": "inf04_556fe11cfcbd_test",
+  "marker": "owner=/root;run=inf04_556fe11cfcbd;source=INF04-local-monitor-standard-fixture",
+  "pgFullID": "18aa2f6937521ae010930ae98cbee45f2fa435b554c65cf90daaffba0c641ba8",
+  "sourceCounts": {
+    "migrations": 13,
+    "users": 22,
+    "collections": 22,
+    "items": 69,
+    "shares": 13,
+    "cards": 20670,
+    "gin": 5
+  },
+  "standardTestBefore": {
+    "migrations": 11,
+    "users": 2,
+    "collections": 3,
+    "items": 2,
+    "shares": 1,
+    "cards": 20670,
+    "gin": 5,
+    "priced": 7
+  },
+  "createdAtUtc": "2026-10-11T16:12:11.956094+00:00",
+  "liveResources": [],
+  "redis": {
+    "name": "inf04_556fe11cfcbd-redis",
+    "id": "046cdd982e75cf14c7f003ae3e8bcce8f46c541a521d30fa0ac6eef27b80ab6b",
+    "port": 56401,
+    "label": "owner=/root;run=inf04_556fe11cfcbd;source=INF04-local-monitor-standard-fixture"
+  },
+  "cleanedAtUtc": "2026-10-11T16:16:47.899172+00:00"
+}

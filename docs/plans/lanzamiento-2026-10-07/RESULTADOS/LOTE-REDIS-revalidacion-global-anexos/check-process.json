@@ -1,0 +1,13 @@
+{
+  "command": [
+    "pnpm",
+    "run",
+    "check"
+  ],
+  "pid": 20637,
+  "startedAtUtc": "2026-10-09T19:42:21.862058+00:00",
+  "database": "be07_global_469af22a0f8f_test",
+  "redisPort": 56391,
+  "noNodeOptions": true,
+  "workerCronOverrides": false
+}

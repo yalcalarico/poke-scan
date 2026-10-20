@@ -1,0 +1,83 @@
+{
+  "success": true,
+  "checks": [
+    {
+      "name": "CLI explicit init with genuine compiled journal/existing authorities",
+      "passed": true
+    },
+    {
+      "name": "Plan and default cycle preserve all authority/backup/schedule bytes",
+      "passed": true
+    },
+    {
+      "name": "CLI apply executes real pg_dump age upload retirement custody cycle",
+      "passed": true
+    },
+    {
+      "name": "Transferred bytes match real encrypted backup",
+      "passed": true
+    },
+    {
+      "name": "Second same slot executes maintenance without duplicate or rewritten authority",
+      "passed": true
+    },
+    {
+      "name": "Maintenance publishes genuine newly accepted suppression",
+      "passed": true
+    },
+    {
+      "name": "Cycle backup consumed by normal restore with real current suppression replay",
+      "passed": true
+    },
+    {
+      "name": "Missing current anchor fails closed before backup/retirement and emits no success",
+      "passed": true
+    },
+    {
+      "name": "Simulated post-backup failure preserves a real accepted original intent",
+      "passed": true
+    },
+    {
+      "name": "Resume keeps backup ID/hash/original date and does not replay backup",
+      "passed": true
+    },
+    {
+      "name": "Controlled 30-day fixture plans retirement without a new backup slot",
+      "passed": true
+    },
+    {
+      "name": "Maintenance retires actual local/transfer ciphertexts and retains tombstones",
+      "passed": true
+    },
+    {
+      "name": "Retirement preserves genuine suppression journal and checkpoint exactly",
+      "passed": true
+    },
+    {
+      "name": "Retirement repeat completes with zero extra deletions",
+      "passed": true
+    },
+    {
+      "name": "Current custody verified after completed retirements",
+      "passed": true
+    }
+  ],
+  "distinctControls": 15,
+  "restore": {
+    "realPG16": true,
+    "ageVersion": "v1.2.1",
+    "suppressionsApplied": true,
+    "deletedAccountAbsent": true,
+    "otherAccountPreserved": true
+  },
+  "expiryMethod": "Controlled library clock +30 days; CLI real clock, no full TTL wait",
+  "notAccredited": [
+    "real cron/timer",
+    "B2/offhost",
+    "miniPC",
+    "RPO/RTO",
+    "power-loss durability",
+    "joint custodian rollback"
+  ],
+  "noScreenshots": true
+}

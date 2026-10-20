@@ -1,17 +1,18 @@
 import type { Metadata } from 'next';
 
 import { FaqSection } from '@/components/marketing';
+import { acquisitionMetadata } from '@/lib/marketing/acquisition-metadata';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = acquisitionMetadata({
   title: 'Preguntas frecuentes',
   description:
-    'Cómo funciona el escáner de PokéScan, de dónde salen los precios, qué requiere conexión y qué incluiría Pro.',
-  alternates: { canonical: '/faq' },
-};
+    'Cómo funciona el reconocimiento visual, de dónde salen las referencias de mercado y qué está disponible sin suscripción.',
+  canonical: '/faq',
+});
 
 export default function FaqPage() {
   return (
-    <main className="mx-auto w-full max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
+    <main id="contenido" className="mx-auto w-full max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
       <FaqSection fullPage />
     </main>
   );

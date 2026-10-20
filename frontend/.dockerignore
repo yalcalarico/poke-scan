@@ -13,3 +13,16 @@ coverage
 Dockerfile
 .dockerignore
 next-env.d.ts
+**/*.ses
+
+# Secretos, sesiones locales y fotos de consulta no forman parte del contexto.
+.env.*
+!.env.example
+**/*.pem
+**/*.key
+**/*.p12
+**/*.pfx
+**/*.ses
+**/*.srl
+.scanner-*/
+captures/

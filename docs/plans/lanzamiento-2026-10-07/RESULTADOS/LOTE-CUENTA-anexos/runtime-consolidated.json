@@ -1,0 +1,606 @@
+{
+  "distinctControls": 81,
+  "passed": 81,
+  "failed": 0,
+  "deduplication": "latest assertion by id; 403 false fixture replaced with valid DTO assertion; phases are separate, not one run",
+  "phases": [
+    {
+      "phase": "primary-and-navigation",
+      "rows": 47
+    },
+    {
+      "phase": "http-ui-visual",
+      "rows": 44
+    },
+    {
+      "phase": "sw-final",
+      "rows": 10
+    }
+  ],
+  "controls": [
+    {
+      "id": "runtime-ownership-before-fixture",
+      "pass": true,
+      "phase": "sw-final",
+      "evidence": "LOTE-CUENTA-anexos/runtime-sw-final/runtime-checks.json"
+    },
+    {
+      "id": "owned-auth-empty-before-factory",
+      "pass": true,
+      "removedOwnCopiedUsers": 5,
+      "phase": "sw-final",
+      "evidence": "LOTE-CUENTA-anexos/runtime-sw-final/runtime-checks.json"
+    },
+    {
+      "id": "factory-inert-until-listener",
+      "pass": true,
+      "phase": "sw-final",
+      "evidence": "LOTE-CUENTA-anexos/runtime-sw-final/runtime-checks.json"
+    },
+    {
+      "id": "listener-before-payload",
+      "pass": true,
+      "phase": "sw-final",
+      "evidence": "LOTE-CUENTA-anexos/runtime-sw-final/runtime-checks.json"
+    },
+    {
+      "id": "ssr-status-headers",
+      "pass": true,
+      "phase": "sw-final",
+      "evidence": "LOTE-CUENTA-anexos/runtime-sw-final/runtime-checks.json"
+    },
+    {
+      "id": "ssr-robots-native-inert",
+      "pass": true,
+      "phase": "sw-final",
+      "evidence": "LOTE-CUENTA-anexos/runtime-sw-final/runtime-checks.json"
+    },
+    {
+      "id": "owned-rate-fixture-primary",
+      "pass": true,
+      "phase": "primary-and-navigation",
+      "evidence": "LOTE-CUENTA-anexos/runtime-attempt-3/runtime-checks.json"
+    },
+    {
+      "id": "login-helper-input-target",
+      "pass": true,
+      "partialPasswordLabelMatches": 2,
+      "phase": "http-ui-visual",
+      "evidence": "LOTE-CUENTA-anexos/runtime-attempt-4/runtime-checks.json"
+    },
+    {
+      "id": "real-login-httpOnly-sameSite",
+      "pass": true,
+      "phase": "primary-and-navigation",
+      "evidence": "LOTE-CUENTA-anexos/runtime-attempt-3/runtime-checks.json"
+    },
+    {
+      "id": "old-access-pre-reset",
+      "pass": true,
+      "phase": "primary-and-navigation",
+      "evidence": "LOTE-CUENTA-anexos/runtime-attempt-3/runtime-checks.json"
+    },
+    {
+      "id": "real-202-generic-copy",
+      "pass": true,
+      "phase": "primary-and-navigation",
+      "evidence": "LOTE-CUENTA-anexos/runtime-attempt-3/runtime-checks.json"
+    },
+    {
+      "id": "capture-before-enabled",
+      "pass": true,
+      "phase": "primary-and-navigation",
+      "evidence": "LOTE-CUENTA-anexos/runtime-attempt-3/runtime-checks.json"
+    },
+    {
+      "id": "mount-no-post",
+      "pass": true,
+      "phase": "primary-and-navigation",
+      "evidence": "LOTE-CUENTA-anexos/runtime-attempt-3/runtime-checks.json"
+    },
+    {
+      "id": "token-no-storage-history-query",
+      "pass": true,
+      "phase": "primary-and-navigation",
+      "evidence": "LOTE-CUENTA-anexos/runtime-attempt-3/runtime-checks.json"
+    },
+    {
+      "id": "password-toggles44-real",
+      "pass": true,
+      "phase": "primary-and-navigation",
+      "evidence": "LOTE-CUENTA-anexos/runtime-attempt-3/runtime-checks.json"
+    },
+    {
+      "id": "password-toggle-keyboard-state",
+      "pass": true,
+      "phase": "primary-and-navigation",
+      "evidence": "LOTE-CUENTA-anexos/runtime-attempt-3/runtime-checks.json"
+    },
+    {
+      "id": "confirmation-local-no-post",
+      "pass": true,
+      "phase": "primary-and-navigation",
+      "evidence": "LOTE-CUENTA-anexos/runtime-attempt-3/runtime-checks.json"
+    },
+    {
+      "id": "web-lock-api-present-real",
+      "pass": true,
+      "phase": "primary-and-navigation",
+      "evidence": "LOTE-CUENTA-anexos/runtime-attempt-3/runtime-checks.json"
+    },
+    {
+      "id": "cross-tab-refresh-blocks-reset-post",
+      "pass": true,
+      "phase": "primary-and-navigation",
+      "evidence": "LOTE-CUENTA-anexos/runtime-attempt-3/runtime-checks.json"
+    },
+    {
+      "id": "success-manual-no-auto-login",
+      "pass": true,
+      "phase": "primary-and-navigation",
+      "evidence": "LOTE-CUENTA-anexos/runtime-attempt-3/runtime-checks.json"
+    },
+    {
+      "id": "confirmed-cleanup-provider-cookie",
+      "pass": true,
+      "phase": "primary-and-navigation",
+      "evidence": "LOTE-CUENTA-anexos/runtime-attempt-3/runtime-checks.json"
+    },
+    {
+      "id": "post-success-no-storage-secret",
+      "pass": true,
+      "phase": "primary-and-navigation",
+      "evidence": "LOTE-CUENTA-anexos/runtime-attempt-3/runtime-checks.json"
+    },
+    {
+      "id": "old-access-guard-real",
+      "pass": true,
+      "phase": "primary-and-navigation",
+      "evidence": "LOTE-CUENTA-anexos/runtime-attempt-3/runtime-checks.json"
+    },
+    {
+      "id": "old-refresh-rejected-real",
+      "pass": true,
+      "phase": "primary-and-navigation",
+      "evidence": "LOTE-CUENTA-anexos/runtime-attempt-3/runtime-checks.json"
+    },
+    {
+      "id": "new-password-real-login",
+      "pass": true,
+      "phase": "primary-and-navigation",
+      "evidence": "LOTE-CUENTA-anexos/runtime-attempt-3/runtime-checks.json"
+    },
+    {
+      "id": "owned-rate-fixture-concurrent",
+      "pass": true,
+      "phase": "primary-and-navigation",
+      "evidence": "LOTE-CUENTA-anexos/runtime-attempt-3/runtime-checks.json"
+    },
+    {
+      "id": "mail-request-1",
+      "pass": true,
+      "phase": "primary-and-navigation",
+      "evidence": "LOTE-CUENTA-anexos/runtime-attempt-3/runtime-checks.json"
+    },
+    {
+      "id": "mail-receiver-1",
+      "pass": true,
+      "phase": "primary-and-navigation",
+      "evidence": "LOTE-CUENTA-anexos/runtime-attempt-3/runtime-checks.json"
+    },
+    {
+      "id": "concurrent-one-success-real",
+      "pass": true,
+      "phase": "primary-and-navigation",
+      "evidence": "LOTE-CUENTA-anexos/runtime-attempt-3/runtime-checks.json"
+    },
+    {
+      "id": "owned-rate-fixture-uncertain",
+      "pass": true,
+      "phase": "primary-and-navigation",
+      "evidence": "LOTE-CUENTA-anexos/runtime-attempt-3/runtime-checks.json"
+    },
+    {
+      "id": "mail-request-2",
+      "pass": true,
+      "phase": "primary-and-navigation",
+      "evidence": "LOTE-CUENTA-anexos/runtime-attempt-3/runtime-checks.json"
+    },
+    {
+      "id": "mail-receiver-2",
+      "pass": true,
+      "phase": "primary-and-navigation",
+      "evidence": "LOTE-CUENTA-anexos/runtime-attempt-3/runtime-checks.json"
+    },
+    {
+      "id": "lost-after-commit-no-replay",
+      "pass": true,
+      "phase": "primary-and-navigation",
+      "evidence": "LOTE-CUENTA-anexos/runtime-attempt-3/runtime-checks.json"
+    },
+    {
+      "id": "uncertain-manual-actions",
+      "pass": true,
+      "phase": "primary-and-navigation",
+      "evidence": "LOTE-CUENTA-anexos/runtime-attempt-3/runtime-checks.json"
+    },
+    {
+      "id": "lost-response-new-password-login-real",
+      "pass": true,
+      "phase": "primary-and-navigation",
+      "evidence": "LOTE-CUENTA-anexos/runtime-attempt-3/runtime-checks.json"
+    },
+    {
+      "id": "owned-rate-fixture-navigation",
+      "pass": true,
+      "phase": "primary-and-navigation",
+      "evidence": "LOTE-CUENTA-anexos/runtime-attempt-3/runtime-checks.json"
+    },
+    {
+      "id": "mail-request-3",
+      "pass": true,
+      "phase": "primary-and-navigation",
+      "evidence": "LOTE-CUENTA-anexos/runtime-attempt-3/runtime-checks.json"
+    },
+    {
+      "id": "mail-receiver-3",
+      "pass": true,
+      "phase": "primary-and-navigation",
+      "evidence": "LOTE-CUENTA-anexos/runtime-attempt-3/runtime-checks.json"
+    },
+    {
+      "id": "reload-loses-link-with-marker",
+      "pass": true,
+      "phase": "primary-and-navigation",
+      "evidence": "LOTE-CUENTA-anexos/runtime-attempt-3/runtime-checks.json"
+    },
+    {
+      "id": "real-next-push-same-bare-loses-token",
+      "pass": true,
+      "phase": "primary-and-navigation",
+      "evidence": "LOTE-CUENTA-anexos/runtime-attempt-3/runtime-checks.json"
+    },
+    {
+      "id": "back-no-secret-reconstruction",
+      "pass": true,
+      "phase": "primary-and-navigation",
+      "evidence": "LOTE-CUENTA-anexos/runtime-attempt-3/runtime-checks.json"
+    },
+    {
+      "id": "navigation-no-consume-post",
+      "pass": true,
+      "phase": "primary-and-navigation",
+      "evidence": "LOTE-CUENTA-anexos/runtime-attempt-3/runtime-checks.json"
+    },
+    {
+      "id": "owned-rate-fixture-rate",
+      "pass": true,
+      "phase": "http-ui-visual",
+      "evidence": "LOTE-CUENTA-anexos/runtime-attempt-4/runtime-checks.json"
+    },
+    {
+      "id": "real-429-ui-disabled",
+      "pass": true,
+      "phase": "http-ui-visual",
+      "evidence": "LOTE-CUENTA-anexos/runtime-attempt-4/runtime-checks.json"
+    },
+    {
+      "id": "owned-rate-fixture-http-errors",
+      "pass": true,
+      "phase": "http-ui-visual",
+      "evidence": "LOTE-CUENTA-anexos/runtime-attempt-4/runtime-checks.json"
+    },
+    {
+      "id": "real-malformed-input-no-store",
+      "pass": true,
+      "phase": "http-ui-visual",
+      "evidence": "LOTE-CUENTA-anexos/runtime-attempt-4/runtime-checks.json"
+    },
+    {
+      "id": "real-403-family-no-store",
+      "pass": true,
+      "phase": "http-ui-visual",
+      "evidence": "LOTE-CUENTA-anexos/runtime-attempt-4/runtime-checks.json"
+    },
+    {
+      "id": "real-503-general-before-lookup",
+      "pass": true,
+      "phase": "http-ui-visual",
+      "evidence": "LOTE-CUENTA-anexos/runtime-attempt-4/runtime-checks.json"
+    },
+    {
+      "id": "owned-rate-fixture-ui-errors",
+      "pass": true,
+      "phase": "http-ui-visual",
+      "evidence": "LOTE-CUENTA-anexos/runtime-attempt-4/runtime-checks.json"
+    },
+    {
+      "id": "mail-request-4",
+      "pass": true,
+      "phase": "http-ui-visual",
+      "evidence": "LOTE-CUENTA-anexos/runtime-attempt-4/runtime-checks.json"
+    },
+    {
+      "id": "mail-receiver-4",
+      "pass": true,
+      "phase": "http-ui-visual",
+      "evidence": "LOTE-CUENTA-anexos/runtime-attempt-4/runtime-checks.json"
+    },
+    {
+      "id": "ui-fixture-input-field",
+      "pass": true,
+      "phase": "http-ui-visual",
+      "evidence": "LOTE-CUENTA-anexos/runtime-attempt-4/runtime-checks.json"
+    },
+    {
+      "id": "ui-fixture-unavailable-change",
+      "pass": true,
+      "phase": "http-ui-visual",
+      "evidence": "LOTE-CUENTA-anexos/runtime-attempt-4/runtime-checks.json"
+    },
+    {
+      "id": "ui-fixture-unknown-code",
+      "pass": true,
+      "phase": "http-ui-visual",
+      "evidence": "LOTE-CUENTA-anexos/runtime-attempt-4/runtime-checks.json"
+    },
+    {
+      "id": "ui-fixture-malformed-success",
+      "pass": true,
+      "phase": "http-ui-visual",
+      "evidence": "LOTE-CUENTA-anexos/runtime-attempt-4/runtime-checks.json"
+    },
+    {
+      "id": "unicode-eight-codepoints-real-reset",
+      "pass": true,
+      "phase": "http-ui-visual",
+      "evidence": "LOTE-CUENTA-anexos/runtime-attempt-4/runtime-checks.json"
+    },
+    {
+      "id": "unicode-password-real-login",
+      "pass": true,
+      "phase": "http-ui-visual",
+      "evidence": "LOTE-CUENTA-anexos/runtime-attempt-4/runtime-checks.json"
+    },
+    {
+      "id": "visual-empty-390-light",
+      "pass": true,
+      "viewportWidth": 390,
+      "theme": "light",
+      "phase": "http-ui-visual",
+      "evidence": "LOTE-CUENTA-anexos/runtime-attempt-4/runtime-checks.json"
+    },
+    {
+      "id": "contrast-computed-390-light",
+      "pass": true,
+      "samples": [
+        {
+          "selector": "h1",
+          "ratio": 19.64,
+          "required": 3
+        },
+        {
+          "selector": "label",
+          "ratio": 6.59,
+          "required": 4.5
+        },
+        {
+          "selector": "button[type=submit]",
+          "ratio": 5.11,
+          "required": 4.5
+        },
+        {
+          "selector": "h1+p",
+          "ratio": 6.59,
+          "required": 4.5
+        }
+      ],
+      "phase": "http-ui-visual",
+      "evidence": "LOTE-CUENTA-anexos/runtime-attempt-4/runtime-checks.json"
+    },
+    {
+      "id": "keyboard-first-field-390-light",
+      "pass": true,
+      "phase": "http-ui-visual",
+      "evidence": "LOTE-CUENTA-anexos/runtime-attempt-4/runtime-checks.json"
+    },
+    {
+      "id": "screenshot-empty-390-light",
+      "pass": true,
+      "phase": "http-ui-visual",
+      "evidence": "LOTE-CUENTA-anexos/runtime-attempt-4/runtime-checks.json"
+    },
+    {
+      "id": "zoom200-no-horizontal-390-light",
+      "pass": true,
+      "phase": "http-ui-visual",
+      "evidence": "LOTE-CUENTA-anexos/runtime-attempt-4/runtime-checks.json"
+    },
+    {
+      "id": "visual-empty-390-dark",
+      "pass": true,
+      "viewportWidth": 390,
+      "theme": "dark",
+      "phase": "http-ui-visual",
+      "evidence": "LOTE-CUENTA-anexos/runtime-attempt-4/runtime-checks.json"
+    },
+    {
+      "id": "contrast-computed-390-dark",
+      "pass": true,
+      "samples": [
+        {
+          "selector": "h1",
+          "ratio": 16.7,
+          "required": 3
+        },
+        {
+          "selector": "label",
+          "ratio": 7.12,
+          "required": 4.5
+        },
+        {
+          "selector": "button[type=submit]",
+          "ratio": 5.94,
+          "required": 4.5
+        },
+        {
+          "selector": "h1+p",
+          "ratio": 7.12,
+          "required": 4.5
+        }
+      ],
+      "phase": "http-ui-visual",
+      "evidence": "LOTE-CUENTA-anexos/runtime-attempt-4/runtime-checks.json"
+    },
+    {
+      "id": "keyboard-first-field-390-dark",
+      "pass": true,
+      "phase": "http-ui-visual",
+      "evidence": "LOTE-CUENTA-anexos/runtime-attempt-4/runtime-checks.json"
+    },
+    {
+      "id": "screenshot-empty-390-dark",
+      "pass": true,
+      "phase": "http-ui-visual",
+      "evidence": "LOTE-CUENTA-anexos/runtime-attempt-4/runtime-checks.json"
+    },
+    {
+      "id": "zoom200-no-horizontal-390-dark",
+      "pass": true,
+      "phase": "http-ui-visual",
+      "evidence": "LOTE-CUENTA-anexos/runtime-attempt-4/runtime-checks.json"
+    },
+    {
+      "id": "visual-empty-1280-light",
+      "pass": true,
+      "viewportWidth": 1280,
+      "theme": "light",
+      "phase": "http-ui-visual",
+      "evidence": "LOTE-CUENTA-anexos/runtime-attempt-4/runtime-checks.json"
+    },
+    {
+      "id": "contrast-computed-1280-light",
+      "pass": true,
+      "samples": [
+        {
+          "selector": "h1",
+          "ratio": 19.64,
+          "required": 3
+        },
+        {
+          "selector": "label",
+          "ratio": 6.59,
+          "required": 4.5
+        },
+        {
+          "selector": "button[type=submit]",
+          "ratio": 5.11,
+          "required": 4.5
+        },
+        {
+          "selector": "h1+p",
+          "ratio": 6.59,
+          "required": 4.5
+        }
+      ],
+      "phase": "http-ui-visual",
+      "evidence": "LOTE-CUENTA-anexos/runtime-attempt-4/runtime-checks.json"
+    },
+    {
+      "id": "keyboard-first-field-1280-light",
+      "pass": true,
+      "phase": "http-ui-visual",
+      "evidence": "LOTE-CUENTA-anexos/runtime-attempt-4/runtime-checks.json"
+    },
+    {
+      "id": "screenshot-empty-1280-light",
+      "pass": true,
+      "phase": "http-ui-visual",
+      "evidence": "LOTE-CUENTA-anexos/runtime-attempt-4/runtime-checks.json"
+    },
+    {
+      "id": "zoom200-no-horizontal-1280-light",
+      "pass": true,
+      "phase": "http-ui-visual",
+      "evidence": "LOTE-CUENTA-anexos/runtime-attempt-4/runtime-checks.json"
+    },
+    {
+      "id": "visual-empty-1280-dark",
+      "pass": true,
+      "viewportWidth": 1280,
+      "theme": "dark",
+      "phase": "http-ui-visual",
+      "evidence": "LOTE-CUENTA-anexos/runtime-attempt-4/runtime-checks.json"
+    },
+    {
+      "id": "contrast-computed-1280-dark",
+      "pass": true,
+      "samples": [
+        {
+          "selector": "h1",
+          "ratio": 16.7,
+          "required": 3
+        },
+        {
+          "selector": "label",
+          "ratio": 7.12,
+          "required": 4.5
+        },
+        {
+          "selector": "button[type=submit]",
+          "ratio": 5.94,
+          "required": 4.5
+        },
+        {
+          "selector": "h1+p",
+          "ratio": 7.12,
+          "required": 4.5
+        }
+      ],
+      "phase": "http-ui-visual",
+      "evidence": "LOTE-CUENTA-anexos/runtime-attempt-4/runtime-checks.json"
+    },
+    {
+      "id": "keyboard-first-field-1280-dark",
+      "pass": true,
+      "phase": "http-ui-visual",
+      "evidence": "LOTE-CUENTA-anexos/runtime-attempt-4/runtime-checks.json"
+    },
+    {
+      "id": "screenshot-empty-1280-dark",
+      "pass": true,
+      "phase": "http-ui-visual",
+      "evidence": "LOTE-CUENTA-anexos/runtime-attempt-4/runtime-checks.json"
+    },
+    {
+      "id": "zoom200-no-horizontal-1280-dark",
+      "pass": true,
+      "phase": "http-ui-visual",
+      "evidence": "LOTE-CUENTA-anexos/runtime-attempt-4/runtime-checks.json"
+    },
+    {
+      "id": "sw-real-activation-purge",
+      "pass": true,
+      "phase": "sw-final",
+      "evidence": "LOTE-CUENTA-anexos/runtime-sw-final/runtime-checks.json"
+    },
+    {
+      "id": "sw-online-network-not-cached",
+      "pass": true,
+      "phase": "sw-final",
+      "evidence": "LOTE-CUENTA-anexos/runtime-sw-final/runtime-checks.json"
+    },
+    {
+      "id": "sw-controlled-real",
+      "pass": true,
+      "phase": "sw-final",
+      "evidence": "LOTE-CUENTA-anexos/runtime-sw-final/runtime-checks.json"
+    },
+    {
+      "id": "sw-offline-never-replay-recovery",
+      "pass": true,
+      "phase": "sw-final",
+      "evidence": "LOTE-CUENTA-anexos/runtime-sw-final/runtime-checks.json"
+    }
+  ]
+}

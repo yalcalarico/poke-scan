@@ -1,0 +1,12 @@
+{
+  "command": [
+    "pnpm",
+    "run",
+    "check"
+  ],
+  "exitCode": 1,
+  "startedAtUtc": "2026-10-10T14:43:57.580232+00:00",
+  "finishedAtUtc": "2026-10-10T14:45:00.342643+00:00",
+  "logRedactedAtSource": true,
+  "environmentScope": "owned DB for DATABASE_URL and DATABASE_URL_TEST, owned loopback Redis; public API loopback build value; global defaults intact"
+}

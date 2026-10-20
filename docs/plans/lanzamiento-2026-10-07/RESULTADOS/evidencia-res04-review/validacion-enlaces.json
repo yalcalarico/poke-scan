@@ -1,0 +1,101 @@
+{
+  "local_links_checked": 19,
+  "links": [
+    {
+      "document": "RES-04-fuentes.md",
+      "target": "RES-04-review.md",
+      "exists": true
+    },
+    {
+      "document": "RES-04-fuentes.md",
+      "target": "../../../../AGENTS.md",
+      "exists": true
+    },
+    {
+      "document": "RES-04-fuentes.md",
+      "target": "../../../data-sources.md",
+      "exists": true
+    },
+    {
+      "document": "RES-04-fuentes.md",
+      "target": "../../../../backend/src/modules/providers/pokemon-tcg-io.provider.ts",
+      "exists": true
+    },
+    {
+      "document": "RES-04-fuentes.md",
+      "target": "../../../../backend/src/modules/providers/tcgdex.provider.ts",
+      "exists": true
+    },
+    {
+      "document": "RES-04-fuentes.md",
+      "target": "../../../../backend/src/modules/providers/tcgdex.provider.ts",
+      "exists": true
+    },
+    {
+      "document": "RES-04-fuentes.md",
+      "target": "../../../data-sources.md",
+      "exists": true
+    },
+    {
+      "document": "RES-04-fuentes.md",
+      "target": "evidencia-res04-review/RES-04-fuentes-recibido.md",
+      "exists": true
+    },
+    {
+      "document": "RES-04-fuentes.md",
+      "target": "RES-04-review.md",
+      "exists": true
+    },
+    {
+      "document": "RES-04-fuentes.md",
+      "target": "../../../../AGENTS.md",
+      "exists": true
+    },
+    {
+      "document": "RES-04-fuentes.md",
+      "target": "../../../data-sources.md",
+      "exists": true
+    },
+    {
+      "document": "RES-04-fuentes.md",
+      "target": "../../../../backend/docs/providers.md",
+      "exists": true
+    },
+    {
+      "document": "RES-04-fuentes.md",
+      "target": "../../../../backend/docs/pricing.md",
+      "exists": true
+    },
+    {
+      "document": "RES-04-fuentes.md",
+      "target": "../../../../frontend/docs/scanner.md",
+      "exists": true
+    },
+    {
+      "document": "RES-04-fuentes.md",
+      "target": "../../../evaluations/dinov2-baseline-2026-10-06.json",
+      "exists": true
+    },
+    {
+      "document": "RES-04-review.md",
+      "target": "evidencia-res04-review/RES-04-fuentes-recibido.md",
+      "exists": true
+    },
+    {
+      "document": "RES-04-review.md",
+      "target": "evidencia-res04-review/dirty-antes.txt",
+      "exists": true
+    },
+    {
+      "document": "RES-04-review.md",
+      "target": "evidencia-res04-review/fuentes-verificadas.json",
+      "exists": true
+    },
+    {
+      "document": "RES-04-review.md",
+      "target": "evidencia-res04-review/hashes-finales.json",
+      "exists": true
+    }
+  ],
+  "failures": []
+}

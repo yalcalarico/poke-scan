@@ -1,0 +1,402 @@
+{
+  "task": "NEG-03 documentary validation",
+  "date_local": "2026-10-09",
+  "artifact": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/NEG-03-cuenta-requisitos.md",
+  "artifact_sha256": "bbf2fbc0400adfb35e9d3fad5afae88135e53223a322d49e99e8e00d06c29e03",
+  "baseline": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/evidencia-neg03-cuenta/baseline-selectiva.json",
+  "baseline_sources_unchanged": true,
+  "source_hashes": [
+    {
+      "path": "AGENTS.md",
+      "sha256_before": "0a44196ce9194cafcd54094af02e90e73f0da0f693604d0876d97bf14ee30688",
+      "sha256_after": "0a44196ce9194cafcd54094af02e90e73f0da0f693604d0876d97bf14ee30688",
+      "unchanged": true
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/README.md",
+      "sha256_before": "24ec5dee918d19778b3a7bfd4187fecf1eff2e2f855ffdd2a26ed0843fc1eced",
+      "sha256_after": "24ec5dee918d19778b3a7bfd4187fecf1eff2e2f855ffdd2a26ed0843fc1eced",
+      "unchanged": true
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/08-negocio-monetizacion.md",
+      "sha256_before": "e396d76091248484fc57a4c8b0245f46e408b3527ecc1f74bb127f6639bf2e96",
+      "sha256_after": "e396d76091248484fc57a4c8b0245f46e408b3527ecc1f74bb127f6639bf2e96",
+      "unchanged": true
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/10-decisiones-y-contratos.md",
+      "sha256_before": "a040c6d51aa674adc7449b9dc683e1d1f5fa0cc6aaf0b6f2377991827a2ab6e5",
+      "sha256_after": "a040c6d51aa674adc7449b9dc683e1d1f5fa0cc6aaf0b6f2377991827a2ab6e5",
+      "unchanged": true
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/01-frontend.md",
+      "sha256_before": "ba1c7db23291d45b38d6352a3f5b1d5c0920459721d64f349bccb5592c3c8109",
+      "sha256_after": "ba1c7db23291d45b38d6352a3f5b1d5c0920459721d64f349bccb5592c3c8109",
+      "unchanged": true
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/02-backend.md",
+      "sha256_before": "eaa51a56f69f102605e0c7810379cae969135cc047686ebfcae9e14e7772e657",
+      "sha256_after": "eaa51a56f69f102605e0c7810379cae969135cc047686ebfcae9e14e7772e657",
+      "unchanged": true
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/03-ui-ux.md",
+      "sha256_before": "6fd798bbb2867c00e18ac53a689233105cd01b167bbdb4a8a73eea203ee04a19",
+      "sha256_after": "6fd798bbb2867c00e18ac53a689233105cd01b167bbdb4a8a73eea203ee04a19",
+      "unchanged": true
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/REGISTRO-TAREAS.md",
+      "sha256_before": "ace10303ea7d2ae6465b7d9f0ab0b1449ad68e3a68a7b037a1591e51ac98504a",
+      "sha256_after": "ace10303ea7d2ae6465b7d9f0ab0b1449ad68e3a68a7b037a1591e51ac98504a",
+      "unchanged": true
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/ORQUESTACION-ESTADO.md",
+      "sha256_before": "df8a272aa5658256309158ecbf7981fb2a6c88645c13859d789a0b9986a2ecca",
+      "sha256_after": "df8a272aa5658256309158ecbf7981fb2a6c88645c13859d789a0b9986a2ecca",
+      "unchanged": true
+    },
+    {
+      "path": "backend/src/modules/auth/auth.service.ts",
+      "sha256_before": "0a254e70b586234adb0273e5ab6f038e92629161c6aea305de6de87120dd7502",
+      "sha256_after": "0a254e70b586234adb0273e5ab6f038e92629161c6aea305de6de87120dd7502",
+      "unchanged": true
+    },
+    {
+      "path": "backend/src/modules/auth/auth.controller.ts",
+      "sha256_before": "6e1418e90f41739a7aaf6be807498caa46491fc92beef554ad58d9c8fa29a7c5",
+      "sha256_after": "6e1418e90f41739a7aaf6be807498caa46491fc92beef554ad58d9c8fa29a7c5",
+      "unchanged": true
+    },
+    {
+      "path": "backend/src/modules/auth/session-security.ts",
+      "sha256_before": "d2389954d9106d797fc19a2a7af9d88077ea740383cb5271056bafae2973aa99",
+      "sha256_after": "d2389954d9106d797fc19a2a7af9d88077ea740383cb5271056bafae2973aa99",
+      "unchanged": true
+    },
+    {
+      "path": "backend/prisma/schema.prisma",
+      "sha256_before": "aa1a08ba649e542444fd79e724e497d8304c469b33a1cc0966646e831e6b3624",
+      "sha256_after": "aa1a08ba649e542444fd79e724e497d8304c469b33a1cc0966646e831e6b3624",
+      "unchanged": true
+    },
+    {
+      "path": "backend/src/modules/share/share.service.ts",
+      "sha256_before": "306b6290135591dbdeee63b22b0d015eb44bed5fc640f8ce4eb056ff70fb8c62",
+      "sha256_after": "306b6290135591dbdeee63b22b0d015eb44bed5fc640f8ce4eb056ff70fb8c62",
+      "unchanged": true
+    },
+    {
+      "path": "backend/src/modules/share/public-share.controller.ts",
+      "sha256_before": "acf9b7ef58255bff779152981f94faca44b4b155ec8f9d10e621c5bc23a8d2ee",
+      "sha256_after": "acf9b7ef58255bff779152981f94faca44b4b155ec8f9d10e621c5bc23a8d2ee",
+      "unchanged": true
+    },
+    {
+      "path": "backend/docs/database.md",
+      "sha256_before": "b13f35f6425b5be03bb1b4517d6bd3957dbd1e8737f665306f585cdbb499d4fa",
+      "sha256_after": "b13f35f6425b5be03bb1b4517d6bd3957dbd1e8737f665306f585cdbb499d4fa",
+      "unchanged": true
+    },
+    {
+      "path": "docs/security.md",
+      "sha256_before": "77ca6e0ad62b3b100f6f6e2190e77cb708d5ad310bc546fcba9e331140b9af28",
+      "sha256_after": "77ca6e0ad62b3b100f6f6e2190e77cb708d5ad310bc546fcba9e331140b9af28",
+      "unchanged": true
+    },
+    {
+      "path": "docs/architecture.md",
+      "sha256_before": "2dcd7b86a7552648c3af37a24a84d9c4dfa77cb91967f98cb1d25528f2093072",
+      "sha256_after": "2dcd7b86a7552648c3af37a24a84d9c4dfa77cb91967f98cb1d25528f2093072",
+      "unchanged": true
+    },
+    {
+      "path": "frontend/docs/scanner.md",
+      "sha256_before": "cd5646940492469583b428c1911a7f7820538742764abfb254b50f630adcbf52",
+      "sha256_after": "cd5646940492469583b428c1911a7f7820538742764abfb254b50f630adcbf52",
+      "unchanged": true
+    },
+    {
+      "path": "infra/inf03/README.md",
+      "sha256_before": "7176efc0c91de25d8d62932c7c252b89dac23fca5972763a222526a3896dbe90",
+      "sha256_after": "7176efc0c91de25d8d62932c7c252b89dac23fca5972763a222526a3896dbe90",
+      "unchanged": true
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-03-local-review.md",
+      "sha256_before": "ddaba3d7bdc6f4c897a19de675a8f800e4171caf58f486311109c678f3fd5d4c",
+      "sha256_after": "ddaba3d7bdc6f4c897a19de675a8f800e4171caf58f486311109c678f3fd5d4c",
+      "unchanged": true
+    }
+  ],
+  "internal_markdown_links_count": 26,
+  "all_internal_files_resolve": true,
+  "all_markdown_anchors_and_code_lines_resolve": true,
+  "code_line_references": [
+    {
+      "file": "backend/src/modules/auth/auth.controller.ts",
+      "line": "18",
+      "exists": true
+    },
+    {
+      "file": "backend/src/modules/auth/auth.service.ts",
+      "line": "88",
+      "exists": true
+    },
+    {
+      "file": "backend/src/modules/auth/session-security.ts",
+      "line": "1",
+      "exists": true
+    },
+    {
+      "file": "backend/src/modules/auth/auth.service.ts",
+      "line": "66",
+      "exists": true
+    },
+    {
+      "file": "backend/src/modules/auth/auth.service.ts",
+      "line": "111",
+      "exists": true
+    },
+    {
+      "file": "backend/src/modules/auth/session-security.ts",
+      "line": "35",
+      "exists": true
+    },
+    {
+      "file": "backend/src/modules/auth/auth.service.ts",
+      "line": "160",
+      "exists": true
+    },
+    {
+      "file": "backend/prisma/schema.prisma",
+      "line": "12",
+      "exists": true
+    },
+    {
+      "file": "backend/prisma/schema.prisma",
+      "line": "172",
+      "exists": true
+    },
+    {
+      "file": "backend/prisma/schema.prisma",
+      "line": "200",
+      "exists": true
+    },
+    {
+      "file": "backend/prisma/schema.prisma",
+      "line": "238",
+      "exists": true
+    },
+    {
+      "file": "backend/prisma/schema.prisma",
+      "line": "256",
+      "exists": true
+    },
+    {
+      "file": "backend/prisma/schema.prisma",
+      "line": "362",
+      "exists": true
+    },
+    {
+      "file": "backend/src/modules/share/share.service.ts",
+      "line": "242",
+      "exists": true
+    },
+    {
+      "file": "backend/src/modules/share/share.service.ts",
+      "line": "293",
+      "exists": true
+    },
+    {
+      "file": "backend/src/modules/share/public-share.controller.ts",
+      "line": "11",
+      "exists": true
+    }
+  ],
+  "matrix_layer_rows_present": {
+    "Postgres activo": true,
+    "Sesiones": true,
+    "Links y cachés": true,
+    "CSV/descargas": true,
+    "Logs/medición/correo": true,
+    "Backup/restore": true
+  },
+  "matrix_coherent": true,
+  "links": [
+    {
+      "label": "baseline-selectiva.json",
+      "destination": "evidencia-neg03-cuenta/baseline-selectiva.json",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "label": "`auth.controller.ts`",
+      "destination": "../../../../backend/src/modules/auth/auth.controller.ts#L18",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "label": "`auth.service.ts`",
+      "destination": "../../../../backend/src/modules/auth/auth.service.ts#L88",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "label": "`session-security.ts`",
+      "destination": "../../../../backend/src/modules/auth/session-security.ts#L1",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "label": "`auth.service.ts`",
+      "destination": "../../../../backend/src/modules/auth/auth.service.ts#L66",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "label": "`auth.service.ts`",
+      "destination": "../../../../backend/src/modules/auth/auth.service.ts#L111",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "label": "`session-security.ts`",
+      "destination": "../../../../backend/src/modules/auth/session-security.ts#L35",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "label": "seguridad",
+      "destination": "../../../../docs/security.md#sesiones",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "label": "`auth.service.ts`",
+      "destination": "../../../../backend/src/modules/auth/auth.service.ts#L160",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "label": "`schema.prisma`",
+      "destination": "../../../../backend/prisma/schema.prisma#L12",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "label": "`schema.prisma`",
+      "destination": "../../../../backend/prisma/schema.prisma#L172",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "label": "`schema.prisma`",
+      "destination": "../../../../backend/prisma/schema.prisma#L200",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "label": "`schema.prisma`",
+      "destination": "../../../../backend/prisma/schema.prisma#L238",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "label": "`schema.prisma`",
+      "destination": "../../../../backend/prisma/schema.prisma#L256",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "label": "`schema.prisma`",
+      "destination": "../../../../backend/prisma/schema.prisma#L362",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "label": "`share.service.ts`",
+      "destination": "../../../../backend/src/modules/share/share.service.ts#L242",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "label": "`share.service.ts`",
+      "destination": "../../../../backend/src/modules/share/share.service.ts#L293",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "label": "`public-share.controller.ts`",
+      "destination": "../../../../backend/src/modules/share/public-share.controller.ts#L11",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "label": "DEC-02",
+      "destination": "../10-decisiones-y-contratos.md",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "label": "documentación de colecciones",
+      "destination": "../../../../frontend/docs/portfolio.md",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "label": "pipeline del escáner",
+      "destination": "../../../../frontend/docs/scanner.md#contrato-y-ranking",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "label": "revisión voluntaria",
+      "destination": "../../../../frontend/docs/scanner.md#descarga-voluntaria-para-revisar-errores",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "label": "revisión INF-03",
+      "destination": "INF-03-local-review.md#resultado-que-habilita-el-gate-integrado",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "label": "README INF-03",
+      "destination": "../../../../infra/inf03/README.md",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "label": "DEC-04",
+      "destination": "../10-decisiones-y-contratos.md",
+      "exists": true,
+      "anchor_exists": true
+    },
+    {
+      "label": "validacion-documental.json",
+      "destination": "evidencia-neg03-cuenta/validacion-documental.json",
+      "exists": true,
+      "anchor_exists": true
+    }
+  ],
+  "owned_paths_git_status": [
+    "?? docs/plans/lanzamiento-2026-10-07/RESULTADOS/NEG-03-cuenta-requisitos.md",
+    "?? docs/plans/lanzamiento-2026-10-07/RESULTADOS/evidencia-neg03-cuenta/"
+  ],
+  "checks_not_run": [
+    "tests",
+    "build",
+    "runtime",
+    "DB",
+    "Redis",
+    "email",
+    "pnpm run check"
+  ],
+  "scope": "Documentation only; no code or central registry changed."
+}

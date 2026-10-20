@@ -309,7 +309,7 @@ export function Sheet({
 
       // `!inside` cubre el foco que se fue por otro lado (un click en otro
       // overlay, un `autofocus`): el trap lo recupera.
-      if (event.shiftKey && (!inside || active === first)) {
+      if (event.shiftKey && (!inside || active === panel || active === first)) {
         event.preventDefault();
         last.focus();
         return;

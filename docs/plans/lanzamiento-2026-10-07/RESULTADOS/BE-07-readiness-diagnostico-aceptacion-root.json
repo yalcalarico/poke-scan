@@ -1,0 +1,20 @@
+{
+  "atUtc": "2026-10-09T13:24:42.285045+00:00",
+  "acceptedAsFocusedDiagnosisOnly": true,
+  "causeLocated": false,
+  "batchAccepted": false,
+  "reportHashVerified": true,
+  "annexes": 44,
+  "annexMismatches": [],
+  "sources501Mismatches": [],
+  "dist277Mismatches": [],
+  "rootCurrentListeners": {
+    "3000": "",
+    "3001": "",
+    "56385": ""
+  },
+  "evidenceSha256": "1305880aac29a3ae505e9d380c28479ff08fc3c3366df655d7fcc38636aa0fc5",
+  "humanScope": "Continuar sólo con el diagnóstico focal",
+  "ownReservationReleased": true,
+  "limits": "Cleanup script/log/ownership verificados estáticamente; root no nueva consulta Docker/SQL. Conteos agregados no son snapshot de filas. Focales y600requests no sustituyen gate estándar/APIweb."
+}

@@ -1,0 +1,11 @@
+{
+  "role": "Sol6.1 high read-only contextual QA, assignment3/4",
+  "ownCloneBeforeRecreate": {
+    "users": 13,
+    "friendships": 3
+  },
+  "cause": "2 friendships from aborted harness and1 blocked relationship left by last FriendsService case; beforeEach removes test users but afterAll only cards/disconnect",
+  "recommendation": "recreate only owned clone from standard TEST; migrate only clone; preserve failure/no relaxation",
+  "rootCorroboration": "context-recreate-receipt.json confirms 13/3 old own context and2/0 standard source with marker/fullID/SQL0",
+  "mutationsByReviewer": false
+}

@@ -3,6 +3,8 @@ import { NestFactory } from '@nestjs/core';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import helmet from 'helmet';
 import { AppModule } from './app.module.js';
+import { MetricsRecorder } from './modules/metrics/metrics.recorder.js';
+import { scannerHttpMetricsMiddleware } from './modules/metrics/scanner-http-metrics.middleware.js';
 
 function allowedOrigins(): string[] {
   const raw = process.env.CORS_ORIGINS;
@@ -26,7 +28,10 @@ async function bootstrap() {
   app.enableCors({
     origin: allowedOrigins(),
     credentials: true,
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Session-Request', 'Idempotency-Key'],
   });
+  const metrics = app.get(MetricsRecorder);
+  app.use(scannerHttpMetricsMiddleware(metrics));
   // 100kb (el default de Nest) no entra ni una captura de recorte del escáner en
   // base64. Lo usa POST /api/cards/identify-visual.
   app.useBodyParser('json', { limit: '10mb' });

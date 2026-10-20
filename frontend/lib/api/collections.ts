@@ -9,7 +9,8 @@ import type {
   Paginated,
   PortfolioDto,
 } from '@/types/api';
-import { apiFetch, buildQueryString } from './api-client';
+import { hasValidPriceMetadata, toCollectionDto, toCollectionStatsDto, toPortfolioDto } from './schema';
+import { ApiError, apiFetch, buildQueryString } from './api-client';
 
 export type { CardSort } from '@/types/api';
 
@@ -83,67 +84,99 @@ export interface UpdateItemPayload {
   condition?: CardCondition;
 }
 
-export function listCollections(): Promise<CollectionDto[]> {
-  return apiFetch<CollectionDto[]>('/collections');
+export async function listCollections(): Promise<CollectionDto[]> {
+  const raw = await apiFetch<unknown>('/collections');
+  if (!Array.isArray(raw)) throw new ApiError(502, 'No pudimos leer tus colecciones');
+  return raw.map((entry) => requireParsed(toCollectionDto(entry)));
 }
 
-export function getPortfolio(signal?: AbortSignal): Promise<PortfolioDto> {
-  return apiFetch<PortfolioDto>('/portfolio', { signal });
+function requireParsed<T>(result: T | null): T {
+  if (result === null) throw new ApiError(502, 'No pudimos leer la valoración recibida');
+  return result;
 }
 
-export function getCollection(id: string): Promise<CollectionDto> {
-  return apiFetch<CollectionDto>(`/collections/${encodeURIComponent(id)}`);
+export async function getPortfolio(signal?: AbortSignal): Promise<PortfolioDto> {
+  return requireParsed(toPortfolioDto(await apiFetch<unknown>('/portfolio', { signal })));
 }
 
-export function createCollection(payload: CreateCollectionPayload): Promise<CollectionDto> {
-  return apiFetch<CollectionDto>('/collections', { method: 'POST', body: payload });
+export async function getCollection(id: string): Promise<CollectionDto> {
+  return requireParsed(toCollectionDto(await apiFetch<unknown>(`/collections/${encodeURIComponent(id)}`)));
 }
 
-export function updateCollection(
+export async function createCollection(payload: CreateCollectionPayload): Promise<CollectionDto> {
+  return requireParsed(toCollectionDto(await apiFetch<unknown>('/collections', { method: 'POST', body: payload })));
+}
+
+export async function updateCollection(
   id: string,
   payload: UpdateCollectionPayload,
 ): Promise<CollectionDto> {
-  return apiFetch<CollectionDto>(`/collections/${encodeURIComponent(id)}`, {
+  return requireParsed(toCollectionDto(await apiFetch<unknown>(`/collections/${encodeURIComponent(id)}`, {
     method: 'PATCH',
     body: payload,
-  });
+  })));
 }
 
 export function deleteCollection(id: string): Promise<void> {
   return apiFetch<void>(`/collections/${encodeURIComponent(id)}`, { method: 'DELETE' });
 }
 
-export function listItems(
+export async function refreshCollectionPrices(id: string, signal?: AbortSignal): Promise<{ queued: number }> {
+  const result = await apiFetch<{ queued: number }>(`/collections/${encodeURIComponent(id)}/refresh-prices`, { method: 'POST', signal });
+  if (!result || !Number.isInteger(result.queued) || result.queued < 0) throw new ApiError(502, 'No pudimos confirmar la actualización de precios');
+  return result;
+}
+
+function validateItemPrice(item: CollectionItemDto): CollectionItemDto {
+  if (item && !hasValidPriceMetadata(item.price)) throw new ApiError(502, 'No pudimos leer la referencia de precio');
+  return item;
+}
+
+export async function listItems(
   collectionId: string,
   params: ListItemsParams = {},
   signal?: AbortSignal,
 ): Promise<Paginated<CollectionItemDto>> {
-  return apiFetch<Paginated<CollectionItemDto>>(
+  const result = await apiFetch<Paginated<CollectionItemDto>>(
     `/collections/${encodeURIComponent(collectionId)}/items${buildQueryString(params)}`,
     { signal },
   );
+  result.data.forEach(validateItemPrice);
+  return result;
 }
 
-export function addItem(
+/**
+ * Para recuperar un resultado incierto, reenviá la misma clave y payload.
+ * Una clave nueva significa otra alta; quantity en la respuesta es el total
+ * actual y no demuestra cuánto sumó este intento. Conservá el intento ante
+ * errores de red/5xx/409. Un 410 bloquea el reenvío y no autoriza sumar otra vez.
+ */
+export async function addItem(
   collectionId: string,
   payload: AddItemPayload,
+  idempotencyKey?: string,
 ): Promise<CollectionItemDto> {
-  return apiFetch<CollectionItemDto>(
+  return validateItemPrice(await apiFetch<CollectionItemDto>(
     `/collections/${encodeURIComponent(collectionId)}/items`,
-    { method: 'POST', body: payload },
-  );
+    {
+      method: 'POST',
+      body: payload,
+      ...(idempotencyKey !== undefined ? { headers: { 'Idempotency-Key': idempotencyKey } } : {}),
+    },
+  ));
 }
 
-export function getDuplicates(collectionId: string): Promise<CollectionItemDto[]> {
-  return apiFetch<CollectionItemDto[]>(
+export async function getDuplicates(collectionId: string): Promise<CollectionItemDto[]> {
+  const result = await apiFetch<CollectionItemDto[]>(
     `/collections/${encodeURIComponent(collectionId)}/duplicates`,
   );
+  return result.map(validateItemPrice);
 }
 
-export function getStats(collectionId: string): Promise<CollectionStatsResponse> {
-  return apiFetch<CollectionStatsResponse>(
+export async function getStats(collectionId: string): Promise<CollectionStatsResponse> {
+  return requireParsed(toCollectionStatsDto(await apiFetch<unknown>(
     `/collections/${encodeURIComponent(collectionId)}/stats`,
-  );
+  )));
 }
 
 /**
@@ -165,14 +198,14 @@ export function getCardLocation(cardId: string): Promise<CardLocationDto | null>
   return apiFetch<CardLocationDto | null>(`/cards/${encodeURIComponent(cardId)}/location`);
 }
 
-export function updateItem(
+export async function updateItem(
   itemId: string,
   payload: UpdateItemPayload,
 ): Promise<CollectionItemDto> {
-  return apiFetch<CollectionItemDto>(`/items/${encodeURIComponent(itemId)}`, {
+  return validateItemPrice(await apiFetch<CollectionItemDto>(`/items/${encodeURIComponent(itemId)}`, {
     method: 'PATCH',
     body: payload,
-  });
+  }));
 }
 
 export function deleteItem(itemId: string): Promise<void> {

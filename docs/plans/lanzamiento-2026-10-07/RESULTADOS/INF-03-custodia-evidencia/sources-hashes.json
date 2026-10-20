@@ -1,0 +1,7 @@
+{
+  "scripts/inf03-custody-common.mjs": "bfb2758ce9bb56f79fd60f85d7d93df81c27e376bfa865e78cdc78e12d8d56b3",
+  "scripts/inf03-custody.mjs": "23db4c3326e0051c71c6acfb9f4ce17e2f74fe8cd179e26adca8cd52ef19c8bb",
+  "scripts/inf03-custody.test.mjs": "3c18fb723f8a2d3a94b8069b6d8b8ad00d9c3b8a9cbad5b2266e0ed8297652f8",
+  "infra/inf03/CUSTODIA-RECUPERACION-LOCAL.md": "84b804da4b96b1b2eeabccbb2dc3f5bccdb3de4c85efa04b302ab69bc42aa3fd",
+  "package.json": "722790d4404832cc4b4460e37fd7b3657d63875eef85c0045d776d9c8bff36d0"
+}

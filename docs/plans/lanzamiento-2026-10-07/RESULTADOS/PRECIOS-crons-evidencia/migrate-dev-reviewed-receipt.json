@@ -1,0 +1,205 @@
+{
+  "migration": "20261014010000_tcgcsv_discovery",
+  "beforeMigrationCount": 14,
+  "afterMigrationCount": 15,
+  "logicalDataAndGINUnchanged": true,
+  "allExistingTablesChecked": 22,
+  "before": {
+    "card_external_ids": {
+      "rows": 21118,
+      "hash": "bc5972e9836b219da4e224c7f43d1d10"
+    },
+    "card_prices": {
+      "rows": 29813,
+      "hash": "fd993db0ee03fcef305ffc3333773536"
+    },
+    "card_set_external_ids": {
+      "rows": 350,
+      "hash": "08185d14407a74c64a80ccc9adf6224b"
+    },
+    "card_sets": {
+      "rows": 176,
+      "hash": "9d4bdf4933aad247ef5d1f54701ed4b7"
+    },
+    "cards": {
+      "rows": 20670,
+      "hash": "062662767783a494f5a4af852c8a4f35"
+    },
+    "collection_comparison_snapshots": {
+      "rows": 88,
+      "hash": "8dd44d30fe07b35e3bd0af9c62a5533b"
+    },
+    "collection_item_add_operations": {
+      "rows": 0,
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "collection_items": {
+      "rows": 69,
+      "hash": "f723750dd3dbc91337830427ba4c60a1"
+    },
+    "collections": {
+      "rows": 22,
+      "hash": "59b9d1bafdd76c8e74ea7339c063eb5f"
+    },
+    "friendships": {
+      "rows": 0,
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "password_recovery_tokens": {
+      "rows": 0,
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "portfolio_snapshots": {
+      "rows": 1,
+      "hash": "76bc13b1d57df9722a409e6697e4d33e"
+    },
+    "price_ingestion_runs": {
+      "rows": 2,
+      "hash": "0335afc6254a5f9b5cba5c444e82a32a"
+    },
+    "price_refresh_jobs": {
+      "rows": 18721,
+      "hash": "5ea0131a1acb2e7c4b7e208e0eb5ad1b"
+    },
+    "provider_rate_limits": {
+      "rows": 2,
+      "hash": "fc038fc97d424d6568949b5a44b79aa7"
+    },
+    "recovery_rate_limit_hits": {
+      "rows": 0,
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "refresh_tokens": {
+      "rows": 195,
+      "hash": "f7252f82fdfe0b844cd6f63ce683c5f0"
+    },
+    "scan_jobs": {
+      "rows": 1,
+      "hash": "9a6fc7360a2b19f3c6a10fcfd9407eec"
+    },
+    "share_links": {
+      "rows": 13,
+      "hash": "614a0f5bc85c774254e174f7887d3c5d"
+    },
+    "sync_state": {
+      "rows": 1,
+      "hash": "71fe95721287aa3dccca96257b5893c9"
+    },
+    "tcgcsv_group_jobs": {
+      "rows": 3,
+      "hash": "2e2de695fa59afc8cfa58f7bbffb018e"
+    },
+    "users": {
+      "rows": 22,
+      "hash": "766ab5df0ab885a39ce7b83175f66f96"
+    },
+    "gin": [
+      "CREATE INDEX card_sets_name_trgm_idx ON public.card_sets USING gin (name gin_trgm_ops)",
+      "CREATE INDEX cards_artist_trgm_idx ON public.cards USING gin (artist gin_trgm_ops)",
+      "CREATE INDEX cards_name_trgm_idx ON public.cards USING gin (name gin_trgm_ops)",
+      "CREATE INDEX users_display_name_trgm_idx ON public.users USING gin (\"displayName\" gin_trgm_ops)",
+      "CREATE INDEX users_username_trgm_idx ON public.users USING gin (username gin_trgm_ops)"
+    ]
+  },
+  "after": {
+    "card_external_ids": {
+      "rows": 21118,
+      "hash": "bc5972e9836b219da4e224c7f43d1d10"
+    },
+    "card_prices": {
+      "rows": 29813,
+      "hash": "fd993db0ee03fcef305ffc3333773536"
+    },
+    "card_set_external_ids": {
+      "rows": 350,
+      "hash": "08185d14407a74c64a80ccc9adf6224b"
+    },
+    "card_sets": {
+      "rows": 176,
+      "hash": "9d4bdf4933aad247ef5d1f54701ed4b7"
+    },
+    "cards": {
+      "rows": 20670,
+      "hash": "062662767783a494f5a4af852c8a4f35"
+    },
+    "collection_comparison_snapshots": {
+      "rows": 88,
+      "hash": "8dd44d30fe07b35e3bd0af9c62a5533b"
+    },
+    "collection_item_add_operations": {
+      "rows": 0,
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "collection_items": {
+      "rows": 69,
+      "hash": "f723750dd3dbc91337830427ba4c60a1"
+    },
+    "collections": {
+      "rows": 22,
+      "hash": "59b9d1bafdd76c8e74ea7339c063eb5f"
+    },
+    "friendships": {
+      "rows": 0,
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "password_recovery_tokens": {
+      "rows": 0,
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "portfolio_snapshots": {
+      "rows": 1,
+      "hash": "76bc13b1d57df9722a409e6697e4d33e"
+    },
+    "price_ingestion_runs": {
+      "rows": 2,
+      "hash": "0335afc6254a5f9b5cba5c444e82a32a"
+    },
+    "price_refresh_jobs": {
+      "rows": 18721,
+      "hash": "5ea0131a1acb2e7c4b7e208e0eb5ad1b"
+    },
+    "provider_rate_limits": {
+      "rows": 2,
+      "hash": "fc038fc97d424d6568949b5a44b79aa7"
+    },
+    "recovery_rate_limit_hits": {
+      "rows": 0,
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "refresh_tokens": {
+      "rows": 195,
+      "hash": "f7252f82fdfe0b844cd6f63ce683c5f0"
+    },
+    "scan_jobs": {
+      "rows": 1,
+      "hash": "9a6fc7360a2b19f3c6a10fcfd9407eec"
+    },
+    "share_links": {
+      "rows": 13,
+      "hash": "614a0f5bc85c774254e174f7887d3c5d"
+    },
+    "sync_state": {
+      "rows": 1,
+      "hash": "71fe95721287aa3dccca96257b5893c9"
+    },
+    "tcgcsv_group_jobs": {
+      "rows": 3,
+      "hash": "2e2de695fa59afc8cfa58f7bbffb018e"
+    },
+    "users": {
+      "rows": 22,
+      "hash": "766ab5df0ab885a39ce7b83175f66f96"
+    },
+    "gin": [
+      "CREATE INDEX card_sets_name_trgm_idx ON public.card_sets USING gin (name gin_trgm_ops)",
+      "CREATE INDEX cards_artist_trgm_idx ON public.cards USING gin (artist gin_trgm_ops)",
+      "CREATE INDEX cards_name_trgm_idx ON public.cards USING gin (name gin_trgm_ops)",
+      "CREATE INDEX users_display_name_trgm_idx ON public.users USING gin (\"displayName\" gin_trgm_ops)",
+      "CREATE INDEX users_username_trgm_idx ON public.users USING gin (username gin_trgm_ops)"
+    ]
+  },
+  "backupBytes": 8397096,
+  "backupSHA256": "0e2e029f52a62f002b063085a2ef728c1fc0878a073591439d6587c4ae46173e",
+  "finishedAtUtc": "2026-10-14T00:36:12.625122+00:00",
+  "fixturesWrittenToDev": false
+}

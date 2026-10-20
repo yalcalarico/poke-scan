@@ -1,0 +1,60 @@
+{
+  "status": "accepted locally by root",
+  "atUtc": "2026-10-13T03:23:30.099816+00:00",
+  "clientDate": "2026-10-13 America/Argentina/Buenos_Aires",
+  "step": "Custody packaging and actual Linux readonly opt-in consumer",
+  "standardCheck": {
+    "command": "pnpm run stop then pnpm run check",
+    "runs": 1,
+    "passed": 1131,
+    "skipped": 0,
+    "counts": [
+      489,
+      13,
+      6,
+      562,
+      15,
+      39,
+      7
+    ],
+    "lintTypesNestNextTurbopack": true
+  },
+  "focusedTests": 7,
+  "focusedOverlapGlobal": true,
+  "initialFocusedFailed": 4,
+  "delegations": 2,
+  "rootCorrectionCyclesPerFinding": 1,
+  "fromScratchOfflineBuild": "Failed corepack download, preserved; no network retry",
+  "acceptedContextualBuild": "Exact cached lock/dependencies; fresh Linux source/Prisma compilation; actual custody-runner target using explicit current own runner-base context",
+  "matchingHostLinuxJS": 115,
+  "integratedDistinctControls": 21,
+  "runtimeAttempts": 2,
+  "runtimePrivateCorrections": 1,
+  "firstRuntimeCauseConclusive": false,
+  "DINOv2ReadonlyAuthenticatedSingleReference": true,
+  "physicalRecognitionAccuracyClaimed": false,
+  "screenshotsTaken": 0,
+  "screenshotsSent": 0,
+  "sourcesOutputsIntactDuringBothRuntimes": 1489,
+  "ownQAResourcesCleaned": true,
+  "instanceIntentionallyAlive": "http://localhost:3000",
+  "instanceListenerPIDs": {
+    "api": 98035,
+    "next": 98060
+  },
+  "physicalMiniPCOffhostB2ResendExternalConfigured": false,
+  "newIDsClosed": 0,
+  "state": {
+    "complete": 20,
+    "pending": 18
+  },
+  "automation": "PAUSED two hours unchanged",
+  "nextStep": "Propose simulated backup/retention schedule definition and rehearsal; wait for user",
+  "rootFinalVerification": {
+    "artifactHashesVerified": 50,
+    "sourceCopiesCurrent": 10,
+    "reportLocalLinksVerified": 24,
+    "noPNGNewEvidence": true,
+    "agentsCompleted": true
+  }
+}

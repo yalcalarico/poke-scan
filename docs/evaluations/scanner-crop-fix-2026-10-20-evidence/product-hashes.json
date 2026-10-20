@@ -1,0 +1,6 @@
+{
+  "frontend/lib/scanner/preprocess.ts": "da9b3d053960f2819974e9571b78cffece70effb354c96e29718947aaa1af793",
+  "frontend/lib/scanner/__tests__/perspective.test.ts": "383e475621f61d2741de052d8d794298b3ac53b83dfac77288c24bc664ecdd44",
+  "frontend/components/scanner/visual-result.tsx": "2db2a72b7360beb0da383d45afc1d74827b992bd81e35a88cbb77305e0f66ada",
+  "frontend/components/scanner/__tests__/visual-result.test.tsx": "0cf9c5aa2842f8de1227b4ff38c254d8cf02dbde6a32b1648d1a429c7b54b9c4"
+}

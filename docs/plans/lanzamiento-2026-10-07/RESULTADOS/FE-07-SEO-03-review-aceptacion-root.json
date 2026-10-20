@@ -1,0 +1,23 @@
+{
+  "acceptedAtUtc": "2026-10-10T14:37:25.276364+00:00",
+  "status": "review_input_accepted_gate_pending",
+  "artifactHashesVerified": 78,
+  "finalProductHashesVerified": 8,
+  "localLinksVerified": 15,
+  "focusedTests": 6,
+  "IDsClosed": [],
+  "noRuntimeResources": true,
+  "baselineHashesVerified": 546,
+  "baselineUnchanged": 539,
+  "authorizedReviewDeltas": [
+    "frontend/app/(marketing)/faq/page.tsx",
+    "frontend/app/(marketing)/opengraph-image.tsx",
+    "frontend/components/marketing/__tests__/faq-section.test.tsx",
+    "frontend/components/marketing/faq-section.tsx",
+    "frontend/components/marketing/landing-page.tsx",
+    "frontend/lib/marketing/__tests__/acquisition-metadata.test.ts",
+    "frontend/lib/marketing/acquisition-metadata.ts"
+  ],
+  "priorCuentaSourcesVerified": 507,
+  "priorCuentaUnchanged": 502
+}

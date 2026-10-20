@@ -203,15 +203,27 @@ describe('RedisService — degradación observable', () => {
     await moduleRef.close();
   });
 
-  it('sin REDIS_URL no está configurado y tampoco degradado', () => {
+  it('sin REDIS_URL no está configurado y tampoco degradado', async () => {
     // La distinción importa en una alerta: "no usamos caché" y "la caché se
     // cayó hace 40 minutos" son incident distintos.
-    const sinUrl = build(undefined);
-
-    const status = sinUrl.status();
-    expect(status.configured).toBe(false);
-    expect(status.available).toBe(false);
-    expect(status.degradedSince).toBeNull();
+    // RedisService también consulta process.env: aislar este caso del Redis del runner.
+    const inheritedUrl = process.env.REDIS_URL;
+    let sinUrl: RedisService | undefined;
+    delete process.env.REDIS_URL;
+    try {
+      sinUrl = build(undefined);
+      const status = sinUrl.status();
+      expect(status.configured).toBe(false);
+      expect(status.available).toBe(false);
+      expect(status.degradedSince).toBeNull();
+    } finally {
+      try {
+        await sinUrl?.onModuleDestroy();
+      } finally {
+        if (inheritedUrl === undefined) delete process.env.REDIS_URL;
+        else process.env.REDIS_URL = inheritedUrl;
+      }
+    }
   });
 
   it('con Redis sano el estado no está degradado', async (ctx) => {
@@ -242,7 +254,7 @@ describe('RedisService — degradación observable', () => {
       }
 
       // Diez `get` fallidos, un solo warn: el resto se cuenta como suprimido.
-      const warns = warn.mock.calls.filter((c) => String(c[0]).includes('WRONGTYPE'));
+      const warns = warn.mock.calls.filter((c) => String(c[0]).includes('Falló una lectura de Redis'));
       expect(warns.length).toBe(1);
       // Y el error queda anotado para el health.
       expect(redis.status().lastErrorAt).not.toBeNull();
@@ -269,7 +281,7 @@ describe('RedisService — degradación observable', () => {
       );
       await redis.get(WRONGTYPE_KEY);
 
-      const warns = warn.mock.calls.filter((c) => String(c[0]).includes('WRONGTYPE'));
+      const warns = warn.mock.calls.filter((c) => String(c[0]).includes('Falló una lectura de Redis'));
       // Dos avisos: el primero al abrir la ventana, el segundo cuando la ventana
       // venció de verdad.
       expect(warns.length).toBe(2);

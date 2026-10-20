@@ -1,0 +1,39 @@
+{
+  "url": "https://api.tcgdex.net/v2/en/sets/30th/018",
+  "attempts": 1,
+  "atUTC": "2026-10-13T14:17:57.951302+00:00",
+  "transport": "Direct public HTTPS, GET only, no credentials/retries",
+  "priorWebViewerAttemptsInaccessible": 8,
+  "status": 200,
+  "bodySHA256": "b837d5803edae19b7e6edb916696f7fd1fe607279a37074518d70a2015ced383",
+  "contentType": "application/json; charset=utf-8",
+  "id": "30th-018",
+  "name": "Articuno",
+  "localId": "018",
+  "set": {
+    "cardCount": {
+      "official": 128,
+      "total": 158
+    },
+    "id": "30th",
+    "name": "30th Celebration"
+  },
+  "pricing": {
+    "cardmarket": null,
+    "tcgplayer": null
+  },
+  "variants": {
+    "firstEdition": false,
+    "holo": false,
+    "normal": true,
+    "reverse": false,
+    "wPromo": false
+  },
+  "variantsDetailed": [
+    {
+      "type": "normal",
+      "size": "standard",
+      "variantId": "generated"
+    }
+  ]
+}

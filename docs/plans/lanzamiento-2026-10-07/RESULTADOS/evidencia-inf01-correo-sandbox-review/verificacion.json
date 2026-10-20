@@ -1,0 +1,306 @@
+{
+  "checkedAtUtc": "2026-10-09T19:30:32.284960+00:00",
+  "scope": "Revisión documental estática selectiva, sin auditoría global ni ensayo funcional",
+  "documentSha256": "a9deea1a9883d81caf5b761bf4a93706fb1551773376117157f5e3917b4ebad7",
+  "reportSha256": "eb33249368f60900985059e7c68a302f26d73e3e5a3e7c86b32b2f77fa4eaf8a",
+  "documentLines": 159,
+  "historicalEvidence": {
+    "sourceCount": 9,
+    "linkCount": 11,
+    "documentHashMatchesReceived": true,
+    "historicalSourceHashes": [
+      {
+        "path": "INF-01-entorno.md",
+        "matchesObserved": true
+      },
+      {
+        "path": "INF-01-review.md",
+        "matchesObserved": true
+      },
+      {
+        "path": "BE-05-contrato-borrador.md",
+        "matchesObserved": true
+      },
+      {
+        "path": "BE-05-borrador-review.md",
+        "matchesObserved": true
+      },
+      {
+        "path": "BE-05-borrador-aceptacion-root.json",
+        "matchesObserved": true
+      },
+      {
+        "path": "UX-04-cuenta.md",
+        "matchesObserved": true
+      },
+      {
+        "path": "UX-04-review.md",
+        "matchesObserved": true
+      },
+      {
+        "path": "UX-04-aceptacion-root.json",
+        "matchesObserved": true
+      },
+      {
+        "path": "NEG-03-cuenta-requisitos.md",
+        "matchesObserved": true
+      }
+    ]
+  },
+  "sourceCount": 12,
+  "sources": [
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-01-entorno.md",
+      "before": "9ad9f19907bd4747ed6b17d61814467aff05d1746c5044b52104044bbedbc9bd",
+      "after": "9ad9f19907bd4747ed6b17d61814467aff05d1746c5044b52104044bbedbc9bd"
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-01-review.md",
+      "before": "9f1221fec14197d6037000f681b81bc85a6ebad423a50635c021cbb9fceaa952",
+      "after": "9f1221fec14197d6037000f681b81bc85a6ebad423a50635c021cbb9fceaa952"
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-contrato-borrador.md",
+      "before": "9b0c36f8bacc6192b3dc7f8ee695e1cc0992798e1fbd15302b4ec6fc38362a74",
+      "after": "9b0c36f8bacc6192b3dc7f8ee695e1cc0992798e1fbd15302b4ec6fc38362a74"
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-borrador-review.md",
+      "before": "10c874de3674be711e828397e77cfab3c20003470df21a6b9ca0474a52ff1cc3",
+      "after": "10c874de3674be711e828397e77cfab3c20003470df21a6b9ca0474a52ff1cc3"
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-borrador-aceptacion-root.json",
+      "before": "584855ba0788ed58a68197de516283633c262c1b03ecd2f41032895de47e6c88",
+      "after": "584855ba0788ed58a68197de516283633c262c1b03ecd2f41032895de47e6c88"
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/UX-04-cuenta.md",
+      "before": "d652eced63e071a909cdc1ceb3ed97a30b57e440b80f28b726d8b3627c8a560a",
+      "after": "d652eced63e071a909cdc1ceb3ed97a30b57e440b80f28b726d8b3627c8a560a"
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/UX-04-review.md",
+      "before": "ae9ed98de5a24d0b548102c5df9fb7b9160936419075906e20e9153b7a61cbe6",
+      "after": "ae9ed98de5a24d0b548102c5df9fb7b9160936419075906e20e9153b7a61cbe6"
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/UX-04-aceptacion-root.json",
+      "before": "7b560b2048b2de9687d5800f10f703eca33258b0d0a8b141d3707f560cc90a53",
+      "after": "7b560b2048b2de9687d5800f10f703eca33258b0d0a8b141d3707f560cc90a53"
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/NEG-03-cuenta-requisitos.md",
+      "before": "79365783583653359d4abcf9c682dfd9b06cf6def20158b5f23aeef914afe20b",
+      "after": "79365783583653359d4abcf9c682dfd9b06cf6def20158b5f23aeef914afe20b"
+    },
+    {
+      "path": "AGENTS.md",
+      "before": "0a44196ce9194cafcd54094af02e90e73f0da0f693604d0876d97bf14ee30688",
+      "after": "0a44196ce9194cafcd54094af02e90e73f0da0f693604d0876d97bf14ee30688"
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/05-infraestructura.md",
+      "before": "c76dc5989c6e682bd31300055720c8ccbacdc6b8dc70820c6eda2c7a91e1256a",
+      "after": "c76dc5989c6e682bd31300055720c8ccbacdc6b8dc70820c6eda2c7a91e1256a"
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/11-orquestacion.md",
+      "before": "f4e06406d53514a1cca90d827837766a19dec3d52c2f9682c76280acf419ad93",
+      "after": "f4e06406d53514a1cca90d827837766a19dec3d52c2f9682c76280acf419ad93"
+    }
+  ],
+  "sourceChanges": [],
+  "received": [
+    {
+      "copy": "INF-01-correo-sandbox-recibido.md",
+      "expected": "c4e4294c5449884e720a0049d01c740f0c5d7f6e7f0b83658c0261f242266d06",
+      "actual": "c4e4294c5449884e720a0049d01c740f0c5d7f6e7f0b83658c0261f242266d06"
+    },
+    {
+      "copy": "baseline-recibido.json",
+      "expected": "9238b841516492326242591ad65c1ace60cbe4e22e1117e9900e03597ec193b3",
+      "actual": "9238b841516492326242591ad65c1ace60cbe4e22e1117e9900e03597ec193b3",
+      "original": "9238b841516492326242591ad65c1ace60cbe4e22e1117e9900e03597ec193b3"
+    },
+    {
+      "copy": "verificacion-recibida.json",
+      "expected": "fd68fd19680ef80cc2a05700e8d6d8769dd1a52973c4387d5716b88ece874f1f",
+      "actual": "fd68fd19680ef80cc2a05700e8d6d8769dd1a52973c4387d5716b88ece874f1f",
+      "original": "fd68fd19680ef80cc2a05700e8d6d8769dd1a52973c4387d5716b88ece874f1f"
+    }
+  ],
+  "receivedChanges": [],
+  "linkCount": 20,
+  "links": [
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-01-correo-sandbox.md",
+      "target": "INF-01-entorno.md",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-01-correo-sandbox.md",
+      "target": "INF-01-review.md",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-01-correo-sandbox.md",
+      "target": "BE-05-contrato-borrador.md",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-01-correo-sandbox.md",
+      "target": "BE-05-borrador-review.md",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-01-correo-sandbox.md",
+      "target": "BE-05-borrador-aceptacion-root.json",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-01-correo-sandbox.md",
+      "target": "UX-04-cuenta.md",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-01-correo-sandbox.md",
+      "target": "UX-04-review.md",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-01-correo-sandbox.md",
+      "target": "UX-04-aceptacion-root.json",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-01-correo-sandbox.md",
+      "target": "NEG-03-cuenta-requisitos.md",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-01-correo-sandbox.md",
+      "target": "evidencia-inf01-correo-sandbox/baseline.json",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-01-correo-sandbox.md",
+      "target": "evidencia-inf01-correo-sandbox/verificacion.json",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-01-correo-sandbox.md",
+      "target": "evidencia-inf01-correo-sandbox-review/baseline-review.json",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-01-correo-sandbox.md",
+      "target": "INF-01-correo-sandbox-review.md",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-01-correo-sandbox.md",
+      "target": "evidencia-inf01-correo-sandbox-review/verificacion.json",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-01-correo-sandbox-review.md",
+      "target": "INF-01-correo-sandbox.md",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-01-correo-sandbox-review.md",
+      "target": "evidencia-inf01-correo-sandbox-review/baseline-review.json",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-01-correo-sandbox-review.md",
+      "target": "evidencia-inf01-correo-sandbox-review/INF-01-correo-sandbox-recibido.md",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-01-correo-sandbox-review.md",
+      "target": "evidencia-inf01-correo-sandbox-review/correcciones.diff",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-01-correo-sandbox-review.md",
+      "target": "evidencia-inf01-correo-sandbox-review/verificacion.json",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-01-correo-sandbox-review.md",
+      "target": "evidencia-inf01-correo-sandbox-review/hashes-finales.json",
+      "exists": true
+    }
+  ],
+  "brokenLinks": [],
+  "semanticReview": {
+    "method": "Contraste manualSolHIGH de contenido/contexto. Existencia/enlace/anchor no acredita soporte ni garantías implementadas.",
+    "sourceSupport": [
+      {
+        "sources": [
+          "BE-05-contrato-borrador.md",
+          "BE-05-borrador-review.md",
+          "BE-05-borrador-aceptacion-root.json"
+        ],
+        "support": "Contrato documental aceptado: sólo hash, transporte en memoria, 202 sin await entrega/garantía, admisión común, User primero/relectura/version PG, reenvío sin evicción y recuperación tras pérdida. No cambiar esas autoridades desde adapter ni caseGeneration."
+      },
+      {
+        "sources": [
+          "UX-04-cuenta.md",
+          "UX-04-review.md",
+          "UX-04-aceptacion-root.json"
+        ],
+        "support": "UX documental aceptada: plantilla/fragmento mem/body POST necesario, success confirmado/resultado incierto/login sin transferir secretos, reenvío explícito60s sujeto a cuota. Sandbox no duplica ni implementa estados."
+      },
+      {
+        "sources": [
+          "NEG-03-cuenta-requisitos.md"
+        ],
+        "support": "Preparación de cuenta no entrega correo real ni exige Pro. Fixtures/sandbox sin entrega externa y datos activos/copies/retención pendientes. No declarar operación/cumplimiento desde memoria."
+      },
+      {
+        "sources": [
+          "INF-01-entorno.md",
+          "INF-01-review.md"
+        ],
+        "support": "Mailtrap es propuesta histórica sin cuenta/envío. Esta fase no revalida tarifas ni elige/configura proveedor; externo con secretos recuperables exige nuevo contrato, no compatibilidad automática con sólo hash."
+      },
+      {
+        "sources": [
+          "AGENTS.md",
+          "../05-infraestructura.md",
+          "../11-orquestacion.md"
+        ],
+        "support": "Versiones/ownership/contratos y fases deben preservarse. INF-01 identifica correo de prueba sin entrega real; alcance humano vigente focal BE07 y gate fallido impiden nuevas suites/runtime. Revisión SolHIGH sólo documental, no cierre operativo/ID."
+      }
+    ],
+    "invariantsReviewedManually": [
+      "caseGeneration: teardown local; reset real futura misma generación con enlace tardío rechazado PG y otro token fixture previamente válido antes ticket; no reemisión2s/cuota omitida/timeout extendido, pruebas emisión-cuotas separadas",
+      "Entrega deadline2s y receptor lease120s/cap32 separados; cancelación/drain/finally/referencias controlables sin zeroización/GC",
+      "Delay/never-resolve cooperativos, sin promesa/closure huérfana con raw; Promise.race sola no cancela",
+      "DI harness opt-in, no productivo, loopback, DBowner-marker exacto y allowlist fixtures antespayload; enum/sufijo no bastan",
+      "Startup inválido reject anteslistener; puerto general indisponible503 anteslookupambos; no SMTP/fallback/options existentes",
+      "LimitadorBE05compartido autoridad; poolticket32 prelookupambos, reserva/plazo fijo2s y liberaciónpor reloj/cierre, no según cuenta",
+      "Saturación/handoff/capacityfallan con202genérico, no awaitdelivery/señal/código nuevo; timingsno medidos",
+      "Secreto sólo memoria/privateDI/bodyPOSTlegítimo; no admincaptureAPI/filesystem/report/snapshot/toolargs/logs/traces/screenshots",
+      "Assertions internas bool/code fijo y hashes artefactos no secretos; no reporter actual/expectedraw/body/email",
+      "fail-after-hash-commit hookissuer, noadapter decide tx; late-reset distinta late-case-teardown; todos propuestos no actual recovery",
+      "Cleanup futuro sólo recursos propiosbounded; no contacto/red entrega/SMTP/cuentas ni claim sandbox ready/IDs gates closed"
+    ]
+  },
+  "proposedParameterArithmetic": {
+    "deliveryDeadlineSeconds": 2,
+    "deliveryDeadlineMs": 2000,
+    "receiverLeaseSeconds": 120,
+    "receiverLeaseMs": 120000,
+    "leaseToDeliveryRatio": 60,
+    "commonTicketPoolCap": 32,
+    "fifoPendingCap": 32,
+    "receiverCapturedEnvelopeCap": 32,
+    "consumerCount": 1,
+    "limits": "Tres caps separados; no se suman como capacidad garantizada ni limitador compartido. Parámetros sólo propuestos, no deadlines/memoria/capacidad medidos ni promesa GC."
+  },
+  "limits": "Sin env/secrets/preciosactuales/proveedores ni implementación/tests/runtime/DB/Redis/red/correo. Fuente central hash antes de eventual consolidación root, sin promesa estabilidad posterior/global. Guardas/tickets/cancelación/reporters/PG requieren futuro ensayo autorizable, no se ejecutó ninguno."
+}

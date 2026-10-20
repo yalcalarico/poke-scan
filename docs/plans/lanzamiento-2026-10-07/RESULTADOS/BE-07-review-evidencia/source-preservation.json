@@ -1,0 +1,16 @@
+{
+  "checked": 501,
+  "unchanged": 499,
+  "changedWithinReservation": {
+    "backend/src/redis/redis.recovery.spec.ts": {
+      "received": "d8cbf9eee79f52ab79014c2aece6d65022661fc23718556edf79450cd485d268",
+      "final": "237bfe19384a5238c0669250cc6423d9e0b01fbebc69968c3cda05862b1a5c44"
+    },
+    "backend/src/redis/redis.service.ts": {
+      "received": "8464ee05f5dd7c4e685d41ff45f39715c4fd74d3ce74ac490b62e8036ab20475",
+      "final": "8580472ef53c88a25a360dd9221172b466d2ee0058b335d275373383ab18329d"
+    }
+  },
+  "existingRedisSpecUnchanged": true,
+  "scope": "S\u00f3lo RedisService y recuperaci\u00f3n dentro de 501 fuentes. Docs gotchas/testing reservadas fuera de manifiesto fuente."
+}

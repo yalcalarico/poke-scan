@@ -1,0 +1,74 @@
+{
+  "cardId": "ex16-92",
+  "variant": "holofoil",
+  "currency": "USD",
+  "windowDays": 30,
+  "activeProvider": "tcgdex",
+  "evaluatedAt": "2026-10-14T00:40:51.680Z",
+  "tcgcsv": {
+    "enabled": true,
+    "groupId": 1383,
+    "state": "ready",
+    "nextAttemptAt": "2026-10-15T00:40:55.576Z"
+  },
+  "series": [
+    {
+      "provider": "tcgdex",
+      "source": "tcgplayer",
+      "currency": "USD",
+      "current": {
+        "date": "2026-10-03",
+        "market": 230.48,
+        "low": 199.9,
+        "mid": 242.2,
+        "high": 399.99,
+        "fetchedAt": "2026-10-03T12:10:16.822Z",
+        "feedPublishedAt": null,
+        "upstreamUpdatedAt": null,
+        "freshness": "stale"
+      },
+      "points": [
+        {
+          "date": "2026-10-03",
+          "market": 230.48,
+          "low": 199.9,
+          "mid": 242.2,
+          "high": 399.99,
+          "fetchedAt": "2026-10-03T12:10:16.822Z",
+          "feedPublishedAt": null,
+          "upstreamUpdatedAt": null,
+          "freshness": "stale"
+        }
+      ]
+    },
+    {
+      "provider": "tcgcsv",
+      "source": "tcgplayer",
+      "currency": "USD",
+      "current": {
+        "date": "2026-10-14",
+        "market": 229.67,
+        "low": 199.9,
+        "mid": 243.8,
+        "high": 399.99,
+        "fetchedAt": "2026-10-14T00:38:55.894Z",
+        "feedPublishedAt": "2026-10-13T20:06:44.000Z",
+        "upstreamUpdatedAt": null,
+        "freshness": "fresh"
+      },
+      "points": [
+        {
+          "date": "2026-10-14",
+          "market": 229.67,
+          "low": 199.9,
+          "mid": 243.8,
+          "high": 399.99,
+          "fetchedAt": "2026-10-14T00:38:55.894Z",
+          "feedPublishedAt": "2026-10-13T20:06:44.000Z",
+          "upstreamUpdatedAt": null,
+          "freshness": "fresh"
+        }
+      ]
+    }
+  ]
+}

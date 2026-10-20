@@ -1,0 +1,10 @@
+{
+  "pid": 21364,
+  "accepted": 12,
+  "rejected": 10,
+  "forwarded": 2,
+  "mode": "online",
+  "shutdown": true,
+  "liveSockets": 0,
+  "at": "2026-10-09T19:47:24.413Z"
+}

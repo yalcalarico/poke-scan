@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { Geist, Geist_Mono } from "next/font/google";
 import Script from "next/script";
 import { THEME_SCRIPT } from "@/lib/theme-script";
+import { RECOVERY_CAPTURE_SCRIPT } from "@/lib/recovery/recovery-capture-script";
 import { PwaServiceWorker } from "./pwa-sw-register";
 import { Providers } from "./providers";
 import "./globals.css";
@@ -142,6 +143,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             {DEV_SERVICE_WORKER_CLEANUP}
           </Script>
         ) : null}
+        <Script id="pcs-recovery-fragment-capture" strategy="beforeInteractive">
+          {RECOVERY_CAPTURE_SCRIPT}
+        </Script>
       </head>
       {/*
         El `<body>` no lleva `bg-*`: el fondo lo pone `globals.css` con el

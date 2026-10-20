@@ -1,0 +1,5 @@
+{
+  "status": 500,
+  "body": "Internal Server Error",
+  "url": "http://localhost:3000/_next/image?url=https%3A%2F%2Fimages.pokemontcg.io%2Fsm9%2F170.png&w=384&q=75"
+}

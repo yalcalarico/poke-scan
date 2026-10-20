@@ -13,6 +13,7 @@ const MISS_TTL_SECONDS = 24 * 60 * 60;
 const VALIDATION_SAMPLE = 25;
 /** Con menos de la mitad de los números presentes, el matcheo es sospechoso. */
 const MIN_VALIDATION_RATIO = 0.5;
+const SETS_WITHOUT_TCGDEX_EQUIVALENT = new Set(['cel25c', 'me55c']);
 
 /**
  * Sets de pokemontcg.io cuyo ID y nombre no matchean nada en tcgdex. El resto
@@ -121,6 +122,7 @@ export class TcgdexSetMappingService {
    * en el set candidato: es lo que atrapa un falso matcheo de nombre.
    */
   async resolve(setId: string): Promise<TcgdexSetMapping | null> {
+    if (SETS_WITHOUT_TCGDEX_EQUIVALENT.has(setId)) return null;
     const ours = await this.prisma.cardSet.findUnique({
       where: { id: setId },
       select: {

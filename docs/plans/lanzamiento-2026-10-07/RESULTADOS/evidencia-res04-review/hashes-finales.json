@@ -1,0 +1,67 @@
+{
+  "date": "2026-10-08",
+  "hash_algorithm": "SHA-256",
+  "note": "Este manifest no se hashea a sí mismo. ONNX sólo hash/stat, sin inferencia ni copia.",
+  "files": [
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/RES-04-fuentes.md",
+      "bytes": 30059,
+      "sha256": "1d8d9db271f8a9c4691c5477c490a14a8e8268a44b564798b00a57344625126a"
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/RES-04-review.md",
+      "bytes": 7693,
+      "sha256": "b71e33816357879a11ea108501653909697fb8021425db6bb95329250f7a81ef"
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/evidencia-res04-review/RES-04-fuentes-recibido.md",
+      "bytes": 27156,
+      "sha256": "32c970152fba5b293344b4f17f591218adc7f71cbbeb7306cd473a4e1efd385d"
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/evidencia-res04-review/dirty-antes.txt",
+      "bytes": 8224,
+      "sha256": "9beeef6a3d928544747cc6c2a7061fa70e325327fea18d6b901e10c1a95f0433"
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/evidencia-res04-review/fuentes-verificadas.json",
+      "bytes": 6557,
+      "sha256": "afebf16442a72f49e75fd8c543e24b3671018e9f620b4022baec5faf18a8bb2f"
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/evidencia-res04-review/validacion-enlaces.json",
+      "bytes": 2549,
+      "sha256": "94a1a896fba304d3d56bcdfa2355b7fad74257414ee898fd5bd1c5e82f09ae8b"
+    },
+    {
+      "path": "AGENTS.md",
+      "bytes": 12424,
+      "sha256": "0a44196ce9194cafcd54094af02e90e73f0da0f693604d0876d97bf14ee30688"
+    },
+    {
+      "path": "backend/src/modules/providers/providers.module.ts",
+      "bytes": 514,
+      "sha256": "c6a729c75cbfc694cfd0619b28ef37463b880385c5270fe8c94ab48dc2381dfc"
+    },
+    {
+      "path": "backend/src/modules/providers/tcgdex.provider.ts",
+      "bytes": 6444,
+      "sha256": "89c3faba22a2018d6a987ebe5b5da578b5426f95e6f3fdc3453e076af6bd6dc4"
+    },
+    {
+      "path": "backend/src/modules/providers/pokemon-tcg-io.provider.ts",
+      "bytes": 7621,
+      "sha256": "ba4d43d1f0454f180dacbe400686f06778ecb161ebbfb40bfca5c0848982f2b0"
+    },
+    {
+      "path": "docs/evaluations/dinov2-baseline-2026-10-06.json",
+      "bytes": 26392,
+      "sha256": "783d24b199ba7670abb828cd765ca2652020ce5ebc390826735721b7af4595c4"
+    },
+    {
+      "path": "backend/.scanner-models/dinov2-small-int8.onnx",
+      "bytes": 24446700,
+      "sha256": "c179f8f7f592449c4c1bca4cd124a7538021428c5ffb89afde9503935b197efb"
+    }
+  ]
+}

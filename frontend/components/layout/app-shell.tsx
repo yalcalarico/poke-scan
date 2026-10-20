@@ -1,4 +1,5 @@
-import type { ReactNode } from 'react';
+import { Suspense, type ReactNode } from 'react';
+import { VisualPreviewProvider } from '@/components/visual-preview/visual-preview';
 
 import { BottomNav } from '@/components/layout/bottom-nav';
 import { OfflineToast } from '@/components/layout/offline-toast';
@@ -14,11 +15,16 @@ import { OfflineToast } from '@/components/layout/offline-toast';
  * perdería al navegar.
  */
 export function AppShell({ children }: { children: ReactNode }) {
+  const content = <>
+    {children}
+    <BottomNav />
+    <OfflineToast />
+  </>;
   return (
     <div className="flex min-h-dvh flex-col bg-canvas font-sans text-primary">
-      {children}
-      <BottomNav />
-      <OfflineToast />
+      <Suspense fallback={content}>
+        <VisualPreviewProvider>{content}</VisualPreviewProvider>
+      </Suspense>
     </div>
   );
 }

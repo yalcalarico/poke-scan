@@ -1,0 +1,88 @@
+{
+  "atUtc": "2026-10-14T00:04:15.404256+00:00",
+  "intentionalUserInstanceAlive": true,
+  "url": "http://localhost:3000",
+  "owners": {
+    "api": {
+      "pid": 23349,
+      "parent": 23348,
+      "role": "local-user-request-api",
+      "port": 3001,
+      "listenerPid": 23360,
+      "ancestryVerified": true
+    },
+    "next": {
+      "pid": 23363,
+      "parent": 23362,
+      "role": "local-user-request-next",
+      "port": 3000,
+      "listenerPid": 23374,
+      "ancestryVerified": true
+    }
+  },
+  "checks": [
+    {
+      "cardId": "me2pt5-18",
+      "variant": "normal",
+      "marketUsd": 0.18,
+      "state": "ready",
+      "groupId": 24541,
+      "points": 1,
+      "nextAttemptAt": "2026-10-14T23:53:26.660Z"
+    },
+    {
+      "cardId": "me2pt5-132",
+      "variant": "normal",
+      "marketUsd": 0.14,
+      "state": "ready",
+      "groupId": 24541,
+      "points": 1,
+      "nextAttemptAt": "2026-10-14T23:53:26.660Z"
+    },
+    {
+      "cardId": "me2pt5-183",
+      "variant": "normal",
+      "marketUsd": null,
+      "state": "ready",
+      "groupId": 24541,
+      "points": 0,
+      "nextAttemptAt": "2026-10-14T23:53:26.660Z"
+    },
+    {
+      "cardId": "me55-18",
+      "variant": "holofoil",
+      "marketUsd": 0.2,
+      "state": "ready",
+      "groupId": 24722,
+      "points": 1,
+      "nextAttemptAt": "2026-10-14T23:19:54.628Z"
+    }
+  ],
+  "gengarExamples": [
+    {
+      "id": "me2pt5-284",
+      "name": "Mega Gengar ex",
+      "number": "284",
+      "variant": "holofoil",
+      "market": 819.67
+    },
+    {
+      "id": "me2pt5-269",
+      "name": "Mega Gengar ex",
+      "number": "269",
+      "variant": "holofoil",
+      "market": 33.29
+    },
+    {
+      "id": "me2pt5-125",
+      "name": "Mega Gengar ex",
+      "number": "125",
+      "variant": "holofoil",
+      "market": 2.64
+    }
+  ],
+  "ready": true,
+  "ownQAResourcesGone": true,
+  "otherProviderGuardUnchanged": true,
+  "ascendedDailyRegistered": true
+}

@@ -1,0 +1,159 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?}
+      POSTGRES_DB: ${POSTGRES_DB:?}
+    volumes:
+      - dbdata:/var/lib/postgresql/data
+    networks: [private]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    tmpfs:
+      - /data
+    networks: [private]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  migrate:
+    build:
+      context: ../../backend
+      dockerfile: Dockerfile
+      target: builder
+      args:
+        NODE_IMAGE: ${NODE_IMAGE:-node:22.20.0-bookworm-slim}
+    depends_on:
+      db: { condition: service_healthy }
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+    command: ["pnpm", "exec", "prisma", "migrate", "deploy", "--schema", "prisma/schema.prisma"]
+    networks: [private]
+
+  fixture:
+    image: inf02-backend:local
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      ARTIFACT_DIR: /opt/pokescan
+      FIXTURE_EMAIL: ${FIXTURE_EMAIL:?}
+      FIXTURE_USERNAME: ${FIXTURE_USERNAME:?}
+      FIXTURE_PASSWORD: ${FIXTURE_PASSWORD:?}
+      FIXTURE_SLUG: ${FIXTURE_SLUG:?}
+    volumes:
+      - type: bind
+        source: ${ARTIFACT_DIR:?}
+        target: /opt/pokescan
+        read_only: true
+      - ../../scripts/infra/inf02-fixture-seed.mjs:/app/inf02-fixture-seed.mjs:ro
+    command: ["node", "/app/inf02-fixture-seed.mjs"]
+    networks: [private]
+
+  backend:
+    image: inf02-backend:local
+    build:
+      context: ../../backend
+      dockerfile: Dockerfile
+      args:
+        NODE_IMAGE: ${NODE_IMAGE:-node:22.20.0-bookworm-slim}
+    restart: unless-stopped
+    depends_on:
+      fixture: { condition: service_completed_successfully }
+      redis: { condition: service_healthy }
+    environment:
+      NODE_ENV: production
+      PORT: 3001
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      REDIS_URL: redis://redis:6379
+      FRONTEND_URL: ${PUBLIC_ORIGIN:?}
+      CORS_ORIGINS: ${PUBLIC_ORIGIN:?}
+      JWT_SECRET: ${JWT_SECRET:?}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:?}
+      SCANNER_VISUAL_ENABLED: "1"
+      SCANNER_MODEL: /opt/pokescan/model/dinov2-small-int8.onnx
+      SCANNER_VISUAL_INDEX_DIR: /opt/pokescan/index
+      PRICE_QUEUE_ENABLED: "false"
+      ENABLE_CATALOG_SYNC_CRON: "false"
+      ENABLE_PRICE_BACKFILL_CRON: "false"
+      ENABLE_RETENTION_CRON: "false"
+    volumes:
+      - type: bind
+        source: ${ARTIFACT_DIR:?}
+        target: /opt/pokescan
+        read_only: true
+    networks: [private]
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3001/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 20s
+
+  gate:
+    image: ${BACKEND_IMAGE:-inf02-backend:local}
+    depends_on:
+      backend: { condition: service_healthy }
+    environment:
+      READY_URL: http://backend:3001/api/ready
+      GATE_TIMEOUT_MS: ${GATE_TIMEOUT_MS:-180000}
+      GATE_INTERVAL_MS: "5000"
+    volumes:
+      - ../../scripts/infra/inf02-gate.mjs:/opt/inf02-gate.mjs:ro
+    entrypoint: ["node", "/opt/inf02-gate.mjs"]
+    networks: [private]
+
+  frontend:
+    image: inf02-frontend:local
+    build:
+      context: ../../frontend
+      dockerfile: Dockerfile
+      args:
+        NODE_IMAGE: node:22.20.0-alpine
+        NEXT_PUBLIC_API_URL: /api
+    restart: unless-stopped
+    depends_on:
+      gate: { condition: service_completed_successfully }
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      HOSTNAME: 0.0.0.0
+      API_INTERNAL_URL: http://backend:3001/api
+    networks: [private]
+
+  gateway:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    depends_on:
+      frontend: { condition: service_healthy }
+      gate: { condition: service_completed_successfully }
+    environment:
+      HTTPS_PORT: ${HTTPS_PORT:-35443}
+    ports:
+      - "127.0.0.1:${HTTPS_PORT:-35443}:${HTTPS_PORT:-35443}"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddydata:/data
+      - caddyconfig:/config
+    networks: [private, ingress]
+
+networks:
+  private:
+    internal: true
+  ingress: {}
+
+volumes:
+  dbdata:
+  caddydata:
+  caddyconfig:

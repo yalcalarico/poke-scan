@@ -1,0 +1,2710 @@
+{
+  "task": "SEO-01 runtime local",
+  "operator": {
+    "agent": "/root/seo01_runtime_luna",
+    "model": "gpt-6-luna",
+    "modelName": "GPT-6 Luna"
+  },
+  "runWindow": {
+    "startedAt": "2026-10-09T00:30:15.418Z",
+    "finishedAt": "2026-10-09T00:30:23.282Z",
+    "perResponseTimestampsRecorded": false,
+    "scope": "core HTTP route/user-agent matrix plus API summary only; later phases have their own capturedAt"
+  },
+  "runtime": {
+    "frontendBuild": "restored local webpack `.next`; not Turbopack green",
+    "frontendBuildId": "NZkIeTzxfiKhm5bMdwd1i",
+    "frontendMode": "production next start",
+    "backendArtifact": "existing backend/dist; source age comparison was reported by producer, not a source/artifact content equivalence proof",
+    "backendMode": "development only to allow loopback HTTP session origins",
+    "apiInternalUrl": "controlled local proxy → API 3001",
+    "database": "owned clone of pokemon_cards_test",
+    "redis": "owned ephemeral container 127.0.0.1:56379",
+    "workerCronScanner": "disabled",
+    "localOrigins": {
+      "web": "http://127.0.0.1:3000",
+      "api": "http://127.0.0.1:3001/api",
+      "proxy": "http://127.0.0.1:3002/api"
+    }
+  },
+  "counts": {
+    "httpResponses": 67,
+    "routeUaMatrix": 66,
+    "controlled503Additional": 1,
+    "apiChecks": 7,
+    "externalFetchAttempts": 0,
+    "scope": "67 response records in the core matrix, not all requests of fixture setup, browser, resource recapture or privacy probe; 7 API records are observations, not a passing assertion count",
+    "apiChecksDirectBackend": 6,
+    "apiChecksControlledProxy": 1,
+    "domCases": 3
+  },
+  "cases": [
+    {
+      "case": "landing",
+      "ua": "normal",
+      "status": 200,
+      "htmlBytes": 90033,
+      "htmlSha256": "33b9c326598abed7796f00bc333db0f1d83d49c40c7576f8e66961040f10e62e",
+      "headers": {
+        "contentType": "text/html; charset=utf-8",
+        "cacheControl": "s-maxage=3600, stale-while-revalidate=31532400",
+        "xRobotsTag": null,
+        "location": null
+      },
+      "headInitial": {
+        "title": "PokéScan — tu colección Pokémon, más clara",
+        "description": "Escaneá cartas Pokémon, organizá tus sets y consultá estimaciones de mercado en USD o ARS. Probá PokéScan gratis.",
+        "canonical": "https://pokescan.app",
+        "og:title": "PokéScan — tu colección Pokémon, más clara",
+        "og:description": "Escaneá cartas, organizá tus sets y consultá estimaciones en USD o ARS.",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "PokéScan — tu colección Pokémon, más clara",
+        "twitter:description": "Escaneá cartas, organizá tus sets y consultá estimaciones en USD o ARS."
+      },
+      "documentCompleteMetadata": {
+        "title": "PokéScan — tu colección Pokémon, más clara",
+        "description": "Escaneá cartas Pokémon, organizá tus sets y consultá estimaciones de mercado en USD o ARS. Probá PokéScan gratis.",
+        "canonical": "https://pokescan.app",
+        "og:title": "PokéScan — tu colección Pokémon, más clara",
+        "og:description": "Escaneá cartas, organizá tus sets y consultá estimaciones en USD o ARS.",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "PokéScan — tu colección Pokémon, más clara",
+        "twitter:description": "Escaneá cartas, organizá tus sets y consultá estimaciones en USD o ARS."
+      },
+      "privateMarkerPresent": false,
+      "containsPublicFixtureNames": false,
+      "containsCardFixtureName": false,
+      "routeSanitized": "/"
+    },
+    {
+      "case": "landing",
+      "ua": "googlebot",
+      "status": 200,
+      "htmlBytes": 101517,
+      "htmlSha256": "6c948029a85fc0bd405c2ab39bb7608de71b8f9e5efbf7fa49345a7bd0f5daf3",
+      "headers": {
+        "contentType": "text/html; charset=utf-8",
+        "cacheControl": "s-maxage=3600, stale-while-revalidate=31532400",
+        "xRobotsTag": null,
+        "location": null
+      },
+      "headInitial": {
+        "title": "PokéScan — tu colección Pokémon, más clara",
+        "description": "Escaneá cartas Pokémon, organizá tus sets y consultá estimaciones de mercado en USD o ARS. Probá PokéScan gratis.",
+        "canonical": "https://pokescan.app",
+        "og:title": "PokéScan — tu colección Pokémon, más clara",
+        "og:description": "Escaneá cartas, organizá tus sets y consultá estimaciones en USD o ARS.",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "PokéScan — tu colección Pokémon, más clara",
+        "twitter:description": "Escaneá cartas, organizá tus sets y consultá estimaciones en USD o ARS."
+      },
+      "documentCompleteMetadata": {
+        "title": "PokéScan — tu colección Pokémon, más clara",
+        "description": "Escaneá cartas Pokémon, organizá tus sets y consultá estimaciones de mercado en USD o ARS. Probá PokéScan gratis.",
+        "canonical": "https://pokescan.app",
+        "og:title": "PokéScan — tu colección Pokémon, más clara",
+        "og:description": "Escaneá cartas, organizá tus sets y consultá estimaciones en USD o ARS.",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "PokéScan — tu colección Pokémon, más clara",
+        "twitter:description": "Escaneá cartas, organizá tus sets y consultá estimaciones en USD o ARS."
+      },
+      "privateMarkerPresent": false,
+      "containsPublicFixtureNames": false,
+      "containsCardFixtureName": false,
+      "routeSanitized": "/"
+    },
+    {
+      "case": "landing",
+      "ua": "twitterbot",
+      "status": 200,
+      "htmlBytes": 101517,
+      "htmlSha256": "6c948029a85fc0bd405c2ab39bb7608de71b8f9e5efbf7fa49345a7bd0f5daf3",
+      "headers": {
+        "contentType": "text/html; charset=utf-8",
+        "cacheControl": "s-maxage=3600, stale-while-revalidate=31532400",
+        "xRobotsTag": null,
+        "location": null
+      },
+      "headInitial": {
+        "title": "PokéScan — tu colección Pokémon, más clara",
+        "description": "Escaneá cartas Pokémon, organizá tus sets y consultá estimaciones de mercado en USD o ARS. Probá PokéScan gratis.",
+        "canonical": "https://pokescan.app",
+        "og:title": "PokéScan — tu colección Pokémon, más clara",
+        "og:description": "Escaneá cartas, organizá tus sets y consultá estimaciones en USD o ARS.",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "PokéScan — tu colección Pokémon, más clara",
+        "twitter:description": "Escaneá cartas, organizá tus sets y consultá estimaciones en USD o ARS."
+      },
+      "documentCompleteMetadata": {
+        "title": "PokéScan — tu colección Pokémon, más clara",
+        "description": "Escaneá cartas Pokémon, organizá tus sets y consultá estimaciones de mercado en USD o ARS. Probá PokéScan gratis.",
+        "canonical": "https://pokescan.app",
+        "og:title": "PokéScan — tu colección Pokémon, más clara",
+        "og:description": "Escaneá cartas, organizá tus sets y consultá estimaciones en USD o ARS.",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "PokéScan — tu colección Pokémon, más clara",
+        "twitter:description": "Escaneá cartas, organizá tus sets y consultá estimaciones en USD o ARS."
+      },
+      "privateMarkerPresent": false,
+      "containsPublicFixtureNames": false,
+      "containsCardFixtureName": false,
+      "routeSanitized": "/"
+    },
+    {
+      "case": "faq",
+      "ua": "normal",
+      "status": 200,
+      "htmlBytes": 43584,
+      "htmlSha256": "ebd8bb53a92202ec1da978e41e77a970de107fdce03d9964eb662f25fbb3a2dc",
+      "headers": {
+        "contentType": "text/html; charset=utf-8",
+        "cacheControl": "s-maxage=31536000",
+        "xRobotsTag": null,
+        "location": null
+      },
+      "headInitial": {
+        "title": "Preguntas frecuentes · PokéScan",
+        "description": "Cómo funciona el escáner de PokéScan, de dónde salen los precios, qué requiere conexión y qué incluiría Pro.",
+        "canonical": "https://pokescan.app/faq",
+        "og:title": "Preguntas frecuentes · PokéScan",
+        "og:description": "Cómo funciona el escáner de PokéScan, de dónde salen los precios, qué requiere conexión y qué incluiría Pro.",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Preguntas frecuentes · PokéScan",
+        "twitter:description": "Cómo funciona el escáner de PokéScan, de dónde salen los precios, qué requiere conexión y qué incluiría Pro."
+      },
+      "documentCompleteMetadata": {
+        "title": "Preguntas frecuentes · PokéScan",
+        "description": "Cómo funciona el escáner de PokéScan, de dónde salen los precios, qué requiere conexión y qué incluiría Pro.",
+        "canonical": "https://pokescan.app/faq",
+        "og:title": "Preguntas frecuentes · PokéScan",
+        "og:description": "Cómo funciona el escáner de PokéScan, de dónde salen los precios, qué requiere conexión y qué incluiría Pro.",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Preguntas frecuentes · PokéScan",
+        "twitter:description": "Cómo funciona el escáner de PokéScan, de dónde salen los precios, qué requiere conexión y qué incluiría Pro."
+      },
+      "privateMarkerPresent": false,
+      "containsPublicFixtureNames": false,
+      "containsCardFixtureName": false,
+      "routeSanitized": "/faq"
+    },
+    {
+      "case": "faq",
+      "ua": "googlebot",
+      "status": 200,
+      "htmlBytes": 43584,
+      "htmlSha256": "ebd8bb53a92202ec1da978e41e77a970de107fdce03d9964eb662f25fbb3a2dc",
+      "headers": {
+        "contentType": "text/html; charset=utf-8",
+        "cacheControl": "s-maxage=31536000",
+        "xRobotsTag": null,
+        "location": null
+      },
+      "headInitial": {
+        "title": "Preguntas frecuentes · PokéScan",
+        "description": "Cómo funciona el escáner de PokéScan, de dónde salen los precios, qué requiere conexión y qué incluiría Pro.",
+        "canonical": "https://pokescan.app/faq",
+        "og:title": "Preguntas frecuentes · PokéScan",
+        "og:description": "Cómo funciona el escáner de PokéScan, de dónde salen los precios, qué requiere conexión y qué incluiría Pro.",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Preguntas frecuentes · PokéScan",
+        "twitter:description": "Cómo funciona el escáner de PokéScan, de dónde salen los precios, qué requiere conexión y qué incluiría Pro."
+      },
+      "documentCompleteMetadata": {
+        "title": "Preguntas frecuentes · PokéScan",
+        "description": "Cómo funciona el escáner de PokéScan, de dónde salen los precios, qué requiere conexión y qué incluiría Pro.",
+        "canonical": "https://pokescan.app/faq",
+        "og:title": "Preguntas frecuentes · PokéScan",
+        "og:description": "Cómo funciona el escáner de PokéScan, de dónde salen los precios, qué requiere conexión y qué incluiría Pro.",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Preguntas frecuentes · PokéScan",
+        "twitter:description": "Cómo funciona el escáner de PokéScan, de dónde salen los precios, qué requiere conexión y qué incluiría Pro."
+      },
+      "privateMarkerPresent": false,
+      "containsPublicFixtureNames": false,
+      "containsCardFixtureName": false,
+      "routeSanitized": "/faq"
+    },
+    {
+      "case": "faq",
+      "ua": "twitterbot",
+      "status": 200,
+      "htmlBytes": 43584,
+      "htmlSha256": "ebd8bb53a92202ec1da978e41e77a970de107fdce03d9964eb662f25fbb3a2dc",
+      "headers": {
+        "contentType": "text/html; charset=utf-8",
+        "cacheControl": "s-maxage=31536000",
+        "xRobotsTag": null,
+        "location": null
+      },
+      "headInitial": {
+        "title": "Preguntas frecuentes · PokéScan",
+        "description": "Cómo funciona el escáner de PokéScan, de dónde salen los precios, qué requiere conexión y qué incluiría Pro.",
+        "canonical": "https://pokescan.app/faq",
+        "og:title": "Preguntas frecuentes · PokéScan",
+        "og:description": "Cómo funciona el escáner de PokéScan, de dónde salen los precios, qué requiere conexión y qué incluiría Pro.",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Preguntas frecuentes · PokéScan",
+        "twitter:description": "Cómo funciona el escáner de PokéScan, de dónde salen los precios, qué requiere conexión y qué incluiría Pro."
+      },
+      "documentCompleteMetadata": {
+        "title": "Preguntas frecuentes · PokéScan",
+        "description": "Cómo funciona el escáner de PokéScan, de dónde salen los precios, qué requiere conexión y qué incluiría Pro.",
+        "canonical": "https://pokescan.app/faq",
+        "og:title": "Preguntas frecuentes · PokéScan",
+        "og:description": "Cómo funciona el escáner de PokéScan, de dónde salen los precios, qué requiere conexión y qué incluiría Pro.",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Preguntas frecuentes · PokéScan",
+        "twitter:description": "Cómo funciona el escáner de PokéScan, de dónde salen los precios, qué requiere conexión y qué incluiría Pro."
+      },
+      "privateMarkerPresent": false,
+      "containsPublicFixtureNames": false,
+      "containsCardFixtureName": false,
+      "routeSanitized": "/faq"
+    },
+    {
+      "case": "search-empty",
+      "ua": "normal",
+      "status": 200,
+      "htmlBytes": 72490,
+      "htmlSha256": "4691c1a73d099e8162d737abf69f81e1195cfb8318749cd3442416560d825c04",
+      "headers": {
+        "contentType": "text/html; charset=utf-8",
+        "cacheControl": "s-maxage=31536000",
+        "xRobotsTag": null,
+        "location": null
+      },
+      "headInitial": {
+        "title": "Buscar · PokéScan",
+        "description": "Buscá una carta por nombre o por set y mirá su valor de mercado.",
+        "canonical": "https://pokescan.app/buscar",
+        "og:title": "Buscar · PokéScan",
+        "og:description": "Buscá una carta por nombre o por set y mirá su valor de mercado.",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Buscar · PokéScan",
+        "twitter:description": "Buscá una carta por nombre o por set y mirá su valor de mercado."
+      },
+      "documentCompleteMetadata": {
+        "title": "Buscar · PokéScan",
+        "description": "Buscá una carta por nombre o por set y mirá su valor de mercado.",
+        "canonical": "https://pokescan.app/buscar",
+        "og:title": "Buscar · PokéScan",
+        "og:description": "Buscá una carta por nombre o por set y mirá su valor de mercado.",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Buscar · PokéScan",
+        "twitter:description": "Buscá una carta por nombre o por set y mirá su valor de mercado."
+      },
+      "privateMarkerPresent": false,
+      "containsPublicFixtureNames": false,
+      "containsCardFixtureName": false,
+      "routeSanitized": "/buscar"
+    },
+    {
+      "case": "search-empty",
+      "ua": "googlebot",
+      "status": 200,
+      "htmlBytes": 72490,
+      "htmlSha256": "4691c1a73d099e8162d737abf69f81e1195cfb8318749cd3442416560d825c04",
+      "headers": {
+        "contentType": "text/html; charset=utf-8",
+        "cacheControl": "s-maxage=31536000",
+        "xRobotsTag": null,
+        "location": null
+      },
+      "headInitial": {
+        "title": "Buscar · PokéScan",
+        "description": "Buscá una carta por nombre o por set y mirá su valor de mercado.",
+        "canonical": "https://pokescan.app/buscar",
+        "og:title": "Buscar · PokéScan",
+        "og:description": "Buscá una carta por nombre o por set y mirá su valor de mercado.",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Buscar · PokéScan",
+        "twitter:description": "Buscá una carta por nombre o por set y mirá su valor de mercado."
+      },
+      "documentCompleteMetadata": {
+        "title": "Buscar · PokéScan",
+        "description": "Buscá una carta por nombre o por set y mirá su valor de mercado.",
+        "canonical": "https://pokescan.app/buscar",
+        "og:title": "Buscar · PokéScan",
+        "og:description": "Buscá una carta por nombre o por set y mirá su valor de mercado.",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Buscar · PokéScan",
+        "twitter:description": "Buscá una carta por nombre o por set y mirá su valor de mercado."
+      },
+      "privateMarkerPresent": false,
+      "containsPublicFixtureNames": false,
+      "containsCardFixtureName": false,
+      "routeSanitized": "/buscar"
+    },
+    {
+      "case": "search-empty",
+      "ua": "twitterbot",
+      "status": 200,
+      "htmlBytes": 72490,
+      "htmlSha256": "4691c1a73d099e8162d737abf69f81e1195cfb8318749cd3442416560d825c04",
+      "headers": {
+        "contentType": "text/html; charset=utf-8",
+        "cacheControl": "s-maxage=31536000",
+        "xRobotsTag": null,
+        "location": null
+      },
+      "headInitial": {
+        "title": "Buscar · PokéScan",
+        "description": "Buscá una carta por nombre o por set y mirá su valor de mercado.",
+        "canonical": "https://pokescan.app/buscar",
+        "og:title": "Buscar · PokéScan",
+        "og:description": "Buscá una carta por nombre o por set y mirá su valor de mercado.",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Buscar · PokéScan",
+        "twitter:description": "Buscá una carta por nombre o por set y mirá su valor de mercado."
+      },
+      "documentCompleteMetadata": {
+        "title": "Buscar · PokéScan",
+        "description": "Buscá una carta por nombre o por set y mirá su valor de mercado.",
+        "canonical": "https://pokescan.app/buscar",
+        "og:title": "Buscar · PokéScan",
+        "og:description": "Buscá una carta por nombre o por set y mirá su valor de mercado.",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Buscar · PokéScan",
+        "twitter:description": "Buscá una carta por nombre o por set y mirá su valor de mercado."
+      },
+      "privateMarkerPresent": false,
+      "containsPublicFixtureNames": false,
+      "containsCardFixtureName": false,
+      "routeSanitized": "/buscar"
+    },
+    {
+      "case": "search-q",
+      "ua": "normal",
+      "status": 200,
+      "htmlBytes": 72490,
+      "htmlSha256": "4691c1a73d099e8162d737abf69f81e1195cfb8318749cd3442416560d825c04",
+      "headers": {
+        "contentType": "text/html; charset=utf-8",
+        "cacheControl": "s-maxage=31536000",
+        "xRobotsTag": null,
+        "location": null
+      },
+      "headInitial": {
+        "title": "Buscar · PokéScan",
+        "description": "Buscá una carta por nombre o por set y mirá su valor de mercado.",
+        "canonical": "https://pokescan.app/buscar",
+        "og:title": "Buscar · PokéScan",
+        "og:description": "Buscá una carta por nombre o por set y mirá su valor de mercado.",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Buscar · PokéScan",
+        "twitter:description": "Buscá una carta por nombre o por set y mirá su valor de mercado."
+      },
+      "documentCompleteMetadata": {
+        "title": "Buscar · PokéScan",
+        "description": "Buscá una carta por nombre o por set y mirá su valor de mercado.",
+        "canonical": "https://pokescan.app/buscar",
+        "og:title": "Buscar · PokéScan",
+        "og:description": "Buscá una carta por nombre o por set y mirá su valor de mercado.",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Buscar · PokéScan",
+        "twitter:description": "Buscá una carta por nombre o por set y mirá su valor de mercado."
+      },
+      "privateMarkerPresent": false,
+      "containsPublicFixtureNames": false,
+      "containsCardFixtureName": false,
+      "routeSanitized": "/buscar?q=Carta+sint%C3%A9tica+SEO"
+    },
+    {
+      "case": "search-q",
+      "ua": "googlebot",
+      "status": 200,
+      "htmlBytes": 72490,
+      "htmlSha256": "4691c1a73d099e8162d737abf69f81e1195cfb8318749cd3442416560d825c04",
+      "headers": {
+        "contentType": "text/html; charset=utf-8",
+        "cacheControl": "s-maxage=31536000",
+        "xRobotsTag": null,
+        "location": null
+      },
+      "headInitial": {
+        "title": "Buscar · PokéScan",
+        "description": "Buscá una carta por nombre o por set y mirá su valor de mercado.",
+        "canonical": "https://pokescan.app/buscar",
+        "og:title": "Buscar · PokéScan",
+        "og:description": "Buscá una carta por nombre o por set y mirá su valor de mercado.",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Buscar · PokéScan",
+        "twitter:description": "Buscá una carta por nombre o por set y mirá su valor de mercado."
+      },
+      "documentCompleteMetadata": {
+        "title": "Buscar · PokéScan",
+        "description": "Buscá una carta por nombre o por set y mirá su valor de mercado.",
+        "canonical": "https://pokescan.app/buscar",
+        "og:title": "Buscar · PokéScan",
+        "og:description": "Buscá una carta por nombre o por set y mirá su valor de mercado.",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Buscar · PokéScan",
+        "twitter:description": "Buscá una carta por nombre o por set y mirá su valor de mercado."
+      },
+      "privateMarkerPresent": false,
+      "containsPublicFixtureNames": false,
+      "containsCardFixtureName": false,
+      "routeSanitized": "/buscar?q=Carta+sint%C3%A9tica+SEO"
+    },
+    {
+      "case": "search-q",
+      "ua": "twitterbot",
+      "status": 200,
+      "htmlBytes": 72490,
+      "htmlSha256": "4691c1a73d099e8162d737abf69f81e1195cfb8318749cd3442416560d825c04",
+      "headers": {
+        "contentType": "text/html; charset=utf-8",
+        "cacheControl": "s-maxage=31536000",
+        "xRobotsTag": null,
+        "location": null
+      },
+      "headInitial": {
+        "title": "Buscar · PokéScan",
+        "description": "Buscá una carta por nombre o por set y mirá su valor de mercado.",
+        "canonical": "https://pokescan.app/buscar",
+        "og:title": "Buscar · PokéScan",
+        "og:description": "Buscá una carta por nombre o por set y mirá su valor de mercado.",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Buscar · PokéScan",
+        "twitter:description": "Buscá una carta por nombre o por set y mirá su valor de mercado."
+      },
+      "documentCompleteMetadata": {
+        "title": "Buscar · PokéScan",
+        "description": "Buscá una carta por nombre o por set y mirá su valor de mercado.",
+        "canonical": "https://pokescan.app/buscar",
+        "og:title": "Buscar · PokéScan",
+        "og:description": "Buscá una carta por nombre o por set y mirá su valor de mercado.",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Buscar · PokéScan",
+        "twitter:description": "Buscá una carta por nombre o por set y mirá su valor de mercado."
+      },
+      "privateMarkerPresent": false,
+      "containsPublicFixtureNames": false,
+      "containsCardFixtureName": false,
+      "routeSanitized": "/buscar?q=Carta+sint%C3%A9tica+SEO"
+    },
+    {
+      "case": "search-valid-filter",
+      "ua": "normal",
+      "status": 200,
+      "htmlBytes": 72490,
+      "htmlSha256": "4691c1a73d099e8162d737abf69f81e1195cfb8318749cd3442416560d825c04",
+      "headers": {
+        "contentType": "text/html; charset=utf-8",
+        "cacheControl": "s-maxage=31536000",
+        "xRobotsTag": null,
+        "location": null
+      },
+      "headInitial": {
+        "title": "Buscar · PokéScan",
+        "description": "Buscá una carta por nombre o por set y mirá su valor de mercado.",
+        "canonical": "https://pokescan.app/buscar",
+        "og:title": "Buscar · PokéScan",
+        "og:description": "Buscá una carta por nombre o por set y mirá su valor de mercado.",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Buscar · PokéScan",
+        "twitter:description": "Buscá una carta por nombre o por set y mirá su valor de mercado."
+      },
+      "documentCompleteMetadata": {
+        "title": "Buscar · PokéScan",
+        "description": "Buscá una carta por nombre o por set y mirá su valor de mercado.",
+        "canonical": "https://pokescan.app/buscar",
+        "og:title": "Buscar · PokéScan",
+        "og:description": "Buscá una carta por nombre o por set y mirá su valor de mercado.",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Buscar · PokéScan",
+        "twitter:description": "Buscá una carta por nombre o por set y mirá su valor de mercado."
+      },
+      "privateMarkerPresent": false,
+      "containsPublicFixtureNames": false,
+      "containsCardFixtureName": false,
+      "routeSanitized": "/buscar?setId=[set]"
+    },
+    {
+      "case": "search-valid-filter",
+      "ua": "googlebot",
+      "status": 200,
+      "htmlBytes": 72490,
+      "htmlSha256": "4691c1a73d099e8162d737abf69f81e1195cfb8318749cd3442416560d825c04",
+      "headers": {
+        "contentType": "text/html; charset=utf-8",
+        "cacheControl": "s-maxage=31536000",
+        "xRobotsTag": null,
+        "location": null
+      },
+      "headInitial": {
+        "title": "Buscar · PokéScan",
+        "description": "Buscá una carta por nombre o por set y mirá su valor de mercado.",
+        "canonical": "https://pokescan.app/buscar",
+        "og:title": "Buscar · PokéScan",
+        "og:description": "Buscá una carta por nombre o por set y mirá su valor de mercado.",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Buscar · PokéScan",
+        "twitter:description": "Buscá una carta por nombre o por set y mirá su valor de mercado."
+      },
+      "documentCompleteMetadata": {
+        "title": "Buscar · PokéScan",
+        "description": "Buscá una carta por nombre o por set y mirá su valor de mercado.",
+        "canonical": "https://pokescan.app/buscar",
+        "og:title": "Buscar · PokéScan",
+        "og:description": "Buscá una carta por nombre o por set y mirá su valor de mercado.",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Buscar · PokéScan",
+        "twitter:description": "Buscá una carta por nombre o por set y mirá su valor de mercado."
+      },
+      "privateMarkerPresent": false,
+      "containsPublicFixtureNames": false,
+      "containsCardFixtureName": false,
+      "routeSanitized": "/buscar?setId=[set]"
+    },
+    {
+      "case": "search-valid-filter",
+      "ua": "twitterbot",
+      "status": 200,
+      "htmlBytes": 72490,
+      "htmlSha256": "4691c1a73d099e8162d737abf69f81e1195cfb8318749cd3442416560d825c04",
+      "headers": {
+        "contentType": "text/html; charset=utf-8",
+        "cacheControl": "s-maxage=31536000",
+        "xRobotsTag": null,
+        "location": null
+      },
+      "headInitial": {
+        "title": "Buscar · PokéScan",
+        "description": "Buscá una carta por nombre o por set y mirá su valor de mercado.",
+        "canonical": "https://pokescan.app/buscar",
+        "og:title": "Buscar · PokéScan",
+        "og:description": "Buscá una carta por nombre o por set y mirá su valor de mercado.",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Buscar · PokéScan",
+        "twitter:description": "Buscá una carta por nombre o por set y mirá su valor de mercado."
+      },
+      "documentCompleteMetadata": {
+        "title": "Buscar · PokéScan",
+        "description": "Buscá una carta por nombre o por set y mirá su valor de mercado.",
+        "canonical": "https://pokescan.app/buscar",
+        "og:title": "Buscar · PokéScan",
+        "og:description": "Buscá una carta por nombre o por set y mirá su valor de mercado.",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Buscar · PokéScan",
+        "twitter:description": "Buscá una carta por nombre o por set y mirá su valor de mercado."
+      },
+      "privateMarkerPresent": false,
+      "containsPublicFixtureNames": false,
+      "containsCardFixtureName": false,
+      "routeSanitized": "/buscar?setId=[set]"
+    },
+    {
+      "case": "card-valid-returnTo",
+      "ua": "normal",
+      "status": 200,
+      "htmlBytes": 56619,
+      "htmlSha256": "d7b3fb1fd5cb77c6f51fe9d22dec935cfd97f94664ab7fcd5f39a8a125bb0fc3",
+      "headers": {
+        "contentType": "text/html; charset=utf-8",
+        "cacheControl": "private, no-cache, no-store, max-age=0, must-revalidate",
+        "xRobotsTag": null,
+        "location": null
+      },
+      "headInitial": {},
+      "documentCompleteMetadata": {
+        "title": "Carta sintética SEO · PokéScan",
+        "description": "Carta sintética SEO — Set sintético SEO · Rare",
+        "canonical": "https://pokescan.app/carta/[fixture]",
+        "og:title": "Carta sintética SEO",
+        "og:description": "Carta sintética SEO — Set sintético SEO · Rare",
+        "og:image": "https://pokescan.app/icons/icon-192.png",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Carta sintética SEO",
+        "twitter:description": "Carta sintética SEO — Set sintético SEO · Rare",
+        "twitter:image": "https://pokescan.app/icons/icon-192.png"
+      },
+      "privateMarkerPresent": false,
+      "containsPublicFixtureNames": false,
+      "containsCardFixtureName": true,
+      "routeSanitized": "/carta/[card]?returnTo=%2Fbuscar%3Fq%3Dsynthetic"
+    },
+    {
+      "case": "card-valid-returnTo",
+      "ua": "googlebot",
+      "status": 200,
+      "htmlBytes": 55744,
+      "htmlSha256": "c07f86a762a8877029cfbeb9357a27902b9758453b27227beee457d7000967e6",
+      "headers": {
+        "contentType": "text/html; charset=utf-8",
+        "cacheControl": "private, no-cache, no-store, max-age=0, must-revalidate",
+        "xRobotsTag": null,
+        "location": null
+      },
+      "headInitial": {
+        "title": "Carta sintética SEO · PokéScan",
+        "description": "Carta sintética SEO — Set sintético SEO · Rare",
+        "canonical": "https://pokescan.app/carta/[fixture]",
+        "og:title": "Carta sintética SEO",
+        "og:description": "Carta sintética SEO — Set sintético SEO · Rare",
+        "og:image": "https://pokescan.app/icons/icon-192.png",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Carta sintética SEO",
+        "twitter:description": "Carta sintética SEO — Set sintético SEO · Rare",
+        "twitter:image": "https://pokescan.app/icons/icon-192.png"
+      },
+      "documentCompleteMetadata": {
+        "title": "Carta sintética SEO · PokéScan",
+        "description": "Carta sintética SEO — Set sintético SEO · Rare",
+        "canonical": "https://pokescan.app/carta/[fixture]",
+        "og:title": "Carta sintética SEO",
+        "og:description": "Carta sintética SEO — Set sintético SEO · Rare",
+        "og:image": "https://pokescan.app/icons/icon-192.png",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Carta sintética SEO",
+        "twitter:description": "Carta sintética SEO — Set sintético SEO · Rare",
+        "twitter:image": "https://pokescan.app/icons/icon-192.png"
+      },
+      "privateMarkerPresent": false,
+      "containsPublicFixtureNames": false,
+      "containsCardFixtureName": true,
+      "routeSanitized": "/carta/[card]?returnTo=%2Fbuscar%3Fq%3Dsynthetic"
+    },
+    {
+      "case": "card-valid-returnTo",
+      "ua": "twitterbot",
+      "status": 200,
+      "htmlBytes": 55505,
+      "htmlSha256": "2526eff60caa7170a91cf2ad4ac5082e235ea6fbba265a3e4ff4d742ad63ada9",
+      "headers": {
+        "contentType": "text/html; charset=utf-8",
+        "cacheControl": "private, no-cache, no-store, max-age=0, must-revalidate",
+        "xRobotsTag": null,
+        "location": null
+      },
+      "headInitial": {
+        "title": "Carta sintética SEO · PokéScan",
+        "description": "Carta sintética SEO — Set sintético SEO · Rare",
+        "canonical": "https://pokescan.app/carta/[fixture]",
+        "og:title": "Carta sintética SEO",
+        "og:description": "Carta sintética SEO — Set sintético SEO · Rare",
+        "og:image": "https://pokescan.app/icons/icon-192.png",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Carta sintética SEO",
+        "twitter:description": "Carta sintética SEO — Set sintético SEO · Rare",
+        "twitter:image": "https://pokescan.app/icons/icon-192.png"
+      },
+      "documentCompleteMetadata": {
+        "title": "Carta sintética SEO · PokéScan",
+        "description": "Carta sintética SEO — Set sintético SEO · Rare",
+        "canonical": "https://pokescan.app/carta/[fixture]",
+        "og:title": "Carta sintética SEO",
+        "og:description": "Carta sintética SEO — Set sintético SEO · Rare",
+        "og:image": "https://pokescan.app/icons/icon-192.png",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Carta sintética SEO",
+        "twitter:description": "Carta sintética SEO — Set sintético SEO · Rare",
+        "twitter:image": "https://pokescan.app/icons/icon-192.png"
+      },
+      "privateMarkerPresent": false,
+      "containsPublicFixtureNames": false,
+      "containsCardFixtureName": true,
+      "routeSanitized": "/carta/[card]?returnTo=%2Fbuscar%3Fq%3Dsynthetic"
+    },
+    {
+      "case": "card-missing-returnTo",
+      "ua": "normal",
+      "status": 200,
+      "htmlBytes": 40589,
+      "htmlSha256": "130adc1de4de3853eb93f8c08ed23bf0f1160697bf591503ab47aa5a44b74536",
+      "headers": {
+        "contentType": "text/html; charset=utf-8",
+        "cacheControl": "private, no-cache, no-store, max-age=0, must-revalidate",
+        "xRobotsTag": null,
+        "location": null
+      },
+      "headInitial": {},
+      "documentCompleteMetadata": {
+        "title": "Carta no encontrada · PokéScan",
+        "robots": "noindex",
+        "description": "Escaneá tus cartas Pokémon, mirá su valor y compartí tu colección",
+        "og:title": "Carta no encontrada · PokéScan",
+        "og:description": "Escaneá tus cartas Pokémon, mirá su valor y compartí tu colección",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Carta no encontrada · PokéScan",
+        "twitter:description": "Escaneá tus cartas Pokémon, mirá su valor y compartí tu colección"
+      },
+      "privateMarkerPresent": false,
+      "containsPublicFixtureNames": false,
+      "containsCardFixtureName": false,
+      "routeSanitized": "/carta/[missing-card]?returnTo=%2Fbuscar%3Fq%3Dsynthetic"
+    },
+    {
+      "case": "card-missing-returnTo",
+      "ua": "googlebot",
+      "status": 200,
+      "htmlBytes": 40589,
+      "htmlSha256": "130adc1de4de3853eb93f8c08ed23bf0f1160697bf591503ab47aa5a44b74536",
+      "headers": {
+        "contentType": "text/html; charset=utf-8",
+        "cacheControl": "private, no-cache, no-store, max-age=0, must-revalidate",
+        "xRobotsTag": null,
+        "location": null
+      },
+      "headInitial": {},
+      "documentCompleteMetadata": {
+        "title": "Carta no encontrada · PokéScan",
+        "robots": "noindex",
+        "description": "Escaneá tus cartas Pokémon, mirá su valor y compartí tu colección",
+        "og:title": "Carta no encontrada · PokéScan",
+        "og:description": "Escaneá tus cartas Pokémon, mirá su valor y compartí tu colección",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Carta no encontrada · PokéScan",
+        "twitter:description": "Escaneá tus cartas Pokémon, mirá su valor y compartí tu colección"
+      },
+      "privateMarkerPresent": false,
+      "containsPublicFixtureNames": false,
+      "containsCardFixtureName": false,
+      "routeSanitized": "/carta/[missing-card]?returnTo=%2Fbuscar%3Fq%3Dsynthetic"
+    },
+    {
+      "case": "card-missing-returnTo",
+      "ua": "twitterbot",
+      "status": 200,
+      "htmlBytes": 38723,
+      "htmlSha256": "812b358b2524ae6eaa5bf5f22e20689c5144bbffe44322bf8299b39af043753c",
+      "headers": {
+        "contentType": "text/html; charset=utf-8",
+        "cacheControl": "private, no-cache, no-store, max-age=0, must-revalidate",
+        "xRobotsTag": null,
+        "location": null
+      },
+      "headInitial": {
+        "title": "Carta no encontrada · PokéScan",
+        "description": "Escaneá tus cartas Pokémon, mirá su valor y compartí tu colección",
+        "og:title": "Carta no encontrada · PokéScan",
+        "og:description": "Escaneá tus cartas Pokémon, mirá su valor y compartí tu colección",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Carta no encontrada · PokéScan",
+        "twitter:description": "Escaneá tus cartas Pokémon, mirá su valor y compartí tu colección",
+        "robots": "noindex"
+      },
+      "documentCompleteMetadata": {
+        "title": "Carta no encontrada · PokéScan",
+        "description": "Escaneá tus cartas Pokémon, mirá su valor y compartí tu colección",
+        "og:title": "Carta no encontrada · PokéScan",
+        "og:description": "Escaneá tus cartas Pokémon, mirá su valor y compartí tu colección",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Carta no encontrada · PokéScan",
+        "twitter:description": "Escaneá tus cartas Pokémon, mirá su valor y compartí tu colección",
+        "robots": "noindex"
+      },
+      "privateMarkerPresent": false,
+      "containsPublicFixtureNames": false,
+      "containsCardFixtureName": false,
+      "routeSanitized": "/carta/[missing-card]?returnTo=%2Fbuscar%3Fq%3Dsynthetic"
+    },
+    {
+      "case": "inicio",
+      "ua": "normal",
+      "status": 200,
+      "htmlBytes": 37813,
+      "htmlSha256": "891cc7743c1ea30e82a2fdaa72bb179988ce95f5c0bbd08cc999555a45728243",
+      "headers": {
+        "contentType": "text/html; charset=utf-8",
+        "cacheControl": "s-maxage=3600, stale-while-revalidate=31532400",
+        "xRobotsTag": null,
+        "location": null
+      },
+      "headInitial": {
+        "title": "Inicio · PokéScan",
+        "description": "Continuá escaneando, buscá cartas y revisá tus colecciones Pokémon.",
+        "robots": "noindex, nofollow",
+        "og:title": "Inicio · PokéScan",
+        "og:description": "Continuá escaneando, buscá cartas y revisá tus colecciones Pokémon.",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Inicio · PokéScan",
+        "twitter:description": "Continuá escaneando, buscá cartas y revisá tus colecciones Pokémon."
+      },
+      "documentCompleteMetadata": {
+        "title": "Inicio · PokéScan",
+        "description": "Continuá escaneando, buscá cartas y revisá tus colecciones Pokémon.",
+        "robots": "noindex, nofollow",
+        "og:title": "Inicio · PokéScan",
+        "og:description": "Continuá escaneando, buscá cartas y revisá tus colecciones Pokémon.",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Inicio · PokéScan",
+        "twitter:description": "Continuá escaneando, buscá cartas y revisá tus colecciones Pokémon."
+      },
+      "privateMarkerPresent": false,
+      "containsPublicFixtureNames": false,
+      "containsCardFixtureName": false,
+      "routeSanitized": "/inicio"
+    },
+    {
+      "case": "inicio",
+      "ua": "googlebot",
+      "status": 200,
+      "htmlBytes": 49749,
+      "htmlSha256": "f9b877917f09a26a3d8478e0518246cfefc3f90f0311fc57cf961f68212603ff",
+      "headers": {
+        "contentType": "text/html; charset=utf-8",
+        "cacheControl": "s-maxage=3600, stale-while-revalidate=31532400",
+        "xRobotsTag": null,
+        "location": null
+      },
+      "headInitial": {
+        "title": "Inicio · PokéScan",
+        "description": "Continuá escaneando, buscá cartas y revisá tus colecciones Pokémon.",
+        "robots": "noindex, nofollow",
+        "og:title": "Inicio · PokéScan",
+        "og:description": "Continuá escaneando, buscá cartas y revisá tus colecciones Pokémon.",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Inicio · PokéScan",
+        "twitter:description": "Continuá escaneando, buscá cartas y revisá tus colecciones Pokémon."
+      },
+      "documentCompleteMetadata": {
+        "title": "Inicio · PokéScan",
+        "description": "Continuá escaneando, buscá cartas y revisá tus colecciones Pokémon.",
+        "robots": "noindex, nofollow",
+        "og:title": "Inicio · PokéScan",
+        "og:description": "Continuá escaneando, buscá cartas y revisá tus colecciones Pokémon.",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Inicio · PokéScan",
+        "twitter:description": "Continuá escaneando, buscá cartas y revisá tus colecciones Pokémon."
+      },
+      "privateMarkerPresent": false,
+      "containsPublicFixtureNames": false,
+      "containsCardFixtureName": false,
+      "routeSanitized": "/inicio"
+    },
+    {
+      "case": "inicio",
+      "ua": "twitterbot",
+      "status": 200,
+      "htmlBytes": 49749,
+      "htmlSha256": "f9b877917f09a26a3d8478e0518246cfefc3f90f0311fc57cf961f68212603ff",
+      "headers": {
+        "contentType": "text/html; charset=utf-8",
+        "cacheControl": "s-maxage=3600, stale-while-revalidate=31532400",
+        "xRobotsTag": null,
+        "location": null
+      },
+      "headInitial": {
+        "title": "Inicio · PokéScan",
+        "description": "Continuá escaneando, buscá cartas y revisá tus colecciones Pokémon.",
+        "robots": "noindex, nofollow",
+        "og:title": "Inicio · PokéScan",
+        "og:description": "Continuá escaneando, buscá cartas y revisá tus colecciones Pokémon.",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Inicio · PokéScan",
+        "twitter:description": "Continuá escaneando, buscá cartas y revisá tus colecciones Pokémon."
+      },
+      "documentCompleteMetadata": {
+        "title": "Inicio · PokéScan",
+        "description": "Continuá escaneando, buscá cartas y revisá tus colecciones Pokémon.",
+        "robots": "noindex, nofollow",
+        "og:title": "Inicio · PokéScan",
+        "og:description": "Continuá escaneando, buscá cartas y revisá tus colecciones Pokémon.",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Inicio · PokéScan",
+        "twitter:description": "Continuá escaneando, buscá cartas y revisá tus colecciones Pokémon."
+      },
+      "privateMarkerPresent": false,
+      "containsPublicFixtureNames": false,
+      "containsCardFixtureName": false,
+      "routeSanitized": "/inicio"
+    },
+    {
+      "case": "collections",
+      "ua": "normal",
+      "status": 200,
+      "htmlBytes": 34204,
+      "htmlSha256": "cd5602732e3f6f15950dae3228f86e8e55ada7314f669bda8634c52165ecaa0c",
+      "headers": {
+        "contentType": "text/html; charset=utf-8",
+        "cacheControl": "s-maxage=31536000",
+        "xRobotsTag": null,
+        "location": null
+      },
+      "headInitial": {
+        "title": "Colecciones · PokéScan",
+        "description": "Tus colecciones de cartas: cuántas tenés y cuánto valen.",
+        "robots": "noindex, nofollow",
+        "og:title": "Colecciones · PokéScan",
+        "og:description": "Tus colecciones de cartas: cuántas tenés y cuánto valen.",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Colecciones · PokéScan",
+        "twitter:description": "Tus colecciones de cartas: cuántas tenés y cuánto valen."
+      },
+      "documentCompleteMetadata": {
+        "title": "Colecciones · PokéScan",
+        "description": "Tus colecciones de cartas: cuántas tenés y cuánto valen.",
+        "robots": "noindex, nofollow",
+        "og:title": "Colecciones · PokéScan",
+        "og:description": "Tus colecciones de cartas: cuántas tenés y cuánto valen.",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Colecciones · PokéScan",
+        "twitter:description": "Tus colecciones de cartas: cuántas tenés y cuánto valen."
+      },
+      "privateMarkerPresent": false,
+      "containsPublicFixtureNames": false,
+      "containsCardFixtureName": false,
+      "routeSanitized": "/colecciones"
+    },
+    {
+      "case": "collections",
+      "ua": "googlebot",
+      "status": 200,
+      "htmlBytes": 34204,
+      "htmlSha256": "cd5602732e3f6f15950dae3228f86e8e55ada7314f669bda8634c52165ecaa0c",
+      "headers": {
+        "contentType": "text/html; charset=utf-8",
+        "cacheControl": "s-maxage=31536000",
+        "xRobotsTag": null,
+        "location": null
+      },
+      "headInitial": {
+        "title": "Colecciones · PokéScan",
+        "description": "Tus colecciones de cartas: cuántas tenés y cuánto valen.",
+        "robots": "noindex, nofollow",
+        "og:title": "Colecciones · PokéScan",
+        "og:description": "Tus colecciones de cartas: cuántas tenés y cuánto valen.",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Colecciones · PokéScan",
+        "twitter:description": "Tus colecciones de cartas: cuántas tenés y cuánto valen."
+      },
+      "documentCompleteMetadata": {
+        "title": "Colecciones · PokéScan",
+        "description": "Tus colecciones de cartas: cuántas tenés y cuánto valen.",
+        "robots": "noindex, nofollow",
+        "og:title": "Colecciones · PokéScan",
+        "og:description": "Tus colecciones de cartas: cuántas tenés y cuánto valen.",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Colecciones · PokéScan",
+        "twitter:description": "Tus colecciones de cartas: cuántas tenés y cuánto valen."
+      },
+      "privateMarkerPresent": false,
+      "containsPublicFixtureNames": false,
+      "containsCardFixtureName": false,
+      "routeSanitized": "/colecciones"
+    },
+    {
+      "case": "collections",
+      "ua": "twitterbot",
+      "status": 200,
+      "htmlBytes": 34204,
+      "htmlSha256": "cd5602732e3f6f15950dae3228f86e8e55ada7314f669bda8634c52165ecaa0c",
+      "headers": {
+        "contentType": "text/html; charset=utf-8",
+        "cacheControl": "s-maxage=31536000",
+        "xRobotsTag": null,
+        "location": null
+      },
+      "headInitial": {
+        "title": "Colecciones · PokéScan",
+        "description": "Tus colecciones de cartas: cuántas tenés y cuánto valen.",
+        "robots": "noindex, nofollow",
+        "og:title": "Colecciones · PokéScan",
+        "og:description": "Tus colecciones de cartas: cuántas tenés y cuánto valen.",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Colecciones · PokéScan",
+        "twitter:description": "Tus colecciones de cartas: cuántas tenés y cuánto valen."
+      },
+      "documentCompleteMetadata": {
+        "title": "Colecciones · PokéScan",
+        "description": "Tus colecciones de cartas: cuántas tenés y cuánto valen.",
+        "robots": "noindex, nofollow",
+        "og:title": "Colecciones · PokéScan",
+        "og:description": "Tus colecciones de cartas: cuántas tenés y cuánto valen.",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Colecciones · PokéScan",
+        "twitter:description": "Tus colecciones de cartas: cuántas tenés y cuánto valen."
+      },
+      "privateMarkerPresent": false,
+      "containsPublicFixtureNames": false,
+      "containsCardFixtureName": false,
+      "routeSanitized": "/colecciones"
+    },
+    {
+      "case": "collection-detail",
+      "ua": "normal",
+      "status": 200,
+      "htmlBytes": 55903,
+      "htmlSha256": "099be05cd2b4c7d14c6da36bedc4adc75dba5ba8ae61d0ba517284629c9d7ab3",
+      "headers": {
+        "contentType": "text/html; charset=utf-8",
+        "cacheControl": "private, no-cache, no-store, max-age=0, must-revalidate",
+        "xRobotsTag": null,
+        "location": null
+      },
+      "headInitial": {
+        "title": "Colección · PokéScan",
+        "description": "Las cartas de tu colección, sus duplicados y su valor de mercado.",
+        "robots": "noindex, nofollow",
+        "og:title": "Colección · PokéScan",
+        "og:description": "Las cartas de tu colección, sus duplicados y su valor de mercado.",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Colección · PokéScan",
+        "twitter:description": "Las cartas de tu colección, sus duplicados y su valor de mercado."
+      },
+      "documentCompleteMetadata": {
+        "title": "Colección · PokéScan",
+        "description": "Las cartas de tu colección, sus duplicados y su valor de mercado.",
+        "robots": "noindex, nofollow",
+        "og:title": "Colección · PokéScan",
+        "og:description": "Las cartas de tu colección, sus duplicados y su valor de mercado.",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Colección · PokéScan",
+        "twitter:description": "Las cartas de tu colección, sus duplicados y su valor de mercado."
+      },
+      "privateMarkerPresent": false,
+      "containsPublicFixtureNames": false,
+      "containsCardFixtureName": false,
+      "routeSanitized": "/colecciones/[collection]"
+    },
+    {
+      "case": "collection-detail",
+      "ua": "googlebot",
+      "status": 200,
+      "htmlBytes": 55903,
+      "htmlSha256": "099be05cd2b4c7d14c6da36bedc4adc75dba5ba8ae61d0ba517284629c9d7ab3",
+      "headers": {
+        "contentType": "text/html; charset=utf-8",
+        "cacheControl": "private, no-cache, no-store, max-age=0, must-revalidate",
+        "xRobotsTag": null,
+        "location": null
+      },
+      "headInitial": {
+        "title": "Colección · PokéScan",
+        "description": "Las cartas de tu colección, sus duplicados y su valor de mercado.",
+        "robots": "noindex, nofollow",
+        "og:title": "Colección · PokéScan",
+        "og:description": "Las cartas de tu colección, sus duplicados y su valor de mercado.",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Colección · PokéScan",
+        "twitter:description": "Las cartas de tu colección, sus duplicados y su valor de mercado."
+      },
+      "documentCompleteMetadata": {
+        "title": "Colección · PokéScan",
+        "description": "Las cartas de tu colección, sus duplicados y su valor de mercado.",
+        "robots": "noindex, nofollow",
+        "og:title": "Colección · PokéScan",
+        "og:description": "Las cartas de tu colección, sus duplicados y su valor de mercado.",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Colección · PokéScan",
+        "twitter:description": "Las cartas de tu colección, sus duplicados y su valor de mercado."
+      },
+      "privateMarkerPresent": false,
+      "containsPublicFixtureNames": false,
+      "containsCardFixtureName": false,
+      "routeSanitized": "/colecciones/[collection]"
+    },
+    {
+      "case": "collection-detail",
+      "ua": "twitterbot",
+      "status": 200,
+      "htmlBytes": 55639,
+      "htmlSha256": "b8fa163f8f7eaf58d5b441ec5b0f6b6c66787337687641b44d592fe6e82b0279",
+      "headers": {
+        "contentType": "text/html; charset=utf-8",
+        "cacheControl": "private, no-cache, no-store, max-age=0, must-revalidate",
+        "xRobotsTag": null,
+        "location": null
+      },
+      "headInitial": {
+        "title": "Colección · PokéScan",
+        "description": "Las cartas de tu colección, sus duplicados y su valor de mercado.",
+        "robots": "noindex, nofollow",
+        "og:title": "Colección · PokéScan",
+        "og:description": "Las cartas de tu colección, sus duplicados y su valor de mercado.",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Colección · PokéScan",
+        "twitter:description": "Las cartas de tu colección, sus duplicados y su valor de mercado."
+      },
+      "documentCompleteMetadata": {
+        "title": "Colección · PokéScan",
+        "description": "Las cartas de tu colección, sus duplicados y su valor de mercado.",
+        "robots": "noindex, nofollow",
+        "og:title": "Colección · PokéScan",
+        "og:description": "Las cartas de tu colección, sus duplicados y su valor de mercado.",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Colección · PokéScan",
+        "twitter:description": "Las cartas de tu colección, sus duplicados y su valor de mercado."
+      },
+      "privateMarkerPresent": false,
+      "containsPublicFixtureNames": false,
+      "containsCardFixtureName": false,
+      "routeSanitized": "/colecciones/[collection]"
+    },
+    {
+      "case": "collection-sets",
+      "ua": "normal",
+      "status": 200,
+      "htmlBytes": 92331,
+      "htmlSha256": "06d7929d3b492a84fcbcb7b2364db899cd7a6fa64696de77742e852fe5e4d08f",
+      "headers": {
+        "contentType": "text/html; charset=utf-8",
+        "cacheControl": "private, no-cache, no-store, max-age=0, must-revalidate",
+        "xRobotsTag": null,
+        "location": null
+      },
+      "headInitial": {
+        "title": "Progreso por set · PokéScan",
+        "description": "Cuántas cartas de cada set tenés, cuánto valen y cuáles te faltan.",
+        "robots": "noindex, nofollow",
+        "og:title": "Progreso por set · PokéScan",
+        "og:description": "Cuántas cartas de cada set tenés, cuánto valen y cuáles te faltan.",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Progreso por set · PokéScan",
+        "twitter:description": "Cuántas cartas de cada set tenés, cuánto valen y cuáles te faltan."
+      },
+      "documentCompleteMetadata": {
+        "title": "Progreso por set · PokéScan",
+        "description": "Cuántas cartas de cada set tenés, cuánto valen y cuáles te faltan.",
+        "robots": "noindex, nofollow",
+        "og:title": "Progreso por set · PokéScan",
+        "og:description": "Cuántas cartas de cada set tenés, cuánto valen y cuáles te faltan.",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Progreso por set · PokéScan",
+        "twitter:description": "Cuántas cartas de cada set tenés, cuánto valen y cuáles te faltan."
+      },
+      "privateMarkerPresent": false,
+      "containsPublicFixtureNames": false,
+      "containsCardFixtureName": false,
+      "routeSanitized": "/colecciones/[collection]/sets"
+    },
+    {
+      "case": "collection-sets",
+      "ua": "googlebot",
+      "status": 200,
+      "htmlBytes": 92331,
+      "htmlSha256": "06d7929d3b492a84fcbcb7b2364db899cd7a6fa64696de77742e852fe5e4d08f",
+      "headers": {
+        "contentType": "text/html; charset=utf-8",
+        "cacheControl": "private, no-cache, no-store, max-age=0, must-revalidate",
+        "xRobotsTag": null,
+        "location": null
+      },
+      "headInitial": {
+        "title": "Progreso por set · PokéScan",
+        "description": "Cuántas cartas de cada set tenés, cuánto valen y cuáles te faltan.",
+        "robots": "noindex, nofollow",
+        "og:title": "Progreso por set · PokéScan",
+        "og:description": "Cuántas cartas de cada set tenés, cuánto valen y cuáles te faltan.",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Progreso por set · PokéScan",
+        "twitter:description": "Cuántas cartas de cada set tenés, cuánto valen y cuáles te faltan."
+      },
+      "documentCompleteMetadata": {
+        "title": "Progreso por set · PokéScan",
+        "description": "Cuántas cartas de cada set tenés, cuánto valen y cuáles te faltan.",
+        "robots": "noindex, nofollow",
+        "og:title": "Progreso por set · PokéScan",
+        "og:description": "Cuántas cartas de cada set tenés, cuánto valen y cuáles te faltan.",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Progreso por set · PokéScan",
+        "twitter:description": "Cuántas cartas de cada set tenés, cuánto valen y cuáles te faltan."
+      },
+      "privateMarkerPresent": false,
+      "containsPublicFixtureNames": false,
+      "containsCardFixtureName": false,
+      "routeSanitized": "/colecciones/[collection]/sets"
+    },
+    {
+      "case": "collection-sets",
+      "ua": "twitterbot",
+      "status": 200,
+      "htmlBytes": 92092,
+      "htmlSha256": "0fde17bdba20fab78943492180c6e3f7f4690834efca5ca55eb2e8718e8f32c3",
+      "headers": {
+        "contentType": "text/html; charset=utf-8",
+        "cacheControl": "private, no-cache, no-store, max-age=0, must-revalidate",
+        "xRobotsTag": null,
+        "location": null
+      },
+      "headInitial": {
+        "title": "Progreso por set · PokéScan",
+        "description": "Cuántas cartas de cada set tenés, cuánto valen y cuáles te faltan.",
+        "robots": "noindex, nofollow",
+        "og:title": "Progreso por set · PokéScan",
+        "og:description": "Cuántas cartas de cada set tenés, cuánto valen y cuáles te faltan.",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Progreso por set · PokéScan",
+        "twitter:description": "Cuántas cartas de cada set tenés, cuánto valen y cuáles te faltan."
+      },
+      "documentCompleteMetadata": {
+        "title": "Progreso por set · PokéScan",
+        "description": "Cuántas cartas de cada set tenés, cuánto valen y cuáles te faltan.",
+        "robots": "noindex, nofollow",
+        "og:title": "Progreso por set · PokéScan",
+        "og:description": "Cuántas cartas de cada set tenés, cuánto valen y cuáles te faltan.",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Progreso por set · PokéScan",
+        "twitter:description": "Cuántas cartas de cada set tenés, cuánto valen y cuáles te faltan."
+      },
+      "privateMarkerPresent": false,
+      "containsPublicFixtureNames": false,
+      "containsCardFixtureName": false,
+      "routeSanitized": "/colecciones/[collection]/sets"
+    },
+    {
+      "case": "settings",
+      "ua": "normal",
+      "status": 200,
+      "htmlBytes": 29208,
+      "htmlSha256": "61b513b3a4a038d54da1e4614f8ac6f95201be2cd7331d60b2ee40b8d3f2e8fa",
+      "headers": {
+        "contentType": "text/html; charset=utf-8",
+        "cacheControl": "s-maxage=31536000",
+        "xRobotsTag": null,
+        "location": null
+      },
+      "headInitial": {
+        "title": "Ajustes · PokéScan",
+        "description": "Tu perfil, el tema, la moneda y los enlaces que compartiste.",
+        "robots": "noindex, nofollow",
+        "og:title": "Ajustes · PokéScan",
+        "og:description": "Tu perfil, el tema, la moneda y los enlaces que compartiste.",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Ajustes · PokéScan",
+        "twitter:description": "Tu perfil, el tema, la moneda y los enlaces que compartiste."
+      },
+      "documentCompleteMetadata": {
+        "title": "Ajustes · PokéScan",
+        "description": "Tu perfil, el tema, la moneda y los enlaces que compartiste.",
+        "robots": "noindex, nofollow",
+        "og:title": "Ajustes · PokéScan",
+        "og:description": "Tu perfil, el tema, la moneda y los enlaces que compartiste.",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Ajustes · PokéScan",
+        "twitter:description": "Tu perfil, el tema, la moneda y los enlaces que compartiste."
+      },
+      "privateMarkerPresent": false,
+      "containsPublicFixtureNames": false,
+      "containsCardFixtureName": false,
+      "routeSanitized": "/ajustes"
+    },
+    {
+      "case": "settings",
+      "ua": "googlebot",
+      "status": 200,
+      "htmlBytes": 29208,
+      "htmlSha256": "61b513b3a4a038d54da1e4614f8ac6f95201be2cd7331d60b2ee40b8d3f2e8fa",
+      "headers": {
+        "contentType": "text/html; charset=utf-8",
+        "cacheControl": "s-maxage=31536000",
+        "xRobotsTag": null,
+        "location": null
+      },
+      "headInitial": {
+        "title": "Ajustes · PokéScan",
+        "description": "Tu perfil, el tema, la moneda y los enlaces que compartiste.",
+        "robots": "noindex, nofollow",
+        "og:title": "Ajustes · PokéScan",
+        "og:description": "Tu perfil, el tema, la moneda y los enlaces que compartiste.",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Ajustes · PokéScan",
+        "twitter:description": "Tu perfil, el tema, la moneda y los enlaces que compartiste."
+      },
+      "documentCompleteMetadata": {
+        "title": "Ajustes · PokéScan",
+        "description": "Tu perfil, el tema, la moneda y los enlaces que compartiste.",
+        "robots": "noindex, nofollow",
+        "og:title": "Ajustes · PokéScan",
+        "og:description": "Tu perfil, el tema, la moneda y los enlaces que compartiste.",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Ajustes · PokéScan",
+        "twitter:description": "Tu perfil, el tema, la moneda y los enlaces que compartiste."
+      },
+      "privateMarkerPresent": false,
+      "containsPublicFixtureNames": false,
+      "containsCardFixtureName": false,
+      "routeSanitized": "/ajustes"
+    },
+    {
+      "case": "settings",
+      "ua": "twitterbot",
+      "status": 200,
+      "htmlBytes": 29208,
+      "htmlSha256": "61b513b3a4a038d54da1e4614f8ac6f95201be2cd7331d60b2ee40b8d3f2e8fa",
+      "headers": {
+        "contentType": "text/html; charset=utf-8",
+        "cacheControl": "s-maxage=31536000",
+        "xRobotsTag": null,
+        "location": null
+      },
+      "headInitial": {
+        "title": "Ajustes · PokéScan",
+        "description": "Tu perfil, el tema, la moneda y los enlaces que compartiste.",
+        "robots": "noindex, nofollow",
+        "og:title": "Ajustes · PokéScan",
+        "og:description": "Tu perfil, el tema, la moneda y los enlaces que compartiste.",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Ajustes · PokéScan",
+        "twitter:description": "Tu perfil, el tema, la moneda y los enlaces que compartiste."
+      },
+      "documentCompleteMetadata": {
+        "title": "Ajustes · PokéScan",
+        "description": "Tu perfil, el tema, la moneda y los enlaces que compartiste.",
+        "robots": "noindex, nofollow",
+        "og:title": "Ajustes · PokéScan",
+        "og:description": "Tu perfil, el tema, la moneda y los enlaces que compartiste.",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Ajustes · PokéScan",
+        "twitter:description": "Tu perfil, el tema, la moneda y los enlaces que compartiste."
+      },
+      "privateMarkerPresent": false,
+      "containsPublicFixtureNames": false,
+      "containsCardFixtureName": false,
+      "routeSanitized": "/ajustes"
+    },
+    {
+      "case": "scanner",
+      "ua": "normal",
+      "status": 200,
+      "htmlBytes": 27117,
+      "htmlSha256": "566a0dd298343c2db331eb21d9a7c66dd60280e8babb48796187bdde5889a84a",
+      "headers": {
+        "contentType": "text/html; charset=utf-8",
+        "cacheControl": "s-maxage=31536000",
+        "xRobotsTag": null,
+        "location": null
+      },
+      "headInitial": {
+        "title": "Escanear · PokéScan",
+        "description": "Escaneá una carta con la cámara y agrejala a tu colección al instante.",
+        "robots": "noindex, nofollow",
+        "og:title": "Escanear · PokéScan",
+        "og:description": "Escaneá una carta con la cámara y agrejala a tu colección al instante.",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Escanear · PokéScan",
+        "twitter:description": "Escaneá una carta con la cámara y agrejala a tu colección al instante."
+      },
+      "documentCompleteMetadata": {
+        "title": "Escanear · PokéScan",
+        "description": "Escaneá una carta con la cámara y agrejala a tu colección al instante.",
+        "robots": "noindex, nofollow",
+        "og:title": "Escanear · PokéScan",
+        "og:description": "Escaneá una carta con la cámara y agrejala a tu colección al instante.",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Escanear · PokéScan",
+        "twitter:description": "Escaneá una carta con la cámara y agrejala a tu colección al instante."
+      },
+      "privateMarkerPresent": false,
+      "containsPublicFixtureNames": false,
+      "containsCardFixtureName": false,
+      "routeSanitized": "/escanear"
+    },
+    {
+      "case": "scanner",
+      "ua": "googlebot",
+      "status": 200,
+      "htmlBytes": 27117,
+      "htmlSha256": "566a0dd298343c2db331eb21d9a7c66dd60280e8babb48796187bdde5889a84a",
+      "headers": {
+        "contentType": "text/html; charset=utf-8",
+        "cacheControl": "s-maxage=31536000",
+        "xRobotsTag": null,
+        "location": null
+      },
+      "headInitial": {
+        "title": "Escanear · PokéScan",
+        "description": "Escaneá una carta con la cámara y agrejala a tu colección al instante.",
+        "robots": "noindex, nofollow",
+        "og:title": "Escanear · PokéScan",
+        "og:description": "Escaneá una carta con la cámara y agrejala a tu colección al instante.",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Escanear · PokéScan",
+        "twitter:description": "Escaneá una carta con la cámara y agrejala a tu colección al instante."
+      },
+      "documentCompleteMetadata": {
+        "title": "Escanear · PokéScan",
+        "description": "Escaneá una carta con la cámara y agrejala a tu colección al instante.",
+        "robots": "noindex, nofollow",
+        "og:title": "Escanear · PokéScan",
+        "og:description": "Escaneá una carta con la cámara y agrejala a tu colección al instante.",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Escanear · PokéScan",
+        "twitter:description": "Escaneá una carta con la cámara y agrejala a tu colección al instante."
+      },
+      "privateMarkerPresent": false,
+      "containsPublicFixtureNames": false,
+      "containsCardFixtureName": false,
+      "routeSanitized": "/escanear"
+    },
+    {
+      "case": "scanner",
+      "ua": "twitterbot",
+      "status": 200,
+      "htmlBytes": 27117,
+      "htmlSha256": "566a0dd298343c2db331eb21d9a7c66dd60280e8babb48796187bdde5889a84a",
+      "headers": {
+        "contentType": "text/html; charset=utf-8",
+        "cacheControl": "s-maxage=31536000",
+        "xRobotsTag": null,
+        "location": null
+      },
+      "headInitial": {
+        "title": "Escanear · PokéScan",
+        "description": "Escaneá una carta con la cámara y agrejala a tu colección al instante.",
+        "robots": "noindex, nofollow",
+        "og:title": "Escanear · PokéScan",
+        "og:description": "Escaneá una carta con la cámara y agrejala a tu colección al instante.",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Escanear · PokéScan",
+        "twitter:description": "Escaneá una carta con la cámara y agrejala a tu colección al instante."
+      },
+      "documentCompleteMetadata": {
+        "title": "Escanear · PokéScan",
+        "description": "Escaneá una carta con la cámara y agrejala a tu colección al instante.",
+        "robots": "noindex, nofollow",
+        "og:title": "Escanear · PokéScan",
+        "og:description": "Escaneá una carta con la cámara y agrejala a tu colección al instante.",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Escanear · PokéScan",
+        "twitter:description": "Escaneá una carta con la cámara y agrejala a tu colección al instante."
+      },
+      "privateMarkerPresent": false,
+      "containsPublicFixtureNames": false,
+      "containsCardFixtureName": false,
+      "routeSanitized": "/escanear"
+    },
+    {
+      "case": "login",
+      "ua": "normal",
+      "status": 200,
+      "htmlBytes": 21438,
+      "htmlSha256": "644f310be6eb1646ded172c2fa7a4409b85f7a9af762ed9ba0ea1bf3fbde3a37",
+      "headers": {
+        "contentType": "text/html; charset=utf-8",
+        "cacheControl": "private, no-cache, no-store, max-age=0, must-revalidate",
+        "xRobotsTag": null,
+        "location": null
+      },
+      "headInitial": {
+        "title": "Iniciar sesión · PokéScan",
+        "description": "Entrá a tu cuenta de PokéScan para ver tus colecciones y el valor de tus cartas.",
+        "robots": "noindex, nofollow",
+        "og:title": "Iniciar sesión · PokéScan",
+        "og:description": "Entrá a tu cuenta de PokéScan para ver tus colecciones y el valor de tus cartas.",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Iniciar sesión · PokéScan",
+        "twitter:description": "Entrá a tu cuenta de PokéScan para ver tus colecciones y el valor de tus cartas."
+      },
+      "documentCompleteMetadata": {
+        "title": "Iniciar sesión · PokéScan",
+        "description": "Entrá a tu cuenta de PokéScan para ver tus colecciones y el valor de tus cartas.",
+        "robots": "noindex, nofollow",
+        "og:title": "Iniciar sesión · PokéScan",
+        "og:description": "Entrá a tu cuenta de PokéScan para ver tus colecciones y el valor de tus cartas.",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Iniciar sesión · PokéScan",
+        "twitter:description": "Entrá a tu cuenta de PokéScan para ver tus colecciones y el valor de tus cartas."
+      },
+      "privateMarkerPresent": false,
+      "containsPublicFixtureNames": false,
+      "containsCardFixtureName": false,
+      "routeSanitized": "/login"
+    },
+    {
+      "case": "login",
+      "ua": "googlebot",
+      "status": 200,
+      "htmlBytes": 21438,
+      "htmlSha256": "644f310be6eb1646ded172c2fa7a4409b85f7a9af762ed9ba0ea1bf3fbde3a37",
+      "headers": {
+        "contentType": "text/html; charset=utf-8",
+        "cacheControl": "private, no-cache, no-store, max-age=0, must-revalidate",
+        "xRobotsTag": null,
+        "location": null
+      },
+      "headInitial": {
+        "title": "Iniciar sesión · PokéScan",
+        "description": "Entrá a tu cuenta de PokéScan para ver tus colecciones y el valor de tus cartas.",
+        "robots": "noindex, nofollow",
+        "og:title": "Iniciar sesión · PokéScan",
+        "og:description": "Entrá a tu cuenta de PokéScan para ver tus colecciones y el valor de tus cartas.",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Iniciar sesión · PokéScan",
+        "twitter:description": "Entrá a tu cuenta de PokéScan para ver tus colecciones y el valor de tus cartas."
+      },
+      "documentCompleteMetadata": {
+        "title": "Iniciar sesión · PokéScan",
+        "description": "Entrá a tu cuenta de PokéScan para ver tus colecciones y el valor de tus cartas.",
+        "robots": "noindex, nofollow",
+        "og:title": "Iniciar sesión · PokéScan",
+        "og:description": "Entrá a tu cuenta de PokéScan para ver tus colecciones y el valor de tus cartas.",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Iniciar sesión · PokéScan",
+        "twitter:description": "Entrá a tu cuenta de PokéScan para ver tus colecciones y el valor de tus cartas."
+      },
+      "privateMarkerPresent": false,
+      "containsPublicFixtureNames": false,
+      "containsCardFixtureName": false,
+      "routeSanitized": "/login"
+    },
+    {
+      "case": "login",
+      "ua": "twitterbot",
+      "status": 200,
+      "htmlBytes": 21175,
+      "htmlSha256": "bbf193eb5417a98ab42ed06b2bc015f15113e8911cff93122d8e1161dbc08373",
+      "headers": {
+        "contentType": "text/html; charset=utf-8",
+        "cacheControl": "private, no-cache, no-store, max-age=0, must-revalidate",
+        "xRobotsTag": null,
+        "location": null
+      },
+      "headInitial": {
+        "title": "Iniciar sesión · PokéScan",
+        "description": "Entrá a tu cuenta de PokéScan para ver tus colecciones y el valor de tus cartas.",
+        "robots": "noindex, nofollow",
+        "og:title": "Iniciar sesión · PokéScan",
+        "og:description": "Entrá a tu cuenta de PokéScan para ver tus colecciones y el valor de tus cartas.",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Iniciar sesión · PokéScan",
+        "twitter:description": "Entrá a tu cuenta de PokéScan para ver tus colecciones y el valor de tus cartas."
+      },
+      "documentCompleteMetadata": {
+        "title": "Iniciar sesión · PokéScan",
+        "description": "Entrá a tu cuenta de PokéScan para ver tus colecciones y el valor de tus cartas.",
+        "robots": "noindex, nofollow",
+        "og:title": "Iniciar sesión · PokéScan",
+        "og:description": "Entrá a tu cuenta de PokéScan para ver tus colecciones y el valor de tus cartas.",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Iniciar sesión · PokéScan",
+        "twitter:description": "Entrá a tu cuenta de PokéScan para ver tus colecciones y el valor de tus cartas."
+      },
+      "privateMarkerPresent": false,
+      "containsPublicFixtureNames": false,
+      "containsCardFixtureName": false,
+      "routeSanitized": "/login"
+    },
+    {
+      "case": "register",
+      "ua": "normal",
+      "status": 200,
+      "htmlBytes": 25989,
+      "htmlSha256": "fecc2e84fa7691156289731439f3d4cd596d6c91dfc9e0970ab0ca6052a84f72",
+      "headers": {
+        "contentType": "text/html; charset=utf-8",
+        "cacheControl": "s-maxage=31536000",
+        "xRobotsTag": null,
+        "location": null
+      },
+      "headInitial": {
+        "title": "Crear cuenta · PokéScan",
+        "description": "Creá tu cuenta de PokéScan para escanear cartas y armar tu colección.",
+        "robots": "noindex, nofollow",
+        "og:title": "Crear cuenta · PokéScan",
+        "og:description": "Creá tu cuenta de PokéScan para escanear cartas y armar tu colección.",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Crear cuenta · PokéScan",
+        "twitter:description": "Creá tu cuenta de PokéScan para escanear cartas y armar tu colección."
+      },
+      "documentCompleteMetadata": {
+        "title": "Crear cuenta · PokéScan",
+        "description": "Creá tu cuenta de PokéScan para escanear cartas y armar tu colección.",
+        "robots": "noindex, nofollow",
+        "og:title": "Crear cuenta · PokéScan",
+        "og:description": "Creá tu cuenta de PokéScan para escanear cartas y armar tu colección.",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Crear cuenta · PokéScan",
+        "twitter:description": "Creá tu cuenta de PokéScan para escanear cartas y armar tu colección."
+      },
+      "privateMarkerPresent": false,
+      "containsPublicFixtureNames": false,
+      "containsCardFixtureName": false,
+      "routeSanitized": "/registro"
+    },
+    {
+      "case": "register",
+      "ua": "googlebot",
+      "status": 200,
+      "htmlBytes": 25989,
+      "htmlSha256": "fecc2e84fa7691156289731439f3d4cd596d6c91dfc9e0970ab0ca6052a84f72",
+      "headers": {
+        "contentType": "text/html; charset=utf-8",
+        "cacheControl": "s-maxage=31536000",
+        "xRobotsTag": null,
+        "location": null
+      },
+      "headInitial": {
+        "title": "Crear cuenta · PokéScan",
+        "description": "Creá tu cuenta de PokéScan para escanear cartas y armar tu colección.",
+        "robots": "noindex, nofollow",
+        "og:title": "Crear cuenta · PokéScan",
+        "og:description": "Creá tu cuenta de PokéScan para escanear cartas y armar tu colección.",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Crear cuenta · PokéScan",
+        "twitter:description": "Creá tu cuenta de PokéScan para escanear cartas y armar tu colección."
+      },
+      "documentCompleteMetadata": {
+        "title": "Crear cuenta · PokéScan",
+        "description": "Creá tu cuenta de PokéScan para escanear cartas y armar tu colección.",
+        "robots": "noindex, nofollow",
+        "og:title": "Crear cuenta · PokéScan",
+        "og:description": "Creá tu cuenta de PokéScan para escanear cartas y armar tu colección.",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Crear cuenta · PokéScan",
+        "twitter:description": "Creá tu cuenta de PokéScan para escanear cartas y armar tu colección."
+      },
+      "privateMarkerPresent": false,
+      "containsPublicFixtureNames": false,
+      "containsCardFixtureName": false,
+      "routeSanitized": "/registro"
+    },
+    {
+      "case": "register",
+      "ua": "twitterbot",
+      "status": 200,
+      "htmlBytes": 25989,
+      "htmlSha256": "fecc2e84fa7691156289731439f3d4cd596d6c91dfc9e0970ab0ca6052a84f72",
+      "headers": {
+        "contentType": "text/html; charset=utf-8",
+        "cacheControl": "s-maxage=31536000",
+        "xRobotsTag": null,
+        "location": null
+      },
+      "headInitial": {
+        "title": "Crear cuenta · PokéScan",
+        "description": "Creá tu cuenta de PokéScan para escanear cartas y armar tu colección.",
+        "robots": "noindex, nofollow",
+        "og:title": "Crear cuenta · PokéScan",
+        "og:description": "Creá tu cuenta de PokéScan para escanear cartas y armar tu colección.",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Crear cuenta · PokéScan",
+        "twitter:description": "Creá tu cuenta de PokéScan para escanear cartas y armar tu colección."
+      },
+      "documentCompleteMetadata": {
+        "title": "Crear cuenta · PokéScan",
+        "description": "Creá tu cuenta de PokéScan para escanear cartas y armar tu colección.",
+        "robots": "noindex, nofollow",
+        "og:title": "Crear cuenta · PokéScan",
+        "og:description": "Creá tu cuenta de PokéScan para escanear cartas y armar tu colección.",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Crear cuenta · PokéScan",
+        "twitter:description": "Creá tu cuenta de PokéScan para escanear cartas y armar tu colección."
+      },
+      "privateMarkerPresent": false,
+      "containsPublicFixtureNames": false,
+      "containsCardFixtureName": false,
+      "routeSanitized": "/registro"
+    },
+    {
+      "case": "share-active",
+      "ua": "normal",
+      "status": 200,
+      "htmlBytes": 48888,
+      "htmlSha256": "720c0798524aceb99fbdf6798cdeeafa5e32f7e829acaa2a5cf341210a08f956",
+      "headers": {
+        "contentType": "text/html; charset=utf-8",
+        "cacheControl": "private, no-cache, no-store, max-age=0, must-revalidate",
+        "xRobotsTag": null,
+        "location": null
+      },
+      "headInitial": {},
+      "documentCompleteMetadata": {
+        "title": "Colección sintética SEO · Coleccionista sintético SEO · PokéScan",
+        "description": "Colección de cartas Pokémon de Coleccionista sintético SEO: 1 grupo en 1 set, valor de referencia USD $[precio fixture]0 (1 de 1 grupos con referencia).",
+        "robots": "noindex, nofollow",
+        "og:title": "Colección sintética SEO · Coleccionista sintético SEO",
+        "og:description": "Colección de cartas Pokémon de Coleccionista sintético SEO: 1 grupo en 1 set, valor de referencia USD $[precio fixture]0 (1 de 1 grupos con referencia).",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Colección sintética SEO · Coleccionista sintético SEO",
+        "twitter:description": "Colección de cartas Pokémon de Coleccionista sintético SEO: 1 grupo en 1 set, valor de referencia USD $[precio fixture]0 (1 de 1 grupos con referencia)."
+      },
+      "privateMarkerPresent": false,
+      "containsPublicFixtureNames": true,
+      "containsCardFixtureName": true,
+      "routeSanitized": "/share/[share-active]"
+    },
+    {
+      "case": "share-active",
+      "ua": "googlebot",
+      "status": 200,
+      "htmlBytes": 48888,
+      "htmlSha256": "720c0798524aceb99fbdf6798cdeeafa5e32f7e829acaa2a5cf341210a08f956",
+      "headers": {
+        "contentType": "text/html; charset=utf-8",
+        "cacheControl": "private, no-cache, no-store, max-age=0, must-revalidate",
+        "xRobotsTag": null,
+        "location": null
+      },
+      "headInitial": {},
+      "documentCompleteMetadata": {
+        "title": "Colección sintética SEO · Coleccionista sintético SEO · PokéScan",
+        "description": "Colección de cartas Pokémon de Coleccionista sintético SEO: 1 grupo en 1 set, valor de referencia USD $[precio fixture]0 (1 de 1 grupos con referencia).",
+        "robots": "noindex, nofollow",
+        "og:title": "Colección sintética SEO · Coleccionista sintético SEO",
+        "og:description": "Colección de cartas Pokémon de Coleccionista sintético SEO: 1 grupo en 1 set, valor de referencia USD $[precio fixture]0 (1 de 1 grupos con referencia).",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Colección sintética SEO · Coleccionista sintético SEO",
+        "twitter:description": "Colección de cartas Pokémon de Coleccionista sintético SEO: 1 grupo en 1 set, valor de referencia USD $[precio fixture]0 (1 de 1 grupos con referencia)."
+      },
+      "privateMarkerPresent": false,
+      "containsPublicFixtureNames": true,
+      "containsCardFixtureName": true,
+      "routeSanitized": "/share/[share-active]"
+    },
+    {
+      "case": "share-active",
+      "ua": "twitterbot",
+      "status": 200,
+      "htmlBytes": 47926,
+      "htmlSha256": "554ec251e15cfd5dea0d7111a1ae505c3bff9ab9bb41c48ba3a4c5e0d74a6069",
+      "headers": {
+        "contentType": "text/html; charset=utf-8",
+        "cacheControl": "private, no-cache, no-store, max-age=0, must-revalidate",
+        "xRobotsTag": null,
+        "location": null
+      },
+      "headInitial": {
+        "title": "Colección sintética SEO · Coleccionista sintético SEO · PokéScan",
+        "description": "Colección de cartas Pokémon de Coleccionista sintético SEO: 1 grupo en 1 set, valor de referencia USD $[precio fixture]0 (1 de 1 grupos con referencia).",
+        "robots": "noindex, nofollow",
+        "og:title": "Colección sintética SEO · Coleccionista sintético SEO",
+        "og:description": "Colección de cartas Pokémon de Coleccionista sintético SEO: 1 grupo en 1 set, valor de referencia USD $[precio fixture]0 (1 de 1 grupos con referencia).",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Colección sintética SEO · Coleccionista sintético SEO",
+        "twitter:description": "Colección de cartas Pokémon de Coleccionista sintético SEO: 1 grupo en 1 set, valor de referencia USD $[precio fixture]0 (1 de 1 grupos con referencia)."
+      },
+      "documentCompleteMetadata": {
+        "title": "Colección sintética SEO · Coleccionista sintético SEO · PokéScan",
+        "description": "Colección de cartas Pokémon de Coleccionista sintético SEO: 1 grupo en 1 set, valor de referencia USD $[precio fixture]0 (1 de 1 grupos con referencia).",
+        "robots": "noindex, nofollow",
+        "og:title": "Colección sintética SEO · Coleccionista sintético SEO",
+        "og:description": "Colección de cartas Pokémon de Coleccionista sintético SEO: 1 grupo en 1 set, valor de referencia USD $[precio fixture]0 (1 de 1 grupos con referencia).",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Colección sintética SEO · Coleccionista sintético SEO",
+        "twitter:description": "Colección de cartas Pokémon de Coleccionista sintético SEO: 1 grupo en 1 set, valor de referencia USD $[precio fixture]0 (1 de 1 grupos con referencia)."
+      },
+      "privateMarkerPresent": false,
+      "containsPublicFixtureNames": true,
+      "containsCardFixtureName": true,
+      "routeSanitized": "/share/[share-active]"
+    },
+    {
+      "case": "share-revoked",
+      "ua": "normal",
+      "status": 200,
+      "htmlBytes": 25748,
+      "htmlSha256": "8a9e2441db1c1bbfc979ba368b8b4b3557b0d1396611725bc27d2e1d3f3c9605",
+      "headers": {
+        "contentType": "text/html; charset=utf-8",
+        "cacheControl": "private, no-cache, no-store, max-age=0, must-revalidate",
+        "xRobotsTag": null,
+        "location": null
+      },
+      "headInitial": {},
+      "documentCompleteMetadata": {
+        "title": "Colección compartida · PokéScan",
+        "robots": [
+          "noindex",
+          "noindex, nofollow"
+        ],
+        "description": "Escaneá tus cartas Pokémon, mirá su valor y compartí tu colección",
+        "og:title": "Colección compartida · PokéScan",
+        "og:description": "Escaneá tus cartas Pokémon, mirá su valor y compartí tu colección",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Colección compartida · PokéScan",
+        "twitter:description": "Escaneá tus cartas Pokémon, mirá su valor y compartí tu colección"
+      },
+      "privateMarkerPresent": false,
+      "containsPublicFixtureNames": false,
+      "containsCardFixtureName": false,
+      "routeSanitized": "/share/[share-revoked]"
+    },
+    {
+      "case": "share-revoked",
+      "ua": "googlebot",
+      "status": 200,
+      "htmlBytes": 25748,
+      "htmlSha256": "8a9e2441db1c1bbfc979ba368b8b4b3557b0d1396611725bc27d2e1d3f3c9605",
+      "headers": {
+        "contentType": "text/html; charset=utf-8",
+        "cacheControl": "private, no-cache, no-store, max-age=0, must-revalidate",
+        "xRobotsTag": null,
+        "location": null
+      },
+      "headInitial": {},
+      "documentCompleteMetadata": {
+        "title": "Colección compartida · PokéScan",
+        "robots": [
+          "noindex",
+          "noindex, nofollow"
+        ],
+        "description": "Escaneá tus cartas Pokémon, mirá su valor y compartí tu colección",
+        "og:title": "Colección compartida · PokéScan",
+        "og:description": "Escaneá tus cartas Pokémon, mirá su valor y compartí tu colección",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Colección compartida · PokéScan",
+        "twitter:description": "Escaneá tus cartas Pokémon, mirá su valor y compartí tu colección"
+      },
+      "privateMarkerPresent": false,
+      "containsPublicFixtureNames": false,
+      "containsCardFixtureName": false,
+      "routeSanitized": "/share/[share-revoked]"
+    },
+    {
+      "case": "share-revoked",
+      "ua": "twitterbot",
+      "status": 200,
+      "htmlBytes": 23925,
+      "htmlSha256": "dd130eb593d02fe75f59ea7838e0dbc65177253205bb84ebcc809c21a7bccc86",
+      "headers": {
+        "contentType": "text/html; charset=utf-8",
+        "cacheControl": "private, no-cache, no-store, max-age=0, must-revalidate",
+        "xRobotsTag": null,
+        "location": null
+      },
+      "headInitial": {
+        "title": "Colección compartida · PokéScan",
+        "description": "Escaneá tus cartas Pokémon, mirá su valor y compartí tu colección",
+        "robots": [
+          "noindex, nofollow",
+          "noindex"
+        ],
+        "og:title": "Colección compartida · PokéScan",
+        "og:description": "Escaneá tus cartas Pokémon, mirá su valor y compartí tu colección",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Colección compartida · PokéScan",
+        "twitter:description": "Escaneá tus cartas Pokémon, mirá su valor y compartí tu colección"
+      },
+      "documentCompleteMetadata": {
+        "title": "Colección compartida · PokéScan",
+        "description": "Escaneá tus cartas Pokémon, mirá su valor y compartí tu colección",
+        "robots": [
+          "noindex, nofollow",
+          "noindex"
+        ],
+        "og:title": "Colección compartida · PokéScan",
+        "og:description": "Escaneá tus cartas Pokémon, mirá su valor y compartí tu colección",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Colección compartida · PokéScan",
+        "twitter:description": "Escaneá tus cartas Pokémon, mirá su valor y compartí tu colección"
+      },
+      "privateMarkerPresent": false,
+      "containsPublicFixtureNames": false,
+      "containsCardFixtureName": false,
+      "routeSanitized": "/share/[share-revoked]"
+    },
+    {
+      "case": "share-expired",
+      "ua": "normal",
+      "status": 200,
+      "htmlBytes": 25748,
+      "htmlSha256": "7a7fc5deab3527546c01db8afaadd368e6f26ffc88cc1868108e4d20447da9c6",
+      "headers": {
+        "contentType": "text/html; charset=utf-8",
+        "cacheControl": "private, no-cache, no-store, max-age=0, must-revalidate",
+        "xRobotsTag": null,
+        "location": null
+      },
+      "headInitial": {},
+      "documentCompleteMetadata": {
+        "title": "Colección compartida · PokéScan",
+        "robots": [
+          "noindex",
+          "noindex, nofollow"
+        ],
+        "description": "Escaneá tus cartas Pokémon, mirá su valor y compartí tu colección",
+        "og:title": "Colección compartida · PokéScan",
+        "og:description": "Escaneá tus cartas Pokémon, mirá su valor y compartí tu colección",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Colección compartida · PokéScan",
+        "twitter:description": "Escaneá tus cartas Pokémon, mirá su valor y compartí tu colección"
+      },
+      "privateMarkerPresent": false,
+      "containsPublicFixtureNames": false,
+      "containsCardFixtureName": false,
+      "routeSanitized": "/share/[share-expired]"
+    },
+    {
+      "case": "share-expired",
+      "ua": "googlebot",
+      "status": 200,
+      "htmlBytes": 25748,
+      "htmlSha256": "7a7fc5deab3527546c01db8afaadd368e6f26ffc88cc1868108e4d20447da9c6",
+      "headers": {
+        "contentType": "text/html; charset=utf-8",
+        "cacheControl": "private, no-cache, no-store, max-age=0, must-revalidate",
+        "xRobotsTag": null,
+        "location": null
+      },
+      "headInitial": {},
+      "documentCompleteMetadata": {
+        "title": "Colección compartida · PokéScan",
+        "robots": [
+          "noindex",
+          "noindex, nofollow"
+        ],
+        "description": "Escaneá tus cartas Pokémon, mirá su valor y compartí tu colección",
+        "og:title": "Colección compartida · PokéScan",
+        "og:description": "Escaneá tus cartas Pokémon, mirá su valor y compartí tu colección",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Colección compartida · PokéScan",
+        "twitter:description": "Escaneá tus cartas Pokémon, mirá su valor y compartí tu colección"
+      },
+      "privateMarkerPresent": false,
+      "containsPublicFixtureNames": false,
+      "containsCardFixtureName": false,
+      "routeSanitized": "/share/[share-expired]"
+    },
+    {
+      "case": "share-expired",
+      "ua": "twitterbot",
+      "status": 200,
+      "htmlBytes": 23925,
+      "htmlSha256": "69d64a3b72ee16a31b0d56dcc44678ece524cfe78583e3a113703522aa9d5ad4",
+      "headers": {
+        "contentType": "text/html; charset=utf-8",
+        "cacheControl": "private, no-cache, no-store, max-age=0, must-revalidate",
+        "xRobotsTag": null,
+        "location": null
+      },
+      "headInitial": {
+        "title": "Colección compartida · PokéScan",
+        "description": "Escaneá tus cartas Pokémon, mirá su valor y compartí tu colección",
+        "robots": [
+          "noindex, nofollow",
+          "noindex"
+        ],
+        "og:title": "Colección compartida · PokéScan",
+        "og:description": "Escaneá tus cartas Pokémon, mirá su valor y compartí tu colección",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Colección compartida · PokéScan",
+        "twitter:description": "Escaneá tus cartas Pokémon, mirá su valor y compartí tu colección"
+      },
+      "documentCompleteMetadata": {
+        "title": "Colección compartida · PokéScan",
+        "description": "Escaneá tus cartas Pokémon, mirá su valor y compartí tu colección",
+        "robots": [
+          "noindex, nofollow",
+          "noindex"
+        ],
+        "og:title": "Colección compartida · PokéScan",
+        "og:description": "Escaneá tus cartas Pokémon, mirá su valor y compartí tu colección",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Colección compartida · PokéScan",
+        "twitter:description": "Escaneá tus cartas Pokémon, mirá su valor y compartí tu colección"
+      },
+      "privateMarkerPresent": false,
+      "containsPublicFixtureNames": false,
+      "containsCardFixtureName": false,
+      "routeSanitized": "/share/[share-expired]"
+    },
+    {
+      "case": "share-missing",
+      "ua": "normal",
+      "status": 200,
+      "htmlBytes": 25793,
+      "htmlSha256": "fee2905b4e8e36186ca0a63e4664fa7cd8cbee2c76ff82e8dbb1657250a3ed42",
+      "headers": {
+        "contentType": "text/html; charset=utf-8",
+        "cacheControl": "private, no-cache, no-store, max-age=0, must-revalidate",
+        "xRobotsTag": null,
+        "location": null
+      },
+      "headInitial": {},
+      "documentCompleteMetadata": {
+        "title": "Colección compartida · PokéScan",
+        "robots": [
+          "noindex",
+          "noindex, nofollow"
+        ],
+        "description": "Escaneá tus cartas Pokémon, mirá su valor y compartí tu colección",
+        "og:title": "Colección compartida · PokéScan",
+        "og:description": "Escaneá tus cartas Pokémon, mirá su valor y compartí tu colección",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Colección compartida · PokéScan",
+        "twitter:description": "Escaneá tus cartas Pokémon, mirá su valor y compartí tu colección"
+      },
+      "privateMarkerPresent": false,
+      "containsPublicFixtureNames": false,
+      "containsCardFixtureName": false,
+      "routeSanitized": "/share/[share-missing]"
+    },
+    {
+      "case": "share-missing",
+      "ua": "googlebot",
+      "status": 200,
+      "htmlBytes": 25793,
+      "htmlSha256": "fee2905b4e8e36186ca0a63e4664fa7cd8cbee2c76ff82e8dbb1657250a3ed42",
+      "headers": {
+        "contentType": "text/html; charset=utf-8",
+        "cacheControl": "private, no-cache, no-store, max-age=0, must-revalidate",
+        "xRobotsTag": null,
+        "location": null
+      },
+      "headInitial": {},
+      "documentCompleteMetadata": {
+        "title": "Colección compartida · PokéScan",
+        "robots": [
+          "noindex",
+          "noindex, nofollow"
+        ],
+        "description": "Escaneá tus cartas Pokémon, mirá su valor y compartí tu colección",
+        "og:title": "Colección compartida · PokéScan",
+        "og:description": "Escaneá tus cartas Pokémon, mirá su valor y compartí tu colección",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Colección compartida · PokéScan",
+        "twitter:description": "Escaneá tus cartas Pokémon, mirá su valor y compartí tu colección"
+      },
+      "privateMarkerPresent": false,
+      "containsPublicFixtureNames": false,
+      "containsCardFixtureName": false,
+      "routeSanitized": "/share/[share-missing]"
+    },
+    {
+      "case": "share-missing",
+      "ua": "twitterbot",
+      "status": 200,
+      "htmlBytes": 23970,
+      "htmlSha256": "bd79eb35cee801ca4bb6c0f0ec9f0d8975ce485082483c56343f9ab4d0193688",
+      "headers": {
+        "contentType": "text/html; charset=utf-8",
+        "cacheControl": "private, no-cache, no-store, max-age=0, must-revalidate",
+        "xRobotsTag": null,
+        "location": null
+      },
+      "headInitial": {
+        "title": "Colección compartida · PokéScan",
+        "description": "Escaneá tus cartas Pokémon, mirá su valor y compartí tu colección",
+        "robots": [
+          "noindex, nofollow",
+          "noindex"
+        ],
+        "og:title": "Colección compartida · PokéScan",
+        "og:description": "Escaneá tus cartas Pokémon, mirá su valor y compartí tu colección",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Colección compartida · PokéScan",
+        "twitter:description": "Escaneá tus cartas Pokémon, mirá su valor y compartí tu colección"
+      },
+      "documentCompleteMetadata": {
+        "title": "Colección compartida · PokéScan",
+        "description": "Escaneá tus cartas Pokémon, mirá su valor y compartí tu colección",
+        "robots": [
+          "noindex, nofollow",
+          "noindex"
+        ],
+        "og:title": "Colección compartida · PokéScan",
+        "og:description": "Escaneá tus cartas Pokémon, mirá su valor y compartí tu colección",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Colección compartida · PokéScan",
+        "twitter:description": "Escaneá tus cartas Pokémon, mirá su valor y compartí tu colección"
+      },
+      "privateMarkerPresent": false,
+      "containsPublicFixtureNames": false,
+      "containsCardFixtureName": false,
+      "routeSanitized": "/share/[share-missing]"
+    },
+    {
+      "case": "unknown",
+      "ua": "normal",
+      "status": 404,
+      "htmlBytes": 15535,
+      "htmlSha256": "57e7c869e8936fd197bd47eb49739085a6e48cdce923fce4be2d359e9eb8e33e",
+      "headers": {
+        "contentType": "text/html; charset=utf-8",
+        "cacheControl": "private, no-cache, no-store, max-age=0, must-revalidate",
+        "xRobotsTag": null,
+        "location": null
+      },
+      "headInitial": {
+        "title": "PokéScan",
+        "robots": "noindex",
+        "description": "Escaneá tus cartas Pokémon, mirá su valor y compartí tu colección",
+        "og:title": "PokéScan",
+        "og:description": "Escaneá tus cartas Pokémon, mirá su valor y compartí tu colección",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "PokéScan",
+        "twitter:description": "Escaneá tus cartas Pokémon, mirá su valor y compartí tu colección"
+      },
+      "documentCompleteMetadata": {
+        "title": "PokéScan",
+        "robots": "noindex",
+        "description": "Escaneá tus cartas Pokémon, mirá su valor y compartí tu colección",
+        "og:title": "PokéScan",
+        "og:description": "Escaneá tus cartas Pokémon, mirá su valor y compartí tu colección",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "PokéScan",
+        "twitter:description": "Escaneá tus cartas Pokémon, mirá su valor y compartí tu colección"
+      },
+      "privateMarkerPresent": false,
+      "containsPublicFixtureNames": false,
+      "containsCardFixtureName": false,
+      "routeSanitized": "/[unknown-route]"
+    },
+    {
+      "case": "unknown",
+      "ua": "googlebot",
+      "status": 404,
+      "htmlBytes": 15535,
+      "htmlSha256": "57e7c869e8936fd197bd47eb49739085a6e48cdce923fce4be2d359e9eb8e33e",
+      "headers": {
+        "contentType": "text/html; charset=utf-8",
+        "cacheControl": "private, no-cache, no-store, max-age=0, must-revalidate",
+        "xRobotsTag": null,
+        "location": null
+      },
+      "headInitial": {
+        "title": "PokéScan",
+        "robots": "noindex",
+        "description": "Escaneá tus cartas Pokémon, mirá su valor y compartí tu colección",
+        "og:title": "PokéScan",
+        "og:description": "Escaneá tus cartas Pokémon, mirá su valor y compartí tu colección",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "PokéScan",
+        "twitter:description": "Escaneá tus cartas Pokémon, mirá su valor y compartí tu colección"
+      },
+      "documentCompleteMetadata": {
+        "title": "PokéScan",
+        "robots": "noindex",
+        "description": "Escaneá tus cartas Pokémon, mirá su valor y compartí tu colección",
+        "og:title": "PokéScan",
+        "og:description": "Escaneá tus cartas Pokémon, mirá su valor y compartí tu colección",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "PokéScan",
+        "twitter:description": "Escaneá tus cartas Pokémon, mirá su valor y compartí tu colección"
+      },
+      "privateMarkerPresent": false,
+      "containsPublicFixtureNames": false,
+      "containsCardFixtureName": false,
+      "routeSanitized": "/[unknown-route]"
+    },
+    {
+      "case": "unknown",
+      "ua": "twitterbot",
+      "status": 404,
+      "htmlBytes": 15535,
+      "htmlSha256": "57e7c869e8936fd197bd47eb49739085a6e48cdce923fce4be2d359e9eb8e33e",
+      "headers": {
+        "contentType": "text/html; charset=utf-8",
+        "cacheControl": "private, no-cache, no-store, max-age=0, must-revalidate",
+        "xRobotsTag": null,
+        "location": null
+      },
+      "headInitial": {
+        "title": "PokéScan",
+        "robots": "noindex",
+        "description": "Escaneá tus cartas Pokémon, mirá su valor y compartí tu colección",
+        "og:title": "PokéScan",
+        "og:description": "Escaneá tus cartas Pokémon, mirá su valor y compartí tu colección",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "PokéScan",
+        "twitter:description": "Escaneá tus cartas Pokémon, mirá su valor y compartí tu colección"
+      },
+      "documentCompleteMetadata": {
+        "title": "PokéScan",
+        "robots": "noindex",
+        "description": "Escaneá tus cartas Pokémon, mirá su valor y compartí tu colección",
+        "og:title": "PokéScan",
+        "og:description": "Escaneá tus cartas Pokémon, mirá su valor y compartí tu colección",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "PokéScan",
+        "twitter:description": "Escaneá tus cartas Pokémon, mirá su valor y compartí tu colección"
+      },
+      "privateMarkerPresent": false,
+      "containsPublicFixtureNames": false,
+      "containsCardFixtureName": false,
+      "routeSanitized": "/[unknown-route]"
+    },
+    {
+      "case": "robots",
+      "ua": "normal",
+      "status": 200,
+      "htmlBytes": 66,
+      "htmlSha256": "23b11d5bb2b04b016ae83427fdf9a85b0b732cd7dfd6834bac379893d9c301eb",
+      "headers": {
+        "contentType": "text/plain",
+        "cacheControl": "public, max-age=0, must-revalidate",
+        "xRobotsTag": null,
+        "location": null
+      },
+      "headInitial": {},
+      "documentCompleteMetadata": {},
+      "privateMarkerPresent": false,
+      "containsPublicFixtureNames": false,
+      "containsCardFixtureName": false,
+      "routeSanitized": "/robots.txt"
+    },
+    {
+      "case": "robots",
+      "ua": "googlebot",
+      "status": 200,
+      "htmlBytes": 66,
+      "htmlSha256": "23b11d5bb2b04b016ae83427fdf9a85b0b732cd7dfd6834bac379893d9c301eb",
+      "headers": {
+        "contentType": "text/plain",
+        "cacheControl": "public, max-age=0, must-revalidate",
+        "xRobotsTag": null,
+        "location": null
+      },
+      "headInitial": {},
+      "documentCompleteMetadata": {},
+      "privateMarkerPresent": false,
+      "containsPublicFixtureNames": false,
+      "containsCardFixtureName": false,
+      "routeSanitized": "/robots.txt"
+    },
+    {
+      "case": "robots",
+      "ua": "twitterbot",
+      "status": 200,
+      "htmlBytes": 66,
+      "htmlSha256": "23b11d5bb2b04b016ae83427fdf9a85b0b732cd7dfd6834bac379893d9c301eb",
+      "headers": {
+        "contentType": "text/plain",
+        "cacheControl": "public, max-age=0, must-revalidate",
+        "xRobotsTag": null,
+        "location": null
+      },
+      "headInitial": {},
+      "documentCompleteMetadata": {},
+      "privateMarkerPresent": false,
+      "containsPublicFixtureNames": false,
+      "containsCardFixtureName": false,
+      "routeSanitized": "/robots.txt"
+    },
+    {
+      "case": "sitemap",
+      "ua": "normal",
+      "status": 200,
+      "htmlBytes": 426,
+      "htmlSha256": "0760d838a85742af966283c8cb99a0610d2bf7fe0a04784a70a74db9bf9d877d",
+      "headers": {
+        "contentType": "application/xml",
+        "cacheControl": "public, max-age=0, must-revalidate",
+        "xRobotsTag": null,
+        "location": null
+      },
+      "headInitial": {},
+      "documentCompleteMetadata": {},
+      "privateMarkerPresent": false,
+      "containsPublicFixtureNames": false,
+      "containsCardFixtureName": false,
+      "routeSanitized": "/sitemap.xml"
+    },
+    {
+      "case": "sitemap",
+      "ua": "googlebot",
+      "status": 200,
+      "htmlBytes": 426,
+      "htmlSha256": "0760d838a85742af966283c8cb99a0610d2bf7fe0a04784a70a74db9bf9d877d",
+      "headers": {
+        "contentType": "application/xml",
+        "cacheControl": "public, max-age=0, must-revalidate",
+        "xRobotsTag": null,
+        "location": null
+      },
+      "headInitial": {},
+      "documentCompleteMetadata": {},
+      "privateMarkerPresent": false,
+      "containsPublicFixtureNames": false,
+      "containsCardFixtureName": false,
+      "routeSanitized": "/sitemap.xml"
+    },
+    {
+      "case": "sitemap",
+      "ua": "twitterbot",
+      "status": 200,
+      "htmlBytes": 426,
+      "htmlSha256": "0760d838a85742af966283c8cb99a0610d2bf7fe0a04784a70a74db9bf9d877d",
+      "headers": {
+        "contentType": "application/xml",
+        "cacheControl": "public, max-age=0, must-revalidate",
+        "xRobotsTag": null,
+        "location": null
+      },
+      "headInitial": {},
+      "documentCompleteMetadata": {},
+      "privateMarkerPresent": false,
+      "containsPublicFixtureNames": false,
+      "containsCardFixtureName": false,
+      "routeSanitized": "/sitemap.xml"
+    },
+    {
+      "case": "share-controlled-503",
+      "ua": "normal",
+      "status": 200,
+      "htmlBytes": 29526,
+      "htmlSha256": "8180e1bcadda439bb98b8ea74d49bd13ab4edb7be2b797b408529ab8512852e7",
+      "headers": {
+        "contentType": "text/html; charset=utf-8",
+        "cacheControl": "private, no-cache, no-store, max-age=0, must-revalidate",
+        "xRobotsTag": null,
+        "location": null
+      },
+      "headInitial": {},
+      "documentCompleteMetadata": {
+        "title": "Colección compartida · PokéScan",
+        "description": "Escaneá tus cartas Pokémon, mirá su valor y compartí tu colección",
+        "robots": "noindex, nofollow",
+        "og:title": "Colección compartida · PokéScan",
+        "og:description": "Escaneá tus cartas Pokémon, mirá su valor y compartí tu colección",
+        "og:type": "website",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Colección compartida · PokéScan",
+        "twitter:description": "Escaneá tus cartas Pokémon, mirá su valor y compartí tu colección"
+      },
+      "privateMarkerPresent": false,
+      "containsPublicFixtureNames": false,
+      "containsCardFixtureName": false,
+      "routeSanitized": "/share/[controlled-error]"
+    }
+  ],
+  "api": {
+    "cardValid": {
+      "status": 200,
+      "cacheControl": null,
+      "contentType": "application/json; charset=utf-8",
+      "bodyBytes": 511,
+      "bodySha256": "0d77958309562d359738b8e188e5886457a0eb524be81fb7ac45cb3f988a907d",
+      "bodyHasPrivateMarker": false
+    },
+    "cardMissing": {
+      "status": 404,
+      "cacheControl": null,
+      "contentType": "application/json; charset=utf-8",
+      "bodyBytes": 107,
+      "bodySha256": "a1060c039ec3f237f304c660965c1c32fe88335e5e7accec143fdb8a9753b272",
+      "bodyHasPrivateMarker": false
+    },
+    "shareActive": {
+      "status": 200,
+      "cacheControl": "no-store",
+      "contentType": "application/json; charset=utf-8",
+      "bodyBytes": 1499,
+      "bodySha256": "ecefb049a6505a4b777b110690b1e258866fcaa6f78590224a8290d5d1a8e8ef",
+      "bodyHasPrivateMarker": false
+    },
+    "shareRevoked": {
+      "status": 404,
+      "cacheControl": "no-store",
+      "contentType": "application/json; charset=utf-8",
+      "bodyBytes": 82,
+      "bodySha256": "24ea8de3ae7228d43e4c2dc8e75867d522296f6b622a4ae028bc8161e86a972e",
+      "bodyHasPrivateMarker": false
+    },
+    "shareExpired": {
+      "status": 404,
+      "cacheControl": "no-store",
+      "contentType": "application/json; charset=utf-8",
+      "bodyBytes": 82,
+      "bodySha256": "24ea8de3ae7228d43e4c2dc8e75867d522296f6b622a4ae028bc8161e86a972e",
+      "bodyHasPrivateMarker": false
+    },
+    "shareMissing": {
+      "status": 404,
+      "cacheControl": "no-store",
+      "contentType": "application/json; charset=utf-8",
+      "bodyBytes": 82,
+      "bodySha256": "24ea8de3ae7228d43e4c2dc8e75867d522296f6b622a4ae028bc8161e86a972e",
+      "bodyHasPrivateMarker": false
+    },
+    "shareControlled503": {
+      "status": 503,
+      "cacheControl": "no-store",
+      "contentType": "application/json"
+    }
+  },
+  "siteResources": {
+    "capturedAt": "2026-10-09T00:32:27.173Z",
+    "robots": {
+      "status": 200,
+      "contentType": "text/plain",
+      "cacheControl": "public, max-age=0, must-revalidate",
+      "bytes": 66,
+      "sha256": "23b11d5bb2b04b016ae83427fdf9a85b0b732cd7dfd6834bac379893d9c301eb",
+      "rules": [
+        "User-Agent: *",
+        "Allow: /",
+        "Sitemap: https://pokescan.app/sitemap.xml"
+      ]
+    },
+    "sitemap": {
+      "status": 200,
+      "contentType": "application/xml",
+      "cacheControl": "public, max-age=0, must-revalidate",
+      "bytes": 426,
+      "sha256": "0760d838a85742af966283c8cb99a0610d2bf7fe0a04784a70a74db9bf9d877d",
+      "urls": [
+        "https://pokescan.app",
+        "https://pokescan.app/buscar",
+        "https://pokescan.app/faq"
+      ]
+    }
+  },
+  "domHydration": {
+    "capturedAt": "2026-10-09 00:32:50 UTC",
+    "source": "Codex In-app Browser, agent-created tab; tab closed after capture",
+    "hydratedExamples": [
+      {
+        "label": "search-q",
+        "httpStatusFromSSR": 200,
+        "title": "Buscar · PokéScan",
+        "canonical": "https://pokescan.app/buscar",
+        "description": "Buscá una carta por nombre o por set y mirá su valor de mercado.",
+        "robots": [],
+        "readyState": "complete",
+        "mainPresent": true,
+        "searchResultRendered": true,
+        "visibleSyntheticCardName": true,
+        "renderedExcerpt": "1 carta · Carta sintética SEO · Set sintético SEO",
+        "ssrHtmlContainedCardName": false,
+        "domSummarySha256": "01010ed8b054bc0b6e3d80a3c6f50be56a5041c277d34c69e69a728f5bd9b11b"
+      },
+      {
+        "label": "card-valid-returnTo",
+        "httpStatusFromSSR": 200,
+        "title": "Carta sintética SEO · PokéScan",
+        "canonical": "https://pokescan.app/carta/[card]",
+        "description": "Carta sintética SEO — Set sintético SEO · Rare",
+        "robots": [],
+        "readyState": "complete",
+        "mainPresent": true,
+        "visibleSyntheticCardName": true,
+        "pricePanelHydrated": true,
+        "syntheticPriceValueOmitted": true,
+        "returnToInCanonical": false,
+        "domSummarySha256": "7ae976f66518fb8c1898d142c970635ba80548570c0d1f0837fd5bfd7d02f3cd"
+      },
+      {
+        "label": "share-missing",
+        "httpStatusFromSSR": 200,
+        "title": "Colección compartida · PokéScan",
+        "canonical": null,
+        "description": "Escaneá tus cartas Pokémon, mirá su valor y compartí tu colección",
+        "robots": [
+          "noindex",
+          "noindex",
+          "noindex, nofollow"
+        ],
+        "readyState": "complete",
+        "mainPresent": true,
+        "visibleGenericMissingMessage": true,
+        "leaksSyntheticCollection": false,
+        "leaksSyntheticOwner": false,
+        "leaksSyntheticCard": false,
+        "domSummarySha256": "3c9349c4686d2b3d662742e49a8ef0239a44d00696518fd488ec892acbf4c66a"
+      }
+    ]
+  },
+  "privacyProbe": {
+    "capturedAt": "2026-10-09T00:33:55.027Z",
+    "activeShare": {
+      "apiStatus": 200,
+      "apiNoStore": true,
+      "privateMarkersInApi": false,
+      "nextStatus": 200,
+      "privateMarkersInNext": false,
+      "expectedPublicSyntheticDisplayAssertion": true,
+      "assertionSource": "hardcoded true in privacy-probe.mjs, not a measured test; public names are separately observed in matrix metadata"
+    },
+    "absentShares": [
+      {
+        "label": "revoked",
+        "apiStatus": 404,
+        "apiNoStore": true,
+        "nextStatus": 200,
+        "privateMarkersInNext": false,
+        "publicFixtureNamesInNext": false
+      },
+      {
+        "label": "expired",
+        "apiStatus": 404,
+        "apiNoStore": true,
+        "nextStatus": 200,
+        "privateMarkersInNext": false,
+        "publicFixtureNamesInNext": false
+      },
+      {
+        "label": "missing",
+        "apiStatus": 404,
+        "apiNoStore": true,
+        "nextStatus": 200,
+        "privateMarkersInNext": false,
+        "publicFixtureNamesInNext": false
+      }
+    ],
+    "anonymousCollectionPage": {
+      "nextStatus": 200,
+      "privateMarkersInNext": true,
+      "publicFixtureNamesInNext": false,
+      "classification": "unresolved aggregate; route/Flight ID is compatible with source and marker set, but raw body and private state were removed before class/location isolation",
+      "privacyAccepted": false,
+      "productLeakConfirmed": false
+    }
+  },
+  "limitations": [
+    "No production hostname, deployment, Search Console, or human domain approval was used.",
+    "No full page HTML, cookies, password, token, email, or real user data was retained in this report.",
+    "Hydrated DOM is recorded separately after browser inspection."
+  ],
+  "notes": [
+    "Build output restored webpack; this does not count as Turbopack green.",
+    "Fallback canonical https://pokescan.app is build output only; production domain approval remains pending.",
+    "No private account values, access tokens, passwords, cookie values, or raw HTML are included. Synthetic price fixture was cache-only and is not market evidence.",
+    "Noindex metadata measures indexing directives only; it does not establish route authentication.",
+    "Collection marker observations use different marker sets; the positive additional aggregate cannot retrospectively distinguish route/Flight identifiers from protected content. Noindex does not establish privacy.",
+    "runWindow records core HTTP/API only; site resources, DOM and privacy probe were later phases.",
+    "Error 503 is a proxy-controlled scenario with normal UA only, not a backend outage or all-UA coverage.",
+    "No status/metadata/body hash or observed boolean was changed; hardcoded display assertion was relabeled and provenance/limits added.",
+    "Build output is not invariant: independent comparison finds 10 changed existing hashes, 4 cache additions, no missing files, same Build ID."
+  ],
+  "measurementWindows": {
+    "coreHttpApi": {
+      "startedAt": "2026-10-09T00:30:15.418Z",
+      "finishedAt": "2026-10-09T00:30:23.282Z",
+      "perResponseTimestampsRecorded": false,
+      "scope": "core HTTP route/user-agent matrix plus API summary only; later phases have their own capturedAt"
+    },
+    "siteResources": {
+      "capturedAt": "2026-10-09T00:32:27.173Z"
+    },
+    "domHydration": {
+      "capturedAt": "2026-10-09 00:32:50 UTC"
+    },
+    "privacyProbe": {
+      "capturedAt": "2026-10-09T00:33:55.027Z"
+    },
+    "perResponseTimestampsRecorded": false
+  },
+  "observationProvenance": {
+    "http": "producer fetch response.status and selected headers; manual redirect handling; browser-independent core matrix",
+    "headInitial": "first completed literal <head> section assembled while reading the stream, not first chunk or time-to-first-byte",
+    "documentCompleteMetadata": "regex extraction of literal title/meta/link tags in complete HTML; not an executed DOM or separately classified Flight payload",
+    "bodyHashes": "SHA-256 of full received body; raw body removed, cannot independently reinspect or recompute now",
+    "corePrivateMarkerPresent": "substring any-of email, username, password, passwordHash, fixed legacy private-note sentinel; not an exhaustive leak test",
+    "apiBodyHasPrivateMarker": "substring any-of email, password, passwordHash, fixed legacy private-note sentinel; differs from HTML marker set",
+    "privacyProbe": "additional substring any-of credentials/username, user/collection/item IDs, passwordHash/refreshToken/accessToken field names, legacy private-note sentinel; aggregate only, no matched class/location",
+    "domHydration": "producer browser inspection summaries for three cases; supplied DOM summary hashes have no retained canonical hashing algorithm or raw DOM for independent recomputation",
+    "userAgents": "normal desktop Chromium string, Googlebot Smartphone string and Twitterbot/1.0 supplied by harness; not real crawlers or a mobile normal UA",
+    "assertions": "expected synthetic public display in privacy-probe was hardcoded true; not a measured assertion result",
+    "fixtureScope": "synthetic fixture states set before captures; no new revoke/expire after cache warming, no seeded private notes and no authenticated/foreign collection API privacy probe"
+  },
+  "externalFetchObservation": {
+    "reportedBlockedAttempts": 0,
+    "mechanism": "globalThis.fetch monkey patch via NODE_OPTIONS in launched backend/frontend/fixture Node processes; only loopback allowed",
+    "harnessCounting": "log line count, missing log treated as zero by audit.mjs",
+    "limitations": [
+      "No browser network instrumentation.",
+      "Does not instrument arbitrary network APIs or all transports.",
+      "Temporary log removed; independent reviewer cannot reconstruct zero attempts."
+    ],
+    "providerPolicy": "no direct provider call was introduced; queue/crons disabled; synthetic cache-only prices"
+  },
+  "review": {
+    "reviewer": "GPT-6.1 Sol HIGH",
+    "agent": "/root/seo01_runtime_review_sol",
+    "status": "local matrix accepted with bounded privacy classification pending; SEO-01 ID remains open",
+    "report": "SEO-01-runtime-review.md",
+    "evidence": "SEO-01-runtime-review-evidencia.json",
+    "receivedPreserved": "SEO-01-runtime-anexos/SEO-01-runtime-evidencia-recibido.json",
+    "newRuntime": false,
+    "newTestsOrBuild": false,
+    "productionValidated": false,
+    "standardTurbopackGateClosed": false
+  }
+}

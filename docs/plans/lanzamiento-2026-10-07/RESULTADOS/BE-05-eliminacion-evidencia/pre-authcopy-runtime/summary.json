@@ -1,0 +1,18 @@
+{
+  "scope": "Compiled Nest/Next, real browser, actual encrypted pg_dump/pg_restore on two owned databases, independent live journal and trusted checkpoint",
+  "checks": 69,
+  "passed": true,
+  "screenshots": 7,
+  "realAccountsTouched": false,
+  "productionBackupOperationAccredited": false,
+  "externalMail": false,
+  "originalSnapshotAgeSeconds": 7,
+  "functionalChecks": 64,
+  "ownershipOrEmptyTargetChecks": 5,
+  "globalTests": 1054,
+  "globalSkips": 0,
+  "backendFocused": 20,
+  "frontendAndSWFocused": 14,
+  "delegatedAssignments": 3,
+  "delegatedAssignmentLimit": 4
+}

@@ -1,0 +1,26 @@
+[
+  {
+    "name": "compiled API and real DINOv2 ready over own PG proxy",
+    "passed": true
+  },
+  {
+    "name": "real CLI baseline metrics and process host sample",
+    "passed": true
+  },
+  {
+    "name": "synthetic account only in marked clone",
+    "passed": true
+  },
+  {
+    "name": "busy rate alert from real concurrent DINO admission windows",
+    "passed": true
+  },
+  {
+    "name": "busy alert recovers on new successful admissions",
+    "passed": true
+  },
+  {
+    "name": "inference error alert from worker decode failures",
+    "passed": true
+  }
+]

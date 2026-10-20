@@ -1,0 +1,15 @@
+# SEO-01 — auditoría runtime local HTTP/SSR/DOM
+
+Ejecución local del agente `/root/seo01_runtime_luna` (GPT-6 Luna), 2026-10-09 UTC. Se observaron 22 rutas/casos con 3 user agents cada una (normal, Googlebot Smartphone, Twitterbot): 66 respuestas; además, un caso de error controlado 503 con UA normal: **67 respuestas HTTP**. Se consultaron 7 estados API directos. Los timestamps individuales por respuesta no quedaron registrados; el JSON conserva la ventana completa.
+
+Se usó el output `.next` webpack restaurado (build ID `NZkIeTzxfiKhm5bMdwd1i`) con `next start`, más `backend/dist` existente. No hubo build nuevo; esto no acredita Turbopack verde. El backend corrió en modo desarrollo sólo para aceptar origen HTTP loopback, con workers/crons/scanner apagados. Se usó clon TEST y Redis aislado etiquetados como propios; un guard bloqueó fetch externos y registró **0 intentos externos**. Precios de la carta fixture eran datos sintéticos cacheados, no evidencia de mercado. La URL canónica fallback `https://pokescan.app` procede del output local; dominio de producción sigue pendiente.
+
+La matriz completa con status, hash del HTML, headers y metadata inicial/final está en [SEO-01-runtime-evidencia.json](SEO-01-runtime-evidencia.json). Se midieron en DOM hidratado tres casos: búsqueda con resultado sintético, ficha válida con `returnTo` y share inexistente. El parámetro `returnTo` no apareció en canonical. La búsqueda SSR no contenía el nombre fixture, que sí apareció tras hidratación. La ficha y share muestran metadata dinámica al completar documento; la presencia en head inicial varió por UA/flujo. El DOM del share inexistente no mostró datos de colección/propietario/cartas.
+
+Hallazgos de estado: ficha ausente tuvo API 404 y Next 200 con `noindex`; no se debe interpretar `noindex` como autenticación. Los endpoints de share revocado, vencido e inexistente devolvieron API 404/no-store y Next 200 con metadata genérica/noindex, acorde con DEC-02. El share vigente tuvo API 200/no-store y página Next 200. Una falla 503 inyectada por proxy loopback controlado produjo Next 200 genérico/noindex; se probó sólo con UA normal. Rutas privadas/auth y scanner respondieron Next 200/noindex en esta prueba anónima; esto sólo describe la respuesta observada.
+
+Robots y sitemap respondieron 200. Robots permite `/` y apunta sitemap a `https://pokescan.app/sitemap.xml`; sitemap contiene landing, búsqueda y FAQ. Son valores del build/output, no aprobación del hostname de producción.
+
+El probe de privacidad del detalle de colección anónimo marcó presencia de un marcador entre valores sintéticos privados. No se aisló de forma segura qué clase de marcador era; quedó sin atribución y requiere revisión independiente. Los shares ausentes no mostraron esos marcadores. No se conservó HTML crudo ni se incluyen credenciales, tokens, slugs de share ni IDs de fixtures.
+
+La prueba no reconstruye resultados históricos ni cierra SEO-01, BE-04 o FE-03. No se evaluó producción, login con usuario humano, aprobación de hostname, ni una corrida Turbopack.

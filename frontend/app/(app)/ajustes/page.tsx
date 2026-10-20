@@ -4,6 +4,7 @@ import { ScreenContainer } from '@/components/layout/screen-container';
 import { ScreenHeader } from '@/components/layout/screen-header';
 import {
   AppearanceSettings,
+  AccountDeletionSettings,
   CurrencySettings,
   IdentityCard,
   RequireAuth,
@@ -52,6 +53,7 @@ export default function SettingsPage() {
             </div>
             <ShareLinksSection />
             <SessionSettings />
+            <AccountDeletionSettings />
           </div>
         </RequireAuth>
       </ScreenContainer>

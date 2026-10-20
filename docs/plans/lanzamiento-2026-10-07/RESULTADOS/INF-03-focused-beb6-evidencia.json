@@ -1,0 +1,260 @@
+{
+  "runId": "inf03-beb6f1226ff2",
+  "startedAt": "2026-10-08T12:29:08.977Z",
+  "steps": {
+    "sourceBootstrapMs": 1563,
+    "backupMs": 1102,
+    "restoreMs": 1932
+  },
+  "tests": {
+    "positive": 1,
+    "negative": 16
+  },
+  "ownedResources": [
+    {
+      "type": "network",
+      "name": "inf03-beb6f1226ff2-source-net",
+      "runId": "inf03-beb6f1226ff2",
+      "role": "source"
+    },
+    {
+      "type": "volume",
+      "name": "inf03-beb6f1226ff2-source-pgdata",
+      "runId": "inf03-beb6f1226ff2",
+      "role": "source"
+    },
+    {
+      "type": "container",
+      "name": "inf03-beb6f1226ff2-source-pg",
+      "runId": "inf03-beb6f1226ff2",
+      "role": "source"
+    },
+    {
+      "type": "network",
+      "name": "inf03-beb6f1226ff2-destination-net",
+      "runId": "inf03-beb6f1226ff2",
+      "role": "destination"
+    },
+    {
+      "type": "volume",
+      "name": "inf03-beb6f1226ff2-destination-pgdata",
+      "runId": "inf03-beb6f1226ff2",
+      "role": "destination"
+    },
+    {
+      "type": "container",
+      "name": "inf03-beb6f1226ff2-destination-pg",
+      "runId": "inf03-beb6f1226ff2",
+      "role": "destination"
+    }
+  ],
+  "cleanup": {
+    "attempted": true,
+    "complete": true,
+    "errors": [],
+    "hostTemporaryRemoved": true
+  },
+  "tooling": {
+    "node": "v22.20.0",
+    "pnpm": "10.17.1",
+    "platform": "darwin",
+    "arch": "arm64",
+    "age": "v1.2.1",
+    "ageRelease": "https://github.com/FiloSottile/age/releases/download/v1.2.1/age-v1.2.1-darwin-arm64.tar.gz",
+    "ageArchiveSha256": "cf79875bd5970dc2dac60c87fa50cee1ff1f9a41b0eb273f65e174aff37c367a",
+    "toolSource": "official-HTTPS-release",
+    "ageBinarySha256": "d2b0d4211fd9e364ea8dd1cb150653a7f21dfc08e96632de444aa209db5fc0d0",
+    "postgresImage": "postgres@sha256:0ea6700a3b4f0ae6ce746519073558aed4d88a79d8d07622a9a644946c7319c4",
+    "postgresImageId": "sha256:4b5d4fd438e2c1ce13106e4996fc604f0a1cff39cde48b546fcac3cf1a233c3a",
+    "postgresRepoDigests": [
+      "postgres@sha256:0ea6700a3b4f0ae6ce746519073558aed4d88a79d8d07622a9a644946c7319c4"
+    ]
+  },
+  "sharedHealthBefore": [
+    {
+      "name": "pokemon-scanner-db",
+      "id": "18aa2f6937521ae010930ae98cbee45f2fa435b554c65cf90daaffba0c641ba8",
+      "health": "healthy"
+    },
+    {
+      "name": "pokemon-scanner-redis",
+      "id": "f2d2ca0ad580fe8ca3e94a59b4b6d5a53d761036ba1d14e45b8543a978bbb15f",
+      "health": "healthy"
+    }
+  ],
+  "sharedContainersBefore": [
+    "pokemon-scanner-db 18aa2f693752",
+    "pokemon-scanner-redis f2d2ca0ad580"
+  ],
+  "backup": {
+    "backupId": "36339f92-73dc-4542-97bc-f4bffa197a01",
+    "ciphertextBytes": 347416,
+    "ciphertextSha256": "e58d3208cafa2be89d09d69552bc4f3c159fd041031e52c675aab8d8fa025907",
+    "encryption": "age-v1.2.1",
+    "createdAt": "2026-10-08T12:29:17.259Z",
+    "durationMs": 984,
+    "migrations": 11,
+    "dumpBytes": 342279,
+    "dumpSha256": "2f8c9d4aadc28bd5c84d5ce174ce66d0479a25f18610631895a02a001563d8e3",
+    "receiptSha256": "ed23b61435ddd6c1347b19db941044a1c745281a00c25f9111c70c48b72c4318",
+    "fixtureStatementAt": "2026-10-08T12:29:16.009000Z",
+    "includedCommitObservedAfterSQL": "2026-10-08T12:29:16.082Z",
+    "excludedCommitObservedAfterSQL": "2026-10-08T12:29:17.399Z",
+    "excludedCommitStartedAt": "2026-10-08T12:29:17.335Z",
+    "incidentPoint": "2026-10-08T12:29:17.867Z",
+    "pointRecovered": "commit fixture confirmado antes del dump; modificación posterior excluida",
+    "observedGapMs": 1785
+  },
+  "multichunk": {
+    "ciphertextBytes": 347416,
+    "minimumChunks": 5,
+    "partialOutputs": [
+      {
+        "name": "altered-final-chunk",
+        "bytes": 327680,
+        "status": 1
+      },
+      {
+        "name": "truncated-final-chunk",
+        "bytes": 327680,
+        "status": 1
+      }
+    ]
+  },
+  "backupCollisionRejected": true,
+  "backupSourceStagingClean": true,
+  "sourceDestroyedAfterCiphertext": true,
+  "rejectionStages": [
+    {
+      "name": "altered-final-chunk",
+      "reason": "age rechazó"
+    },
+    {
+      "name": "truncated-final-chunk",
+      "reason": "age rechazó"
+    },
+    {
+      "name": "wrong-identity",
+      "reason": "age rechazó"
+    },
+    {
+      "name": "wrong-receipt-digest",
+      "reason": "ciphertext no coincide"
+    },
+    {
+      "name": "wrong-target-marker",
+      "reason": "Argumentos/propiedad"
+    },
+    {
+      "name": "wrong-dump-digest",
+      "reason": "dump interno no coincide"
+    },
+    {
+      "name": "incompatible-manifest",
+      "reason": "Manifiesto incompatible"
+    },
+    {
+      "name": "manifest-extra-field",
+      "reason": "schema estricto"
+    },
+    {
+      "name": "wrong-migration-checksum",
+      "reason": "Migraciones/checksums"
+    },
+    {
+      "name": "extra-entry",
+      "reason": "Tar inseguro"
+    },
+    {
+      "name": "symlink-entry",
+      "reason": "Tar inseguro"
+    },
+    {
+      "name": "occupied-target",
+      "reason": "objetos preexistentes"
+    },
+    {
+      "name": "actual-marker-mismatch",
+      "reason": "Propietario/marcador"
+    },
+    {
+      "name": "privileged-role",
+      "reason": "Rol limitado"
+    },
+    {
+      "name": "multiple-networks",
+      "reason": "Red no exclusiva"
+    },
+    {
+      "name": "shared-name-rejected",
+      "reason": "Argumentos/propiedad"
+    }
+  ],
+  "prevalidationRestoreCount": 0,
+  "sqlRollback": {
+    "attempts": 1,
+    "emptyAfterFailure": true
+  },
+  "restore": {
+    "restored": true,
+    "backupId": "36339f92-73dc-4542-97bc-f4bffa197a01",
+    "migrations": 11,
+    "dumpBytes": 342279,
+    "schemaFingerprint": "c352ac6ab770d71d5343454bc7f9d5fc55562e53d533bc8194bdbf160c264d37",
+    "pgTrgm": "1.6",
+    "validTrigramIndexes": 5,
+    "validatedConstraints": 33,
+    "constraintScope": "public",
+    "ownership": true
+  },
+  "localRecoveryMs": 22208,
+  "verification": {
+    "expectedFixtureSet": true,
+    "migrations": 11,
+    "pgTrgm": true,
+    "validTrigramIndexes": 5,
+    "validatedConstraints": 33,
+    "schemaFingerprint": "c352ac6ab770d71d5343454bc7f9d5fc55562e53d533bc8194bdbf160c264d37",
+    "checks": 11,
+    "fullFixtureDigest": "bcd72e14c60dd666032f9ad81d19bee087760232d3331574eb8f5cf2968b88aa",
+    "completeFixtureSets": true,
+    "excludedCommitAbsent": true,
+    "postgresServer": "16.15 (Debian 16.15-1.pgdg12+2)",
+    "pgDump": "pg_dump (PostgreSQL) 16.15 (Debian 16.15-1.pgdg12+2)",
+    "pgRestore": "pg_restore (PostgreSQL) 16.15 (Debian 16.15-1.pgdg12+2)"
+  },
+  "containerStagingCleanAfterSuccessAndFailure": true,
+  "localRecoveryFromIncidentMs": 13722,
+  "negativeRestoreBeforeSQL": {
+    "altered": true,
+    "truncatedFinalChunk": true,
+    "wrongIdentity": true,
+    "wrongReceiptDigest": true,
+    "wrongTargetMarker": true,
+    "wrongDumpDigest": true,
+    "incompatibleManifest": true,
+    "extraTarEntry": true,
+    "symlinkTarEntry": true,
+    "occupiedTarget": true,
+    "pgRestoreInvocationCount": 2,
+    "verifiedDestinationUnchanged": true
+  },
+  "endedAt": "2026-10-08T12:29:31.661Z",
+  "testResult": "passed",
+  "sharedContainersAfter": [
+    "pokemon-scanner-db 18aa2f693752",
+    "pokemon-scanner-redis f2d2ca0ad580"
+  ],
+  "sharedHealthAfter": [
+    {
+      "name": "pokemon-scanner-db",
+      "id": "18aa2f6937521ae010930ae98cbee45f2fa435b554c65cf90daaffba0c641ba8",
+      "health": "healthy"
+    },
+    {
+      "name": "pokemon-scanner-redis",
+      "id": "f2d2ca0ad580fe8ca3e94a59b4b6d5a53d761036ba1d14e45b8543a978bbb15f",
+      "health": "healthy"
+    }
+  ]
+}

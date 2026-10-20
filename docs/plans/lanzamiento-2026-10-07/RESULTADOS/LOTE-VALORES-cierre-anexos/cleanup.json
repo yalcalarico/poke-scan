@@ -1,0 +1,45 @@
+{
+  "ownFixturesZero": {
+    "phase": "after",
+    "counts": {
+      "users": 0,
+      "collections": 0,
+      "items": 0,
+      "shares": 0,
+      "cards": 0,
+      "prices": 0,
+      "jobs": 0
+    },
+    "ownJobsExecuted": 0
+  },
+  "databaseCommentVerifiedBeforeDrop": true,
+  "databaseConnectionsBeforeDrop": 0,
+  "cloneDropped": true,
+  "redisRemoved": true,
+  "sourceDevTestCountsUnchanged": true,
+  "sourceInfraIDsUnchangedHealthy": true,
+  "countsComparisonIsNotFullDataSnapshot": true,
+  "processesStopped": [
+    6235,
+    6247
+  ],
+  "processOwnershipCommandParentPortVerified": true,
+  "sessionsComplete": true,
+  "expectedSIGTERMExitCodes": {
+    "apiWrapper": 241,
+    "webWrapper": 143
+  },
+  "portsFree": [
+    3000,
+    3001,
+    3002,
+    3313,
+    56379
+  ],
+  "runtimeStateRemoved": true,
+  "browserRootEvidence": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/LOTE-VALORES-cierre-browser-root.json",
+  "browserRootEvidenceSha256": "787bc9133dedf77b696dbd9d21e3fda29a4850f21ce1526c79f8e5a285d32f77",
+  "sourceHashesMatched": 430,
+  "temporaryEvidenceIntentionallyPreserved": "/private/tmp/valores-cierre-sol-20261009",
+  "liveResources": []
+}

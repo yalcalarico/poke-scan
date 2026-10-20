@@ -1,0 +1,1023 @@
+{
+  "checkedAtUtc": "2026-10-09T17:58:07.882897+00:00",
+  "scope": "Verificación documental estática; sin tests/runtime/sistemas externos",
+  "documentSha256": "9b0c36f8bacc6192b3dc7f8ee695e1cc0992798e1fbd15302b4ec6fc38362a74",
+  "reportSha256": "10c874de3674be711e828397e77cfab3c20003470df21a6b9ca0474a52ff1cc3",
+  "historicalEvidence": {
+    "sourcesDeclared": 17,
+    "linksDeclared": 14,
+    "documentHashMatchesReceived": true,
+    "historicalSourceHashes": [
+      {
+        "path": "docs/plans/lanzamiento-2026-10-07/02-backend.md",
+        "matchesObservedSource": true
+      },
+      {
+        "path": "docs/plans/lanzamiento-2026-10-07/10-decisiones-y-contratos.md",
+        "matchesObservedSource": true
+      },
+      {
+        "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/NEG-03-cuenta-requisitos.md",
+        "matchesObservedSource": true
+      },
+      {
+        "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/NEG-03-cuenta-review.md",
+        "matchesObservedSource": true
+      },
+      {
+        "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/NEG-03-cuenta-aceptacion-root.json",
+        "matchesObservedSource": true
+      },
+      {
+        "path": "backend/src/modules/auth/auth.controller.ts",
+        "matchesObservedSource": true
+      },
+      {
+        "path": "backend/src/modules/auth/auth.service.ts",
+        "matchesObservedSource": true
+      },
+      {
+        "path": "backend/src/modules/auth/session-security.ts",
+        "matchesObservedSource": true
+      },
+      {
+        "path": "backend/src/modules/auth/auth.module.ts",
+        "matchesObservedSource": true
+      },
+      {
+        "path": "backend/src/common/guards/jwt-auth.guard.ts",
+        "matchesObservedSource": true
+      },
+      {
+        "path": "backend/prisma/schema.prisma",
+        "matchesObservedSource": true
+      },
+      {
+        "path": "backend/src/modules/share/share.service.ts",
+        "matchesObservedSource": true
+      },
+      {
+        "path": "backend/src/modules/share/public-share.controller.ts",
+        "matchesObservedSource": true
+      },
+      {
+        "path": "frontend/hooks/use-auth.tsx",
+        "matchesObservedSource": true
+      },
+      {
+        "path": "docs/security.md",
+        "matchesObservedSource": true
+      },
+      {
+        "path": "frontend/docs/scanner.md",
+        "matchesObservedSource": true
+      },
+      {
+        "path": "infra/inf03/README.md",
+        "matchesObservedSource": true
+      }
+    ]
+  },
+  "sourceCount": 36,
+  "sources": [
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/02-backend.md",
+      "before": "db45d0e7ac7f38678a82b74f958e2593c58b2fd1cb3b64faad5e9c6d8204594e",
+      "after": "db45d0e7ac7f38678a82b74f958e2593c58b2fd1cb3b64faad5e9c6d8204594e"
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/10-decisiones-y-contratos.md",
+      "before": "a040c6d51aa674adc7449b9dc683e1d1f5fa0cc6aaf0b6f2377991827a2ab6e5",
+      "after": "a040c6d51aa674adc7449b9dc683e1d1f5fa0cc6aaf0b6f2377991827a2ab6e5"
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/NEG-03-cuenta-requisitos.md",
+      "before": "79365783583653359d4abcf9c682dfd9b06cf6def20158b5f23aeef914afe20b",
+      "after": "79365783583653359d4abcf9c682dfd9b06cf6def20158b5f23aeef914afe20b"
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/NEG-03-cuenta-review.md",
+      "before": "775420f054f3edb318dc21ea4c8b43d4fc395437c29f45ec94eaca6876698ef1",
+      "after": "775420f054f3edb318dc21ea4c8b43d4fc395437c29f45ec94eaca6876698ef1"
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/NEG-03-cuenta-aceptacion-root.json",
+      "before": "10577800046c1171be539657f40c29365bfc5081ddef39718db6ca007901db7b",
+      "after": "10577800046c1171be539657f40c29365bfc5081ddef39718db6ca007901db7b"
+    },
+    {
+      "path": "backend/src/modules/auth/auth.controller.ts",
+      "before": "6e1418e90f41739a7aaf6be807498caa46491fc92beef554ad58d9c8fa29a7c5",
+      "after": "6e1418e90f41739a7aaf6be807498caa46491fc92beef554ad58d9c8fa29a7c5"
+    },
+    {
+      "path": "backend/src/modules/auth/auth.service.ts",
+      "before": "0a254e70b586234adb0273e5ab6f038e92629161c6aea305de6de87120dd7502",
+      "after": "0a254e70b586234adb0273e5ab6f038e92629161c6aea305de6de87120dd7502"
+    },
+    {
+      "path": "backend/src/modules/auth/session-security.ts",
+      "before": "d2389954d9106d797fc19a2a7af9d88077ea740383cb5271056bafae2973aa99",
+      "after": "d2389954d9106d797fc19a2a7af9d88077ea740383cb5271056bafae2973aa99"
+    },
+    {
+      "path": "backend/src/modules/auth/auth.module.ts",
+      "before": "a088b427e35b791b70c30aaf85e0e88cb4a91e1c1aafd93274da692f157387dc",
+      "after": "a088b427e35b791b70c30aaf85e0e88cb4a91e1c1aafd93274da692f157387dc"
+    },
+    {
+      "path": "backend/src/common/guards/jwt-auth.guard.ts",
+      "before": "ae56011d88cfeeba08eaf3df29b8314ad00dc2d0008fa0aa0a9cb439cbf41fc1",
+      "after": "ae56011d88cfeeba08eaf3df29b8314ad00dc2d0008fa0aa0a9cb439cbf41fc1"
+    },
+    {
+      "path": "backend/prisma/schema.prisma",
+      "before": "aa1a08ba649e542444fd79e724e497d8304c469b33a1cc0966646e831e6b3624",
+      "after": "aa1a08ba649e542444fd79e724e497d8304c469b33a1cc0966646e831e6b3624"
+    },
+    {
+      "path": "backend/src/modules/share/share.service.ts",
+      "before": "306b6290135591dbdeee63b22b0d015eb44bed5fc640f8ce4eb056ff70fb8c62",
+      "after": "306b6290135591dbdeee63b22b0d015eb44bed5fc640f8ce4eb056ff70fb8c62"
+    },
+    {
+      "path": "backend/src/modules/share/public-share.controller.ts",
+      "before": "acf9b7ef58255bff779152981f94faca44b4b155ec8f9d10e621c5bc23a8d2ee",
+      "after": "acf9b7ef58255bff779152981f94faca44b4b155ec8f9d10e621c5bc23a8d2ee"
+    },
+    {
+      "path": "frontend/hooks/use-auth.tsx",
+      "before": "8e59872c612fc20d66f5503464b8ca83e7319f0876e75498297705cca7681745",
+      "after": "8e59872c612fc20d66f5503464b8ca83e7319f0876e75498297705cca7681745"
+    },
+    {
+      "path": "docs/security.md",
+      "before": "77ca6e0ad62b3b100f6f6e2190e77cb708d5ad310bc546fcba9e331140b9af28",
+      "after": "77ca6e0ad62b3b100f6f6e2190e77cb708d5ad310bc546fcba9e331140b9af28"
+    },
+    {
+      "path": "frontend/docs/scanner.md",
+      "before": "cd5646940492469583b428c1911a7f7820538742764abfb254b50f630adcbf52",
+      "after": "cd5646940492469583b428c1911a7f7820538742764abfb254b50f630adcbf52"
+    },
+    {
+      "path": "infra/inf03/README.md",
+      "before": "7176efc0c91de25d8d62932c7c252b89dac23fca5972763a222526a3896dbe90",
+      "after": "7176efc0c91de25d8d62932c7c252b89dac23fca5972763a222526a3896dbe90"
+    },
+    {
+      "path": "AGENTS.md",
+      "before": "0a44196ce9194cafcd54094af02e90e73f0da0f693604d0876d97bf14ee30688",
+      "after": "0a44196ce9194cafcd54094af02e90e73f0da0f693604d0876d97bf14ee30688"
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/README.md",
+      "before": "24ec5dee918d19778b3a7bfd4187fecf1eff2e2f855ffdd2a26ed0843fc1eced",
+      "after": "24ec5dee918d19778b3a7bfd4187fecf1eff2e2f855ffdd2a26ed0843fc1eced"
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/03-ui-ux.md",
+      "before": "6fd798bbb2867c00e18ac53a689233105cd01b167bbdb4a8a73eea203ee04a19",
+      "after": "6fd798bbb2867c00e18ac53a689233105cd01b167bbdb4a8a73eea203ee04a19"
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/01-frontend.md",
+      "before": "ba1c7db23291d45b38d6352a3f5b1d5c0920459721d64f349bccb5592c3c8109",
+      "after": "ba1c7db23291d45b38d6352a3f5b1d5c0920459721d64f349bccb5592c3c8109"
+    },
+    {
+      "path": "backend/src/modules/auth/dto/register.dto.ts",
+      "before": "8854ae661ff1670e70d3c02c01fd5ce4250a1fe92b946d19dab628d3d1a4c57a",
+      "after": "8854ae661ff1670e70d3c02c01fd5ce4250a1fe92b946d19dab628d3d1a4c57a"
+    },
+    {
+      "path": "backend/src/modules/auth/dto/login.dto.ts",
+      "before": "84441d49004e33cb74fe007090b7c23c9b8ac22dc33aaa16484543a3cc5c044a",
+      "after": "84441d49004e33cb74fe007090b7c23c9b8ac22dc33aaa16484543a3cc5c044a"
+    },
+    {
+      "path": "backend/src/common/types/auth-user.ts",
+      "before": "3e34f201a4ff553e64b703b0bab791eda60543535429a8a3e67eb7100d673166",
+      "after": "3e34f201a4ff553e64b703b0bab791eda60543535429a8a3e67eb7100d673166"
+    },
+    {
+      "path": "backend/src/modules/users/users.service.ts",
+      "before": "270673cc5475657e3de62f13af57af800637b9417e0e1a0d81efcd59eb74b009",
+      "after": "270673cc5475657e3de62f13af57af800637b9417e0e1a0d81efcd59eb74b009"
+    },
+    {
+      "path": "backend/src/main.ts",
+      "before": "f916508fe6fe2c851b700070952a1328aa3d8f3f650bd0d672e89eab64b22d2e",
+      "after": "f916508fe6fe2c851b700070952a1328aa3d8f3f650bd0d672e89eab64b22d2e"
+    },
+    {
+      "path": "frontend/lib/api/auth.ts",
+      "before": "4eee2697a27eaba4aef33e9f6487aa7b2c84d49cc3b08f05d4272cfc01872e89",
+      "after": "4eee2697a27eaba4aef33e9f6487aa7b2c84d49cc3b08f05d4272cfc01872e89"
+    },
+    {
+      "path": "frontend/lib/api/api-client.ts",
+      "before": "2273f6f6adedaca136b7cf26925b01b2ea7cad34e44a7d3f6896b2f471d9225d",
+      "after": "2273f6f6adedaca136b7cf26925b01b2ea7cad34e44a7d3f6896b2f471d9225d"
+    },
+    {
+      "path": "frontend/lib/api/token-storage.ts",
+      "before": "ce7e03a78388c4c1743eebc7a5af362829a83283ded6188bab37d9440d21b6e0",
+      "after": "ce7e03a78388c4c1743eebc7a5af362829a83283ded6188bab37d9440d21b6e0"
+    },
+    {
+      "path": "frontend/lib/api/user-message.ts",
+      "before": "519cc326893a46bfa71077125dee8d00a3ef10191b8f3826d01524896ebffdc0",
+      "after": "519cc326893a46bfa71077125dee8d00a3ef10191b8f3826d01524896ebffdc0"
+    },
+    {
+      "path": "frontend/lib/api/schema.ts",
+      "before": "5b2ad36af603350df34f2e0f13c207e7844a0c6fa8d9ce5e79f338bfa36f478b",
+      "after": "5b2ad36af603350df34f2e0f13c207e7844a0c6fa8d9ce5e79f338bfa36f478b"
+    },
+    {
+      "path": "frontend/types/api.ts",
+      "before": "9e04e75166f87fc7e2e92e04201bef501da646463a5868c7ae30b80c040689cb",
+      "after": "9e04e75166f87fc7e2e92e04201bef501da646463a5868c7ae30b80c040689cb"
+    },
+    {
+      "path": "frontend/app/share/[slug]/page.tsx",
+      "before": "a2c7b3dc3a1159a8deb7f505cbc7e271519c7b11610ae0042ec7bfb02fb34072",
+      "after": "a2c7b3dc3a1159a8deb7f505cbc7e271519c7b11610ae0042ec7bfb02fb34072"
+    },
+    {
+      "path": "frontend/public/sw.js",
+      "before": "5647d8e6f5cb69511817b2ac00df6d5eaa4b906a8f6f7001ef59cbcbadb24503",
+      "after": "5647d8e6f5cb69511817b2ac00df6d5eaa4b906a8f6f7001ef59cbcbadb24503"
+    },
+    {
+      "path": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-03-local-review.md",
+      "before": "ddaba3d7bdc6f4c897a19de675a8f800e4171caf58f486311109c678f3fd5d4c",
+      "after": "ddaba3d7bdc6f4c897a19de675a8f800e4171caf58f486311109c678f3fd5d4c"
+    },
+    {
+      "path": "backend/src/modules/collections/collections.service.ts",
+      "before": "a2d13f3c9ecbc88fbd9a8ab4e87bc2bcb0fdd6614af651aff18612f0f1ef2a19",
+      "after": "a2d13f3c9ecbc88fbd9a8ab4e87bc2bcb0fdd6614af651aff18612f0f1ef2a19"
+    }
+  ],
+  "sourceChanges": [],
+  "received": [
+    {
+      "copy": "BE-05-contrato-borrador-recibido.md",
+      "expectedSha256": "ae5afbaf1c86bf71677203245fb80474283cf8d6ed92480b62de9be4342fa70c",
+      "actualSha256": "ae5afbaf1c86bf71677203245fb80474283cf8d6ed92480b62de9be4342fa70c"
+    },
+    {
+      "copy": "baseline-recibido.json",
+      "expectedSha256": "b9c71b281b2e3ed186d0078f4979fbeefb7a6a05305a56bc61b1fade1423f8e8",
+      "actualSha256": "b9c71b281b2e3ed186d0078f4979fbeefb7a6a05305a56bc61b1fade1423f8e8",
+      "originalSha256": "b9c71b281b2e3ed186d0078f4979fbeefb7a6a05305a56bc61b1fade1423f8e8"
+    },
+    {
+      "copy": "verificacion-recibida.json",
+      "expectedSha256": "9039c57e495c598dd2d3276cc01fe3b0e96dd6fd4ab7b19c9920c6cb410b1ef0",
+      "actualSha256": "9039c57e495c598dd2d3276cc01fe3b0e96dd6fd4ab7b19c9920c6cb410b1ef0",
+      "originalSha256": "9039c57e495c598dd2d3276cc01fe3b0e96dd6fd4ab7b19c9920c6cb410b1ef0"
+    }
+  ],
+  "receivedChanges": [],
+  "linkCount": 49,
+  "links": [
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-contrato-borrador.md",
+      "target": "evidencia-be05-borrador-review/BE-05-contrato-borrador-recibido.md",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-contrato-borrador.md",
+      "target": "evidencia-be05-borrador-review/baseline-review.json",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-contrato-borrador.md",
+      "target": "evidencia-be05-borrador/baseline.json",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-contrato-borrador.md",
+      "target": "evidencia-be05-borrador/verificacion.json",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-contrato-borrador.md",
+      "target": "evidencia-be05-borrador-review/verificacion.json",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-contrato-borrador.md",
+      "target": "BE-05-borrador-review.md",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-contrato-borrador.md",
+      "target": "NEG-03-cuenta-requisitos.md",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-contrato-borrador.md",
+      "target": "NEG-03-cuenta-review.md",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-contrato-borrador.md",
+      "target": "NEG-03-cuenta-aceptacion-root.json",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-contrato-borrador.md",
+      "target": "../02-backend.md#be-05--recuperación-de-cuenta-y-política-de-eliminación",
+      "exists": true,
+      "anchorValid": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-contrato-borrador.md",
+      "target": "../10-decisiones-y-contratos.md#dec-05--pro-y-piloto-pago",
+      "exists": true,
+      "anchorValid": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-contrato-borrador.md",
+      "target": "../03-ui-ux.md#ux-04--especificar-recuperación-y-acciones-de-error",
+      "exists": true,
+      "anchorValid": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-contrato-borrador.md",
+      "target": "../../../../backend/src/modules/auth/auth.controller.ts#L25",
+      "exists": true,
+      "anchorValid": true,
+      "line": 25,
+      "quotedLine": "  @Public()",
+      "contextStartLine": 23,
+      "context": [
+        "  ) {}",
+        "",
+        "  @Public()",
+        "  @Throttle({ default: { limit: 5, ttl: 60_000 } })",
+        "  @Post('register')",
+        "  async register(",
+        "    @Body() dto: RegisterDto, @Req() request: Request,",
+        "    @Res({ passthrough: true }) response: Response,"
+      ]
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-contrato-borrador.md",
+      "target": "../../../../backend/src/modules/auth/session-security.ts#L43",
+      "exists": true,
+      "anchorValid": true,
+      "line": 43,
+      "quotedLine": "export function assertSessionRequest(request: Request, config: ConfigService): void {",
+      "contextStartLine": 41,
+      "context": [
+        "}",
+        "",
+        "export function assertSessionRequest(request: Request, config: ConfigService): void {",
+        "  // Este header fuerza preflight: un formulario de otro sitio no puede crear,",
+        "  // renovar ni cerrar la sesión del browser. CORS solo admite los orígenes propios.",
+        "  if (request.get('x-session-request') !== '1') {",
+        "    throw new ForbiddenException('Falta el encabezado de seguridad de la sesión');",
+        "  }"
+      ]
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-contrato-borrador.md",
+      "target": "../../../../backend/src/main.ts#L26",
+      "exists": true,
+      "anchorValid": true,
+      "line": 26,
+      "quotedLine": "  app.enableCors({",
+      "contextStartLine": 24,
+      "context": [
+        "  app.use(helmet());",
+        "  app.setGlobalPrefix('api');",
+        "  app.enableCors({",
+        "    origin: allowedOrigins(),",
+        "    credentials: true,",
+        "  });",
+        "  // 100kb (el default de Nest) no entra ni una captura de recorte del escáner en",
+        "  // base64. Lo usa POST /api/cards/identify-visual."
+      ]
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-contrato-borrador.md",
+      "target": "../../../../backend/src/modules/auth/auth.service.ts#L111",
+      "exists": true,
+      "anchorValid": true,
+      "line": 111,
+      "quotedLine": "  async refresh(dto: RefreshSessionDto): Promise<AuthTokens> {",
+      "contextStartLine": 109,
+      "context": [
+        "  }",
+        "",
+        "  async refresh(dto: RefreshSessionDto): Promise<AuthTokens> {",
+        "    const tokenHash = this.hashToken(dto.refreshToken);",
+        "    const owner = await this.prisma.refreshToken.findUnique({",
+        "      where: { tokenHash }, select: { userId: true },",
+        "    });",
+        "    if (!owner) throw new UnauthorizedException('Refresh token inválido');"
+      ]
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-contrato-borrador.md",
+      "target": "../../../../backend/src/modules/auth/auth.controller.ts#L94",
+      "exists": true,
+      "anchorValid": true,
+      "line": 94,
+      "quotedLine": "  private clearSessionCookie(response: Response): void {",
+      "contextStartLine": 92,
+      "context": [
+        "  }",
+        "",
+        "  private clearSessionCookie(response: Response): void {",
+        "    response.clearCookie(REFRESH_COOKIE, refreshCookieOptions(this.config));",
+        "  }",
+        "}"
+      ]
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-contrato-borrador.md",
+      "target": "../../../../backend/src/modules/auth/session-security.ts#L26",
+      "exists": true,
+      "anchorValid": true,
+      "line": 26,
+      "quotedLine": "export function refreshCookieOptions(config: ConfigService): CookieOptions {",
+      "contextStartLine": 24,
+      "context": [
+        "}",
+        "",
+        "export function refreshCookieOptions(config: ConfigService): CookieOptions {",
+        "  return {",
+        "    httpOnly: true,",
+        "    secure: config.get<string>('NODE_ENV') === 'production',",
+        "    sameSite: 'lax',",
+        "    path: '/api/auth',"
+      ]
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-contrato-borrador.md",
+      "target": "../../../../backend/src/modules/auth/auth.service.ts#L160",
+      "exists": true,
+      "anchorValid": true,
+      "line": 160,
+      "quotedLine": "  private async issueSession(",
+      "contextStartLine": 158,
+      "context": [
+        "  }",
+        "",
+        "  private async issueSession(",
+        "    user: PublicUser,",
+        "    deviceInfo?: string,",
+        "    tx?: Prisma.TransactionClient,",
+        "  ): Promise<AuthTokens> {",
+        "    const accessToken = await this.jwtService.signAsync({"
+      ]
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-contrato-borrador.md",
+      "target": "../../../../backend/src/modules/auth/auth.module.ts#L18",
+      "exists": true,
+      "anchorValid": true,
+      "line": 18,
+      "quotedLine": "          expiresIn: configService.get<string>('JWT_ACCESS_TTL', '15m') as JwtSignOptions['expiresIn'],",
+      "contextStartLine": 16,
+      "context": [
+        "        secret: readJwtSecret(configService, 'JWT_SECRET'),",
+        "        signOptions: {",
+        "          expiresIn: configService.get<string>('JWT_ACCESS_TTL', '15m') as JwtSignOptions['expiresIn'],",
+        "        },",
+        "      }),",
+        "    }),",
+        "    RefreshJwtModule,",
+        "  ],"
+      ]
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-contrato-borrador.md",
+      "target": "../../../../backend/src/common/guards/jwt-auth.guard.ts#L38",
+      "exists": true,
+      "anchorValid": true,
+      "line": 38,
+      "quotedLine": "      request.user = await this.jwtService.verifyAsync<AccessTokenPayload>(token);",
+      "contextStartLine": 36,
+      "context": [
+        "",
+        "    try {",
+        "      request.user = await this.jwtService.verifyAsync<AccessTokenPayload>(token);",
+        "    } catch {",
+        "      throw new UnauthorizedException('Token de acceso inválido o expirado');",
+        "    }",
+        "",
+        "    return true;"
+      ]
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-contrato-borrador.md",
+      "target": "../../../../backend/prisma/schema.prisma#L12",
+      "exists": true,
+      "anchorValid": true,
+      "line": 12,
+      "quotedLine": "model User {",
+      "contextStartLine": 10,
+      "context": [
+        "// ─── Usuarios y sesiones ───",
+        "",
+        "model User {",
+        "  id           String  @id @default(uuid())",
+        "  email        String  @unique",
+        "  username     String  @unique",
+        "  passwordHash String",
+        "  displayName  String"
+      ]
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-contrato-borrador.md",
+      "target": "../../../../backend/src/modules/auth/auth.service.ts#L88",
+      "exists": true,
+      "anchorValid": true,
+      "line": 88,
+      "quotedLine": "  async login(",
+      "contextStartLine": 86,
+      "context": [
+        "  }",
+        "",
+        "  async login(",
+        "    dto: LoginDto,",
+        "    session?: Pick<RefreshSessionDto, 'deviceInfo'>,",
+        "  ): Promise<AuthTokens> {",
+        "    const email = dto.email.trim().toLowerCase();",
+        ""
+      ]
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-contrato-borrador.md",
+      "target": "../../../../backend/src/modules/auth/auth.service.ts#L198",
+      "exists": true,
+      "anchorValid": true,
+      "line": 198,
+      "quotedLine": "  private toPublicUser(user: UserRecord): PublicUser {",
+      "contextStartLine": 196,
+      "context": [
+        "  }",
+        "",
+        "  private toPublicUser(user: UserRecord): PublicUser {",
+        "    const { passwordHash: _passwordHash, ...publicUser } = user;",
+        "    return publicUser;",
+        "  }",
+        "}"
+      ]
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-contrato-borrador.md",
+      "target": "../../../../backend/src/modules/users/users.service.ts#L14",
+      "exists": true,
+      "anchorValid": true,
+      "line": 14,
+      "quotedLine": "export const publicUserSelect = {",
+      "contextStartLine": 12,
+      "context": [
+        " * al select, así que ningún endpoint puede filtrarlo por accidente.",
+        " */",
+        "export const publicUserSelect = {",
+        "  id: true,",
+        "  email: true,",
+        "  username: true,",
+        "  displayName: true,",
+        "  avatarUrl: true,"
+      ]
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-contrato-borrador.md",
+      "target": "../../../../frontend/lib/api/api-client.ts#L7",
+      "exists": true,
+      "anchorValid": true,
+      "line": 7,
+      "quotedLine": "export class ApiError extends Error {",
+      "contextStartLine": 5,
+      "context": [
+        "  process.env.NEXT_PUBLIC_API_URL?.replace(/\\/+$/, '') ?? 'http://localhost:3001/api';",
+        "",
+        "export class ApiError extends Error {",
+        "  readonly status: number;",
+        "",
+        "  constructor(status: number, message: string) {",
+        "    super(message);",
+        "    this.name = 'ApiError';"
+      ]
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-contrato-borrador.md",
+      "target": "../../../../frontend/lib/api/auth.ts#L32",
+      "exists": true,
+      "anchorValid": true,
+      "line": 32,
+      "quotedLine": "export async function logout(): Promise<void> {",
+      "contextStartLine": 30,
+      "context": [
+        "}",
+        "",
+        "export async function logout(): Promise<void> {",
+        "  try {",
+        "    await apiFetch<{ success: boolean }>('/auth/logout', {",
+        "      method: 'POST', body: {}, skipAuth: true,",
+        "    });",
+        "  } finally {"
+      ]
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-contrato-borrador.md",
+      "target": "../../../../frontend/lib/api/token-storage.ts#L27",
+      "exists": true,
+      "anchorValid": true,
+      "line": 27,
+      "quotedLine": "export function clearTokens(): void {",
+      "contextStartLine": 25,
+      "context": [
+        "}",
+        "",
+        "export function clearTokens(): void {",
+        "  accessToken = null;",
+        "  sessionFlag(false);",
+        "}",
+        "",
+        "export function hasSession(): boolean {"
+      ]
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-contrato-borrador.md",
+      "target": "../../../../frontend/hooks/use-auth.tsx#L23",
+      "exists": true,
+      "anchorValid": true,
+      "line": 23,
+      "quotedLine": "export interface AuthContextValue {",
+      "contextStartLine": 21,
+      "context": [
+        "import type { UserDto } from '@/types/api';",
+        "",
+        "export interface AuthContextValue {",
+        "  user: UserDto | null;",
+        "  isLoading: boolean;",
+        "  isAuthenticated: boolean;",
+        "  login: (email: string, password: string) => Promise<UserDto>;",
+        "  register: (payload: RegisterPayload) => Promise<UserDto>;"
+      ]
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-contrato-borrador.md",
+      "target": "../../../../backend/src/modules/share/share.service.ts#L293",
+      "exists": true,
+      "anchorValid": true,
+      "line": 293,
+      "quotedLine": "  async getPublic(slug: string): Promise<SharedCollectionDto> {",
+      "contextStartLine": 291,
+      "context": [
+        "  // ─── Ruta pública ───",
+        "",
+        "  async getPublic(slug: string): Promise<SharedCollectionDto> {",
+        "    const link = await this.prisma.shareLink.findFirst({",
+        "      where: { slug, isActive: true, OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }] },",
+        "      include: SHARE_INCLUDE,",
+        "    });",
+        "    if (!link) {"
+      ]
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-contrato-borrador.md",
+      "target": "../../../../backend/src/modules/share/share.service.ts#L372",
+      "exists": true,
+      "anchorValid": true,
+      "line": 372,
+      "quotedLine": "  private async invalidateCache(slug: string): Promise<void> {",
+      "contextStartLine": 370,
+      "context": [
+        "  }",
+        "",
+        "  private async invalidateCache(slug: string): Promise<void> {",
+        "    try {",
+        "      await this.redis.del(publicCacheKey(this.priceProvider.id, slug));",
+        "    } catch (error) {",
+        "      this.logger.warn(`No se pudo invalidar caché pública de ${slug}: ${(error as Error).message}`);",
+        "    }"
+      ]
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-contrato-borrador.md",
+      "target": "../../../../backend/src/modules/share/share.service.ts#L454",
+      "exists": true,
+      "anchorValid": true,
+      "line": 454,
+      "quotedLine": "  private cacheTtlSeconds(expiresAt: Date | null): number {",
+      "contextStartLine": 452,
+      "context": [
+        "  }",
+        "",
+        "  private cacheTtlSeconds(expiresAt: Date | null): number {",
+        "    if (!expiresAt) return SHARE_CACHE_TTL_SECONDS;",
+        "    return Math.min(SHARE_CACHE_TTL_SECONDS, Math.floor((expiresAt.getTime() - Date.now()) / 1000));",
+        "  }",
+        "",
+        "  private async aggregatePublicStats(link: ShareWithRefs, evaluatedAt: Date): Promise<PublicShareStatsDto> {"
+      ]
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-contrato-borrador.md",
+      "target": "../../../../backend/src/modules/share/public-share.controller.ts#L11",
+      "exists": true,
+      "anchorValid": true,
+      "line": 11,
+      "quotedLine": "@Controller('s')",
+      "contextStartLine": 9,
+      "context": [
+        "// La referencia pública permanece en USD: no aplica moneda de cuenta ni ajustes",
+        "// por condición, y solo lee precios guardados del proveedor activo.",
+        "@Controller('s')",
+        "export class PublicShareController {",
+        "  constructor(private readonly shareService: ShareService) {}",
+        "",
+        "  @Public()",
+        "  @Get(':slug')"
+      ]
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-contrato-borrador.md",
+      "target": "../../../../frontend/app/share/[slug]/page.tsx#L24",
+      "exists": true,
+      "anchorValid": true,
+      "line": 24,
+      "quotedLine": "const fetchSharedCollection = cache(async (slug: string): Promise<FetchResult> => {",
+      "contextStartLine": 22,
+      "context": [
+        " * sin esto, cada render de la ruta hace **dos** requests al backend público.",
+        " */",
+        "const fetchSharedCollection = cache(async (slug: string): Promise<FetchResult> => {",
+        "  let response: Response;",
+        "  try {",
+        "    response = await fetch(`${getApiBaseUrl()}/s/${encodeURIComponent(slug)}`, {",
+        "      headers: { Accept: 'application/json' },",
+        "      cache: 'no-store',"
+      ]
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-contrato-borrador.md",
+      "target": "../../../../frontend/public/sw.js#L139",
+      "exists": true,
+      "anchorValid": true,
+      "line": 139,
+      "quotedLine": "      if (url.origin === self.location.origin && /^\\/share(?:\\/|$)/.test(url.pathname)) await cache.delete(request);",
+      "contextStartLine": 137,
+      "context": [
+        "    await Promise.all(requests.map(async (request) => {",
+        "      const url = new URL(request.url);",
+        "      if (url.origin === self.location.origin && /^\\/share(?:\\/|$)/.test(url.pathname)) await cache.delete(request);",
+        "    }));",
+        "  }));",
+        "}",
+        "",
+        "async function networkFirstNavigation(request) {"
+      ]
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-contrato-borrador.md",
+      "target": "../../../../backend/prisma/schema.prisma#L172",
+      "exists": true,
+      "anchorValid": true,
+      "line": 172,
+      "quotedLine": "model Collection {",
+      "contextStartLine": 170,
+      "context": [
+        "// ─── Colecciones ───",
+        "",
+        "model Collection {",
+        "  id        String   @id @default(uuid())",
+        "  userId    String",
+        "  name      String",
+        "  isDefault Boolean  @default(false)",
+        "  createdAt DateTime @default(now())"
+      ]
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-contrato-borrador.md",
+      "target": "../../../../backend/src/modules/collections/collections.service.ts#L353",
+      "exists": true,
+      "anchorValid": true,
+      "line": 353,
+      "quotedLine": "    const found = await this.prisma.collection.findFirst({",
+      "contextStartLine": 351,
+      "context": [
+        "  /** Verifica ownership y devuelve la colección, o 404. */",
+        "  private async assertOwned(userId: string, collectionId: string): Promise<void> {",
+        "    const found = await this.prisma.collection.findFirst({",
+        "      where: { id: collectionId, userId },",
+        "      select: { id: true },",
+        "    });",
+        "    if (!found) throw new NotFoundException(`Colección no encontrada: ${collectionId}`);",
+        "  }"
+      ]
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-contrato-borrador.md",
+      "target": "../../../../infra/inf03/README.md#evidencia-y-operación-pendiente",
+      "exists": true,
+      "anchorValid": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-contrato-borrador.md",
+      "target": "../../../../backend/src/modules/auth/dto/register.dto.ts#L15",
+      "exists": true,
+      "anchorValid": true,
+      "line": 15,
+      "quotedLine": "  @MinLength(8)",
+      "contextStartLine": 13,
+      "context": [
+        "",
+        "  @IsString()",
+        "  @MinLength(8)",
+        "  @MaxLength(72)",
+        "  password: string;",
+        "",
+        "  @IsString()",
+        "  @Matches(/^[a-zA-Z0-9_]{3,20}$/, {"
+      ]
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-contrato-borrador.md",
+      "target": "../../../../backend/src/common/types/auth-user.ts#L1",
+      "exists": true,
+      "anchorValid": true,
+      "line": 1,
+      "quotedLine": "export interface AuthUser {",
+      "contextStartLine": 1,
+      "context": [
+        "export interface AuthUser {",
+        "  sub: string;",
+        "  email: string;",
+        "}",
+        "",
+        "export interface AccessTokenPayload extends AuthUser {"
+      ]
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-contrato-borrador.md",
+      "target": "../../../../frontend/types/api.ts#L266",
+      "exists": true,
+      "anchorValid": true,
+      "line": 266,
+      "quotedLine": "export interface UserDto {",
+      "contextStartLine": 264,
+      "context": [
+        "",
+        "// ─── Usuario ───",
+        "export interface UserDto {",
+        "  id: string;",
+        "  email: string;",
+        "  username: string;",
+        "  displayName: string;",
+        "  avatarUrl: string | null;"
+      ]
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-borrador-review.md",
+      "target": "BE-05-contrato-borrador.md",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-borrador-review.md",
+      "target": "evidencia-be05-borrador-review/baseline-review.json",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-borrador-review.md",
+      "target": "evidencia-be05-borrador-review/BE-05-contrato-borrador-recibido.md",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-borrador-review.md",
+      "target": "evidencia-be05-borrador-review/baseline-recibido.json",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-borrador-review.md",
+      "target": "evidencia-be05-borrador-review/verificacion-recibida.json",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-borrador-review.md",
+      "target": "evidencia-be05-borrador-review/verificacion.json",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-borrador-review.md",
+      "target": "evidencia-be05-borrador-review/correcciones.diff",
+      "exists": true
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-borrador-review.md",
+      "target": "evidencia-be05-borrador-review/hashes-finales.json",
+      "exists": true
+    }
+  ],
+  "brokenLinks": [],
+  "semanticSupport": {
+    "method": "Contraste manual Sol HIGH de contenido y contexto de fuentes locales; enlace/anchor válido por sí solo no acredita soporte ni funcionalidad futura.",
+    "findings": [
+      {
+        "claim": "Auth actual: endpoints/header/Origin/cookie/no-store de éxito; recovery códigos y headers de error son propuestos",
+        "sources": [
+          "backend/src/modules/auth/auth.controller.ts",
+          "backend/src/modules/auth/session-security.ts",
+          "backend/src/main.ts"
+        ],
+        "review": "Lectura del controller/helper/pipe: Origin ausente aceptado; no-store no garantizado en todos los errores. No atribuir Pragma ni códigos nuevos al código actual."
+      },
+      {
+        "claim": "JWT guard/TTL/login/refresh y nueva autoridad de revocación",
+        "sources": [
+          "backend/src/modules/auth/auth.service.ts",
+          "backend/src/modules/auth/auth.module.ts",
+          "backend/src/common/guards/jwt-auth.guard.ts",
+          "backend/prisma/schema.prisma"
+        ],
+        "review": "Guard no consulta User; login verifica antes de issueSession, JWT se firma antes del lock de persistencia; refresh relee bajo User. User no tiene versión/estado/recovery. Orden, relectura, cutoff y atomicidad descritos son requisitos futuros, no garantías observadas."
+      },
+      {
+        "claim": "No exposición de campos nuevos privados y separación del contrato cliente",
+        "sources": [
+          "backend/src/modules/auth/auth.service.ts",
+          "backend/src/modules/users/users.service.ts",
+          "backend/src/common/types/auth-user.ts",
+          "frontend/types/api.ts",
+          "frontend/lib/api/api-client.ts",
+          "frontend/hooks/use-auth.tsx"
+        ],
+        "review": "USER_SELECT/publicUserSelect explícitos, pero toPublicUser sólo elimina passwordHash por spread. ApiError sólo status/mensaje; provider carece de recovery. No se sustituyen contratos actuales con hechos futuros."
+      },
+      {
+        "claim": "Origen público antes de caché, TTL/invalidation, SSR/SW y límite en vuelo",
+        "sources": [
+          "backend/src/modules/share/share.service.ts",
+          "backend/src/modules/share/public-share.controller.ts",
+          "frontend/app/share/[slug]/page.tsx",
+          "frontend/public/sw.js"
+        ],
+        "review": "getPublic consulta link activo/vigente antes de Redis; purge captura error; TTL min de 300 s/expiry. SSR no-store, missing genérico; SW excluye/purga share y API/s fuera de allowlist. No acreditan barrera retroactiva ni estado nuevo de User."
+      },
+      {
+        "claim": "Cascadas/ownership y separación personal frente catálogo/jobs",
+        "sources": [
+          "backend/prisma/schema.prisma",
+          "backend/src/modules/collections/collections.service.ts",
+          "backend/src/modules/share/share.service.ts"
+        ],
+        "review": "Relaciones personales Cascade, ScanJob personal; PriceRefreshJob/ProviderRateLimit/SyncState globales. Ownership inspeccionado en where. No prueba migraciones aplicadas, eliminación ejecutada ni bloqueo actual de todos los escritores."
+      },
+      {
+        "claim": "Gates y eliminación condicional, recuperación Free independiente",
+        "sources": [
+          "docs/plans/lanzamiento-2026-10-07/02-backend.md",
+          "docs/plans/lanzamiento-2026-10-07/10-decisiones-y-contratos.md",
+          "docs/plans/lanzamiento-2026-10-07/RESULTADOS/NEG-03-cuenta-requisitos.md",
+          "docs/plans/lanzamiento-2026-10-07/RESULTADOS/NEG-03-cuenta-review.md",
+          "docs/plans/lanzamiento-2026-10-07/RESULTADOS/NEG-03-cuenta-aceptacion-root.json",
+          "docs/plans/lanzamiento-2026-10-07/03-ui-ux.md",
+          "docs/plans/lanzamiento-2026-10-07/01-frontend.md"
+        ],
+        "review": "DEC-05 permite preparación independiente. BE-05 implementa endpoint sólo si NEG-03 exige; UX-04 requiere borrador, no implementación. Dictamen limitado a UX-04 documental; IDs/gates no se cierran."
+      },
+      {
+        "claim": "Backups y supresión posterior al snapshot",
+        "sources": [
+          "infra/inf03/README.md",
+          "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-03-local-review.md"
+        ],
+        "review": "Ensayo local sintético y consumidor técnico no deciden off-host/retención ni prueban supresión post-snapshot. Contrato mantiene decisiones y prueba de restore pendientes."
+      }
+    ]
+  },
+  "arithmetic": {
+    "randomBytesProposed": 32,
+    "entropyBits": 256,
+    "base64urlUnpaddedChars": 43,
+    "ttlMinutesProposed": 30,
+    "ttlSeconds": 1800,
+    "rollingAdmissionLimitProposed": 3,
+    "rollingWindowSeconds": 3600,
+    "minIntervalSecondsProposed": 60,
+    "reasoning": "Una ventana móvil estricta de 1 h que admite a lo sumo 3 pedidos implica a lo sumo 3 emisiones durante 30 min. Cap activo se verifica además bajo User; cuota/cap agotados impiden garantizar reenvío en 60 s. Propuestas sin ensayo."
+  },
+  "invariantsReviewedManually": [
+    "Solicitar/reenvío no cambia clave, bloquea cuenta, revoca sesión ni invalida enlaces anteriores",
+    "Nuevo secreto permitido sin almacenamiento reversible; sólo memoria sandbox, entrega incierta y límites residuales explícitos",
+    "User primero; releer token/hash/versión/estado existente o futuro dentro de tx; no decisión vieja emite credencial usable post-reset",
+    "authVersion recomendado único; legacy 0/cutoff sin máxima expiración histórica inventada",
+    "202 genérico sin promesa entrega; códigos/DTO/red distintos; GET/mount/preview no consumen; sin replay automático",
+    "Cookie/cliente sólo limpio tras éxito confirmado; campos privados allowlist",
+    "Eliminación condicional y estado durable requerido para 202; origen antes de cache; requests en vuelo y copias externas limitados",
+    "Catálogo/jobs compartidos intactos; backups/retención/operator/restore pendientes; gates/IDs sin cerrar"
+  ],
+  "limitations": "Invariantes/requisitos revisados semánticamente, no implementados ni probados en runtime. Hashes selectivos describen el instante de verificación, no estabilidad global o posterior de centrales."
+}

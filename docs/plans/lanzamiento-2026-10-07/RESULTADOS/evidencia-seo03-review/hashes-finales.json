@@ -1,0 +1,18 @@
+{
+  "capturedAtUtc": "2026-10-09T00:57:33.349771+00:00",
+  "excludesSelf": true,
+  "files": {
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/SEO-03-contenido.md": "00eae218c4ed1f46fff8304d300304d8c27c9bf1e1deccd7f2d7cb4bb1d604ea",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/SEO-03-review.md": "898f68ac37acd5d14665626deeb36a9f07decdae85f40f0b5f367e6d27e9c4e7",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/evidencia-seo03-review/SEO-03-contenido-recibido.md": "c75b557c6178ebb1678ec80eaa44dca25bd305827aaf6f00bd4f5836503689e1",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/evidencia-seo03-review/baseline.json": "b97fc369899edb5c98701cbf34d157d32db62c4210efaa85f5bff07f988875ae",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/evidencia-seo03-review/correcciones.diff": "a45e46464dfe94fbdb287b28b036a233553ccb49ebdb0d7d16aaaaaa3ee83893",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/evidencia-seo03-review/dirty-antes.txt": "8de07d26b67740891caa4c4fa65cb5092ed4bec80bdea46f044573841d9fac90",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/evidencia-seo03-review/fuentes-verificadas.json": "701dfc3d33200fd9a83829ab13c2c03fd4a0c35d36719ccc57063468b3f655a3",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/evidencia-seo03-review/validacion-inicial.json": "bf582f7c58837b502cada19223e5b82657812e4c3dd7d0b659e09b277815c5c7",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/evidencia-seo03-review/validacion.json": "05588acaaf3eee990a60a99e2752da360095d8064dc384186481504f9ae8f2aa",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/evidencia-seo03-review/validar.py": "fae3b2b7f7b63c006c297c0369123193968b06640524647c21981b4734de7468",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/evidencia-seo03-review/verificacion-incidencias.json": "8fd50d0d57f02a3dbc6c3e2106507c7850d93e2aa04e070a83049c80cf73fe36",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/evidencia-seo03-review/web-verificado.json": "28886622699409527013bd8c0ee31e0146409c5a0f1e30aab0f8ed0b9c761160"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "ownDatabaseAbsent": true,
+  "ownRedisRemovedByFullId": true,
+  "SQLConnectionsBeforeDrop": 0,
+  "markersAndFullIDsVerified": true,
+  "sharedCounts": {
+    "migrations": 13,
+    "users": 22,
+    "collections": 22,
+    "items": 69,
+    "shares": 13,
+    "cards": 20670,
+    "gin": 5
+  },
+  "sharedInventoryUnchanged": true,
+  "finishedAtUtc": "2026-10-11T14:15:06.199242+00:00"
+}

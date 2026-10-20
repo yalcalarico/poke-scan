@@ -1,0 +1,27 @@
+{
+  "capturedAt": "2026-10-09T00:32:27.173Z",
+  "robots": {
+    "status": 200,
+    "contentType": "text/plain",
+    "cacheControl": "public, max-age=0, must-revalidate",
+    "bytes": 66,
+    "sha256": "23b11d5bb2b04b016ae83427fdf9a85b0b732cd7dfd6834bac379893d9c301eb",
+    "rules": [
+      "User-Agent: *",
+      "Allow: /",
+      "Sitemap: https://pokescan.app/sitemap.xml"
+    ]
+  },
+  "sitemap": {
+    "status": 200,
+    "contentType": "application/xml",
+    "cacheControl": "public, max-age=0, must-revalidate",
+    "bytes": 426,
+    "sha256": "0760d838a85742af966283c8cb99a0610d2bf7fe0a04784a70a74db9bf9d877d",
+    "urls": [
+      "https://pokescan.app",
+      "https://pokescan.app/buscar",
+      "https://pokescan.app/faq"
+    ]
+  }
+}

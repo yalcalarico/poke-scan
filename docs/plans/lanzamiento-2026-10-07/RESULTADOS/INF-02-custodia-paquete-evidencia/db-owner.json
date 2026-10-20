@@ -1,0 +1,35 @@
+{
+  "runId": "pack_d74d2b31c89c",
+  "owner": "/root",
+  "database": "pack_d74d2b31c89c_test",
+  "marker": "owner=/root;run=pack_d74d2b31c89c;source=CUSTODY-standard-fixture",
+  "pgFullID": "18aa2f6937521ae010930ae98cbee45f2fa435b554c65cf90daaffba0c641ba8",
+  "sourceCounts": {
+    "migrations": 13,
+    "users": 22,
+    "collections": 22,
+    "items": 69,
+    "shares": 13,
+    "cards": 20670,
+    "gin": 5
+  },
+  "standardTestBefore": {
+    "migrations": 11,
+    "users": 2,
+    "collections": 3,
+    "items": 2,
+    "shares": 1,
+    "cards": 20670,
+    "gin": 5,
+    "priced": 7
+  },
+  "createdAtUtc": "2026-10-13T02:36:25.483139+00:00",
+  "liveResources": [],
+  "redis": {
+    "name": "pack_d74d2b31c89c-redis",
+    "id": "87fb959f82069a139fe0a17464728d7ec3db09c0a67fe9ee679e9ea82a696d5f",
+    "port": 56639,
+    "label": "owner=/root;run=pack_d74d2b31c89c;source=CUSTODY-standard-fixture"
+  },
+  "cleanedAtUtc": "2026-10-13T03:13:11.415847+00:00"
+}

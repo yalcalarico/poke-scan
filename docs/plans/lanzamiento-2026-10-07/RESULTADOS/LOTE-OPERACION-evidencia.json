@@ -1,0 +1,120 @@
+{
+  "ticket": "LOTE-OPERACION",
+  "reviewer": "GPT-6.1 Sol HIGH",
+  "status": "LOCAL_TECHNICAL_GATE_PASSED",
+  "observedAt": "2026-10-08T12:59:03.487Z",
+  "integration": {
+    "runId": "inf03-081247bac221",
+    "passed": true,
+    "appChecks": 28,
+    "backupPositive": 1,
+    "prevalidationNegatives": 16,
+    "restoreBeforeSQL": 0,
+    "restoreInvocations": 2,
+    "cleanupComplete": true,
+    "evidence": "LOTE-OPERACION-integracion.json"
+  },
+  "focused": {
+    "infra": {
+      "passed": 45,
+      "failed": 0,
+      "skipped": 0
+    },
+    "appHelper": {
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0
+    },
+    "redisCorrection": {
+      "passed": 11,
+      "failed": 0,
+      "skipped": 0,
+      "includedInGlobal": true
+    }
+  },
+  "global": {
+    "exitCode": 0,
+    "attempt": 2,
+    "lint": true,
+    "frontendTypecheck": true,
+    "nestBuild": true,
+    "nextBuild": true,
+    "backendVitest": {
+      "passed": 377,
+      "skipped": 0
+    },
+    "backendNode": {
+      "passed": 13,
+      "skipped": 0
+    },
+    "backendE2E": {
+      "passed": 6,
+      "skipped": 0
+    },
+    "frontend": {
+      "passed": 458,
+      "skipped": 0
+    },
+    "passedTotal": 854,
+    "skippedTotal": 0,
+    "firstAttempt": {
+      "passedBackend": 376,
+      "failedBackend": 1,
+      "cause": "sin REDIS_URL inherited runner environment in existing Redis spec",
+      "completedGlobal": false,
+      "preservedLog": "LOTE-OPERACION-check-intento-1.log"
+    }
+  },
+  "cleanup": {
+    "allInf03ContainersNetworksVolumesAbsent": true,
+    "gateTemporaryDirectoriesRemaining": 0,
+    "portsFree": [
+      3000,
+      3001,
+      63068
+    ],
+    "sharedHealthAndIdentityPreserved": [
+      {
+        "name": "pokemon-scanner-db",
+        "id": "18aa2f6937521ae010930ae98cbee45f2fa435b554c65cf90daaffba0c641ba8",
+        "health": "healthy"
+      },
+      {
+        "name": "pokemon-scanner-redis",
+        "id": "f2d2ca0ad580fe8ca3e94a59b4b6d5a53d761036ba1d14e45b8543a978bbb15f",
+        "health": "healthy"
+      }
+    ],
+    "redis15InitiallyEmpty": true,
+    "redis15BeforeGlobalRetry": 0,
+    "redis15Final": 0,
+    "testDatabase": "pokemon_cards_test",
+    "testDistinctFromDevelopment": true,
+    "postGlobalBeforeFixtureCleanup": {
+      "users": 5,
+      "collections": 3,
+      "operations": 0,
+      "validTrigramIndexes": 5
+    },
+    "ownFriendsFixturesMatchedBySourceEmailUsernamePairs": 3,
+    "removedOwnUserIdsReturnedInternally": 3,
+    "postOwnFixtureCleanup": {
+      "users": 2,
+      "collections": 3,
+      "operations": 0,
+      "usersAtTestLocal": 0
+    },
+    "baselineLimit": "No pre-suite row snapshot; two other rows and all unrelated collections preserved; no claim of zero users/collections in DBtest"
+  },
+  "limits": {
+    "syntheticJwtNotLogin": true,
+    "localSsrTransport": "HTTP loopback; HTTPS/auth evidence remains INF02",
+    "scannerDisabledHere": true,
+    "realDinoRuntimeEvidenceSeparate": "INF-02-runtime-review.md",
+    "offHost": false,
+    "production": false,
+    "rpoRto": false,
+    "devicesOrAccuracy": false,
+    "coordinatorConsolidationPending": false
+  }
+}

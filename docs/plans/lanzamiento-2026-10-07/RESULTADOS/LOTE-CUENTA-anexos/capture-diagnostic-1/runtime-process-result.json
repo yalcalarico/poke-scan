@@ -1,0 +1,7 @@
+{
+  "exitCode": 0,
+  "liveResources": [
+    "database",
+    "redis"
+  ]
+}

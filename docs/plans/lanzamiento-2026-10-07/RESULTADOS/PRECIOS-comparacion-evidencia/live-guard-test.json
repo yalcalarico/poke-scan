@@ -1,0 +1,7 @@
+{
+  "passed": true,
+  "controls": 10,
+  "originalFetchWasStub": true,
+  "realNetworkRequests": 0,
+  "budgetDeadlineAndKnownGroupsOnly": true
+}

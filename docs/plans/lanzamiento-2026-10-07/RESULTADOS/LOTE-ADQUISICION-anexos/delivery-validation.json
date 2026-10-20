@@ -1,0 +1,85 @@
+{
+  "validatedAtUtc": "2026-10-10T14:50:24.539231+00:00",
+  "linksVerified": 18,
+  "links": [
+    {
+      "target": "FE-07-SEO-03-review-aceptacion-root.json",
+      "exists": true
+    },
+    {
+      "target": "LOTE-ADQUISICION-anexos/source-baseline.json",
+      "exists": true
+    },
+    {
+      "target": "LOTE-ADQUISICION-evidencia.json",
+      "exists": true
+    },
+    {
+      "target": "LOTE-ADQUISICION-anexos/check-standard.log",
+      "exists": true
+    },
+    {
+      "target": "LOTE-ADQUISICION-anexos/check-standard-result.json",
+      "exists": true
+    },
+    {
+      "target": "LOTE-ADQUISICION-anexos/contextual-api-client-fullfile.log",
+      "exists": true
+    },
+    {
+      "target": "LOTE-ADQUISICION-anexos/context-corrected/check-standard-context-corrected.log",
+      "exists": true
+    },
+    {
+      "target": "LOTE-ADQUISICION-anexos/context-corrected/check-standard-context-corrected-result.json",
+      "exists": true
+    },
+    {
+      "target": "LOTE-ADQUISICION-anexos/run-original.py",
+      "exists": true
+    },
+    {
+      "target": "LOTE-ADQUISICION-anexos/runner-environment-correction.diff",
+      "exists": true
+    },
+    {
+      "target": "LOTE-ADQUISICION-anexos/runner-context-cause.json",
+      "exists": true
+    },
+    {
+      "target": "LOTE-ADQUISICION-anexos/helper-incidencias.json",
+      "exists": true
+    },
+    {
+      "target": "LOTE-ADQUISICION-anexos/ownership.json",
+      "exists": true
+    },
+    {
+      "target": "LOTE-ADQUISICION-anexos/context-corrected/ownership.json",
+      "exists": true
+    },
+    {
+      "target": "LOTE-ADQUISICION-anexos/failure-cleanup-and-source-verification.json",
+      "exists": true
+    },
+    {
+      "target": "LOTE-ADQUISICION-anexos/context-corrected/failure-cleanup-and-source-verification.json",
+      "exists": true
+    },
+    {
+      "target": "LOTE-ADQUISICION-anexos/root-cleanup-observation.json",
+      "exists": true
+    },
+    {
+      "target": "LOTE-ADQUISICION-anexos/outputs-vs-prior-cuenta.json",
+      "exists": true
+    }
+  ],
+  "sourceAndReceiptHashesVerified": 623,
+  "sourceFiles": 510,
+  "changedSources": [],
+  "globalGateGreen": false,
+  "runtimeExecuted": false,
+  "ownedRuntimeResources": [],
+  "rootCleanupSourcePreserved": true
+}

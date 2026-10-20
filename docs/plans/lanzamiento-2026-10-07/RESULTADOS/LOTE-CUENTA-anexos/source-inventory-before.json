@@ -1,0 +1,157 @@
+{
+  "dev": {
+    "cards": 20670,
+    "sets": 176,
+    "migrations": 11,
+    "users": 22,
+    "collections": 22,
+    "items": 69,
+    "shares": 13,
+    "prices": 29325,
+    "jobs": 18721,
+    "snapshots": 1,
+    "gin": 5
+  },
+  "test": {
+    "cards": 20670,
+    "sets": 176,
+    "migrations": 11,
+    "users": 2,
+    "collections": 3,
+    "items": 2,
+    "shares": 1,
+    "prices": 188,
+    "jobs": 0,
+    "snapshots": 0,
+    "gin": 5
+  },
+  "infra": {
+    "postgres": {
+      "id": "18aa2f6937521ae010930ae98cbee45f2fa435b554c65cf90daaffba0c641ba8",
+      "name": "pokemon-scanner-db",
+      "image": "sha256:d394728dee24b7791f1969c683f8b8410fe57450713a1db2aff5a500f0f98ab0",
+      "state": "running",
+      "health": "healthy",
+      "ports": {
+        "5432/tcp": [
+          {
+            "HostIp": "127.0.0.1",
+            "HostPort": "55432"
+          }
+        ]
+      },
+      "labels": {
+        "com.docker.compose.config-hash": "93cf41e7b45130925a2386b80c4d5cf46c7beca59118492f48bc78a47a6e2a04",
+        "com.docker.compose.container-number": "1",
+        "com.docker.compose.depends_on": "",
+        "com.docker.compose.image": "sha256:d394728dee24b7791f1969c683f8b8410fe57450713a1db2aff5a500f0f98ab0",
+        "com.docker.compose.oneoff": "False",
+        "com.docker.compose.project": "pokemon-cards-scanner-app",
+        "com.docker.compose.project.config_files": "/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/docker-compose.yml",
+        "com.docker.compose.project.working_dir": "/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app",
+        "com.docker.compose.replace": "pokemon-scanner-db",
+        "com.docker.compose.service": "db",
+        "com.docker.compose.version": "5.5.1"
+      },
+      "mounts": [
+        {
+          "Type": "volume",
+          "Name": "pokemon-cards-scanner-app_pgdata",
+          "Destination": "/var/lib/postgresql/data"
+        }
+      ]
+    },
+    "redisDev": {
+      "id": "f2d2ca0ad580fe8ca3e94a59b4b6d5a53d761036ba1d14e45b8543a978bbb15f",
+      "name": "pokemon-scanner-redis",
+      "image": "sha256:ec4f171e9ff071bb2a1c936057d3be00206069b028b6c0d61df2477e1dd02c42",
+      "state": "running",
+      "health": "healthy",
+      "ports": {
+        "6379/tcp": [
+          {
+            "HostIp": "127.0.0.1",
+            "HostPort": "6379"
+          }
+        ]
+      },
+      "labels": {
+        "com.docker.compose.config-hash": "4c58a6fa0b1d368d639d13c5cfa973eec38ee32666e41ab90a67fad28be6d7ed",
+        "com.docker.compose.container-number": "1",
+        "com.docker.compose.depends_on": "",
+        "com.docker.compose.image": "sha256:ec4f171e9ff071bb2a1c936057d3be00206069b028b6c0d61df2477e1dd02c42",
+        "com.docker.compose.oneoff": "False",
+        "com.docker.compose.project": "pokemon-cards-scanner-app",
+        "com.docker.compose.project.config_files": "/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/docker-compose.yml",
+        "com.docker.compose.project.working_dir": "/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app",
+        "com.docker.compose.replace": "pokemon-scanner-redis",
+        "com.docker.compose.service": "redis",
+        "com.docker.compose.version": "5.5.1"
+      },
+      "mounts": [
+        {
+          "Type": "volume",
+          "Name": "pokemon-cards-scanner-app_redisdata",
+          "Destination": "/data"
+        }
+      ]
+    }
+  },
+  "databaseAbsent": true,
+  "redisAbsent": true,
+  "sourceTestConnections": 0,
+  "ginDev": [
+    {
+      "oid": "25066",
+      "name": "card_sets_name_trgm_idx",
+      "definition": "CREATE INDEX card_sets_name_trgm_idx ON public.card_sets USING gin (name gin_trgm_ops)"
+    },
+    {
+      "oid": "32842",
+      "name": "cards_artist_trgm_idx",
+      "definition": "CREATE INDEX cards_artist_trgm_idx ON public.cards USING gin (artist gin_trgm_ops)"
+    },
+    {
+      "oid": "25065",
+      "name": "cards_name_trgm_idx",
+      "definition": "CREATE INDEX cards_name_trgm_idx ON public.cards USING gin (name gin_trgm_ops)"
+    },
+    {
+      "oid": "25885",
+      "name": "users_display_name_trgm_idx",
+      "definition": "CREATE INDEX users_display_name_trgm_idx ON public.users USING gin (\"displayName\" gin_trgm_ops)"
+    },
+    {
+      "oid": "25884",
+      "name": "users_username_trgm_idx",
+      "definition": "CREATE INDEX users_username_trgm_idx ON public.users USING gin (username gin_trgm_ops)"
+    }
+  ],
+  "ginTest": [
+    {
+      "oid": "43063",
+      "name": "card_sets_name_trgm_idx",
+      "definition": "CREATE INDEX card_sets_name_trgm_idx ON public.card_sets USING gin (name gin_trgm_ops)"
+    },
+    {
+      "oid": "43065",
+      "name": "cards_artist_trgm_idx",
+      "definition": "CREATE INDEX cards_artist_trgm_idx ON public.cards USING gin (artist gin_trgm_ops)"
+    },
+    {
+      "oid": "43067",
+      "name": "cards_name_trgm_idx",
+      "definition": "CREATE INDEX cards_name_trgm_idx ON public.cards USING gin (name gin_trgm_ops)"
+    },
+    {
+      "oid": "43086",
+      "name": "users_display_name_trgm_idx",
+      "definition": "CREATE INDEX users_display_name_trgm_idx ON public.users USING gin (\"displayName\" gin_trgm_ops)"
+    },
+    {
+      "oid": "43089",
+      "name": "users_username_trgm_idx",
+      "definition": "CREATE INDEX users_username_trgm_idx ON public.users USING gin (username gin_trgm_ops)"
+    }
+  ]
+}

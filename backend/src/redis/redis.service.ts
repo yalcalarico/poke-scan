@@ -35,7 +35,7 @@ export interface RedisStatus {
   /** Hay `REDIS_URL` configurado. Distingue "no configurado" de "caído". */
   configured: boolean;
   available: boolean;
-  /** Desde cuándo está caído. `null` si está sano o si nunca estuvo arriba. */
+  /** Desde cuándo se quiso usar la caché sin conexión. `null` si está sana o no configurada. */
   degradedSince: string | null;
   lastErrorAt: string | null;
 }
@@ -44,6 +44,7 @@ export interface RedisStatus {
 export class RedisService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(LOG_TAG);
   private client: Redis | null = null;
+  private shuttingDown = false;
   private available = false;
   /** Se define en `onModuleInit`; sirve para no reportar "degradado" si nunca hubo Redis. */
   private configured = false;
@@ -72,55 +73,66 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
         lazyConnect: true,
         enableOfflineQueue: false,
         maxRetriesPerRequest: 1,
+        // La cola offline no cubre comandos enviados cuya respuesta se perdió.
+        // No repetir escrituras inciertas, y limitar la espera de su respuesta.
+        autoResendUnfulfilledCommands: false,
+        commandTimeout: 3000,
         connectTimeout: 3000,
-        retryStrategy: (times: number) => (times > 3 ? null : Math.min(times * 500, 2000)),
+        // Redis es una caché opcional: acotar la espera entre reintentos permite
+        // recuperarla sin reiniciar la API, incluso tras una caída larga.
+        retryStrategy: (times: number) => Math.min(500 * 2 ** Math.min(times - 1, 5), 15_000),
       });
 
-      client.on('error', (error: Error) => {
-        this.warnThrottled('conexión', `Error de Redis: ${error.message}`);
-        this.noteError();
+      client.on('error', () => {
+        if (this.shuttingDown) return;
+        this.warnThrottled('conexión', 'Error de conexión con Redis; se continúa sin caché');
         this.setAvailable(false);
       });
       client.on('ready', () => {
+        if (this.shuttingDown) return;
         this.setAvailable(true);
       });
+      client.on('close', () => {
+        if (this.shuttingDown) return;
+        this.setAvailable(false);
+      });
+      client.on('reconnecting', () => {
+        if (this.shuttingDown) return;
+        this.setAvailable(false);
+      });
       client.on('end', () => {
+        if (this.shuttingDown) return;
         this.setAvailable(false);
       });
 
+      this.client = client;
       client
         .connect()
         .then(() => {
-          this.logger.log(`Conectado a Redis en ${url}`);
-          this.setAvailable(true);
+          if (this.shuttingDown || client.status !== 'ready') return;
+          this.logger.log('Conectado a Redis');
         })
-        .catch((error: Error) => {
-          this.logger.warn(
-            `No se pudo conectar a Redis (${error.message}): se continúa sin caché`,
-          );
-          this.noteError();
-          this.setAvailable(false);
+        .catch(() => {
+          if (this.shuttingDown || client.status === 'ready') return;
+          this.warnThrottled('conexión', 'No se pudo conectar a Redis; se continúa sin caché');
         });
-
-      this.client = client;
-    } catch (error) {
+    } catch {
       this.noteError();
-      this.logger.warn(
-        `Redis no disponible: ${(error as Error).message}. Se continúa sin caché`,
-      );
+      this.warnThrottled('conexión', 'Redis no disponible; se continúa sin caché');
       this.setAvailable(false);
     }
   }
 
   async onModuleDestroy(): Promise<void> {
     if (!this.client) return;
-    try {
-      await this.client.quit();
-    } catch {
-      this.client.disconnect();
-    }
-    this.client = null;
+    this.shuttingDown = true;
     this.setAvailable(false);
+    const client = this.client;
+    this.client = null;
+    // ioredis posee listeners ready/close que resuelven connect(): no quitarlos.
+    // Los nuestros ignoran eventos tardíos y conservan el handler de error.
+    // disconnect() cancela el timer de reconexión sin esperar una respuesta.
+    client.disconnect();
   }
 
   isAvailable(): boolean {
@@ -175,6 +187,8 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
    * el log crezca 47 veces.
    */
   private warnThrottled(kind: string, message: string): void {
+    if (this.shuttingDown) return;
+    this.noteError();
     const now = Date.now();
     const previous = this.warnedAt.get(kind);
     if (previous && now - previous.at < DEGRADED_LOG_INTERVAL_MS) {
@@ -183,7 +197,6 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     }
     const suppressed = previous?.suppressed ?? 0;
     this.warnedAt.set(kind, { at: now, suppressed: 0 });
-    this.noteError();
     this.logger.warn(
       suppressed > 0 ? `${message} (+${suppressed} avisos suprimidos)` : message,
     );
@@ -193,8 +206,8 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     if (!this.isAvailable()) return null;
     try {
       return await this.client!.get(key);
-    } catch (error) {
-      this.warnThrottled('get', `get(${key}) falló: ${(error as Error).message}`);
+    } catch {
+      this.warnThrottled('get', 'Falló una lectura de Redis; se continúa sin caché');
       return null;
     }
   }
@@ -224,8 +237,8 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
       } else {
         await this.client!.set(key, value);
       }
-    } catch (error) {
-      this.warnThrottled('set', `set(${key}) falló: ${(error as Error).message}`);
+    } catch {
+      this.warnThrottled('set', 'Falló una escritura de Redis; se continúa sin caché');
     }
   }
 
@@ -237,8 +250,8 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     if (!this.isAvailable() || keys.length === 0) return;
     try {
       await this.client!.del(...keys);
-    } catch (error) {
-      this.warnThrottled('del', `del falló: ${(error as Error).message}`);
+    } catch {
+      this.warnThrottled('del', 'Falló una eliminación en Redis; se continúa sin caché');
     }
   }
 
@@ -259,8 +272,8 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     try {
       const result = await this.client!.set(key, token, 'EX', Math.floor(ttlSeconds), 'NX');
       return result === 'OK';
-    } catch (error) {
-      this.warnThrottled('acquireLock', `acquireLock(${key}) falló: ${(error as Error).message}`);
+    } catch {
+      this.warnThrottled('acquireLock', 'Falló la adquisición del lock Redis');
       return false;
     }
   }
@@ -282,8 +295,8 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
         token,
       )) as number;
       return result === 1;
-    } catch (error) {
-      this.warnThrottled('releaseLock', `releaseLock(${key}) falló: ${(error as Error).message}`);
+    } catch {
+      this.warnThrottled('releaseLock', 'Falló la liberación del lock Redis');
       return false;
     }
   }
@@ -300,8 +313,8 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
         String(Math.floor(ttlSeconds)),
       )) as number;
       return result === 1;
-    } catch (error) {
-      this.warnThrottled('extendLock', `extendLock(${key}) falló: ${(error as Error).message}`);
+    } catch {
+      this.warnThrottled('extendLock', 'Falló la renovación del lock Redis');
       return false;
     }
   }

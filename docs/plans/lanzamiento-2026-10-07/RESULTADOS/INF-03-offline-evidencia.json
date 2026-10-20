@@ -1,0 +1,123 @@
+{
+  "runId": "inf03-199c552cc3b5",
+  "kind": "offline-postgresql-filesystem-only",
+  "startedAt": "2026-10-08T11:47:21.355Z",
+  "checks": [
+    "pgpass-rejects-CRLF",
+    "file-size-bound",
+    "parent-symlink",
+    "tar-imposes-0600-from-0644",
+    "tar-traversal",
+    "tar-absolute",
+    "tar-duplicate",
+    "tar-hardlink",
+    "tar-oversize-entry",
+    "tar-truncated-tar",
+    "source-ownership-isolation-role-version",
+    "destination-ownership-isolation-role-version",
+    "actual-marker-mismatch",
+    "privileged-role",
+    "occupied-target",
+    "multiple-networks",
+    "shared-volume",
+    "real-pgpass-colon-backslash-pg-dump",
+    "real-pg-restore-transaction-failure",
+    "sql-failure-leaves-destination-empty",
+    "real-schema-columns-constraints-indexes-migration-checksums-roundtrip",
+    "internal-plaintext-removed-success-and-failure"
+  ],
+  "cryptoAgeTested": false,
+  "resources": [
+    {
+      "kind": "network",
+      "name": "inf03-199c552cc3b5-source-net",
+      "role": "source"
+    },
+    {
+      "kind": "volume",
+      "name": "inf03-199c552cc3b5-source-pgdata",
+      "role": "source"
+    },
+    {
+      "kind": "container",
+      "name": "inf03-199c552cc3b5-source-pg",
+      "role": "source"
+    },
+    {
+      "kind": "network",
+      "name": "inf03-199c552cc3b5-destination-net",
+      "role": "destination"
+    },
+    {
+      "kind": "volume",
+      "name": "inf03-199c552cc3b5-destination-pgdata",
+      "role": "destination"
+    },
+    {
+      "kind": "container",
+      "name": "inf03-199c552cc3b5-destination-pg",
+      "role": "destination"
+    },
+    {
+      "kind": "container",
+      "name": "inf03-199c552cc3b5-shadow",
+      "role": "shadow"
+    }
+  ],
+  "cleanup": {
+    "errors": [
+      "No se pudo verificar inf03-199c552cc3b5-shadow"
+    ],
+    "remaining": [],
+    "complete": true,
+    "preservedPrivateContext": "/var/folders/5y/06b1k3pd2fz121396fbcrpf00000gn/T/inf03-199c552cc3b5-offline-IpDXoJ",
+    "followup": {
+      "resourcesAbsent": true,
+      "hostTemporaryRemoved": true,
+      "reason": "Shadow ya eliminado; la detección de ausencia era sensible a mayúsculas y marcó un fallo falso.",
+      "verifiedAt": "2026-10-08T11:48:26.719Z"
+    }
+  },
+  "sharedBefore": [
+    {
+      "name": "pokemon-scanner-db",
+      "id": "18aa2f693752",
+      "status": "Up 3 days (healthy)"
+    },
+    {
+      "name": "pokemon-scanner-redis",
+      "id": "f2d2ca0ad580",
+      "status": "Up 3 days (healthy)"
+    }
+  ],
+  "tooling": {
+    "node": "v22.20.0",
+    "pnpm": "10.17.1",
+    "platform": "darwin",
+    "arch": "arm64",
+    "image": "postgres@sha256:0ea6700a3b4f0ae6ce746519073558aed4d88a79d8d07622a9a644946c7319c4",
+    "imageId": "sha256:4b5d4fd438e2c1ce13106e4996fc604f0a1cff39cde48b546fcac3cf1a233c3a"
+  },
+  "schemaFingerprint": "c352ac6ab770d71d5343454bc7f9d5fc55562e53d533bc8194bdbf160c264d37",
+  "migrations": 11,
+  "constraintsPublic": 33,
+  "pgTrgm": "1.6",
+  "postgresVersion": "16.15 (Debian 16.15-1.pgdg12+2)",
+  "pgDumpVersion": "pg_dump (PostgreSQL) 16.15 (Debian 16.15-1.pgdg12+2)",
+  "pgRestoreVersion": "pg_restore (PostgreSQL) 16.15 (Debian 16.15-1.pgdg12+2)",
+  "status": "passed",
+  "sharedAfter": [
+    {
+      "name": "pokemon-scanner-db",
+      "id": "18aa2f693752",
+      "status": "Up 3 days (healthy)"
+    },
+    {
+      "name": "pokemon-scanner-redis",
+      "id": "f2d2ca0ad580",
+      "status": "Up 3 days (healthy)"
+    }
+  ],
+  "endedAt": "2026-10-08T11:47:31.346Z",
+  "durationMs": 9991
+}

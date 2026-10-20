@@ -52,6 +52,9 @@
 33. [Un rate limit en memoria es un rate limit por proceso](#33-un-rate-limit-en-memoria-es-un-rate-limit-por-proceso)
 34. [Un `null` de Redis puede ser "todavía no conectó"](#34-un-null-de-redis-puede-ser-todavía-no-conectó-y-en-un-script-de-migración-es-un-no-op-silencioso)
 35. [Podar `card_prices` por edad rompe el delta de 30 días, sin error](#35-podar-card_prices-por-edad-rompe-el-delta-de-30-días-sin-error)
+36. [Un alta aditiva incierta necesita conservar su `Idempotency-Key`](#36-un-alta-aditiva-incierta-necesita-conservar-su-idempotency-key)
+37. [Redis deja de recuperarse si el retryStrategy devuelve `null`](#37-redis-deja-de-recuperarse-si-el-retrystrategy-devuelve-null)
+38. [Los locks consultivos de PostgreSQL devuelven `void`](#38-los-locks-consultivos-de-postgresql-devuelven-void)
 
 ---
 
@@ -1308,6 +1311,83 @@ leen todos** y preguntarse qué fila es la que cada query da por perdida. Acá
 referencia del delta sobrevive" y pone 10 refreshes fuera de la ventana de
 detalle: si la consolidación no deja un punto usable, el delta queda sin
 referencia.
+
+## 36. Un alta aditiva incierta necesita conservar su `Idempotency-Key`
+
+`POST /collections/:id/items` suma cantidad. Si el cliente pierde la respuesta,
+repetir sin `Idempotency-Key` vuelve a sumar; una lectura posterior de cantidad
+no atribuye ese incremento cuando hubo otras ediciones. Para un intento incierto,
+el cliente conserva la misma clave UUID y el mismo payload por hasta 30 días.
+Usar otra clave representa una nueva alta intencional. El backend conserva un
+tombstone después del vencimiento para que una clave antigua nunca vuelva a
+escribir, así que no se debe reutilizar una clave para otra operación.
+
+La escritura y el registro de idempotencia comparten transacción. No agregar un
+job de limpieza que borre tombstones: permitiría que un replay demorado sume de
+nuevo. Ver [api.md](api.md) y [database.md](database.md) para el contrato.
+
+## 37. Redis deja de recuperarse si el `retryStrategy` devuelve `null`
+
+El cliente tenía `retryStrategy(times > 3) => null`. Cuando Redis arrancaba caído
+o se interrumpía por tiempo suficiente, ioredis terminaba el ciclo de conexión
+y la caché quedaba desconectada hasta reiniciar la API. El fallback seguía
+funcionando, pero no había recuperación automática.
+
+La estrategia ahora reintenta indefinidamente con esperas de 500 ms, 1 s, 2 s,
+4 s, 8 s y luego 15 s como máximo. `enableOfflineQueue: false` evita encolar
+comandos nuevos mientras está desconectado y `maxRetriesPerRequest: 1` conserva
+el límite por request. **Eso no alcanza para comandos ya enviados:** ioredis
+reenvía las respuestas pendientes por otro camino. Por eso también se configura
+`autoResendUnfulfilledCommands: false` y `commandTimeout: 3000`. El timeout
+limita tanto respuestas perdidas como un socket conectado que no responde; sin
+él, desactivar el replay puede dejar una promesa pendiente al recuperar. Un
+comando incierto puede haberse aplicado en Redis antes del corte: el cliente no
+lo repite automáticamente, pero tampoco puede afirmar que no se aplicó.
+
+Los eventos `close`, `reconnecting` y `end` actualizan el estado degradado;
+`ready` lo limpia. Los callbacks de la promesa inicial de `connect()` no cambian
+ese estado, porque pueden ejecutarse después de otro evento. El cierre del módulo
+desconecta sin esperar respuestas y cancela el timer de reconexión; **no quita
+los listeners internos de ioredis**, que resuelven/rechazan `connect()`. Los
+handlers propios ignoran callbacks tardíos durante shutdown, incluido `error`.
+Los avisos salen como máximo una vez por minuto por operación, sin URL, mensajes
+crudos, keys ni payloads; `lastErrorAt` se actualiza también en fallos suprimidos.
+
+La prueba de política usa un doble determinista; la misma suite usa ioredis real
+con sockets RESP propios para el comando en vuelo, blackhole y shutdown durante
+handshake, reconexión y conexión sana. El corte/restauración de Redis y el fallback
+PostgreSQL del consumidor se validan aparte con Redis aislado y una API que
+permanece viva. Un cache miss unitario no acredita ese fallback. No usar el Redis
+de desarrollo ni `FLUSHDB` para repetir estas pruebas.
+
+## 38. Los locks consultivos de PostgreSQL devuelven `void`
+
+`pg_advisory_xact_lock` devuelve `void`; Prisma 6 no puede deserializar ese
+resultado con `$queryRaw` y responde `P2010`. Ejecutá el `SELECT` parametrizado
+con `$executeRaw` para adquirir el lock sin intentar devolver la columna. No
+reemplacés `Prisma.sql` por concatenación de strings.
+
+La recuperación de cuenta usa locks consultivos en PostgreSQL para serializar
+las cuotas compartidas. El instante de conteo se lee con `clock_timestamp()`
+después de obtenerlos. Los hits de más de una hora se podan en la admisión; un
+429 de IP/global no agrega filas. Redis o una cuota local por proceso no son
+sustitutos de este control.
+
+## 39. Timeout de entrega no significa cancelar ni borrar memoria
+
+Recuperación limita las transacciones de admisión/emisión/handoff a 1500 ms
+con espera de pool de 500 ms y timeouts SQL locales de 1200 ms. Los tickets
+usan `performance.now()` para sus 2 s; el vencimiento del enlace usa el reloj
+PostgreSQL. Esas cotas no acreditan cancelación de un driver que no devuelve.
+Shutdown señala jobs pendientes y cuarentena tras 2100 ms; no borrar ese estado
+ni retirar el clon hasta comprobar settle y cero conexiones.
+
+El emisor borra su referencia al secreto al abortar y en `finally`. Un receptor
+que copie el enlace debe gestionar su propio lease/cancelación. Desreferenciar
+strings no promete zeroización ni momento de GC. `never-resolve` en el harness
+es cooperativo: abortar resuelve su espera y elimina callbacks; `Promise.race`
+por sí sola no haría eso. Un error después del handoff conserva la vigencia
+del token confirmado, porque la entrega puede haber ocurrido.
 
 ## Cross-references
 

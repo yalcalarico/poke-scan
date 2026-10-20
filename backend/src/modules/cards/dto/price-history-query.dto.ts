@@ -13,7 +13,7 @@ export const PRICE_HISTORY_DEFAULT_DAYS = 30;
 export const PRICE_HISTORY_MIN_DAYS = 7;
 /** Tope duro: 365 puntos es el payload más grande que se devuelve. */
 export const PRICE_HISTORY_MAX_DAYS = 365;
-export const PRICE_HISTORY_PROVIDERS = [...Object.values(PROVIDER_IDS), 'legacy'] as const;
+export const PRICE_HISTORY_PROVIDERS = [...Object.values(PROVIDER_IDS), 'tcgcsv', 'legacy'] as const;
 
 /**
  * Query de `GET /cards/:id/prices/history`.

@@ -1,0 +1,12 @@
+{
+  "name": "stop-before-regression",
+  "command": [
+    "pnpm",
+    "run",
+    "stop"
+  ],
+  "startedAtUtc": "2026-10-10T14:31:26.986151+00:00",
+  "finishedAtUtc": "2026-10-10T14:31:27.397309+00:00",
+  "exitCode": 0,
+  "log": "logs/stop-before-regression.log"
+}

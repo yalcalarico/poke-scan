@@ -1,0 +1,20 @@
+{
+  "localCardVerified": {
+    "id": "me55-18",
+    "name": "Articuno",
+    "number": "18",
+    "language": "en"
+  },
+  "missingStoredItemGroups": 28,
+  "hasQuoteForAnotherVariant": 24,
+  "noCardQuoteAtAll": 4,
+  "missingByStoredVariant": {
+    "normal": 18,
+    "holofoil": 10
+  },
+  "runtimeWorkerDisabledVerified": true,
+  "logReceipt": "/private/tmp/pokescan-beta-form-20261013/user-api.log:97",
+  "externalFetchBlockedByOwnedStartupWrapper": true,
+  "readOnlySQL": true,
+  "priceDataNotChanged": true
+}

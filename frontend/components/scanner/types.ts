@@ -35,6 +35,10 @@ export interface SessionEntry {
   /** Corrida que la produjo. Permite reemplazar la entrada si el usuario elige otro candidato. */
   runId: number;
   candidate: RecognizedCard;
+  /** Confirmación explícita desde la revisión; no implica variante ni condición. */
+  identityReviewed?: boolean;
+  /** La selección manual no tiene similitud DINOv2 medida. */
+  selectionSource?: 'manual' | 'visual';
 }
 
 /** Debajo de este score no estamos seguros: es `warning`, nunca `negative` (§2.3). */

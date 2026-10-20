@@ -1,0 +1,42 @@
+{
+  "capturedAt": "2026-10-09T00:33:55.027Z",
+  "activeShare": {
+    "apiStatus": 200,
+    "apiNoStore": true,
+    "privateMarkersInApi": false,
+    "nextStatus": 200,
+    "privateMarkersInNext": false,
+    "hasExpectedPublicSyntheticDisplay": true
+  },
+  "absentShares": [
+    {
+      "label": "revoked",
+      "apiStatus": 404,
+      "apiNoStore": true,
+      "nextStatus": 200,
+      "privateMarkersInNext": false,
+      "publicFixtureNamesInNext": false
+    },
+    {
+      "label": "expired",
+      "apiStatus": 404,
+      "apiNoStore": true,
+      "nextStatus": 200,
+      "privateMarkersInNext": false,
+      "publicFixtureNamesInNext": false
+    },
+    {
+      "label": "missing",
+      "apiStatus": 404,
+      "apiNoStore": true,
+      "nextStatus": 200,
+      "privateMarkersInNext": false,
+      "publicFixtureNamesInNext": false
+    }
+  ],
+  "anonymousCollectionPage": {
+    "nextStatus": 200,
+    "privateMarkersInNext": true,
+    "publicFixtureNamesInNext": false
+  }
+}

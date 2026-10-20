@@ -1,0 +1,360 @@
+{
+  "source": "current compiled Nest + current Next routes",
+  "checks": [
+    {
+      "name": "real-register-cookie-session",
+      "passed": true
+    },
+    {
+      "name": "real-login",
+      "passed": true
+    },
+    {
+      "name": "aggregate-exact-variant-copy-scope-mixed",
+      "passed": true
+    },
+    {
+      "name": "distinct-vacía",
+      "passed": true
+    },
+    {
+      "name": "distinct-cero",
+      "passed": true
+    },
+    {
+      "name": "distinct-desconocida",
+      "passed": true
+    },
+    {
+      "name": "item-exact-saved-attributes-and-reference",
+      "passed": true
+    },
+    {
+      "name": "latest-null-does-not-fallback-mid",
+      "passed": true
+    },
+    {
+      "name": "filter-does-not-shrink-summary-scope",
+      "passed": true
+    },
+    {
+      "name": "portfolio-snapshot-own-coverage-ranking-same-row",
+      "passed": true
+    },
+    {
+      "name": "card-hero-delta-canonical-source-cache-evaluation",
+      "passed": true
+    }
+  ],
+  "payloads": {
+    "main": {
+      "amount": 49,
+      "currency": "USD",
+      "evaluatedAt": "2026-10-08T19:34:25.120Z",
+      "coverage": {
+        "totalCopies": 11,
+        "pricedCopies": 9,
+        "unpricedCopies": 2,
+        "coverageRatio": 0.8181818181818182
+      },
+      "recency": {
+        "freshness": "mixed",
+        "freshCopies": 6,
+        "staleCopies": 2,
+        "unknownFreshnessCopies": 1,
+        "upstreamFreshness": "unknown",
+        "oldestFetchedAt": "2026-10-06T19:34:24.769Z",
+        "newestFetchedAt": "2026-10-08T19:34:24.769Z"
+      }
+    },
+    "vacía": {
+      "amount": 0,
+      "currency": "USD",
+      "evaluatedAt": "2026-10-08T19:34:25.127Z",
+      "coverage": {
+        "totalCopies": 0,
+        "pricedCopies": 0,
+        "unpricedCopies": 0,
+        "coverageRatio": null
+      },
+      "recency": {
+        "freshness": "unknown",
+        "freshCopies": 0,
+        "staleCopies": 0,
+        "unknownFreshnessCopies": 0,
+        "upstreamFreshness": "unknown",
+        "oldestFetchedAt": null,
+        "newestFetchedAt": null
+      }
+    },
+    "cero": {
+      "amount": 0,
+      "currency": "USD",
+      "evaluatedAt": "2026-10-08T19:34:25.130Z",
+      "coverage": {
+        "totalCopies": 2,
+        "pricedCopies": 2,
+        "unpricedCopies": 0,
+        "coverageRatio": 1
+      },
+      "recency": {
+        "freshness": "fresh",
+        "freshCopies": 2,
+        "staleCopies": 0,
+        "unknownFreshnessCopies": 0,
+        "upstreamFreshness": "unknown",
+        "oldestFetchedAt": "2026-10-08T19:34:24.769Z",
+        "newestFetchedAt": "2026-10-08T19:34:24.769Z"
+      }
+    },
+    "desconocida": {
+      "amount": null,
+      "currency": "USD",
+      "evaluatedAt": "2026-10-08T19:34:25.133Z",
+      "coverage": {
+        "totalCopies": 2,
+        "pricedCopies": 0,
+        "unpricedCopies": 2,
+        "coverageRatio": 0
+      },
+      "recency": {
+        "freshness": "unknown",
+        "freshCopies": 0,
+        "staleCopies": 0,
+        "unknownFreshnessCopies": 0,
+        "upstreamFreshness": "unknown",
+        "oldestFetchedAt": null,
+        "newestFetchedAt": null
+      }
+    },
+    "portfolio": {
+      "totalCards": 15,
+      "unpricedCards": 4,
+      "valueUsd": 49,
+      "valuation": {
+        "amount": 49,
+        "currency": "USD",
+        "evaluatedAt": "2026-10-08T19:34:25.151Z",
+        "coverage": {
+          "totalCopies": 15,
+          "pricedCopies": 11,
+          "unpricedCopies": 4,
+          "coverageRatio": 0.7333333333333333
+        },
+        "recency": {
+          "freshness": "mixed",
+          "freshCopies": 8,
+          "staleCopies": 2,
+          "unknownFreshnessCopies": 1,
+          "upstreamFreshness": "unknown",
+          "oldestFetchedAt": "2026-10-06T19:34:24.769Z",
+          "newestFetchedAt": "2026-10-08T19:34:24.769Z"
+        }
+      },
+      "topCards": [
+        {
+          "cardId": "valgate-card2",
+          "name": "Carta de prueba 2",
+          "imageSmall": "/icons/icon-192.png",
+          "setName": "Set de prueba de valores",
+          "number": "2",
+          "variant": "normal",
+          "quantity": 3,
+          "marketUsd": 10,
+          "valueUsd": 30,
+          "reference": {
+            "provider": "tcgdex",
+            "source": "tcgplayer",
+            "currency": "USD",
+            "fetchedAt": "2026-10-08T19:34:24.769Z",
+            "evaluatedAt": "2026-10-08T19:34:25.151Z",
+            "freshness": "fresh",
+            "upstreamUpdatedAt": null,
+            "upstreamFreshness": "unknown"
+          }
+        },
+        {
+          "cardId": "valgate-card5",
+          "name": "Carta de prueba 5",
+          "imageSmall": "/icons/icon-192.png",
+          "setName": "Set de prueba de valores",
+          "number": "5",
+          "variant": "normal",
+          "quantity": 1,
+          "marketUsd": 6,
+          "valueUsd": 6,
+          "reference": {
+            "provider": "tcgdex",
+            "source": "tcgplayer",
+            "currency": "USD",
+            "fetchedAt": "2026-10-10T19:34:24.769Z",
+            "evaluatedAt": "2026-10-08T19:34:25.151Z",
+            "freshness": "unknown",
+            "upstreamUpdatedAt": null,
+            "upstreamFreshness": "unknown"
+          }
+        },
+        {
+          "cardId": "valgate-card2",
+          "name": "Carta de prueba 2",
+          "imageSmall": "/icons/icon-192.png",
+          "setName": "Set de prueba de valores",
+          "number": "2",
+          "variant": "reverseHolofoil",
+          "quantity": 1,
+          "marketUsd": 5,
+          "valueUsd": 5,
+          "reference": {
+            "provider": "tcgdex",
+            "source": "tcgplayer",
+            "currency": "USD",
+            "fetchedAt": "2026-10-08T19:34:24.769Z",
+            "evaluatedAt": "2026-10-08T19:34:25.151Z",
+            "freshness": "fresh",
+            "upstreamUpdatedAt": null,
+            "upstreamFreshness": "unknown"
+          }
+        },
+        {
+          "cardId": "valgate-card4",
+          "name": "Carta de prueba 4",
+          "imageSmall": "/icons/icon-192.png",
+          "setName": "Set de prueba de valores",
+          "number": "4",
+          "variant": "normal",
+          "quantity": 2,
+          "marketUsd": 4,
+          "valueUsd": 8,
+          "reference": {
+            "provider": "tcgdex",
+            "source": "tcgplayer",
+            "currency": "USD",
+            "fetchedAt": "2026-10-06T19:34:24.769Z",
+            "evaluatedAt": "2026-10-08T19:34:25.151Z",
+            "freshness": "stale",
+            "upstreamUpdatedAt": null,
+            "upstreamFreshness": "unknown"
+          }
+        },
+        {
+          "cardId": "valgate-card1",
+          "name": "Carta de prueba 1",
+          "imageSmall": "/icons/icon-192.png",
+          "setName": "Set de prueba de valores",
+          "number": "1",
+          "variant": "normal",
+          "quantity": 4,
+          "marketUsd": 0,
+          "valueUsd": 0,
+          "reference": {
+            "provider": "tcgdex",
+            "source": "tcgplayer",
+            "currency": "USD",
+            "fetchedAt": "2026-10-08T19:34:24.769Z",
+            "evaluatedAt": "2026-10-08T19:34:25.151Z",
+            "freshness": "fresh",
+            "upstreamUpdatedAt": null,
+            "upstreamFreshness": "unknown"
+          }
+        }
+      ],
+      "history": [
+        {
+          "date": "2026-10-03",
+          "valueUsd": 9,
+          "totalCards": 3,
+          "unpricedCards": 1,
+          "valuation": {
+            "amount": 9,
+            "currency": "USD",
+            "evaluatedAt": null,
+            "coverage": {
+              "totalCopies": 3,
+              "pricedCopies": 2,
+              "unpricedCopies": 1,
+              "coverageRatio": 0.6666666666666666
+            },
+            "recency": null
+          }
+        },
+        {
+          "date": "2026-10-08",
+          "valueUsd": 49,
+          "totalCards": 15,
+          "unpricedCards": 4,
+          "valuation": {
+            "amount": 49,
+            "currency": "USD",
+            "evaluatedAt": null,
+            "coverage": {
+              "totalCopies": 15,
+              "pricedCopies": 11,
+              "unpricedCopies": 4,
+              "coverageRatio": 0.7333333333333333
+            },
+            "recency": null
+          }
+        }
+      ]
+    },
+    "prices": [
+      {
+        "cardId": "valgate-card2",
+        "variant": "normal",
+        "low": null,
+        "mid": null,
+        "high": null,
+        "market": 10,
+        "provider": "tcgdex",
+        "isStale": false,
+        "currency": "USD",
+        "source": "tcgplayer",
+        "fetchedAt": "2026-10-08T19:34:24.769Z",
+        "evaluatedAt": "2026-10-08T19:34:25.165Z",
+        "freshness": "fresh",
+        "upstreamUpdatedAt": null,
+        "upstreamFreshness": "unknown",
+        "change": {
+          "usd": 8,
+          "percent": 400,
+          "windowDays": 30,
+          "from": "2026-08-29T19:34:24.769Z"
+        },
+        "changeUsd": 8,
+        "changePercent": 400,
+        "windowLabel": "últimos 30 días"
+      },
+      {
+        "cardId": "valgate-card2",
+        "variant": "reverseHolofoil",
+        "low": null,
+        "mid": null,
+        "high": null,
+        "market": 5,
+        "provider": "tcgdex",
+        "isStale": false,
+        "currency": "USD",
+        "source": "tcgplayer",
+        "fetchedAt": "2026-10-08T19:34:24.769Z",
+        "evaluatedAt": "2026-10-08T19:34:25.165Z",
+        "freshness": "fresh",
+        "upstreamUpdatedAt": null,
+        "upstreamFreshness": "unknown",
+        "change": {
+          "usd": -45,
+          "percent": -90,
+          "windowDays": 30,
+          "from": "2026-08-29T19:34:24.769Z"
+        },
+        "changeUsd": -45,
+        "changePercent": -90,
+        "windowLabel": "últimos 30 días"
+      }
+    ]
+  },
+  "fixture": {
+    "synthetic": true
+  },
+  "externalFetchAttempts": 0,
+  "error": "The expression evaluated to a falsy value:\n\n  assert(history.data.points.every(p=>p.date.endsWith('Z')&&p.fetchedAt.endsWith('Z')&&p.upstreamUpdatedAt===null))\n"
+}

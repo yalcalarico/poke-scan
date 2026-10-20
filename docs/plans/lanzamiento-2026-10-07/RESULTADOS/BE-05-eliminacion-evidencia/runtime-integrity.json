@@ -1,0 +1,7 @@
+{
+  "files": 1403,
+  "intact": 1403,
+  "changed": [],
+  "missing": [],
+  "scope": "Selected source/schema/migrations, package locks, SW/config and compiled Nest/Next server/static outputs before versus after final runtime; excludes mutable Next cache"
+}

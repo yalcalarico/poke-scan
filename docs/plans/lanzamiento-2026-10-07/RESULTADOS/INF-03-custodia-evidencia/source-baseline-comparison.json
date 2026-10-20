@@ -1,0 +1,14 @@
+{
+  "selectedFiles": 534,
+  "baselineTiming": "After implementation dispatch; not a full pre-task dirty tree snapshot",
+  "selectedAuthorizedChanges": [
+    "package.json"
+  ],
+  "taskFilesOutsideSelection": [
+    "scripts/inf03-custody-common.mjs",
+    "scripts/inf03-custody.mjs",
+    "scripts/inf03-custody.test.mjs",
+    "infra/inf03/CUSTODIA-RECUPERACION-LOCAL.md"
+  ],
+  "allOtherSelectedFilesUnchanged": true
+}

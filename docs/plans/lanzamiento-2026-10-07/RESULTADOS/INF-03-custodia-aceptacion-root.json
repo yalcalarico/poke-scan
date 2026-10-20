@@ -1,0 +1,63 @@
+{
+  "status": "accepted locally by root",
+  "atUtc": "2026-10-13T01:39:18.188771+00:00",
+  "clientDate": "2026-10-12 America/Argentina/Buenos_Aires",
+  "step": "Independent logical custody and lost-host reconstruction, genuine suppression replay and compiled consumer",
+  "standardCheck": {
+    "command": "pnpm run stop then pnpm run check",
+    "runs": 1,
+    "passed": 1101,
+    "skipped": 0,
+    "counts": {
+      "backend": 466,
+      "scanner": 13,
+      "e2e": 6,
+      "frontend": 562,
+      "monitor": 15,
+      "inventoryTransferCustody": 39
+    },
+    "lintTypesNestNextTurbopack": true
+  },
+  "focusedTests": 14,
+  "focusedOverlapGlobal": true,
+  "initialFocal": {
+    "passed": 2,
+    "failed": 12,
+    "cause": "Fixture clock captured before async initialization; corrected only fixture"
+  },
+  "integratedDistinctControls": 59,
+  "runtimeAttempts": 1,
+  "genuineCompiledJournalAndRestore": true,
+  "originHostTreeAndSourcePGActuallyRemoved": true,
+  "originalAuthorityBytesDateAndIDsPreserved": true,
+  "normalInventoryAuditUnchanged": true,
+  "screenshots": 2,
+  "sourcesAndOutputsIntactDuringRuntime": 1470,
+  "delegations": 2,
+  "logicalHostLossRecoveryAccredited": true,
+  "physicalOffHostRecoveryAccredited": false,
+  "liveHTTPDeletionDurableCustodyAcknowledgmentAccredited": false,
+  "jointCustodianRollbackDetectionAccredited": false,
+  "B2AccountCreated": false,
+  "B2IntegrationAccredited": false,
+  "networkBackblazeCalls": false,
+  "physical30DayWait": false,
+  "ownQAResourcesCleaned": true,
+  "instanceIntentionallyAlive": "http://localhost:3000",
+  "instanceListenerPIDs": {
+    "api": 86166,
+    "next": 86222
+  },
+  "state": {
+    "complete": 20,
+    "pending": 18,
+    "newIDsClosed": 0
+  },
+  "nextStep": "Propose live deletion/custody durable acknowledgment integration and local fault/recovery rehearsal; wait for user",
+  "rootFinalVerification": {
+    "artifactHashesVerified": 28,
+    "sourceCopiesStillCurrent": 5,
+    "reportLocalLinksVerified": 18,
+    "agentsCompleted": true
+  }
+}

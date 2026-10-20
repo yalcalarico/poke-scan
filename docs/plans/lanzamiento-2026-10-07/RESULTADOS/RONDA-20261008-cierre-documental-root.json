@@ -1,0 +1,22 @@
+{
+  "checkedAtUtc": "2026-10-09T01:10:05.945359+00:00",
+  "scope": "Verificación independiente de documentos; antes de editar centrales. Sin suites runtime.",
+  "results": {
+    "evidencia-seo03-review": {
+      "artifactCount": 12,
+      "artifactMismatches": [],
+      "sourceCount": 35,
+      "sourceMismatchesBeforeCentralUpdate": [],
+      "localLinksAndAnchors": 35,
+      "linkErrors": []
+    },
+    "evidencia-mkt02-review": {
+      "artifactCount": 12,
+      "artifactMismatches": [],
+      "sourceCount": 11,
+      "sourceMismatchesBeforeCentralUpdate": [],
+      "localLinksAndAnchors": 28,
+      "linkErrors": []
+    }
+  }
+}

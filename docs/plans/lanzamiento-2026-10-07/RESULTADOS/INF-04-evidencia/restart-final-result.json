@@ -1,0 +1,17 @@
+{
+  "checks": [
+    {
+      "name": "restart monitor observes final ready and closes all actual availability alerts before teardown",
+      "passed": true
+    }
+  ],
+  "passed": 1,
+  "terminalState": {
+    "state": "ready",
+    "database": "ready",
+    "scanner": "ready",
+    "scannerBusy": false,
+    "redis": "ready"
+  },
+  "samples": 5
+}

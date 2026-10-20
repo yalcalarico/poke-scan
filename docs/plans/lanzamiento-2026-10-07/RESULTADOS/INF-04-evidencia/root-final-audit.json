@@ -1,0 +1,136 @@
+{
+  "checkedLocalLinks": 32,
+  "links": [
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-04-operacion.md",
+      "target": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-04-aceptacion-root.json"
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-04-operacion.md",
+      "target": "docs/infra/inf04-monitor.md"
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-04-operacion.md",
+      "target": "scripts/inf04-monitor.mjs"
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-04-operacion.md",
+      "target": "scripts/inf04-monitor-common.mjs"
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-04-operacion.md",
+      "target": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-04-evidencia/final-focal-tests.log"
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-04-operacion.md",
+      "target": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-04-evidencia/focal-tests.log"
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-04-operacion.md",
+      "target": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-04-evidencia/regression-before.log"
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-04-operacion.md",
+      "target": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-04-evidencia/initial-current-check.log"
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-04-operacion.md",
+      "target": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-04-evidencia/current-check.log"
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-04-operacion.md",
+      "target": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-04-evidencia/current-check-result.json"
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-04-operacion.md",
+      "target": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-04-evidencia/runtime-result.json"
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-04-operacion.md",
+      "target": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-04-evidencia/restart-final-result.json"
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-04-operacion.md",
+      "target": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-04-evidencia/monitor-runtime.jsonl"
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-04-operacion.md",
+      "target": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-04-evidencia/restart-final.jsonl"
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-04-operacion.md",
+      "target": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-04-evidencia/runtime-root-verification.json"
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-04-operacion.md",
+      "target": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-04-evidencia/runtime-config.json"
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-04-operacion.md",
+      "target": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-04-evidencia/initial-runtime-console.log"
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-04-operacion.md",
+      "target": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-04-evidencia/initial-monitor-runtime.jsonl"
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-04-operacion.md",
+      "target": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-04-evidencia/second-runtime-console.log"
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-04-operacion.md",
+      "target": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-04-evidencia/source-before.json"
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-04-operacion.md",
+      "target": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-04-evidencia/source-integrity.json"
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-04-operacion.md",
+      "target": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-04-evidencia/initial-runtime-integrity.json"
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-04-operacion.md",
+      "target": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-04-evidencia/runtime-integrity.json"
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-04-operacion.md",
+      "target": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-04-evidencia/initial-cleanup-receipt.json"
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-04-operacion.md",
+      "target": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-04-evidencia/full-runtime-cleanup-receipt.json"
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-04-operacion.md",
+      "target": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-04-evidencia/cleanup-receipt.json"
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-04-operacion.md",
+      "target": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-04-evidencia/restart-final-owner.json"
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-04-operacion.md",
+      "target": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-04-evidencia/visual-cleanup.json"
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-04-operacion.md",
+      "target": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-04-evidencia/final-instance.json"
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-04-operacion.md",
+      "target": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-04-evidencia/monitor-alertas.jpg"
+    },
+    {
+      "document": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-04-operacion.md",
+      "target": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-04-evidencia/monitor-evidencia.html"
+    },
+    {
+      "document": "docs/infra/inf04-monitor.md",
+      "target": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/INF-04-operacion.md"
+    }
+  ],
+  "sourceCopiesEqual": 5,
+  "noOwnResourcesFromReceipts": true,
+  "currentHeadersContainLocalAcceptance": true
+}

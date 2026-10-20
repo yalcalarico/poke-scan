@@ -1,0 +1,19 @@
+{
+	admin off
+	skip_install_trust
+}
+
+https://localhost:{$HTTPS_PORT} {
+	tls internal
+	@api path /api /api/*
+	reverse_proxy @api backend:3001 {
+		header_up Host {http.request.host}
+		header_up X-Forwarded-Proto https
+		health_uri /api/ready
+		health_interval 10s
+		health_timeout 5s
+		health_fails 3
+		health_passes 1
+	}
+	reverse_proxy frontend:3000
+}

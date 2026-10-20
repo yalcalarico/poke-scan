@@ -1,0 +1,263 @@
+{
+  "task": "SEO-01 runtime review",
+  "reviewer": {
+    "agent": "/root/seo01_runtime_review_sol",
+    "model": "gpt-6.1-sol",
+    "reasoningEffort": "high"
+  },
+  "capturedAt": "2026-10-09T00:38:41.389277+00:00",
+  "received": {
+    "SEO-01-runtime.md": {
+      "sha256": "c95d69dd0db16fd3a3a0d7b02c58745b4ad874e57197ae535e629d0bb8d16b08",
+      "preservedAt": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/SEO-01-runtime-anexos/SEO-01-runtime-recibido.md"
+    },
+    "SEO-01-runtime-evidencia.json": {
+      "sha256": "dba832491d86486daebd77fe18cdd0ecd445c7fed99581d987e3a00f717727ff",
+      "preservedAt": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/SEO-01-runtime-anexos/SEO-01-runtime-evidencia-recibido.json"
+    }
+  },
+  "harness": {
+    "audit.mjs": {
+      "originalSha256": "449c13245d524c1c4b0454f9e590b19aeb4f22496042c8533d116603a152f7dd",
+      "annexSha256": "449c13245d524c1c4b0454f9e590b19aeb4f22496042c8533d116603a152f7dd",
+      "sanitization": "source contains variable references to deleted private runtime state and fixed synthetic test labels; no credential/account value"
+    },
+    "control-proxy.mjs": {
+      "originalSha256": "4e577149343dec2bade25824f0bd0ea39867f86d52a729e1cbae11cd80ddb137",
+      "annexSha256": "4e577149343dec2bade25824f0bd0ea39867f86d52a729e1cbae11cd80ddb137",
+      "sanitization": "source contains variable references to deleted private runtime state and fixed synthetic test labels; no credential/account value"
+    },
+    "fixtures.mjs": {
+      "originalSha256": "b040b6bf1fc7f87b41ab8ecadcfe1fc1743148478ba2ce366d197edcf6787ad4",
+      "annexSha256": "b040b6bf1fc7f87b41ab8ecadcfe1fc1743148478ba2ce366d197edcf6787ad4",
+      "sanitization": "source contains variable references to deleted private runtime state and fixed synthetic test labels; no credential/account value"
+    },
+    "network-guard.mjs": {
+      "originalSha256": "2d8c9e667688d9ff20fa316cc2746d7cc147547735643b085cf7c75ffca57c89",
+      "annexSha256": "2d8c9e667688d9ff20fa316cc2746d7cc147547735643b085cf7c75ffca57c89",
+      "sanitization": "source contains variable references to deleted private runtime state and fixed synthetic test labels; no credential/account value"
+    },
+    "privacy-probe.mjs": {
+      "originalSha256": "da01c9b537491280c0754d5859be2c375714a6ca0ab77ae3a49eb48019132391",
+      "annexSha256": "da01c9b537491280c0754d5859be2c375714a6ca0ab77ae3a49eb48019132391",
+      "sanitization": "source contains variable references to deleted private runtime state and fixed synthetic test labels; no credential/account value"
+    },
+    "run-owned.py": {
+      "originalSha256": "f1ca83f24f9d3b9e9b640fd50ae838f4b7b097c2b58628183453b94b6bfa7ff2",
+      "annexSha256": "f1ca83f24f9d3b9e9b640fd50ae838f4b7b097c2b58628183453b94b6bfa7ff2",
+      "sanitization": "source contains variable references to deleted private runtime state and fixed synthetic test labels; no credential/account value"
+    },
+    "site-resources.mjs": {
+      "originalSha256": "18bce8e3bf7a9112c0da222e4400f2a4b9d5e3a118b241cbb8c4a86de5d5814f",
+      "annexSha256": "18bce8e3bf7a9112c0da222e4400f2a4b9d5e3a118b241cbb8c4a86de5d5814f",
+      "sanitization": "source contains variable references to deleted private runtime state and fixed synthetic test labels; no credential/account value"
+    }
+  },
+  "ownershipOriginalSha256": {
+    "ownership-before.json": "afb9d105d6bdaf1f2d99b2a6fb213de572639533215231600e228a610c6930b7",
+    "ownership-after.json": "8442817507c92dbd02bbd7f3c9fcf018ae81c2ac4886d02a95b23dac6b4e0d6b"
+  },
+  "sourceBaseline16": {
+    "frontend/app/layout.tsx": {
+      "expected": "4f142a61056cfb3819f0160f5d94b3459020bea37fff718944cfc5a33082ed8c",
+      "observed": "4f142a61056cfb3819f0160f5d94b3459020bea37fff718944cfc5a33082ed8c",
+      "matches": true
+    },
+    "frontend/app/robots.ts": {
+      "expected": "8e2b98aab41ea03faccaa8155893697b07b4eb5a3470ef0ba7788c4efda2d47b",
+      "observed": "8e2b98aab41ea03faccaa8155893697b07b4eb5a3470ef0ba7788c4efda2d47b",
+      "matches": true
+    },
+    "frontend/app/sitemap.ts": {
+      "expected": "64160f8083a097b8ee92c6542b809f634b5787b81eb7d26e04cfa198eb930a29",
+      "observed": "64160f8083a097b8ee92c6542b809f634b5787b81eb7d26e04cfa198eb930a29",
+      "matches": true
+    },
+    "frontend/app/(marketing)/page.tsx": {
+      "expected": "bbb661d27ae8d4fd7190162265260c1ef25701c6771716aa685bba3a3d06a0c6",
+      "observed": "bbb661d27ae8d4fd7190162265260c1ef25701c6771716aa685bba3a3d06a0c6",
+      "matches": true
+    },
+    "frontend/app/(marketing)/faq/page.tsx": {
+      "expected": "d2d96fb9009da52cb788b2ae39493287855b8f221265636228e44d1bedc9b9b5",
+      "observed": "d2d96fb9009da52cb788b2ae39493287855b8f221265636228e44d1bedc9b9b5",
+      "matches": true
+    },
+    "frontend/app/(app)/buscar/page.tsx": {
+      "expected": "289af2e7e52607999d5ea12a614613996ec0cd65c549a1433c5eef014bcf5fd0",
+      "observed": "289af2e7e52607999d5ea12a614613996ec0cd65c549a1433c5eef014bcf5fd0",
+      "matches": true
+    },
+    "frontend/app/(app)/carta/[id]/page.tsx": {
+      "expected": "ca095cb6c2538d383b09067c677a93dcb6df1799f1ec19fd2e15c3750558ee0c",
+      "observed": "ca095cb6c2538d383b09067c677a93dcb6df1799f1ec19fd2e15c3750558ee0c",
+      "matches": true
+    },
+    "frontend/app/(app)/inicio/page.tsx": {
+      "expected": "399a61f054fe18edaa7524f3c9fb27528acc8a7491528e10f6b5c86fd926f71b",
+      "observed": "399a61f054fe18edaa7524f3c9fb27528acc8a7491528e10f6b5c86fd926f71b",
+      "matches": true
+    },
+    "frontend/app/(app)/colecciones/page.tsx": {
+      "expected": "80b6509a0fd14523e058ce426a14f59e8c308bfe04a1eb92f0f490243fca0dbe",
+      "observed": "80b6509a0fd14523e058ce426a14f59e8c308bfe04a1eb92f0f490243fca0dbe",
+      "matches": true
+    },
+    "frontend/app/(app)/ajustes/page.tsx": {
+      "expected": "694c6dc325035d92b1fdabfd81354e84139621f16e801e77b1e0dae8c51046f9",
+      "observed": "694c6dc325035d92b1fdabfd81354e84139621f16e801e77b1e0dae8c51046f9",
+      "matches": true
+    },
+    "frontend/app/(app)/escanear/page.tsx": {
+      "expected": "c13ef2730c23480bd8e5b3261a8f18b7c2c91cdaec74dd4ae6908ffc9af6e06d",
+      "observed": "c13ef2730c23480bd8e5b3261a8f18b7c2c91cdaec74dd4ae6908ffc9af6e06d",
+      "matches": true
+    },
+    "frontend/app/(auth)/layout.tsx": {
+      "expected": "97244768a02a10a6d3c8ee3586120cfe4702aa3027d9dc3722af4b3dd7df2701",
+      "observed": "97244768a02a10a6d3c8ee3586120cfe4702aa3027d9dc3722af4b3dd7df2701",
+      "matches": true
+    },
+    "frontend/app/(auth)/login/page.tsx": {
+      "expected": "63406d7d408c48cd5423cf14b00712547128729101b6a0fbbaf4bacbe56c6eaf",
+      "observed": "63406d7d408c48cd5423cf14b00712547128729101b6a0fbbaf4bacbe56c6eaf",
+      "matches": true
+    },
+    "frontend/app/(auth)/registro/page.tsx": {
+      "expected": "09204e0bb0d0358f679e9fcfe3d433142a6a1d964ee75b222fde4674fa61305e",
+      "observed": "09204e0bb0d0358f679e9fcfe3d433142a6a1d964ee75b222fde4674fa61305e",
+      "matches": true
+    },
+    "frontend/app/share/[slug]/page.tsx": {
+      "expected": "a2c7b3dc3a1159a8deb7f505cbc7e271519c7b11610ae0042ec7bfb02fb34072",
+      "observed": "a2c7b3dc3a1159a8deb7f505cbc7e271519c7b11610ae0042ec7bfb02fb34072",
+      "matches": true
+    },
+    "frontend/lib/api/api-client.ts": {
+      "expected": "2273f6f6adedaca136b7cf26925b01b2ea7cad34e44a7d3f6896b2f471d9225d",
+      "observed": "2273f6f6adedaca136b7cf26925b01b2ea7cad34e44a7d3f6896b2f471d9225d",
+      "matches": true
+    }
+  },
+  "reviewSources": {
+    "AGENTS.md": "0a44196ce9194cafcd54094af02e90e73f0da0f693604d0876d97bf14ee30688",
+    "frontend/AGENTS.md": "63f2c50380ed6303237cce215ce27af1d620d094c215e28d1b1538a3c070e3bb",
+    "docs/plans/lanzamiento-2026-10-07/06-seo.md": "a2acf4304a64c66b80c0c0ef3ca91105d93269531ff8d42e6e7f7a6f0f05c47b",
+    "docs/plans/lanzamiento-2026-10-07/10-decisiones-y-contratos.md": "a1334c37eab2be2893cfdba65f2e294eaa8c2f5820950a9e572c999c50a71b3c",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/SEO-01-auditoria.md": "6d7a32a79f14b3b54fa2ad903bc7119c4b575ac067e98fec0df79acafe11df49",
+    "docs/plans/lanzamiento-2026-10-07/RESULTADOS/SEO-01-review.md": "f49435adcf79443b6c701fc4f2adfc574051e0bf5833dbea73eda4474121a2d0",
+    "frontend/app/(app)/colecciones/[id]/page.tsx": "3bb961c0c75a7233f9f6e65fe79377724c44fb4daee3cab4bf1db77de5a1b4db",
+    "frontend/components/collections/collection-detail.tsx": "c08b6f32d04da340318156ed10527015c9c7d6589101e85bf63ac3d2c18872a6",
+    "frontend/package.json": "008266586d6fbb884325a9cbf592d203670636abd2f79e739be62c1799f0196e",
+    "backend/package.json": "436781abdc7457daeff00ef1456e4781be645f296fca012cf69600b2af237ac8",
+    "pnpm-lock.yaml": "224274a5b448b24bc59a614e5d32e463b558314bb8abb8037ec0c25df87f8218",
+    "frontend/pnpm-lock.yaml": "bfaedd80509be79b44dc95c235bb462203d8e490940d9a3ab928118d7bcf9380",
+    "backend/pnpm-lock.yaml": "d38db86265d9572a46047c8cfd98c326c3b50711bf221e0a3f1c2100ae118025"
+  },
+  "buildOutputComparison": {
+    "baselineManifest": "/private/tmp/build-gate-diagnosis-sol-20261008/final-next-sha256.json",
+    "baselineManifestSha256": "6b7bd3a10a36d0b9a2832059f49ddbff588808cca3db1567a33fb73f8b8359bb",
+    "baselineFiles": 3254,
+    "currentFiles": 3258,
+    "changed": [
+      {
+        "path": "frontend/.next/server/app/inicio.meta",
+        "baselineSha256": "1a54ccf22aebdfd64d593ba232d6825c75bd5bc17e925d98e6cdda38eef94cf4",
+        "currentSha256": "625857edf7e4b9defe3575b0ab1c7f648ed044ab82dc262c5a2de53e58f73a83"
+      },
+      {
+        "path": "frontend/.next/server/app/index.html",
+        "baselineSha256": "33b9c326598abed7796f00bc333db0f1d83d49c40c7576f8e66961040f10e62e",
+        "currentSha256": "6c948029a85fc0bd405c2ab39bb7608de71b8f9e5efbf7fa49345a7bd0f5daf3"
+      },
+      {
+        "path": "frontend/.next/server/app/inicio.html",
+        "baselineSha256": "891cc7743c1ea30e82a2fdaa72bb179988ce95f5c0bbd08cc999555a45728243",
+        "currentSha256": "f9b877917f09a26a3d8478e0518246cfefc3f90f0311fc57cf961f68212603ff"
+      },
+      {
+        "path": "frontend/.next/server/app/index.meta",
+        "baselineSha256": "cd2ee2aa5541726da16d1721cf5571cfcb8d2d85f6e8830af88b7e1291159d9b",
+        "currentSha256": "053e6690e315de3263a6458980f1103ab992a221bee31fdd17c1076cb04ed8b8"
+      },
+      {
+        "path": "frontend/.next/server/app/inicio.rsc",
+        "baselineSha256": "e4688add0624cc8aa3003473e2cf30270da5b144d08d9992f0c4628e2c89782c",
+        "currentSha256": "44d7c1349cd3d35fe81e809067c51e8378fd3e365435612a0f097ab76ad2cec8"
+      },
+      {
+        "path": "frontend/.next/server/app/index.rsc",
+        "baselineSha256": "18e2a7b3270b2f2d21f31a4b51e9912d17e70c3fbbd422cc85a06df8244457ec",
+        "currentSha256": "fcfc3c27145caa2ad3669c9838537fc4b3b47803e13975db69bcd34f3e24ddad"
+      },
+      {
+        "path": "frontend/.next/server/app/inicio.segments/_full.segment.rsc",
+        "baselineSha256": "e4688add0624cc8aa3003473e2cf30270da5b144d08d9992f0c4628e2c89782c",
+        "currentSha256": "44d7c1349cd3d35fe81e809067c51e8378fd3e365435612a0f097ab76ad2cec8"
+      },
+      {
+        "path": "frontend/.next/server/app/inicio.segments/!KGFwcCk/inicio/__PAGE__.segment.rsc",
+        "baselineSha256": "1f402831b6ed780ad54f30ce32a570b4e864ec8dd2b330883c665184ff9ea322",
+        "currentSha256": "5eeb24a95f4d3c8094fffa9fecd85004237d83b37795d280c4304f190971b5cc"
+      },
+      {
+        "path": "frontend/.next/server/app/index.segments/_full.segment.rsc",
+        "baselineSha256": "18e2a7b3270b2f2d21f31a4b51e9912d17e70c3fbbd422cc85a06df8244457ec",
+        "currentSha256": "fcfc3c27145caa2ad3669c9838537fc4b3b47803e13975db69bcd34f3e24ddad"
+      },
+      {
+        "path": "frontend/.next/server/app/index.segments/!KG1hcmtldGluZyk/__PAGE__.segment.rsc",
+        "baselineSha256": "4817eed5560534e8cb077d316a97ee083ce540cf5692209f4a2dd914c76d1b2b",
+        "currentSha256": "e58d172887ded3f50c9f302a337236a60dc43a544a2a33856b2019a60395043e"
+      }
+    ],
+    "missing": [],
+    "additional": [
+      "frontend/.next/cache/fetch-cache/030f592e432c65204b042af1303fe2ac93ef851cc85a40abc8c7e9877b7aea1d",
+      "frontend/.next/cache/fetch-cache/56601d15f3a9a9d64dbf8aa165df94c1b2f468401a60debd205d912da5ddb8ed",
+      "frontend/.next/cache/fetch-cache/7842340a04cb3a1920ce17998601f2e57b946cbe72b78df6eb1c75f7d0749640",
+      "frontend/.next/cache/images/KjQ2119kCf4P5gPIys4zGJZwRNzKC64eNQXcVh7Z7nc/14400.1791520274414.oOEMmPGnInTx1npj5IOPRWaXuVkbLcMI4Izt5uCKWi8.Vy8iMTNkZC0xYTBkYjI0MTkwMiI.avif"
+    ],
+    "buildId": "NZkIeTzxfiKhm5bMdwd1i",
+    "backendDistBaselineCount": 277,
+    "backendDistCurrentCount": 277,
+    "backendDistContentEquality": "not established; baseline counts alone have no content hashes"
+  },
+  "cleanupIndependentReadOnly": {
+    "capturedAt": "2026-10-09T00:38:41.398515+00:00",
+    "ports3000_3001_3002_56379": {
+      "command": "lsof -nP -iTCP:3000 -iTCP:3001 -iTCP:3002 -iTCP:56379 -sTCP:LISTEN",
+      "stdout": "",
+      "observation": "no listeners returned"
+    },
+    "processes3250_3261_3305": {
+      "command": "ps -p 3250,3261,3305 -o pid=,comm=",
+      "stdout": "",
+      "observation": "no process rows"
+    },
+    "redisId": {
+      "fullId": "ad7d4456b82b225dd85ddb8ac20299e77dc6fe75709ae9f8249eae1ebf79492c",
+      "dockerPsRows": []
+    },
+    "redisOwnerLabel": {
+      "value": "codex.owner=seo01-runtime-sol-20261008",
+      "dockerPsRows": []
+    },
+    "postgres": {
+      "query": "SELECT datname, shobj_description(oid, 'pg_database') FROM pg_database WHERE datname = 'seo01_runtime_sol_20261008_test'; SELECT count(*) FROM pg_stat_activity WHERE datname = 'seo01_runtime_sol_20261008_test';",
+      "databaseRows": [],
+      "connections": 0,
+      "preDropOwnerCommentAndZeroConnections": "producer attestation in ownership-after; independent verification cannot recover dropped comment"
+    },
+    "privateRuntimeStateAbsent": true,
+    "rawCaptureAbsent": true,
+    "externalLogAbsent": true,
+    "browserTabClosed": "producer attestation; tab identity not retained, no independent browser reopening"
+  },
+  "constraints": {
+    "newRuntime": false,
+    "newTestsOrBuild": false,
+    "productionValidated": false,
+    "writes": "runtime report/JSON and own runtime review annexes only"
+  }
+}

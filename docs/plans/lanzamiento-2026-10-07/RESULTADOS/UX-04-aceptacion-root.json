@@ -1,0 +1,12 @@
+{
+  "checkedAtUtc": "2026-10-09T18:07:42.000739+00:00",
+  "decision": "Especificación UX-04 aceptada documentalmente para handoff BE-05/FE-04; implementación y evidencia funcional pendientes, no cierre de BE-07",
+  "sourcesCheckedBeforeCentralConsolidation": 26,
+  "artifactHashesVerified": 9,
+  "localLinksChecked": 31,
+  "mismatches": [],
+  "documentSha256": "d652eced63e071a909cdc1ceb3ed97a30b57e440b80f28b726d8b3627c8a560a",
+  "reportSha256": "ae9ed98de5a24d0b548102c5df9fb7b9160936419075906e20e9153b7a61cbe6",
+  "semanticReview": "Root leyó versión corregida e informe: bare/fragmento/marcador no secreto y fallback, consumo explícito, correo propuesto, 400/403/429/503 e incertidumbre, privacidad y accesibilidad coherentes con contrato.",
+  "testsRuntimeExecutedByRoot": false
+}

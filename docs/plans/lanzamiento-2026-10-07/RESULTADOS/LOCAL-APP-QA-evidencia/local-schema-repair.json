@@ -1,0 +1,34 @@
+{
+  "targetScope": "dev",
+  "exitCode": 0,
+  "command": [
+    "pnpm",
+    "--dir",
+    "backend",
+    "exec",
+    "prisma",
+    "migrate",
+    "deploy"
+  ],
+  "startedAtUtc": "2026-10-10T18:22:46.656836+00:00",
+  "finishedAtUtc": "2026-10-10T18:22:47.575372+00:00",
+  "cause": "P2022 users.authVersion absent in local development database",
+  "before": {
+    "migrations": 11,
+    "loginUnknownAccountStatus": 500
+  },
+  "after": {
+    "migrations": 13,
+    "users": 22,
+    "collections": 22,
+    "items": 69,
+    "shares": 13,
+    "cards": 20670,
+    "gin": 5
+  },
+  "privateBackupCreated": true,
+  "migrationsTestedFirstOnOwnedClone": true,
+  "userInventoryUnchanged": true,
+  "currentBrowserQA": "owned clone only",
+  "status": "local schema repaired; visual flows under verification"
+}

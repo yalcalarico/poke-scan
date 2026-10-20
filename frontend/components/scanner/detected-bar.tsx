@@ -6,6 +6,8 @@ import { formatCardNumber } from '@/lib/format';
 import type { RecognizedCard, PriceDto } from '@/types/api';
 
 import { CardThumb } from './card-thumb';
+import { AnimatedNumber, Burst } from '@/components/visual-preview/effects';
+import { useVisualPreview } from '@/components/visual-preview/visual-preview';
 
 type UsablePrice = PriceDto;
 
@@ -106,6 +108,7 @@ export interface DetectedCardBarProps {
  * foto que está encuadrando nunca desaparece de la pantalla.
  */
 export function DetectedCardBar({ candidate, className }: DetectedCardBarProps) {
+  const visual = useVisualPreview();
   const { formatMoney } = useCurrency();
   const { card } = candidate;
   const setName = card.set?.name ?? card.setId;
@@ -115,9 +118,11 @@ export function DetectedCardBar({ candidate, className }: DetectedCardBarProps) 
     <div
       className={cn(
         'flex items-center gap-3 rounded-panel bg-on-media px-3 py-2.5 text-on-media-text shadow-lg backdrop-blur-md',
+        visual && 'relative',
         className,
       )}
     >
+      {visual ? <Burst key={card.id} trigger={card.id} /> : null}
       <CardThumb card={card} width={40} onMedia />
 
       <div className="min-w-0 flex-1">
@@ -140,7 +145,7 @@ export function DetectedCardBar({ candidate, className }: DetectedCardBarProps) 
             —
           </span>
         ) : (
-          formatMoney(price)
+          visual ? <AnimatedNumber value={price} format={formatMoney} /> : formatMoney(price)
         )}
       </p>
     </div>

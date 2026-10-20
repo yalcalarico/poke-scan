@@ -1,0 +1,142 @@
+{
+  "access_date": "2026-10-08",
+  "reviewer": "Sol HIGH",
+  "method": "Lectura web puntual de fuentes oficiales y sitios propietarios. Resúmenes propios, sin archivos de páginas completas. Acceso no prueba actualización.",
+  "sources": [
+    {
+      "url": "https://github.com/facebookresearch/dinov2",
+      "verification": "recuperado",
+      "finding": "DINOv2 Apache2; Cell-DINO y XRay-DINO tienen secciones específicas"
+    },
+    {
+      "url": "https://github.com/facebookresearch/dinov2/blob/main/LICENSE",
+      "verification": "recuperado",
+      "finding": "Licencia del repositorio DINOv2 Apache2"
+    },
+    {
+      "url": "https://github.com/facebookresearch/dinov2/blob/main/MODEL_CARD.md",
+      "verification": "recuperado",
+      "finding": "Model card específica: ocho variantes S/B/L/g con/sin registers, Apache2"
+    },
+    {
+      "url": "https://github.com/facebookresearch/dinov2/blob/main/LICENSE_CELL_DINO_MODELS",
+      "verification": "recuperado vía raw oficial",
+      "finding": "FAIR noncommercial específica de Cell-DINO; no identifica ONNX local"
+    },
+    {
+      "url": "https://huggingface.co/facebook/dinov2-small",
+      "verification": "recuperado",
+      "finding": "Apache2 en metadata, ficha de equipo Hugging Face en cuenta facebook"
+    },
+    {
+      "url": "https://huggingface.co/facebook/dinov2-with-registers-small",
+      "verification": "recuperado",
+      "finding": "Apache2 en metadata, ficha de equipo Hugging Face en cuenta facebook"
+    },
+    {
+      "url": "https://github.com/microsoft/onnxruntime/blob/main/LICENSE",
+      "verification": "recuperado",
+      "finding": "MIT de motor de software; no derechos de checkpoint"
+    },
+    {
+      "url": "https://github.com/PokemonTCG/pokemon-tcg-data",
+      "verification": "recuperado",
+      "finding": "Legacy/deprecación, API offline prevista 2027-03-01, JSON conservado para histórico/compatibilidad"
+    },
+    {
+      "url": "https://docs.pokemontcg.io/getting-started/authentication/",
+      "verification": "recuperado",
+      "finding": "Banner sin nuevas altas, existing keys hasta 2027-03-01; auth opcional límites reducidos; cifras sin key no localizadas"
+    },
+    {
+      "url": "https://tcgdex.dev/",
+      "verification": "recuperado",
+      "finding": "Idiomas/completitud variables; API open source declarada"
+    },
+    {
+      "url": "https://tcgdex.dev/markets-prices",
+      "verification": "recuperado",
+      "finding": "Pricing embebido; TCGplayer USD y Cardmarket EUR; no demuestra licencia downstream"
+    },
+    {
+      "url": "https://github.com/tcgdex/cards-database",
+      "verification": "recuperado",
+      "finding": "MIT declarado para database y aviso no afiliación"
+    },
+    {
+      "url": "https://github.com/tcgdex/cards-database/blob/master/LICENSE",
+      "verification": "recuperado",
+      "finding": "MIT del repositorio/base; no prueba derechos de todos los activos de terceros"
+    },
+    {
+      "url": "https://help.tcgplayer.com/hc/en-us/articles/360061115874-TCGplayer-API-Terms-Conditions",
+      "verification": "recuperado",
+      "finding": "Propósito escrito preaprobado; restricciones redistribución/competencia/combinación y adquisición desde terceros por medios automatizados; no contrato PokéScan"
+    },
+    {
+      "url": "https://help.tcgplayer.com/hc/en-us/articles/205004918-Terms-of-Service",
+      "verification": "recuperado",
+      "finding": "Actualizado 2023-09-27; precio vendedor excluye envío/impuestos/fees; derechos propios y de terceros"
+    },
+    {
+      "url": "https://scrydex.com/pricing",
+      "verification": "recuperado",
+      "finding": "Starter $29/5000, Growth $99/50000, Professional $399/250000 al mes; exceso 0.006/0.002/0.0016; USD inferido, no ISO en pricing; history3/vision5"
+    },
+    {
+      "url": "https://scrydex.com/terms",
+      "verification": "recuperado",
+      "finding": "§§4/7/9 derechos terceros, restricciones escritas redistribución/competencia, límites variables; única referencia expresa USD es límite responsabilidad $100"
+    },
+    {
+      "url": "https://scrydex.com/docs",
+      "verification": "recuperado",
+      "finding": "Documentación de servicios; no se ejecutaron endpoints"
+    },
+    {
+      "url": "https://mimazo.com.ar/",
+      "verification": "recuperado",
+      "finding": "Referencia Charizard VMAX $2488000, blue1555; TCGplayer vía TCGCSV, colección y mercado entre particulares; sin checkout central declarado"
+    },
+    {
+      "url": "https://cardstash.ar/",
+      "verification": "recuperado",
+      "finding": "Buy orders CharizardVMAX $1700/$1600 sin atributos completos; MP/retención declarados; ejemplo comisiones3.4% y MP4–8%; flujo no ejecutado"
+    },
+    {
+      "url": "https://www.artemistcg.com/",
+      "verification": "indexado ~un mes; open directo error",
+      "finding": "Listings históricos: Cryogonal reverseNM1200/Larvesta750/Pidove900; transferencia/envíos declarados. Vigencia no confirmada"
+    },
+    {
+      "url": "https://caraxtcg.com/",
+      "verification": "recuperado",
+      "finding": "Gengar094/165 151 inglésNM $15500; método tarjeta/transferencia declarado; sin checkout ni factura"
+    },
+    {
+      "url": "https://caraxtcg.com/product/gengar-094-165",
+      "verification": "no recuperado: cache miss",
+      "finding": "Home sí contiene muestra; ficha individual sin confirmación"
+    },
+    {
+      "url": "https://www.tcgplayer.com/search/pokemon/product?productLineName=pokemon&q=Charizard+004+Base+Set+Holofoil",
+      "verification": "indexado ~4 semanas",
+      "finding": "BaseSetCharizard004/102 148listings desde170 market869.02; vigente no revalidado; atributos incompletos"
+    },
+    {
+      "url": "https://www.tcgplayer.com/search/pokemon/all?page=1&productLineName=pokemon&q=Charizard+Base&setName=all&view=grid",
+      "verification": "open sin contenido suficiente",
+      "finding": "URL inicial Luna no respalda precio actual; corregida a búsqueda exacta indexada"
+    },
+    {
+      "url": "https://www.pricecharting.com/game/pokemon-base-set/charizard-4",
+      "verification": "recuperado",
+      "finding": "SelectorUSD; ungraded446.29 modelo algorítmico; tabla reporta venta eBay300 fecha2026-10-07; primary sale no validada; photos6/month"
+    },
+    {
+      "url": "https://www.pokemon.com/us/legal/terms-of-use",
+      "verification": "sin contenido suficiente: iframe",
+      "finding": "No usado para una conclusión de derechos; falta evidencia aplicable a imágenes PokéScan"
+    }
+  ]
+}

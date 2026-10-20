@@ -1,0 +1,27 @@
+{
+  "purpose": "Local deletion custody acknowledgment validation",
+  "records": [
+    {
+      "phase": "stop",
+      "command": [
+        "pnpm",
+        "run",
+        "stop"
+      ],
+      "exitCode": 0,
+      "startedAtUtc": "2026-10-13T02:07:34.184907+00:00",
+      "finishedAtUtc": "2026-10-13T02:07:34.439009+00:00"
+    },
+    {
+      "phase": "check",
+      "command": [
+        "pnpm",
+        "run",
+        "check"
+      ],
+      "exitCode": 0,
+      "startedAtUtc": "2026-10-13T02:07:34.439443+00:00",
+      "finishedAtUtc": "2026-10-13T02:09:12.551898+00:00"
+    }
+  ]
+}

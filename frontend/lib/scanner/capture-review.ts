@@ -1,4 +1,5 @@
 import type { VisualIdentifyResponseDto } from '@/types/api';
+import type { CaptureQuality } from '@/lib/scanner/capture-quality';
 
 export interface CaptureReview {
   image: string;
@@ -7,12 +8,13 @@ export interface CaptureReview {
   runId: number;
   result: VisualIdentifyResponseDto | null;
   error: string | null;
+  quality?: CaptureQuality;
 }
 
 export function captureReviewFile(review: CaptureReview, kind: 'image' | 'diagnostic'): { blob: Blob; filename: string } {
   const stem = `pokescan-${review.capturedAt.replace(/[:.]/g, '-')}-${review.runId}`;
   if (kind === 'diagnostic') {
-    const diagnostic = { source: review.source, capturedAt: review.capturedAt, runId: review.runId, result: review.result, error: review.error };
+    const diagnostic = { source: review.source, capturedAt: review.capturedAt, runId: review.runId, result: review.result, error: review.error, quality: review.quality };
     return {
       blob: new Blob([JSON.stringify({ schemaVersion: 1, ...diagnostic, imageFile: captureReviewFile(review, 'image').filename, expectedCardId: null }, null, 2)], { type: 'application/json' }),
       filename: `${stem}.json`,

@@ -4,6 +4,11 @@ import { APP_GUARD } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { AppController } from './app.controller.js';
+import {
+  createHealthPrismaClient,
+  HEALTH_PRISMA_CLIENT,
+  ReadinessService,
+} from './readiness.service.js';
 import { JobsModule } from './jobs/jobs.module.js';
 import { AuthModule } from './modules/auth/auth.module.js';
 import { CardsModule } from './modules/cards/cards.module.js';
@@ -14,6 +19,7 @@ import { ShareModule } from './modules/share/share.module.js';
 import { UsersModule } from './modules/users/users.module.js';
 import { PrismaModule } from './prisma/prisma.module.js';
 import { RedisModule } from './redis/redis.module.js';
+import { MetricsModule } from './modules/metrics/metrics.module.js';
 
 @Module({
   imports: [
@@ -41,8 +47,13 @@ import { RedisModule } from './redis/redis.module.js';
     ShareModule,
     CurrencyModule,
     FriendsModule,
+    MetricsModule,
   ],
   controllers: [AppController],
-  providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
+  providers: [
+    { provide: HEALTH_PRISMA_CLIENT, useFactory: createHealthPrismaClient },
+    ReadinessService,
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
+  ],
 })
 export class AppModule {}

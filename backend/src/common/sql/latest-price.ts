@@ -42,13 +42,13 @@ export interface CurrentPricePolicy {
  * interpola el alias porque eso obligaría a meter `Prisma.raw` en un helper que
  * hoy tiene dos call sites con literales.
  *
- * Proyecta **solo** `market`: es la única columna que consumen el `totalValueUsd`
- * de los agregados y el `valueUsd` del progreso por set.
+ * Proyecta market y metadata de esa misma fila para agregados acotados.
  */
 export function latestMarketPriceJoin(policy: CurrentPricePolicy): Prisma.Sql {
   return Prisma.sql`
     LEFT JOIN LATERAL (
-      SELECT p.market AS "market"
+      SELECT p.market AS "market", p."fetchedAt" AS "fetchedAt", p.provider AS "provider",
+        p.source AS "source", p.currency AS "currency"
       FROM card_prices p
       WHERE p."cardId" = i."cardId"
         AND p.variant = i.variant

@@ -47,10 +47,10 @@ describe('normalizeSession', () => {
     expect(normalizeSession(entries)).toHaveLength(MAX_SESSION_ENTRIES);
   });
 
-  it('conserva las más nuevas cuando se pasa del tope', () => {
+  it('conserva todas las lecturas anteriores cuando un almacenamiento viejo excede el tope', () => {
     const normalized = normalizeSession(seed(MAX_SESSION_ENTRIES + 10));
 
-    expect(normalized).toHaveLength(MAX_SESSION_ENTRIES);
+    expect(normalized).toHaveLength(MAX_SESSION_ENTRIES + 10);
     // Lo último es lo que el usuario está por procesar.
     expect(normalized[normalized.length - 1].runId).toBe(MAX_SESSION_ENTRIES + 10);
   });
@@ -129,27 +129,46 @@ describe('readSession', () => {
     expect(readSession()).toEqual([]);
   });
 
-  it('recorta una sesión guardada con más entradas que el tope', () => {
+  it('restaura un legado que excede el tope sin descartar lecturas', () => {
     // Escrita por una versión anterior del tope, o editada desde el devtools.
     window.sessionStorage.setItem('pcs.scanSession', JSON.stringify(seed(MAX_SESSION_ENTRIES + 5)));
 
-    expect(readSession()).toHaveLength(MAX_SESSION_ENTRIES);
+    expect(readSession()).toHaveLength(MAX_SESSION_ENTRIES + 5);
   });
 });
 
 describe('writeSession', () => {
-  it('borra la clave cuando la sesión queda vacía', () => {
+  it('migra precios legacy y los conserva en el snapshot canónico después de cinco reloads', () => {
+    const scan = seed(1)[0]!;
+    scan.candidate.prices = [
+      { cardId: 'base1-1', variant: 'normal', low: null, mid: null, high: null, market: 10, currency: 'USD', provider: 'tcgdex', source: 'tcgplayer', fetchedAt: '2026-10-07T12:00:00Z' },
+      { cardId: 'base1-1', variant: 'holofoil', low: null, mid: null, high: null, market: 0, currency: 'USD', provider: 'tcgdex', source: 'tcgplayer', fetchedAt: '2026-10-07T12:00:00Z' },
+      { cardId: 'base1-1', variant: 'reverseHolofoil', low: null, mid: null, high: null, market: null, currency: 'USD', provider: 'tcgdex', source: 'tcgplayer', fetchedAt: '2026-10-07T12:00:00Z' },
+    ];
+    sessionStorage.setItem('pcs.scanSession', JSON.stringify([scan]));
+    for (let round = 0; round < 5; round++) {
+      const restored = readSession();
+      expect(restored[0]!.candidate.prices?.map((price) => price.market)).toEqual([10, 0, null]);
+      expect(writeSession(restored)).toBe(true);
+      sessionStorage.removeItem('pcs.scanSession');
+      const canonical = JSON.parse(sessionStorage.getItem('pcs.scanDraft') ?? '{}');
+      expect(canonical.entries[0].candidate.prices.map((price: { market: number | null }) => price.market)).toEqual([10, 0, null]);
+    }
+  });
+
+  it('guarda snapshot canónico vacío conservando evidencia de sesión', () => {
     // La home usa "hay sesión" para decidir si muestra "Continuás donde
     // quedaste", y un `[]` guardado se leería distinto de una clave ausente.
     writeSession(seed(2));
-    expect(window.sessionStorage.getItem('pcs.scanSession')).not.toBeNull();
+    expect(window.sessionStorage.getItem('pcs.scanDraft')).not.toBeNull();
 
     clearSession();
-    expect(window.sessionStorage.getItem('pcs.scanSession')).toBeNull();
+    expect(readSession()).toEqual([]);
+    expect(window.sessionStorage.getItem('pcs.scanDraft')).not.toBeNull();
   });
 
-  it('recorta al tope lo que se guarda', () => {
+  it('no trunca lecturas previas al persistir', () => {
     writeSession(seed(MAX_SESSION_ENTRIES + 9));
-    expect(readSession()).toHaveLength(MAX_SESSION_ENTRIES);
+    expect(readSession()).toHaveLength(MAX_SESSION_ENTRIES + 9);
   });
 });

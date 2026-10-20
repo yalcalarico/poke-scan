@@ -1,0 +1,42 @@
+{
+  "groupId": 24722,
+  "setId": "me55",
+  "mode": "Intento puntual expl\u00edcitamente pedido por el usuario, sin retries; no cambia cadencia diaria posterior",
+  "startedAtUtc": "2026-10-13T23:19:52.697260+00:00",
+  "requests": [
+    {
+      "path": "last-updated.txt",
+      "status": 200,
+      "bytes": 24,
+      "receivedAtUtc": "2026-10-13T23:19:53.552576+00:00",
+      "sha256": "bfcf7c19317e096bfbed86d7799c2df32a71d7660c896217272bebd33f223d35"
+    },
+    {
+      "path": "tcgplayer/3/24722/products",
+      "status": 200,
+      "bytes": 271501,
+      "receivedAtUtc": "2026-10-13T23:19:54.628572+00:00",
+      "sha256": "265275e221dc80d827074990b737fff485d2516139ebcc33147ba94afcf71b13"
+    },
+    {
+      "path": "tcgplayer/3/24722/prices",
+      "status": 200,
+      "bytes": 32768,
+      "receivedAtUtc": "2026-10-13T23:19:55.343009+00:00",
+      "sha256": "42794bdfa1e94c38c2bf6f8f861692819805e316e0cdfb020929857815513111"
+    },
+    {
+      "path": "last-updated.txt",
+      "status": 200,
+      "bytes": 24,
+      "receivedAtUtc": "2026-10-13T23:19:56.008992+00:00",
+      "sha256": "bfcf7c19317e096bfbed86d7799c2df32a71d7660c896217272bebd33f223d35"
+    }
+  ],
+  "success": true,
+  "publishedBuild": "2026-10-13T20:06:44+0000",
+  "productRecords": 222,
+  "priceRecords": 217,
+  "marketNonNull": 217,
+  "finishedAtUtc": "2026-10-13T23:19:56.169218+00:00"
+}

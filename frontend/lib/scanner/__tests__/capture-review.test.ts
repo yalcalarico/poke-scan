@@ -30,3 +30,11 @@ it('el diagnóstico enlaza el mismo archivo y no inventa un ID correcto ni dupli
   expect(data.error).toBe('Sin respuesta');
   expect(data).not.toHaveProperty('image');
 });
+it('exporta métricas orientativas sin modificar los bytes de la captura', async () => {
+  const quality = { schemaVersion: 1 as const, analysisWidth: 183, analysisHeight: 256, laplacianVariance: 20, brightFraction: 0.1, largestBrightRegionFraction: 0.08, warnings: ['blur', 'glare'] as Array<'blur' | 'glare'> };
+  const measured = { ...review, quality };
+  const data = JSON.parse(atob((await read(captureReviewFile(measured, 'diagnostic').blob)).split(',')[1]));
+  expect(data.quality).toEqual(quality);
+  expect(data).not.toHaveProperty('image');
+  expect(await read(captureReviewFile(measured, 'image').blob)).toBe(review.image);
+});
