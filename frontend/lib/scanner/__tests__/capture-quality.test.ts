@@ -1,3 +1,4 @@
+import { deepStrictEqual } from 'node:assert/strict';
 import { describe, expect, it } from 'vitest';
 import { installCanvasShim } from './helpers/canvas-shim';
 import { analyzeCaptureQuality } from '../capture-quality';
@@ -42,7 +43,8 @@ describe('señales orientativas de captura', () => {
     const image = photo(() => [120, 120, 120], 512, 704), before = image.data.slice();
     const result = analyzeCaptureQuality(image)!;
     expect(Math.max(result.analysisWidth, result.analysisHeight)).toBe(256);
-    expect(image.data).toEqual(before);
+    // La comparación nativa revisa todos los bytes sin recorrer 1,4 M de propiedades.
+    deepStrictEqual(image.data, before);
     expect([result.laplacianVariance, result.brightFraction, result.largestBrightRegionFraction].every(Number.isFinite)).toBe(true);
   });
   it('omite el análisis para imágenes demasiado pequeñas', () => {

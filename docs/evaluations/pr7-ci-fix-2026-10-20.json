@@ -1,0 +1,78 @@
+{
+  "date": "2026-10-20",
+  "branch": "codex/consolidar-beta-v2-2026-10-20",
+  "failedCheckRun": "https://github.com/yalcalarico/poke-scan/actions/runs/39466187056",
+  "documentationCommit": "e8c835b",
+  "assertionProfile": {
+    "fixtureMs": 3.609250000000003,
+    "analysisMs": 11.106082999999984,
+    "vitestDeepEqualityMs": 2185.071792,
+    "nativeDeepEqualityMs": 0.5102919999999358,
+    "bytes": 1441792
+  },
+  "negativeMutation": {
+    "temporarySingleByteChange": true,
+    "testFailedAsExpected": true,
+    "productionAlgorithmRestoredByteExact": true
+  },
+  "focusedCaptureQualityTests": 6,
+  "proxyLoopbackTests": 5,
+  "standardCheck": {
+    "command": "pnpm run stop && pnpm run check",
+    "exitCode": 0,
+    "durationSeconds": 133.18
+  },
+  "testCounts": {
+    "backendVitest": 596,
+    "backendNode": 22,
+    "apiE2E": 6,
+    "frontend": 622,
+    "opsMonitor": 15,
+    "opsBackups": 54,
+    "opsCustody": 7,
+    "qaProxy": 5,
+    "total": 1327,
+    "skipped": 0
+  },
+  "cleanup": {
+    "cloneRemoved": true,
+    "redisRemoved": true,
+    "connectionsBeforeDrop": 0,
+    "devAndTESTCountsGINUnchanged": true,
+    "sharedRedisHealthy": true
+  },
+  "staticReview": "No material findings; one read-only delegated assignment",
+  "snapshot": {
+    "originalPath": "docs/plans/lanzamiento-2026-10-07/RESULTADOS/SEO-01-runtime-anexos/harness/control-proxy.mjs",
+    "originalSha256": "4e577149343dec2bade25824f0bd0ea39867f86d52a729e1cbae11cd80ddb137",
+    "preservedAt": "docs/archive/security-2026-10-20/control-proxy.mjs.txt",
+    "maintainedImplementation": "scripts/qa/control-proxy.mjs",
+    "reason": "Alerta CodeQL SSRF: el origen no debe construirse concatenando req.url. La ruta antigua ahora es una entrada al helper corregido; los recibos anteriores conservan el hash del snapshot original."
+  },
+  "artifacts": {
+    "check.log": {
+      "sha256": "f9d2d261dc20366baed489e8741c554f048a7152fe232f32ba7e99fcd9168877",
+      "location": "private diagnostic directory; not embedded in Git"
+    },
+    "profile-before.log": {
+      "sha256": "ebc6498108910c827caa903dd4e28bc71ebb299f538885fba932573421aaebf8",
+      "location": "private diagnostic directory; not embedded in Git"
+    },
+    "profile-comparators.log": {
+      "sha256": "147dd8f8123dd5109fe7d7a025d71d3873a400ab604c7c8a040bac664446393a",
+      "location": "private diagnostic directory; not embedded in Git"
+    },
+    "mutation-negative.log": {
+      "sha256": "7b8eb5e9b1c533bb6daebde611f3705b999ce229c18bb37eabea37db79d0c16d",
+      "location": "private diagnostic directory; not embedded in Git"
+    },
+    "focal-final.log": {
+      "sha256": "fffc5c26128b174bde023fdb25e5a09386ad5022bf9e9b1ce2dbfcd21b539902",
+      "location": "private diagnostic directory; not embedded in Git"
+    },
+    "proxy-tests.log": {
+      "sha256": "a893038e39d3e41bbacddb2e8d0305736a52b9b524a770607ff1b9d69877c675",
+      "location": "private diagnostic directory; not embedded in Git"
+    }
+  }
+}

@@ -47,3 +47,11 @@ Los anexos/copias/hashes y fallos se conservan sin deduplicar en sitio. En copia
 de fuentes, los enlaces relativos reflejan el contexto original; no reparar su
 contenido cambiando los bytes de evidencia. Algunos informes apuntan a helpers
 privados temporales ya ausentes: conservar esa limitación, sin fabricar su reemplazo.
+
+## Corrección posterior de seguridad
+
+[Proxy de QA y snapshot original](security-2026-10-20/README.md): después de la
+limpieza, CodeQL detectó SSRF en un helper histórico. Se preservaron sus bytes
+anteriores con hash y se sustituyó su entrada ejecutable por el helper mantenido
+corregido. Los recibos históricos conservan la referencia al snapshot anterior;
+esta excepción está explícita y no implica alterar otras evidencias.

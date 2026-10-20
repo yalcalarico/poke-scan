@@ -32,6 +32,14 @@ verdes intactos ni atribuir al último parche la corrección de fallos históric
 sin causa localizada. El [roadmap del escáner](plans/scanner-improvements.md)
 conserva corpus, precisión, duración y dispositivos todavía pendientes.
 
+## Corrección posterior del PR #7
+
+Limpieza documental consolidada en `e8c835b`; después se corrigieron el coste de
+comparación de píxeles de un test y el destino del proxy QA señalado por CodeQL.
+[Validación](evaluations/pr7-ci-fix-2026-10-20.md): gate estándar local aislado
+1.327 pruebas, sin omisiones, sin cambio de algoritmo o timeout. La confirmación
+remota corresponde a los checks del nuevo commit en GitHub.
+
 ## Decisiones humanas y trabajo pendiente
 
 - **Beta y corpus:** el dueño gestiona encuestas y cartas con identidad exacta.
