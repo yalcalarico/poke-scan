@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { PreviewLink as Link } from '@/components/visual-preview/preview-link';
+import Link from 'next/link';
 import { ChartNoAxesCombined, Wallet } from 'lucide-react';
 import { useState } from 'react';
 import { Money, ShowOrDash } from '@/components/cards/money';

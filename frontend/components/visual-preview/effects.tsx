@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, type CSSProperties, type ReactNode } from 'react';
 import { cn } from '@/lib/cn';
-import { useVisualGridMemory, useVisualPreview } from './visual-preview';
+import { useVisualGridMemory, useAppVisuals } from './visual-preview';
 import styles from './visual-preview.module.css';
 
 function useMotionVisibility<T extends HTMLElement>(enabled = true) {
@@ -22,12 +22,12 @@ function useMotionVisibility<T extends HTMLElement>(enabled = true) {
 }
 
 export function Reveal({ children, className }: { children: ReactNode; className?: string }) {
-  const active = useVisualPreview();
+  const active = useAppVisuals();
   const ref = useMotionVisibility<HTMLDivElement>();
   return <div ref={ref} className={cn(active && styles.reveal, className)}>{children}</div>;
 }
 export function Burst({ trigger }: { trigger: string | number }) {
-  const active = useVisualPreview();
+  const active = useAppVisuals();
   return active ? <span key={trigger} aria-hidden="true" className={styles.burst}>{Array.from({ length: 14 }, (_, i) => <i key={i} style={{ '--angle': `${i * 360 / 14}deg` } as CSSProperties} />)}</span> : null;
 }
 export function Pokeball({ className }: { className?: string }) {
@@ -35,14 +35,14 @@ export function Pokeball({ className }: { className?: string }) {
   return <span ref={ref} aria-hidden="true" className={cn(styles.pokeball, className)} />;
 }
 export function ScannerEffect() {
-  const active = useVisualPreview();
+  const active = useAppVisuals();
   const ref = useMotionVisibility<HTMLSpanElement>(active);
   return active ? <span ref={ref} aria-hidden="true" className={styles.scanner} /> : null;
 }
 
 /** El texto accesible siempre contiene el valor final, sin anunciar cada frame. */
 export function AnimatedNumber({ value, format = String, className }: { value: number; format?: (value: number) => string; className?: string }) {
-  const active = useVisualPreview();
+  const active = useAppVisuals();
   const ref = useRef<HTMLSpanElement>(null);
   const previous = useRef(0);
   useEffect(() => {
@@ -77,7 +77,7 @@ export function AnimatedNumber({ value, format = String, className }: { value: n
 
 /** FLIP acotado a cambios del DOM; no mantiene un loop de frames por carta. */
 export function MotionGrid({ children, className, scopeKey = 'catalog' }: { children: ReactNode; className?: string; scopeKey?: string }) {
-  const active = useVisualPreview();
+  const active = useAppVisuals();
   const memory = useVisualGridMemory();
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {

@@ -4,7 +4,6 @@ import type {
   CardDataProvider,
   PagedResult,
   RemoteCard,
-  RemoteCardPrice,
   RemoteSet,
 } from './card-provider.interface.js';
 
@@ -14,32 +13,6 @@ const USER_AGENT = 'PokemonCardsScannerApp/1.0 (+https://github.com/pokemon-card
 const RETRYABLE_STATUS = new Set([408, 425, 429, 500, 502, 503, 504]);
 const BASE_BACKOFF_MS = 1000;
 const MAX_ATTEMPTS = 4;
-
-/**
- * Claves de variante de TCGPlayer → nuestro enum.
- *
- * La fuente usa una clave distinta según la antigüedad del set. Los sets
- * modernos usan `normal` / `holofoil` / `reverseHolofoil`, pero los antiguos
- * (sobre todo Base) usan `1stEdition` / `unlimited` / `unlimitedHolofoil` /
- * `1stEditionHolofoil`. Con el mapa incompleto, 1.510 cartas del set Base se
- * quedaban sin precio aunque la fuente lo tuviera.
- *
- * Conteo real sobre el catálogo (20.670 cartas):
- *   reverseHolofoil 12.463 · normal 11.567 · holofoil 7.286
- *   1stEdition 673 · unlimited 673 · unlimitedHolofoil 164 · 1stEditionHolofoil 159
- */
-const VARIANT_MAP: Record<string, string> = {
-  normal: 'normal',
-  holofoil: 'holofoil',
-  reverseHolofoil: 'reverseHolofoil',
-  '1stEditionNormal': 'firstEditionNormal',
-  '1stEditionHolofoil': 'firstEditionHolofoil',
-  // Sets antiguos: la 1ª edición y la reprint sin límite son ediciones
-  // distintas de la misma carta, no de una variante de brillo.
-  '1stEdition': 'firstEdition',
-  unlimited: 'unlimited',
-  unlimitedHolofoil: 'unlimitedHolofoil',
-};
 
 const delay = (ms: number): Promise<void> =>
   new Promise((resolve) => setTimeout(resolve, ms));
@@ -128,50 +101,6 @@ export class PokemonTcgIoProvider implements CardDataProvider {
     const payload = await this.getJson(`/cards?pageSize=${pageSize}&page=${page}`);
     const data = Array.isArray(payload?.data) ? payload.data.map(mapCard) : [];
     return mapPaged(data, payload, page, pageSize);
-  }
-
-  async getCard(id: string): Promise<RemoteCard | null> {
-    try {
-      const payload = await this.getJson(`/cards/${encodeURIComponent(id)}`);
-      return payload?.data ? mapCard(payload.data) : null;
-    } catch {
-      return null;
-    }
-  }
-
-  async getPricesForCard(
-    card: RemoteCard | { id: string; tcgplayer?: unknown },
-  ): Promise<RemoteCardPrice[]> {
-    const holder = card as { id: string; tcgplayer?: unknown; raw?: unknown };
-    const tcgplayer = (holder.tcgplayer ?? (holder.raw as any)?.tcgplayer) as
-      | { prices?: Record<string, Record<string, unknown>> }
-      | undefined;
-    const prices = tcgplayer?.prices;
-    if (!prices || typeof prices !== 'object') return [];
-
-    const result: RemoteCardPrice[] = [];
-    for (const [rawVariant, values] of Object.entries(prices)) {
-      const variant = VARIANT_MAP[rawVariant];
-      if (!variant || !values || typeof values !== 'object') continue;
-
-      const low = toNumber((values as any).low);
-      const mid = toNumber((values as any).mid);
-      const high = toNumber((values as any).high);
-      const market = toNumber((values as any).market);
-      if (low === null && mid === null && high === null && market === null) continue;
-
-      result.push({
-        cardId: holder.id,
-        variant,
-        low,
-        mid,
-        high,
-        market,
-        source: 'tcgplayer',
-        currency: 'USD',
-      });
-    }
-    return result;
   }
 
   private async getJson(path: string): Promise<any> {

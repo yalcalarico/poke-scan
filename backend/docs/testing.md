@@ -1,8 +1,8 @@
 # Testing — cómo escribir specs en este proyecto
 
-> Vitest 4 con 11 archivos y 128 tests. Lo más importante: **los specs
-> comparten la base de datos de desarrollo y por eso corren de a uno**. Después,
-> el patrón de cleanup, cómo testear `$queryRaw` y cómo testear Redis.
+> Los specs usan una base aislada terminada en `_test` y corren en serie porque
+> comparten fixtures. Detené el runtime antes: el worker TCGCSV podría consumir
+> los mismos grupos que preparan los tests.
 
 ## Estado actual
 
@@ -11,8 +11,6 @@
 | Runner | Vitest 4.1 (`vitest run`) |
 | Config | `vitest.config.ts` (`**/*.spec.ts`) y `vitest.config.e2e.ts` (`**/*.e2e-spec.ts`) |
 | Globals | `globals: true` + `types: ["vitest/globals", "node"]` en `tsconfig.json`: `describe`/`it`/`expect`/`vi` no se importan |
-| Archivos | 20 `.spec.ts` · 1 `.e2e-spec.ts` |
-| Tests | 325, ~45 s |
 | Lint | oxlint type-aware corre sobre `src/` y `test/` |
 
 | Spec | Qué cubre |
@@ -28,11 +26,9 @@
 | `friends.service.spec.ts` | búsqueda, solicitudes, responder, 403/404, baja, bloqueo |
 | `currency.service.spec.ts` | feature flag, caché 1 h, `stale` >48 h, DolarApi caído, valores saneados |
 | `redis.recovery.spec.ts` | retries permanentes con backoff acotado, estados de recuperación, fallback sin cola, logs sin URL y cierre de listeners |
-| `tcgdex.provider.spec.ts` | mapeo de las 7 variantes, 404 con fallback de padding, retry de 503, parsing defensivo |
-| `tcgdex-set-mapping.service.spec.ts` | matcheo por nombre / por ID, validación, miss marker, error de red sin marcar miss |
-| `sync-prices.service.spec.ts` | refresh en vivo, TTL negativa, no borra previos ante fallo, frescura de 24 h, ritmo global |
-| `price-queue.service.spec.ts` | dedupe, claim con `SKIP LOCKED` entre dos instancias, backoff, recuperación de `processing` abandonados, ritmo global, worker |
-| `price-backfill.service.spec.ts` | qué cartas necesitan precio, orden por antigüedad, límite de corrida, y que **no** llame al proveedor |
+| `sync-prices.service.spec.ts` | lectura local, precio cero, vencidos, fallos de lectura/encolado y contrato admin |
+| `tcgcsv/single-source.integration.spec.ts` | inyección real, exclusión de fuentes/monedas, variantes, valuación, ownership y cooldown |
+| `price-sync-cycles.spec.ts` | señal coalescida, dos instancias, leases, ingesta apagada y backoff |
 | `card-prices-retention.service.spec.ts` | consolidación a un punto por día, que la última fila de un grupo no se borre nunca, y que el precio de referencia del delta sobreviva |
 | `sync-cards.service.spec.ts` | IDs canónicos + cursor reanudable: reanuda sin re-traer, omite el completo con un request, `force`, parcial no marcado completo |
 | `sync-state.service.spec.ts` | el cursor de `sync_state` y la reconciliación de jobs abandonados al arrancar |
@@ -72,7 +68,7 @@ viendo una variable vacía y no dispararía nunca.
 2. La base resuelta no tiene "test" en el nombre.
 
 El primero parece obvio hasta que se explicó: con la cola de precios
-persistente, el worker del backend drena la **misma** `price_refresh_jobs` que
+persistente, el worker del backend drena la **misma** `tcgcsv_group_jobs` que
 los specs: un test encolaba un job y el worker se lo llevaba antes de que el test
 lo reclamara. La suite quedaba flaky sin que el código tuviera nada de malo, y
 el mensaje de error —"expected null not to be null"— no señalaba para nada.
@@ -361,8 +357,8 @@ con la forma mínima. Ejemplos reales:
 
 | Dependencia | Doble | Por qué |
 |---|---|---|
-| `SyncPricesService` en `cards.service.spec` | `{ getPricesForCard: async (cardId) => [un precio fijo] }` | no querés ir a la API externa |
-| `TCGDEX_SET_MAPPING` y `PRICE_PROVIDER` en `sync-prices.service.spec` | `{ resolve: vi.fn() }` y `{ getCardPrices: vi.fn() }` | el mapper y tcgdex son red: se verifican las llamadas con mocks |
+| `SyncPricesService` en `cards.service.spec` | `{ getPricesForCard: async (cardId) => [un precio fijo] }` | aislar la lectura local de precios |
+| `TcgcsvService` en `sync-prices.service.spec` | `{ enqueueCards: vi.fn() }` | el handler sólo solicita grupos; las descargas se prueban en la ingesta |
 | `CurrencyService` en `cards.service.spec` | `{ getCachedRate: async () => cachedRate }` | `cachedRate` es una variable que el test setea en `beforeEach` |
 | `SyncPricesService` en `collections.service.spec` | **no se provee** | por eso la inyección es `@Optional()` |
 | `ConfigService` en `currency.service.spec` | `{ get: (key) => (key === 'REDIS_URL' ? REDIS_URL : undefined) }` | solo necesita `REDIS_URL` |
@@ -504,6 +500,24 @@ Dos cosas a saber si agregás un e2e:
       `isAvailable: () => false`.
 
 ## Ver también
+
+### Herramientas manuales del escáner
+
+Estos arneses no pertenecen al gate automático: requieren modelo/índice y una
+foto local o un reporte de salida. Conservan cobertura operativa útil; no son
+servicios registrados ni scripts de proveedores retirados.
+
+| Script en `backend/scripts/` | Escenario |
+|---|---|
+| `scanner-http-cancel-smoke.mjs` | Cancelación HTTP contra controller y guard compilados. |
+| `scanner-index-failures-smoke.mjs` | Fallos de red loopback y cierre forzado de CLIs propios. |
+| `scanner-index-resume-smoke.mjs` | SIGINT y reanudación del índice en fixtures aisladas. |
+| `scanner-load-smoke.mjs` | Carga acotada del servicio local. |
+| `scanner-soak-smoke.mjs` | Estabilidad en una corrida prolongada. |
+| `scanner-stability-smoke.mjs` | Fallos y recuperación del worker compilado. |
+
+Las precondiciones y argumentos están en cada archivo. No se ejecutan al
+arrancar la aplicación ni prueban precisión en dispositivos físicos.
 
 - [database.md](database.md) — los modelos que los specs siembran
 - [gotchas.md](gotchas.md) — por qué `fileParallelism: false` no se toca

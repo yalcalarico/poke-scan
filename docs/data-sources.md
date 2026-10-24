@@ -25,8 +25,8 @@ colecciones.
 
 Por decisión del usuario del 20/10/2026, la aplicación utiliza sólo las
 observaciones TCGCSV en cartas, búsqueda, colecciones, portafolio, amigos y
-compartidos. TCGdex dejó de registrarse en el arranque; su mapper, worker y ciclo
-diario están retirados del flujo activo. Los registros anteriores se conservan
+compartidos. El proveedor TCGdex, su mapper, worker y ciclo diario se retiraron
+del código el 24/10. Los registros anteriores se conservan
 como historia y no completan faltantes de la fuente nueva.
 
 Las lecturas de precio usan PostgreSQL y sólo encolan grupos locales. No hay

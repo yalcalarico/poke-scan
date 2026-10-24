@@ -1,6 +1,6 @@
 # Rutas y pantallas
 
-**Apariencia predeterminada,20/10/2026:** el usuario eligió V2 tras probarla con el público. Las rutas normales de la app activan sus efectos sin parámetro; `visual=v2` y `/buscar-v2` siguen funcionando. La alternativa anterior se elige explícitamente con `visual=classic`, mediante el selector Clásica/Actual. Se retiró el menú duplicado V2: la navegación principal vuelve a sus cinco destinos. Contexto de búsqueda y datos compartidos se conservan; esta decisión reemplaza el carácter optativo de los checkpoints16/10 siguientes.
+**Apariencia única, 24/10/2026:** se retiró Clásica por decisión del usuario. La app usa siempre la apariencia actual, sin selector ni propagación del parámetro `visual`. Los enlaces antiguos con `visual=classic` o `visual=v2` siguen abriendo la misma pantalla; `/buscar-v2` conserva compatibilidad con el catálogo común. La navegación mantiene sus cinco destinos.
 
 Las pantallas del frontend (16 archivos `page.tsx` al 20/10/2026): quién las puede ver, si son Server o Client Component,
 de dónde sacan los datos y por qué están donde están. El detalle de los
@@ -8,9 +8,9 @@ componentes está en [`components.md`](components.md); las reglas de estilo, en
 [`design-system.md`](design-system.md); el modo de trabajo, en
 [`build-guide.md`](build-guide.md).
 
-**Un solo árbol de app, dos apariencias.** Las rutas habituales usan V2 por
-defecto; `visual=classic` elige Clásica y `visual=v2` sigue siendo compatible.
-`/buscar-v2` reutiliza `CatalogSearch`; no es otro catálogo ni otra sesión.
+**Un solo árbol de app y una sola apariencia.** El parámetro `visual` ya no
+selecciona estilos. `/buscar-v2` reutiliza la página de `/buscar`; no es otro
+catálogo ni otra sesión.
 La navegación principal conserva cinco destinos.
 
 > **Disclaimer sobre números de línea**: las referencias apuntan a **archivo +
@@ -68,10 +68,10 @@ Y las fronteras: `app/(app)/error.tsx`, `app/(auth)/error.tsx`,
 
 ## 1. Por qué no hay un prefijo de versión
 
-La apariencia actual es V2 por defecto desde el 20/10. El selector
-Clásica/Actual conserva parámetros, identidad y contexto de regreso. No hay menú
-V2 adicional. `visual=v2` y `/buscar-v2` se mantienen por compatibilidad; no
-crean un segundo árbol ni separan los datos. La explicación histórica siguiente
+La apariencia actual es la única desde el 24/10. Los enlaces internos usan
+las rutas normales y conservan los parámetros propios del catálogo y de regreso.
+`/buscar-v2` se mantiene por compatibilidad; no crea un segundo árbol ni separa
+los datos. Los parámetros visuales antiguos ya no cambian la apariencia. La explicación histórica siguiente
 se refiere al antiguo prefijo `/v2/*`, retirado con el rediseño de septiembre.
 
 Antes de que existiera este árbol, la app nueva convivía con la anterior bajo

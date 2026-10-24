@@ -35,7 +35,7 @@ misma cola `tcgcsv_group_jobs`. Pending no se duplica, processing conserva su
 lease, el backoff no se adelanta y una reserva de descarga de 24 h no se borra.
 Un grupo procesa todas las cartas asociadas; no se crean requests por cada copia.
 
-`refresh` conserva la lectura local y solicita el grupo. El endpoint admin
+`getPricesForCard` conserva la lectura local y solicita el grupo si hace falta. El endpoint admin
 `POST /jobs/refresh-prices` devuelve `requested`, `queued`, `refreshed: 0`,
 `failed: 0`: encolar no acredita una cotización nueva. Sólo la ingesta publica
 observaciones, conservando fechas reales; refrescar no vuelve a fechar el precio
@@ -62,8 +62,8 @@ leases persistentes, una descarga del mismo archivo cada 24 h y pausas
   `ENABLE_PORTFOLIO_SNAPSHOTS_CRON=false` permite deshabilitar el corte diario
   de portafolio. El nombre legacy del flag no vuelve a habilitar dos fuentes.
 
-`JobsModule` no registra `TcgdexSetMappingService`, `PriceQueueWorker` ni
-`PriceSyncDailyService`. Los controles TCGdex se marcan inactivos al arrancar.
+El proveedor, mapper, cola/worker por carta, backfill y ciclo diario TCGdex
+fueron retirados del código el 24/10. Los controles TCGdex se marcan inactivos al arrancar.
 Sus tablas, observaciones y clases de migración/pruebas se conservan; no
 participan de lecturas ni de nuevas consultas externas de la aplicación.
 

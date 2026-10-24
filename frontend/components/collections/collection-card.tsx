@@ -1,5 +1,5 @@
 import Image from 'next/image';
-import { PreviewLink as Link } from '@/components/visual-preview/preview-link';
+import Link from 'next/link';
 import { ChevronRight, Grid3x3, Layers } from 'lucide-react';
 
 import { Money } from '@/components/cards/money';

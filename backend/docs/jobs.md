@@ -2,9 +2,10 @@
 
 ## Precios: operación vigente desde 20/10/2026
 
-La única fuente activa es TCGCSV. `JobsModule` no registra mapper, worker ni ciclo
-diario TCGdex. Las secciones que describen esos adaptadores explican historia;
-no son pasos de operación actuales. El catálogo conserva su sincronización.
+La única fuente activa es TCGCSV. El 24/10 se retiraron el proveedor y mapper
+TCGdex, la cola/worker por carta y su backfill/planificador. Sus datos y
+migraciones se conservan como historia; no hay un circuito alternativo de
+precios. El catálogo conserva su sincronización.
 
 `tcgcsv/tcgcsv.service.ts` administra descubrimiento, cola por grupo, build y
 publicación; ciclo diario 21:00 UTC, reanudación cada 15 min y consumidor serial.
@@ -44,12 +45,10 @@ la espera de una validación fallida usando sólo datos locales. Ver
 | `sync-sets.service.ts` | Espeja los sets |
 | `sync-cards.service.ts` | Espeja las cartas. **Reanudable** |
 | `sync-state.service.ts` | El cursor del sync, en `sync_state` (Postgres) |
-| `sync-prices.service.ts` | Precios bajo demanda (ver [pricing.md](pricing.md)) |
-| `price-queue.service.ts` | La cola de refresco, en `price_refresh_jobs` |
-| `price-queue.worker.ts` | El loop que drena la cola |
-| `provider-rate.gate.ts` | Gate de ritmo durable en `provider_rate_limits` (PostgreSQL), compartido entre instancias |
-| `card-prices-retention.service.ts` | Consolida y poda `card_prices`. **No corre solo**: es un script con dry run |
-| `tcgdex-set-mapping.service.ts` | Traduce nuestros set IDs a los de tcgdex |
+| `sync-prices.service.ts` | Lecturas locales y solicitudes a la cola por grupo (ver [pricing.md](pricing.md)) |
+| `tcgcsv/tcgcsv.service.ts` | Planificación, leases, cola por grupo y publicación atómica |
+| `tcgcsv/tcgcsv.client.ts` | Descarga serial, caché de archivos y pausas 429 |
+| `card-prices-retention.service.ts` | Consolida y poda `card_prices`: cron mensual o script con dry run |
 | `sync.constants.ts` | Los valores compartidos del sync |
 | `retry.ts` | `withPageRetry`, el retry de paginación |
 
@@ -61,11 +60,8 @@ export const SYNC_LOCK_KEY = 'sync:cards:lock';
 export const SYNC_LOCK_TTL_SECONDS = 1800;
 ```
 
-El cursor del sync **no** está acá: vive en la tabla `sync_state`
-(`SyncStateService`). Y el ritmo hacia el proveedor de precios tampoco: vive en
-`provider_rate_limits` (`ProviderRateGate`). Los dos estaban en Redis y los dos
-se movieron a Postgres por la misma razón —un valor que tiene que ser único no
-puede vivir en la memoria de un proceso—.
+El cursor del catálogo vive en `sync_state`. Los leases, pausas y reservas de
+TCGCSV viven en PostgreSQL; ninguna lectura pública descarga archivos.
 
 ## `SyncSetsService`
 
@@ -271,152 +267,55 @@ los aliases nuevos se guardan junto al registro. Para IDs ya conocidos, el
 Las cartas sin `setId` se omiten (puede pasar si el set no se sincronizó) y los
 errores de una carta no cortan la página.
 
-## `TcgdexSetMappingService` — el puente entre las dos fuentes
-
-El catálogo se espeja desde pokemontcg.io y los precios salen de tcgdex. Cada
-fuente numera los sets distinto (`me55` vs `30th`, `sv4` vs `sv04`), así que
-pedir un precio exige traducir. Este service lo hace **una vez por set** y lo
-persiste en `card_sets.tcgdexSetId`.
-
-```ts
-const SETS_CACHE_KEY = 'tcgdex:sets';        // el listado de sets de tcgdex, 24 h
-const MISS_KEY_PREFIX = 'tcgdex:map:miss:';  // un set descartado, 24 h
-const VALIDATION_SAMPLE = 25;                // cartas con las que se valida
-const MIN_VALIDATION_RATIO = 0.5;            // mitad de aciertos: mínimo para creer
-const MAP_ALL_PAUSE_MS = 250;                // courtesy en el backfill
-```
-
-El matcheo va en cascada y **valida antes de persistir**:
-
-1. `SET_ID_OVERRIDES` — a mano, para lo que no matchea de ninguna forma
-   (hoy: `fut20` → `fut2020`).
-2. **Nombre normalizado** (minúsculas, sin acentos ni puntuación): cubre 168
-   de los 176 sets.
-3. **Igualdad de ID**: tcgdex desciende de la misma numeración, así que
-   `base1` (nuestro "Base") es `base1` (su "Base Set"). Cubre los otros 6.
-4. Si no hay candidato → miss marker de 24 h y `null`. No se reintenta en cada
-   refresh.
-
-Antes de guardar, `validate()` pide el detalle del set candidato (`GET
-/sets/{id}`, que trae todos los `localId`) y chequea que **al menos la mitad** de
-nuestras cartas existan ahí, comparando sin ceros a la izquierda
-(`numberKey('018') === numberKey('18')`). Esto es lo que impide que un falso
-matcheo de nombre contamine el mapeo.
-
-### Los 2 sets que quedan sin mapear (a propósito)
-
-`cel25c` y `me55c`, las "Classic Collection": pokemontcg.io les guarda la
-**numeración original** de cada carta clásica (`"15"`, `"107"`, con números
-repetidos entre cartas distintas) mientras tcgdex las numera `CC001`..`CC025`.
-La validación los rechaza y sus cartas se quedan con lo último que haya en
-`card_prices`. Un override no las arreglaría: el problema es la numeración, no
-el nombre del set.
-
-### Correr el mapeo
-
-```bash
-pnpm --dir backend run db:map-tcgdex            # idempotente: ya mapeados se saltan
-pnpm --dir backend run db:map-tcgdex -- --retry-misses   # reintenta los descartados
-```
-
-Imprime el reporte y sale con código 1 si quedó algún set sin mapeo, para que
-CI lo note. En el flujo normal **no hace falta correrlo**: el mapper es lazy y
-se resuelve solo la primera vez que se pide el precio de una carta de un set
-nuevo (`sv4` → `sv04` pasó por acá sin intervención). Un error de red durante
-el matcheo o la validación **no** marca miss: deja el set para la próxima.
-
 ## `SyncPricesService`
 
-No es un sync de catálogo sino el **refresco bajo demanda** de precios. Está
-documentado entero en [pricing.md](pricing.md). Lo único que vive en este doc:
+`getPricesForCard` lee el último precio confirmado por carta y variante del
+proveedor activo, TCGplayer y USD. Un precio cero sigue siendo conocido.
+Si falta una referencia o está vencida, solicita trabajo a
+`TcgcsvService.enqueueCards` sin esperar una descarga. No usa caché por carta,
+no reestampa observaciones y no recurre a TCGdex ni a precios del catálogo.
 
-- `MAX_AGE_MS = 24h` (frescura en Postgres), `CACHE_TTL_SECONDS = 1h` (Redis),
-  `NEGATIVE_CACHE_TTL_SECONDS = 6h` (cuando la fuente todavía no cotiza).
-- El ritmo lo aplica `ProviderRateGate`, la única puerta al proveedor de precios.
-  **Vive en Postgres, no en el proceso**: el gap era un `Date.now()` en memoria, o
-  sea un reloj por proceso, y con dos instancias el ritmo real hacia TCGdex se
-  duplicaba. Ahora la fila es una por proveedor y la comparten la cola y el lote
-  del admin (~26 req/min por cortesía; no consume la cuota de pokemontcg.io). La
-  lectura pública es stale-while-revalidate y no espera ese slot: ver
-  [pricing.md](pricing.md).
-- `refreshMany(cardIds)` es **bloqueante y en serie** (lo usa el endpoint admin).
-  Con N cartas tarda N × 2,3 s a propósito, para respetar el ritmo del proveedor
-  configurado.
-- `refresh(cardId)` **sí hace HTTP**: resuelve el set (lazy si hace falta) y
-  pide el precio a tcgdex por (set, localId), pasando por el gap compartido.
-  Desde un handler público de lectura, usá `getPricesForCard`: devuelve el dato
-  disponible y encola los vencidos, sin bloquear la respuesta.
-- `fetchAndStore(cardId)` es la unidad de trabajo **sin ritmo**: la llama el
-  worker de la cola, que ya tomó el hueco. Propaga el fallo del proveedor; quien
-  degrada a "lo último conocido" es `refresh()`.
-
-### La cola es persistente, y el ritmo es global
-
-`enqueueRefresh` escribe una fila en `price_refresh_jobs` y `PriceQueueWorker` la
-drena con `FOR UPDATE SKIP LOCKED`. Todo el diseño —dedupe por `cardId`,
-`availableAt` como backoff, la recuperación de `processing` abandonados, y por
-qué reencolar nunca adelanta un backoff— está en [pricing.md](pricing.md) §"La
-cola de precios".
-
-Acá lo que corresponde a este doc es que **el ritmo también se persistió**, y esa
-es la parte que no era obvia: la limitación anterior no era "un reinicio pierde la
-cola", era que el reloj del rate limit era un reloj por proceso.
+`refreshMany` conserva el contrato admin: encola grupos en lote y devuelve
+`{ refreshed: 0, failed: 0, queued, results: {} }`. El encolado no acredita un
+precio nuevo. `enqueueRefresh` se usa al incorporar una carta a una colección.
 
 ## `JobsRecoveryService` — qué pasa con el trabajo a medias
 
-Un `processing` o un `running` cuyo proceso murió es basura silenciosa: nadie lo
-vuelve a tomar y no aparece ningún error. `JobsRecoveryService` lo reconcilia en
-el arranque, y las dos cosas viven juntas porque son el mismo problema.
-
-| Qué | Umbral | Por qué ese número |
-|---|---|---|
-| `price_refresh_jobs` en `processing` | 10 min | Un refresh es un request con reintentos (`retry.ts` llega a 8 intentos con backoff de 30 s): del orden del minuto. Diez minutos es tres veces eso. |
-| `scan_jobs` en `running` | 30 min (`SYNC_LOCK_TTL_SECONDS`) | El sync entero tarda 15-20 min. Más viejo que el TTL del lock es de un proceso que ya no está. |
-
-El criterio es la **edad**, no la identidad de la instancia: el `lockedBy` de la
-cola cambia en cada arranque, así que después de un reinicio no hay nadie a quien
-preguntarle si esa fila era suya. Un umbral más corto cerraría jobs de una
-instancia sana; uno más largo deja basura más tiempo, que es el problema menos
-grave.
-
-Que falle la reconciliación no impide arrancar: se loguea y sigue. La cola se
-vuelve a llenar sola con la próxima lectura.
+Al arrancar marca fallidos los syncs de catálogo `running` anteriores al TTL de
+su lock, sin tocar corridas recientes. La recuperación de grupos de precios
+pertenece a `TcgcsvService`, que conserva sus leases, cooldown y backoff.
+`price_refresh_jobs` queda como historia; ningún servicio la drena o reconcilia.
 
 ## Scheduler y ciclos automáticos
 
-`ScheduleModule.forRoot()` activa los `@Cron`. Los crons de precios planifican ciclos durables por proveedor; los registros diarios y la cola permiten reanudar el trabajo pendiente del día UTC actual. Un ciclo de TCGdex interrumpido se vuelve a planificar cada quince minutos. TCGCSV usa el mismo patrón de reanudación diaria y su discovery corre aparte.
+`ScheduleModule.forRoot()` activa los crons. La planificación y el consumo de
+precios se limitan a TCGCSV.
 
 | Job | Programación | Qué hace |
 |---|---|---|
-| `syncCatalogWeekly` | Lunes 04:07, zona del proceso | Arranca el sync semanal del catálogo mediante `CatalogSyncService`; el cursor reanudable está en PostgreSQL (`sync_state`), y el lock de exclusión del catálogo usa Redis con TTL renovable. |
-| `PriceSyncDailyService.runScheduledCycle` | Diario 03:15 UTC | Planifica los sets habilitados de TCGdex para el día UTC. |
-| `PriceSyncDailyService.resumeToday` | Cada 15 min | Recupera/planifica el trabajo pendiente de TCGdex para el día actual. |
-| `TcgcsvService` | Diario 21:00 UTC | Planifica los grupos habilitados de TCGCSV; cada 15 min reanuda el día actual. El discovery se ejecuta cada 10 min. |
-| `prunePricesMonthly` | Día 1, 03:23, zona del proceso | Consolida y poda precios según la política de retención. |
-| Comparación de colecciones | Diario 20:35 UTC | Captura series de comparación; ver la sección de comparación y `pricing.md`. |
+| `syncCatalogWeekly` | Lunes 04:07, zona del proceso | Sync mediante `CatalogSyncService`; cursor PostgreSQL y lock Redis renovable. |
+| `TcgcsvService.runDaily` | 21:00 UTC | Planifica grupos de sets habilitados. |
+| `TcgcsvService.resumeDaily` | Cada 15 min UTC | Reanuda objetivos y grupos pendientes sin inventar historia. |
+| `TcgcsvService.discover` | Cada 10 min UTC | Descubre identidades seguras, respetando build, caché y backoff. |
+| `ScheduledJobsService.pollPriceCycles` | Cada 5 s UTC | Atiende señales manuales con lease y generaciones coalescidas. |
+| `TcgcsvService.poll` | Cada 5 s UTC | Consume grupos en serie. |
+| `prunePricesMonthly` | Día 1, 03:23, zona del proceso | Aplica la retención de precios. |
 
-Los crons semanales/mensuales no declaran `timeZone`; verificar la zona del proceso
-al configurar operación. Los ciclos de precios/comparación sí fijan UTC.
-
-El control diario de proveedores y sus leases se guardan en PostgreSQL (`price_sync_controls`); el gate de tasa de TCGdex persiste en `provider_rate_limits`. Así, ticks repetidos o varias instancias no crean ciclos diarios duplicados ni reinician el ritmo. La reanudación cubre el día UTC en curso; una interrupción que cruza medianoche no reconstruye días anteriores.
-
-El límite de **1.000 requests/día y 30/min de pokemontcg.io** corresponde al catálogo, no a TCGdex ni TCGCSV. El backfill antiguo cada hora ya no existe: precios se planifican por proveedor y día, y la cola aplica deduplicación y consumo acotado.
+Los crons semanales/mensuales no declaran `timeZone`: verificá la zona del
+proceso. La ingesta conserva una descarga por archivo cada 24 h, pausas 429 y
+publicación atómica. Los límites 30/min y 1.000/día corresponden al catálogo.
 
 ### Los kill switches
 
 ```bash
-ENABLE_CATALOG_SYNC_CRON=false   # sync de catálogo
-ENABLE_PRICE_BACKFILL_CRON=false  # backfill de precios
-ENABLE_RETENTION_CRON=false      # retención
+ENABLE_CATALOG_SYNC_CRON=false
+ENABLE_TCGCSV_INGESTION=false
+ENABLE_RETENTION_CRON=false
 ```
 
-Se apagan por variable de entorno y no por código: en un despliegue hay que poder
-desactivar el sync sin tocar la imagen.
-
-**Una variable vacía NO apaga.** `ENABLE_RETENTION_CRON=` cae al default
-(prendido), porque en un compose un valor vacío es mucho más probable que sea un
-olvido que una intención. Si vacío fuera "apagado", un typo dejaría el sync de
-catálogo sin correr hasta que alguien notara que el catálogo está viejo.
+TCGCSV requiere `true` explícito. Para catálogo y retención, una variable vacía
+cae al default habilitado. `PRICE_QUEUE_ENABLED` y
+`ENABLE_PRICE_BACKFILL_CRON` ya no tienen consumidores.
 
 ## Endpoints de admin
 
@@ -484,8 +383,8 @@ curl http://localhost:3001/api/jobs/$JOB_ID -H "x-admin-key: $ADMIN_KEY"
 
 ### `POST /api/jobs/refresh-prices` → 200
 
-`{ cardIds: string[] }`, no vacío, máx. 200. Refresca en serie, bloqueante.
-Devuelve `{ requested, refreshed, failed }`.
+`{ cardIds: string[] }`, no vacío, máx. 200. Solicita grupos locales sin
+descargar desde el handler. Devuelve `{ requested, queued, refreshed: 0, failed: 0 }`.
 
 ```bash
 curl -X POST http://localhost:3001/api/jobs/refresh-prices \
@@ -559,10 +458,6 @@ El script loguea el antes y el después:
 tener un entorno de desarrollo usable sin 15 minutos de espera. Con cartas
 cargadas ya, se saltea la importación salvo que le pases `--import`.
 
-`scripts/api-smoke.ts` no toca la base: solo instancia el provider e imprime
-qué devuelve la API real. Sirve para ver si pokemontcg.io está caído sin
-arrancar nada.
-
 ## Ciclo de vida completo de una carga (cursor durable en PostgreSQL)
 
 ```
@@ -583,17 +478,12 @@ pnpm run db:sync
   └─ 20.670 cartas en `cards` (176 sets), cada una con su `rawJson`
 ```
 
-## Cronjobs diarios de precios y operación (19/10/2026)
+## Cronjobs diarios de precios y operación
 
-TCGdex planifica el registro habilitado a las 03:15 UTC (`00:15` en Argentina).
-TCGCSV planifica a las 21:00 UTC (`18:00` en Argentina). Cada proveedor tiene
-un resumidor cada quince minutos; los ticks de coordinación y consumo siguen
-siendo internos. El backend debe permanecer encendido en esas ventanas; al volver
-después de una interrupción recupera el día UTC actual, no reconstruye días
-anteriores. Los precios TCGdex siguen pasando por `ProviderRateGate`, con 2300 ms entre
-llamadas compartidas en PostgreSQL. Ese ritmo es cortesía operativa de TCGdex;
-la cuota de 1000/día de pokemontcg.io corresponde al catálogo y no se traslada
-a este proveedor.
+TCGCSV planifica a las 21:00 UTC (18:00 en Argentina) y reanuda cada quince
+minutos. El backend debe estar activo; las interrupciones no generan puntos
+históricos ausentes. Los pendientes de días anteriores se retoman con objetivos
+actuales, conservando sus reservas.
 
 TCGCSV descubre identidades cada diez minutos y planifica sólo grupos asociados
 a sets habilitados. Su consumidor conserva el control de cuota y las reservas
@@ -616,7 +506,7 @@ pnpm run prices:status -- --watch --seconds=120
 pnpm run prices:status -- --json
 ```
 
-`prices:sync` pide un ciclo de ambos proveedores y muestra el avance cada cinco
+`prices:sync` pide un ciclo de TCGCSV y muestra el avance cada cinco
 segundos por hasta diez minutos. `--seconds=N` ajusta esa duración entre 1 y
 86400 segundos. Ctrl+C cierra la vista; la instancia activa sigue trabajando.
 `prices:status` sólo consulta datos locales, sin bootstrap ni requests externos.
@@ -628,8 +518,8 @@ leases y heartbeat del planificador. El tick de cinco segundos atiende pedidos
 manuales con los mismos servicios de cron. Un pedido manual puede adelantar
 la lectura del manifest TCGCSV, pero reutiliza el catálogo si el build no cambió
 y conserva el backoff de errores, los leases y las 24 h del archivo de precios.
-Los flags siguen mandando: `ENABLE_PRICE_BACKFILL_CRON`, `PRICE_QUEUE_ENABLED`
-y `ENABLE_TCGCSV_INGESTION`. Con un flag apagado, el pedido queda pendiente.
+La ingesta requiere `ENABLE_TCGCSV_INGESTION=true`. Apagarla conserva el trabajo
+ya pendiente y las reservas; la CLI no inicia otro consumidor.
 La cola muestra `en espera` para pendientes cuya disponibilidad o última descarga
 impiden ejecutarlos ahora; los fallos reales conservan su estado y backoff.
 La próxima disponibilidad mostrada nunca queda en el pasado y contempla la espera
@@ -644,7 +534,7 @@ migraciones ni cambia flags o configuración del entorno.
 
 ## Ver también
 
-- [providers.md](providers.md) — el provider que usa el sync y su `VARIANT_MAP`
+- [providers.md](providers.md) — proveedor del catálogo e identidad de precios
 - [pricing.md](pricing.md) — `SyncPricesService` en detalle
 - [api.md](api.md) — los 3 endpoints de admin
 - [gotchas.md](gotchas.md) — por qué el sync es reanudable y no "reintenta todo"

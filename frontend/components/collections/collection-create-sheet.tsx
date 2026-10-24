@@ -9,8 +9,6 @@ import { Button, Field, Input, useFieldA11y, useToast } from '@/components/ui';
 import { ApiError } from '@/lib/api/api-client';
 import { createCollection } from '@/lib/api/collections';
 import type { CollectionDto } from '@/types/api';
-import { previewHref } from '@/components/visual-preview/preview-link';
-import { useVisualPreview } from '@/components/visual-preview/visual-preview';
 
 /** Límite del backend (`CreateCollectionDto.name`), no un capricho del diseño. */
 const MAX_NAME_LENGTH = 50;
@@ -41,7 +39,6 @@ export interface CollectionCreateSheetProps {
  * como dos errores distintos.
  */
 export function CollectionCreateSheet({ open, onClose, onCreated }: CollectionCreateSheetProps) {
-  const visual = useVisualPreview();
   const router = useRouter();
   const toast = useToast();
   const reactId = useId();
@@ -76,13 +73,13 @@ export function CollectionCreateSheet({ open, onClose, onCreated }: CollectionCr
       // Se entra a la colección recién creada: está vacía y es el único lugar
       // donde tiene sentido estar ahora — el `EmptyState` de adentro ya ofrece
       // buscar la primera carta.
-      router.push(previewHref(`/colecciones/${encodeURIComponent(created.id)}`, visual));
+      router.push(`/colecciones/${encodeURIComponent(created.id)}`);
     } catch (caught) {
       setError(caught instanceof ApiError ? caught.message : 'No pudimos crear la colección.');
     } finally {
       setIsSaving(false);
     }
-  }, [name, onClose, onCreated, router, toast, visual]);
+  }, [name, onClose, onCreated, router, toast]);
 
   return (
     <Sheet

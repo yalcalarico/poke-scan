@@ -86,7 +86,7 @@ convenciones de código.
 | [`docs/architecture.md`](docs/architecture.md) | Cómo se arma el sistema y por qué |
 | [`docs/README.md`](docs/README.md) | Índice actual, operación, investigación e historial |
 | [`docs/estado-actual.md`](docs/estado-actual.md) | Hitos, pendientes y decisiones vigentes |
-| [`docs/data-sources.md`](docs/data-sources.md) | Catálogo, TCGdex, TCGCSV, DolarApi y límites separados |
+| [`docs/data-sources.md`](docs/data-sources.md) | Catálogo, precios TCGCSV, DolarApi y fuentes históricas |
 | [`docs/decisions.md`](docs/decisions.md) | Decisiones de diseño y alternativas descartadas |
 | [`backend/docs/`](backend/docs/) | API, base de datos, módulos, precios, jobs, testing, trampas |
 | [`frontend/docs/`](frontend/docs/) | Rutas, componentes, escáner, cliente API, design system, testing, trampas |
@@ -101,7 +101,7 @@ convenciones de código.
 - ✅ Reconocimiento DINOv2 local por similitud coseno, cámara automática móvil y propuesta del candidato #1 para revisar
 - ✅ Precios USD y ARS con caché de 2 capas
 - ✅ Identidad/procedencia de proveedores, cola de precios persistente y ritmo global
-- ✅ Ciclos diarios de TCGdex y TCGCSV por sets habilitados, reanudables; histórico y comparación con procedencia separada
+- ✅ Ciclo diario de TCGCSV por sets habilitados, reanudable; TCGdex retirado de precios y totales activos
 - ✅ Links públicos + sistema de amigos
 - ✅ Búsqueda por nombre/número/artista, orden por precio, filtro server-side de intercambio
 - ✅ Suite aislada en `pokemon_cards_test`; smoke test end-to-end (`pnpm run verify:app`)

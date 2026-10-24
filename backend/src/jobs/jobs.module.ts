@@ -11,26 +11,13 @@ import { JobsController } from './jobs.controller.js';
 import { JobsRecoveryService } from './jobs-recovery.service.js';
 import { CardPricesRetentionService } from './card-prices-retention.service.js';
 import { CatalogSyncService } from './catalog-sync.service.js';
-import { PriceBackfillService } from './price-backfill.service.js';
 import { ScheduledJobsService } from './scheduled-jobs.service.js';
-import { PriceQueueService } from './price-queue.service.js';
-import { ProviderRateGate } from './provider-rate.gate.js';
 import { SyncCardsService } from './sync-cards.service.js';
 import { SyncPricesService } from './sync-prices.service.js';
 import { SyncSetsService } from './sync-sets.service.js';
 import { SyncStateService } from './sync-state.service.js';
-import { TCGDEX_SET_MAPPING, TcgdexSetMappingService } from './tcgdex-set-mapping.service.js';
 import { PriceSyncRegistryService } from './price-sync-registry.service.js';
 
-/**
- * ## Por qué el grafo de jobs es acíclico
- *
- * `SyncPricesService` encola (→ `PriceQueueService`), `PriceQueueWorker` drena la
- * cola y le pide el trabajo a `SyncPricesService`. Si el worker viviera dentro
- * del servicio de precios, los dos se necesitarían mutuamente. Separlos es lo
- * que permite que las llamadas al proveedor salgan por un único reloj
- * compartido (`ProviderRateGate`) sin que ningún servicio dependa de sí mismo.
- */
 @Module({
   imports: [ConfigModule, ProvidersModule, RedisModule],
   controllers: [JobsController, ComparisonController],
@@ -42,8 +29,6 @@ import { PriceSyncRegistryService } from './price-sync-registry.service.js';
     SyncCardsService,
     SyncStateService,
     SyncPricesService,
-    ProviderRateGate,
-    PriceQueueService,
     PriceSyncRegistryService,
     // La retención corre a mano (dry run por default) y una vez por mes por el
     // cron. La misma política, las dos entradas.
@@ -51,12 +36,9 @@ import { PriceSyncRegistryService } from './price-sync-registry.service.js';
     // La orquestación del sync, compartida por el endpoint de admin y el cron:
     // el lock se pide en un solo lugar.
     CatalogSyncService,
-    PriceBackfillService,
     ScheduledJobsService,
-    // Recovery primero: reconcilia los jobs del proceso anterior antes de que
-    // el worker empiece a tomar trabajo nuevo.
+    // Reconcilia los syncs de catálogo del proceso anterior.
     JobsRecoveryService,
-    { provide: TCGDEX_SET_MAPPING, useValue: { resolve: async () => null } satisfies Pick<TcgdexSetMappingService, 'resolve'> },
   ],
   exports: [
     CardComparisonService, CollectionComparisonService, TcgcsvService,
@@ -64,12 +46,9 @@ import { PriceSyncRegistryService } from './price-sync-registry.service.js';
     SyncCardsService,
     SyncStateService,
     SyncPricesService,
-    PriceQueueService,
     PriceSyncRegistryService,
     CatalogSyncService,
-    PriceBackfillService,
     CardPricesRetentionService,
-    TCGDEX_SET_MAPPING,
   ],
 })
 export class JobsModule {}

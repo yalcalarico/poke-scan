@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { PreviewLink as Link } from '@/components/visual-preview/preview-link';
+import Link from 'next/link';
 import { ArrowLeftRight, Layers, ListChecks, Search, Trash2 } from 'lucide-react';
 
 import { CardGrid, type CardGridEntry } from '@/components/cards/card-grid';
@@ -52,8 +52,6 @@ import { CollectionComparisonPanel } from '@/components/prices/comparison-panel'
 import { CollectionStats, CollectionSummary } from './collection-summary';
 import { ItemSheet } from './item-sheet';
 import { MotionGrid } from '@/components/visual-preview/effects';
-import { previewHref } from '@/components/visual-preview/preview-link';
-import { useVisualPreview } from '@/components/visual-preview/visual-preview';
 
 /**
  * El copy de la acción masiva, en un solo lugar.
@@ -201,7 +199,6 @@ export interface CollectionDetailScreenProps {
  */
 export function CollectionDetailScreen({ collectionId }: CollectionDetailScreenProps) {
   const router = useRouter();
-  const visual = useVisualPreview();
   const { isLoading: isAuthLoading, isAuthenticated } = useAuth();
 
   const [search, setSearch] = useState('');
@@ -345,7 +342,7 @@ export function CollectionDetailScreen({ collectionId }: CollectionDetailScreenP
             />
           )
         }
-        back={{ href: previewHref('/colecciones', visual), label: 'las colecciones' }}
+        back={{ href: '/colecciones', label: 'las colecciones' }}
         action={
           collection ? (
             <IconButton
@@ -540,7 +537,7 @@ export function CollectionDetailScreen({ collectionId }: CollectionDetailScreenP
         open={isDeleteOpen}
         onClose={() => setIsDeleteOpen(false)}
         collection={collection}
-        onDeleted={() => router.replace(previewHref('/colecciones', visual))}
+        onDeleted={() => router.replace('/colecciones')}
       /> : null}
 
       {collection ? (

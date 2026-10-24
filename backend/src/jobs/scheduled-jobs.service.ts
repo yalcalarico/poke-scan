@@ -1,15 +1,12 @@
-import { Inject, Injectable, Logger, Optional, type OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger, type OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Cron } from '@nestjs/schedule';
 import { randomUUID } from 'node:crypto';
 import { PrismaService } from '../prisma/index.js';
-import { PRICE_PROVIDER, type PriceProvider } from '../modules/providers/card-provider.interface.js';
 import { TcgcsvService } from './tcgcsv/tcgcsv.service.js';
 
 import { CatalogSyncService } from './catalog-sync.service.js';
 import { CardPricesRetentionService } from './card-prices-retention.service.js';
-import { PriceBackfillService } from './price-backfill.service.js';
-import { PriceSyncDailyService } from './price-sync-daily.service.js';
 
 /**
  * Lee un booleano de la config con default.
@@ -28,31 +25,22 @@ function flag(config: ConfigService, key: string, fallback: boolean): boolean {
 export class ScheduledJobsService implements OnModuleInit {
   private readonly logger = new Logger(ScheduledJobsService.name);
   private readonly catalogSyncEnabled: boolean;
-  private readonly backfillEnabled: boolean;
   private readonly retentionEnabled: boolean;
-  private readonly workerConfiguredEnabled: boolean;
 
   constructor(
     config: ConfigService,
     private readonly catalogSync: CatalogSyncService,
-    private readonly backfill: PriceBackfillService,
     private readonly retention: CardPricesRetentionService,
-    @Optional() private readonly prisma?: PrismaService,
-    @Optional() private readonly tcgcsv?: TcgcsvService,
-    @Optional() @Inject(PRICE_PROVIDER) private readonly provider?: PriceProvider,
-    @Optional() private readonly daily?: PriceSyncDailyService,
+    private readonly prisma: PrismaService,
+    private readonly tcgcsv: TcgcsvService,
   ) {
     this.catalogSyncEnabled = flag(config, 'ENABLE_CATALOG_SYNC_CRON', true);
-    this.backfillEnabled = flag(config, 'ENABLE_PRICE_BACKFILL_CRON', true);
     this.retentionEnabled = flag(config, 'ENABLE_RETENTION_CRON', true);
-    this.workerConfiguredEnabled = flag(config, 'PRICE_QUEUE_ENABLED', true);
   }
 
   onModuleInit(): void {
-    if (this.provider?.id === 'tcgcsv' && this.prisma) {
-      void this.prisma.$executeRaw`UPDATE price_sync_controls SET "schedulerEnabled" = FALSE, "workerConfiguredEnabled" = FALSE WHERE provider = 'tcgdex'`
-        .catch(() => this.logger.warn('No se pudo actualizar el estado del proveedor retirado'));
-    }
+    void this.prisma.$executeRaw`UPDATE price_sync_controls SET "schedulerEnabled" = FALSE, "workerConfiguredEnabled" = FALSE WHERE provider = 'tcgdex'`
+      .catch(() => this.logger.warn('No se pudo actualizar el estado del proveedor retirado'));
     const enabled = this.describeSchedule();
     if (enabled.length === 0) {
       this.logger.warn('Todos los crons de mantenimiento están desactivados por configuración.');
@@ -62,57 +50,36 @@ export class ScheduledJobsService implements OnModuleInit {
     // El ciclo diario se recupera mediante la señal durable y la hora UTC.
   }
 
-  private async requestPriceCycle(provider: 'tcgdex' | 'tcgcsv'): Promise<void> {
-    if (!this.prisma) return;
-    // Repetir una señal mientras hay otra pendiente no agranda el backlog manual.
-    await this.prisma.$executeRaw`
-      UPDATE price_sync_controls SET "requestedGeneration" = CASE
-        WHEN "requestedGeneration" = "handledGeneration" THEN "requestedGeneration" + 1 ELSE "requestedGeneration" END
-      WHERE provider = ${provider}
-    `;
-  }
-
   @Cron('*/5 * * * * *', { timeZone: 'UTC' })
   async pollPriceCycles(): Promise<void> {
-    if (!this.prisma) return;
-    for (const provider of (this.provider?.id === 'tcgcsv' ? ['tcgcsv'] : ['tcgdex', 'tcgcsv']) as readonly ('tcgdex' | 'tcgcsv')[]) {
-      const enabled = provider === 'tcgdex'
-        ? this.backfillEnabled && this.provider?.id === 'tcgdex'
-        : this.tcgcsv?.enabled() === true;
-      const worker = provider === 'tcgdex' ? this.workerConfiguredEnabled : enabled;
-      const owner = randomUUID();
-      try {
-        await this.prisma.$executeRaw`
-          UPDATE price_sync_controls SET "heartbeatAt" = NOW(), "schedulerEnabled" = ${enabled}, "workerConfiguredEnabled" = ${worker}
-          WHERE provider = ${provider}
-        `;
-        if (!enabled || !worker) continue;
-        const [claim] = await this.prisma.$queryRaw<{ requestedGeneration: number }[]>`
-          UPDATE price_sync_controls SET "lockedBy" = ${owner}, "leaseUntil" = NOW() + INTERVAL '2 minutes'
-          WHERE provider = ${provider} AND "requestedGeneration" > "handledGeneration" AND "nextCycleAt" <= NOW()
-            AND ("leaseUntil" IS NULL OR "leaseUntil" <= NOW()) RETURNING "requestedGeneration"
-        `;
-        if (!claim) continue;
-        let done = true;
-        if (provider === 'tcgcsv') {
-          done = await this.tcgcsv!.discover(true);
-          await this.tcgcsv!.signalDaily();
-        } else {
-          await this.daily?.planToday(true);
-        }
-        await this.prisma.$executeRaw`
-          UPDATE price_sync_controls SET "handledGeneration" = CASE WHEN ${done} THEN ${claim.requestedGeneration} ELSE "handledGeneration" END,
-            "lastHandledAt" = CASE WHEN ${done} THEN NOW() ELSE "lastHandledAt" END,
-            "nextCycleAt" = NOW() + INTERVAL '1 minute', "lastError" = NULL, "lockedBy" = NULL, "leaseUntil" = NULL
-          WHERE provider = ${provider} AND "lockedBy" = ${owner} AND "leaseUntil" > NOW()
-        `;
-      } catch {
-        await this.prisma.$executeRaw`
-          UPDATE price_sync_controls SET "lockedBy" = NULL, "leaseUntil" = NULL, "nextCycleAt" = NOW() + INTERVAL '1 hour',
-            "lastError" = 'No se pudo encolar el ciclo de precios' WHERE provider = ${provider} AND "lockedBy" = ${owner}
-        `;
-        this.logger.warn(`Ciclo ${provider} pendiente; se conserva la señal`);
-      }
+    const enabled = this.tcgcsv.enabled();
+    const owner = randomUUID();
+    try {
+      await this.prisma.$executeRaw`
+        UPDATE price_sync_controls SET "heartbeatAt" = NOW(), "schedulerEnabled" = ${enabled}, "workerConfiguredEnabled" = ${enabled}
+        WHERE provider = 'tcgcsv'
+      `;
+      if (!enabled) return;
+      const [claim] = await this.prisma.$queryRaw<{ requestedGeneration: number }[]>`
+        UPDATE price_sync_controls SET "lockedBy" = ${owner}, "leaseUntil" = NOW() + INTERVAL '2 minutes'
+        WHERE provider = 'tcgcsv' AND "requestedGeneration" > "handledGeneration" AND "nextCycleAt" <= NOW()
+          AND ("leaseUntil" IS NULL OR "leaseUntil" <= NOW()) RETURNING "requestedGeneration"
+      `;
+      if (!claim) return;
+      const done = await this.tcgcsv.discover(true);
+      await this.tcgcsv.signalDaily();
+      await this.prisma.$executeRaw`
+        UPDATE price_sync_controls SET "handledGeneration" = CASE WHEN ${done} THEN ${claim.requestedGeneration} ELSE "handledGeneration" END,
+          "lastHandledAt" = CASE WHEN ${done} THEN NOW() ELSE "lastHandledAt" END,
+          "nextCycleAt" = NOW() + INTERVAL '1 minute', "lastError" = NULL, "lockedBy" = NULL, "leaseUntil" = NULL
+        WHERE provider = 'tcgcsv' AND "lockedBy" = ${owner} AND "leaseUntil" > NOW()
+      `;
+    } catch {
+      await this.prisma.$executeRaw`
+        UPDATE price_sync_controls SET "lockedBy" = NULL, "leaseUntil" = NULL, "nextCycleAt" = NOW() + INTERVAL '1 hour',
+          "lastError" = 'No se pudo encolar el ciclo de precios' WHERE provider = 'tcgcsv' AND "lockedBy" = ${owner}
+      `;
+      this.logger.warn('Ciclo tcgcsv pendiente; se conserva la señal');
     }
   }
 
@@ -123,9 +90,7 @@ export class ScheduledJobsService implements OnModuleInit {
   describeSchedule(): string[] {
     const jobs: string[] = [];
     if (this.catalogSyncEnabled) jobs.push('sync de catálogo (lunes 04:07)');
-    if (this.provider?.id === 'tcgcsv') {
-      if (this.tcgcsv?.enabled()) jobs.push('precios TCGCSV diarios (21:00 UTC)');
-    } else if (this.backfillEnabled) jobs.push('precios tcgdex diarios (03:15 UTC)');
+    if (this.tcgcsv.enabled()) jobs.push('precios TCGCSV diarios (21:00 UTC)');
     if (this.retentionEnabled) jobs.push('retención de precios (mensual)');
     return jobs;
   }
@@ -160,14 +125,6 @@ export class ScheduledJobsService implements OnModuleInit {
     } catch (error) {
       this.logger.error(`Falló el sync de catálogo semanal: ${(error as Error).message}`);
     }
-  }
-
-  /** Compatibilidad con callers antiguos; la planificación programada es diaria. */
-  async backfillPricesHourly(): Promise<void> {
-    // Compatibilidad de llamada en tests y scripts; ya no recorre el catálogo.
-    if (!this.backfillEnabled || !this.daily) return;
-    try { await this.daily.planToday(false); }
-    catch (error) { this.logger.error(`Falló la planificación diaria: ${(error as Error).message}`); }
   }
 
   /**

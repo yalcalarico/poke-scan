@@ -6,7 +6,7 @@ import { ArrowRight } from 'lucide-react';
 import type { ReactNode } from 'react';
 
 import { VisualCard } from '@/components/visual-preview/holo-card';
-import { PreviewLink } from '@/components/visual-preview/preview-link';
+import Link from 'next/link';
 import { CardTile } from '@/components/cards/card-tile';
 import { SetLogo, SetSymbol } from '@/components/cards/set-media';
 import { ScreenContainer } from '@/components/layout/screen-container';
@@ -106,13 +106,13 @@ async function RelatedCardsSection({
         <h2 id="otras-del-set" className="text-h3 text-primary">
           Otras de este set
         </h2>
-        <PreviewLink
+        <Link
           href={`/buscar?setId=${encodeURIComponent(setId)}`}
           className="inline-flex min-h-11 items-center gap-1 rounded-control text-label text-brand transition-colors duration-fast ease-standard hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--focus-ring)]"
         >
           Ver el set
           <ArrowRight aria-hidden="true" focusable="false" strokeWidth={1.75} className="h-4 w-4" />
-        </PreviewLink>
+        </Link>
       </div>
 
       <p className="mt-0.5 text-caption text-tertiary">

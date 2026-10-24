@@ -65,7 +65,7 @@ sí ejecución serial, deduplicación y pausas 429/Retry-After.
 Las gráficas conservan huecos, cobertura y cambios de composición; no reconstruyen
 días que nunca se recibieron. El portafolio usa snapshots atribuidos a TCGCSV y no
 los une con historia anterior sin proveedor. TCGdex, su mapper, worker y ciclo
-no se registran en la aplicación. Se conservan las observaciones previas como
+se retiraron del código el 24/10. Se conservan las observaciones previas como
 historia, fuera de precios/totales activos. Ver [historial](../frontend/docs/comparison.md)
 y [jobs](../backend/docs/jobs.md).
 

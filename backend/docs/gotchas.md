@@ -654,18 +654,10 @@ rápida o tolerante, no hay que "optimizar" el código para gastar más:
 De ahí salen, todas obligatorias:
 
 - El catálogo espejado (20.670 cartas) y **nunca** re-pedido por request.
-- Los precios **bajo demanda** con 2 capas de caché.
-- `REQUEST_PAUSE_MS = 2100` entre páginas del sync.
-- `MIN_GAP_MS = 2300` en `ProviderRateGate` (~26 req/min), la única puerta al
-  proveedor de precios. Es cortesía hacia TCGdex, no parte de la cuota de
-  pokemontcg.io. La comparten la cola y el lote del admin, y el reloj vive en
-  Postgres (`provider_rate_limits`) para que sea global y no uno por proceso.
-  `getPricesForCard` devuelve el precio disponible y encola los vencidos sin
-  esperar el slot; un camino nuevo que llame al proveedor por afuera queda **sin
-  throttle** y puede comerse el presupuesto entero con un pico.
-- Los precios van a tcgdex, que no tiene límite publicado; el gap se mantiene
-  como cortesía a esa infraestructura comunitaria. El sync del catálogo va a
-  pokemontcg.io y respeta por separado sus límites publicados.
+- Las lecturas de precios en PostgreSQL y la ingesta TCGCSV separada del handler.
+- `REQUEST_PAUSE_MS = 2100` entre páginas del catálogo.
+- TCGCSV conserva reservas de 24 h por archivo, leases y pausas 429; esos
+  controles no pertenecen a la cuota de pokemontcg.io.
 - Ningún controller llama a la API externa.
 - `withPageRetry` + sync reanudable, para no gastar requests en reintentos
   inútiles.
@@ -1213,6 +1205,9 @@ cero. Es el estado correcto de una base cuyo proveedor activo todavía no escrib
 nada, y la forma de arreglarlo es que escriba, no abrir el filtro.
 
 ## 33. Un rate limit en memoria es un rate limit por proceso
+
+> Histórico: el circuito TCGdex descrito acá se retiró del código el 24/10.
+> TCGCSV conserva sus propios leases, reservas y pausas durables.
 
 **Qué pasó**: el ritmo hacia TCGdex eran dos números en `SyncPricesService` —un
 `queue: string[]` y un `lastProviderCallAt = 0`—. Con una sola instancia

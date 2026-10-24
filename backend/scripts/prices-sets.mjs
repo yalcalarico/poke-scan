@@ -40,8 +40,6 @@ export async function run(prisma, args) {
   const entry = await prisma.priceSyncSet.upsert({ where: { setId }, create: { setId, origin: 'manual', priority: priority ?? 100 }, update: { enabled: true, lastDemandAt: new Date(), ...(priority === undefined ? {} : { priority }) } });
   // La señal es durable y la atiende el planificador/worker Nest ya existente.
   const providers = [];
-  const disabled = (value) => value !== undefined && ['false', '0', 'no'].includes(String(value).trim().toLowerCase());
-  if (!disabled(process.env.ENABLE_PRICE_BACKFILL_CRON) && !disabled(process.env.PRICE_QUEUE_ENABLED)) providers.push('tcgdex');
   if (process.env.ENABLE_TCGCSV_INGESTION === 'true') providers.push('tcgcsv');
   if (providers.length) await prisma.$executeRaw`INSERT INTO price_sync_controls (provider, "requestedGeneration", "handledGeneration", "nextCycleAt")
     SELECT p.provider, 1, 0, NOW() FROM unnest(${providers}::text[]) AS p(provider)

@@ -336,13 +336,6 @@ export class TcgcsvService implements OnModuleInit {
     return rows.length;
   }
 
-  async daily(): Promise<void> {
-    if (!this.enabled()) return;
-    await this.runDaily();
-    // El corte diario también existe cuando el feed falla o el build no cambia.
-    await this.snapshots.capture();
-  }
-
   @Cron('*/5 * * * * *', { timeZone: 'UTC' })
   async poll(): Promise<void> {
     if (!this.enabled() || this.busy) return;

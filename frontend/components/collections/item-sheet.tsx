@@ -6,8 +6,7 @@ import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { Trash2 } from 'lucide-react';
 import Image from 'next/image';
 import { VisualCard } from '@/components/visual-preview/holo-card';
-import { PreviewLink } from '@/components/visual-preview/preview-link';
-import { useVisualPreview } from '@/components/visual-preview/visual-preview';
+import Link from 'next/link';
 
 import { Money } from '@/components/cards/money';
 import { PriceReferenceDetails } from '@/components/prices/price-evidence';
@@ -98,7 +97,6 @@ export interface ItemSheetProps {
  * guardar un cambio y borrar la fila en la misma interacción.
  */
 export function ItemSheet({ item, open, onClose, onUpdated, onDeleted }: ItemSheetProps) {
-  const visual = useVisualPreview();
   const toast = useToast();
   const { options: variantOptions, loading: loadingVariants } = useCardVariants(item?.card.id, open, item?.variant);
   const confirmRef = useRef<HTMLDivElement>(null);
@@ -279,10 +277,10 @@ export function ItemSheet({ item, open, onClose, onUpdated, onDeleted }: ItemShe
         </div>
       ) : (
         <>
-        {visual ? <div className="mx-auto mb-5 flex w-full max-w-56 flex-col items-center gap-3 pt-4">
+        <div className="mx-auto mb-5 flex w-full max-w-56 flex-col items-center gap-3 pt-4">
           <VisualCard><Image src={item.card.imageLarge || item.card.imageSmall} alt={item.card.name} width={315} height={440} sizes="224px" className="h-auto w-full rounded-surface" /></VisualCard>
-          <PreviewLink href={`/carta/${encodeURIComponent(item.card.id)}`} className="flex min-h-11 items-center rounded-control px-3 text-label text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--focus-ring)]">Ver detalle de la carta</PreviewLink>
-        </div> : null}
+          <Link href={`/carta/${encodeURIComponent(item.card.id)}`} className="flex min-h-11 items-center rounded-control px-3 text-label text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--focus-ring)]">Ver detalle de la carta</Link>
+        </div>
         <ItemForm
           marketPrice={variantPriceMatches ? marketPrice : null}
           reference={variantPriceMatches ? reference : null}

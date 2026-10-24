@@ -167,7 +167,7 @@ El catálogo. **20.670 filas** hoy.
 | `setId` | `String` | FK a `card_sets`, `onDelete: Cascade` |
 | `imageSmall`, `imageLarge` | `String` | |
 | `language` | `String? @default("en")` | |
-| `rawJson` | `Json` | **obligatorio**: preserva ataques, habilidades, legalidades y el bloque `tcgplayer.prices` (histórico, ya no es la fuente de precios: eso es tcgdex) |
+| `rawJson` | `Json` | **obligatorio**: preserva ataques, habilidades, legalidades y el bloque `tcgplayer.prices` (histórico, ya no es la fuente de precios: eso es TCGCSV) |
 | `syncedAt` | `DateTime` | |
 
 Relaciones: `set CardSet`, `prices CardPrice[]`, `items CollectionItem[]` y

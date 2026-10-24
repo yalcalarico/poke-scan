@@ -791,7 +791,7 @@ export class CardsService {
   ): Promise<CardWithPricesDto> {
     const card = await this.getById(id);
     // El histórico y los precios actuales son independientes: el primero solo
-    // lee `card_prices` y el segundo puede pegarle a tcgdex. Van en paralelo
+    // lee la carta y el segundo lee precios locales. Van en paralelo
     // para que el delta no sume una ida y vuelta a la latencia.
     const [prices, reference] = await Promise.all([
       this.syncPrices.getPricesForCard(id),
@@ -869,7 +869,7 @@ export class CardsService {
    *
    * ## No llama a nadie externo
    *
-   * Es la única parte del sistema de precios que **no** toca tcgdex ni pokemontcg.io
+   * Lee observaciones guardadas, sin consultar proveedores externos
    * (`AGENTS.md` §3.1): lee Postgres y nada más. Por eso puede ser pública y
    * estar en el camino caliente de la ficha de carta.
    *

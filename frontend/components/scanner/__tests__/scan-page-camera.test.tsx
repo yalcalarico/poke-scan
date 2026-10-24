@@ -10,6 +10,7 @@ const mocks = vi.hoisted(() => {
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn() }) }));
 vi.mock('@/hooks/use-mobile-camera', () => ({ useMobileCamera: () => true }));
 vi.mock('@/hooks/use-auth', () => ({ useAuth: () => ({ user: { id: 'test' }, isAuthenticated: true, isLoading: false }) }));
+vi.mock('@/hooks/use-currency', () => ({ useCurrency: () => ({ formatMoney: (value: number | null | undefined) => value == null ? '—' : `USD ${value}` }) }));
 vi.mock('@/lib/scanner/camera-visual', () => ({ recognizeCameraCard: mocks.recognize }));
 vi.mock('@/lib/scanner/camera', async (original) => ({ ...await original<typeof import('@/lib/scanner/camera')>(), isCameraSupported: () => true, isSecureContextForCamera: () => true }));
 vi.mock('@/components/ui', async (original) => ({ ...await original<typeof import('@/components/ui')>(), useToast: () => ({ info: mocks.toast, success: mocks.toast }) }));

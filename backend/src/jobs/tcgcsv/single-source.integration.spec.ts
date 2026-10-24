@@ -1,7 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import { Test, type TestingModule } from '@nestjs/testing';
 import type { PrismaService } from '../../prisma/index.js';
-import type { RedisService } from '../../redis/redis.service.js';
 import { PRICE_PROVIDER, type PriceProvider } from '../../modules/providers/card-provider.interface.js';
 import { ProvidersModule } from '../../modules/providers/providers.module.js';
 import { CollectionsService } from '../../modules/collections/collections.service.js';
@@ -9,8 +8,6 @@ import { CollectionPriceRefreshService } from '../../modules/collections/collect
 import { PortfolioService } from '../../modules/collections/portfolio.service.js';
 import { ListItemsDto } from '../../modules/collections/dto/list-items.dto.js';
 import { SyncPricesService } from '../sync-prices.service.js';
-import { PriceQueueService } from '../price-queue.service.js';
-import { ProviderRateGate } from '../provider-rate.gate.js';
 import { CollectionComparisonService } from '../collection-comparison.service.js';
 import { CardComparisonService } from '../card-comparison.service.js';
 import { TcgcsvService } from './tcgcsv.service.js';
@@ -37,8 +34,6 @@ describe('TCGCSV como única fuente activa', () => {
   const previousFlag = process.env.ENABLE_TCGCSV_INGESTION;
   const client = new TcgcsvClient();
   const network = vi.spyOn(client, 'fetchFeed').mockRejectedValue(new Error('No debe haber red desde una lectura'));
-  const redisRead = vi.fn();
-  const mapping = { resolve: vi.fn(async () => null) };
 
   beforeAll(async () => {
     process.env.ENABLE_TCGCSV_INGESTION = 'true';
@@ -47,8 +42,7 @@ describe('TCGCSV como única fuente activa', () => {
     snapshots = new CollectionComparisonService(prisma, provider);
     ingestion = new TcgcsvService(prisma, client, snapshots);
     refresh = new CollectionPriceRefreshService(prisma, provider, ingestion);
-    sync = new SyncPricesService(prisma, { getJson: redisRead } as unknown as RedisService,
-      new ProviderRateGate(prisma, provider), new PriceQueueService(prisma), mapping, provider, ingestion);
+    sync = new SyncPricesService(prisma, provider, ingestion);
     collections = new CollectionsService(prisma, provider);
     userId = (await db.user.create({ data: { email: EMAIL, username: 'single_source', displayName: 'Prueba', passwordHash: 'test-only' } })).id;
     await db.cardSet.create({ data: { id: SET, name: 'Prueba fuente única' } });
@@ -65,7 +59,7 @@ describe('TCGCSV como única fuente activa', () => {
       { cardId: CARD, variant: 'holofoil', market: '999', provider: 'tcgdex', source: 'tcgplayer', currency: 'USD' },
       { cardId: MISSING, variant: 'holofoil', market: '777', provider: 'tcgdex', source: 'tcgplayer', currency: 'USD' },
     ] });
-    network.mockClear(); redisRead.mockClear(); mapping.resolve.mockClear();
+    network.mockClear();
   });
   afterAll(async () => {
     await db.user.deleteMany({ where: { email: EMAIL } });
@@ -101,12 +95,8 @@ describe('TCGCSV como única fuente activa', () => {
     await db.cardPrice.create({ data: { cardId: CARD, variant: 'holofoil', market: '1.20', provider: 'tcgcsv', source: 'tcgplayer', currency: 'USD', fetchedAt: new Date(Date.now() + 1) } });
     expect((await sync.getPricesForCard(CARD))[0]!.market).toBe(1.2);
     const count = await db.cardPrice.count({ where: { cardId: CARD } });
-    await sync.refresh(CARD);
-    await sync.fetchAndStore(CARD);
     expect(await sync.refreshMany([CARD, MISSING])).toMatchObject({ refreshed: 0, failed: 0, queued: 0 });
     expect(await db.cardPrice.count({ where: { cardId: CARD } })).toBe(count);
-    expect(mapping.resolve).not.toHaveBeenCalled();
-    expect(redisRead).not.toHaveBeenCalled();
     expect(network).not.toHaveBeenCalled();
   });
 
@@ -121,6 +111,19 @@ describe('TCGCSV como única fuente activa', () => {
     const [job] = await db.$queryRaw<{ availableAt: Date }[]>`SELECT "availableAt" FROM tcgcsv_group_jobs WHERE "groupId" = ${GROUP}`;
     expect(job.availableAt.getTime()).toBeGreaterThanOrEqual(next.getTime());
     expect(await db.priceRefreshJob.count({ where: { cardId: { in: [CARD, MISSING] } } })).toBe(0);
+    expect(network).not.toHaveBeenCalled();
+  });
+
+  it('mantiene las variantes y excluye otras monedas y mercados en la lectura real', async () => {
+    await db.cardPrice.createMany({ data: [
+      { cardId: CARD, variant: 'normal', market: '0', provider: 'tcgcsv', source: 'tcgplayer', currency: 'USD' },
+      { cardId: CARD, variant: 'holofoil', market: '123', provider: 'tcgcsv', source: 'cardmarket', currency: 'USD' },
+      { cardId: CARD, variant: 'holofoil', market: '456', provider: 'tcgcsv', source: 'tcgplayer', currency: 'EUR' },
+    ] });
+    const prices = await sync.getPricesForCard(CARD);
+    expect(prices.map(({ variant, market }) => ({ variant, market }))).toEqual([
+      { variant: 'holofoil', market: 1.09 }, { variant: 'normal', market: 0 },
+    ]);
     expect(network).not.toHaveBeenCalled();
   });
 

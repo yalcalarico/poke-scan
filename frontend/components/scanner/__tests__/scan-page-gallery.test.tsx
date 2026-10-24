@@ -8,11 +8,11 @@ const mocks = vi.hoisted(() => ({ recognize: vi.fn(), prepare: vi.fn(), close: v
 vi.mock('@/lib/scanner/capture-review', () => ({ downloadCaptureReview: mocks.download }));
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push: mocks.push }) }));
 vi.mock('@/hooks/use-auth', () => ({ useAuth: () => ({ isAuthenticated: mocks.authenticated, isLoading: false }) }));
+vi.mock('@/hooks/use-currency', () => ({ useCurrency: () => ({ formatMoney: (value: number | null | undefined) => value == null ? '—' : `USD ${value}` }) }));
 vi.mock('@/hooks/use-mobile-camera', () => ({ useMobileCamera: () => false }));
 vi.mock('@/lib/scanner/camera-visual', () => ({ recognizeCameraCard: mocks.recognize }));
 vi.mock('@/lib/api/cards', async (original) => ({ ...await original<typeof import('@/lib/api/cards')>(), getCardPrices: vi.fn(async () => ({ prices: [] })) }));
 vi.mock('@/lib/scanner/visual-photo', () => ({ prepareVisualPhoto: mocks.prepare }));
-vi.mock('@/components/scanner/visual-diagnostics', () => ({ VisualDiagnostics: () => null }));
 vi.mock('@/components/ui', async (original) => ({ ...await original<typeof import('@/components/ui')>(), useToast: () => ({ info: vi.fn(), success: vi.fn(), error: vi.fn() }) }));
 vi.mock('@/components/scanner', async (original) => ({
   ...await original<typeof import('@/components/scanner')>(),

@@ -1,6 +1,6 @@
 # Design system — PokéScan v2
 
-**Apariencia predeterminada,20/10/2026:** el usuario eligió V2 tras probarla con el público. Las rutas normales de la app activan sus efectos sin parámetro; `visual=v2` y `/buscar-v2` siguen funcionando. La alternativa anterior se elige explícitamente con `visual=classic`, mediante el selector Clásica/Actual. Se retiró el menú duplicado V2: la navegación principal vuelve a sus cinco destinos. Contexto de búsqueda y datos compartidos se conservan; esta decisión reemplaza el carácter optativo de los checkpoints16/10 siguientes.
+**Apariencia única, 24/10/2026:** se retiró Clásica por decisión del usuario. La app usa siempre la apariencia actual, sin selector ni propagación del parámetro `visual`. Los enlaces antiguos con `visual=classic` o `visual=v2` siguen abriendo la misma pantalla; `/buscar-v2` conserva compatibilidad con el catálogo común. La navegación mantiene sus cinco destinos.
 
 > **Este documento reemplaza la v1** (la que vivía como convenciones Tailwind sobre
 > `slate-950`). Todo lo que estaba en v1 y sigue siendo válido — Accesibilidad,
@@ -631,7 +631,9 @@ siente bien.
 
 ### 5.1.1 Profundidad de las cartas
 
-`components/cards/card-tilt.tsx` encapsula la interacción decorativa; la imagen
+`components/visual-preview/holo-card.tsx` aplica la profundidad de las cartas
+en la app. `CardTilt` se conserva para consumidores públicos fuera de `AppShell`;
+no activa una versión anterior de la app. En ese contexto, la imagen
 puede seguir siendo contenido renderizado por el servidor. El detalle permite
 hasta 8° de inclinación y el catálogo hasta 3°, únicamente sobre la carta
 señalada. La perspectiva y el reflejo neutro viven en su CSS module, usando las

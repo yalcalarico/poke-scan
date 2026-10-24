@@ -7,7 +7,7 @@ import type { CardDto } from '@/types/api';
 
 import { ShowOrDash } from './money';
 import { VisualCard } from '@/components/visual-preview/holo-card';
-import { PreviewLink } from '@/components/visual-preview/preview-link';
+import Link from 'next/link';
 import { rarityAccent } from './rarity-accent';
 
 export type CardTileVariant = 'catalog' | 'collection';
@@ -394,13 +394,13 @@ export function CardTile({
           {selectionAria ? <span className="sr-only">{selectionAria}</span> : null}
         </button>
       ) : (
-        <PreviewLink
+        <Link
           href={href ?? `/carta/${encodeURIComponent(card.id)}`}
           className={CONTROL_CLASSES}
         >
           {tileBody}
           {selectionAria ? <span className="sr-only">{selectionAria}</span> : null}
-        </PreviewLink>
+        </Link>
       )}
 
       {action ? <div className="mt-1.5 flex shrink-0 justify-end">{action}</div> : null}

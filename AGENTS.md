@@ -65,7 +65,7 @@ handler público. El catálogo se consulta en PostgreSQL (sync manual/semanal).
 - TCGCSV valida `last-updated.txt`/build y conserva una descarga por archivo cada
   24 h; mantener identidad segura, ejecución serial y pausas 429/Retry-After.
   No tiene los antiguos topes globales de 40 sets/500 requests.
-- TCGdex, su mapper, worker y ciclo diario no se registran en la aplicación.
+- TCGdex, su mapper, worker y ciclo diario fueron retirados del código el 24/10.
   Sus observaciones anteriores se conservan como historia, fuera de precios y
   totales activos. No volver a introducir fallback ni mezclar fuentes.
 
@@ -135,7 +135,7 @@ pnpm run stop            # liberar puertos 3000/3001
 
 **Antes de correr los tests, `pnpm run stop`.** El guard de arranque de los specs
 se niega a correr si hay un backend escuchando: su worker drena la **misma**
-`price_refresh_jobs` que los tests y se lleva los jobs que un test acaba de
+`tcgcsv_group_jobs` que los tests y se lleva los jobs que un test acaba de
 encolar. Ver `backend/docs/testing.md`.
 
 ```bash
@@ -226,8 +226,9 @@ El rediseño de UI/UX **terminó y se activó de golpe** (el "flip", 2026-09-28)
 hay dos apps, ni un prefijo de versión, ni una carpeta de "código viejo". El árbol
 es el que ves: design system con tokens y tema claro/oscuro, 27 primitivas en
 `components/ui/` y una landing pública separada de la app PWA. La apariencia V2
-es predeterminada desde el 20/10; `visual=classic` permite elegir Clásica y
-`/buscar-v2` se conserva como entrada compatible al mismo catálogo. El inventario
+es la única desde el 24/10; se retiraron el selector Clásica/Actual y la
+propagación de `visual`. Los parámetros antiguos se ignoran y `/buscar-v2`
+se conserva como entrada compatible al mismo catálogo. El inventario
 de pantallas está en `frontend/docs/routes.md`.
 
 **No existe la regla "no toques la v1"**, porque no hay v1. Lo que queda de ella es

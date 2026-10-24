@@ -72,8 +72,6 @@ describe('SyncCardsService — IDs canónicos', () => {
       total: cards.length,
       totalPages: 1,
     }),
-    getCard: async () => null,
-    getPricesForCard: async () => [],
   };
 
   beforeAll(async () => {
@@ -229,8 +227,6 @@ describe('SyncCardsService — cursor reanudable', () => {
       );
       return { data, page, pageSize, total: TOTAL, totalPages: TOTAL_PAGES };
     },
-    getCard: async () => null,
-    getPricesForCard: async () => [],
   };
 
   let service: SyncCardsService;

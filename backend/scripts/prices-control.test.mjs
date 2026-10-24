@@ -15,6 +15,7 @@ test('status sólo ejecuta once lecturas agregadas y no contiene nombres de usua
   assert.equal(queries.length, 11);
   assert.ok(queries.every((sql) => !/\b(insert|update|delete|truncate)\b/i.test(sql)));
   assert.ok(queries.every((sql) => !/\b(users|collections|collection_items)\b/i.test(sql)));
+  assert.ok(queries.every((sql) => !/tcgdex|price_refresh_jobs/i.test(sql)));
   assert.equal(status.discovery, null);
 });
 test('pedido manual sólo cambia la señal coalescida, conserva cuotas y leases', async () => {
@@ -30,7 +31,7 @@ test('pedido manual sólo cambia la señal coalescida, conserva cuotas y leases'
   assert.doesNotMatch(sql, /tcgcsv_group_jobs|downloadStartedAt|nextCheckAt|leaseUntil|DELETE|TRUNCATE/);
 });
 test('heartbeat viejo o worker configurado apagado nunca promete un worker activo', () => {
-  const status = { evaluatedAt: '2026-10-13', controls: [{ provider: 'tcgdex', heartbeatRecent: true, schedulerEnabled: true, workerConfiguredEnabled: false, cyclePending: true }, { provider: 'tcgcsv', heartbeatRecent: false, schedulerEnabled: true, workerConfiguredEnabled: true }], queues: [], coverage: [], catalog: null, discovery: null };
+  const status = { evaluatedAt: '2026-10-13', controls: [{ provider: 'tcgcsv', heartbeatRecent: false, schedulerEnabled: true, workerConfiguredEnabled: false, cyclePending: true }], queues: [], coverage: [], catalog: null, discovery: null };
   const text = formatStatus(status);
   assert.match(text, /worker configurado apagado/);
   assert.match(text, /sin heartbeat reciente del planificador/);

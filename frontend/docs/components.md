@@ -47,7 +47,7 @@ símbolo están citados, la afirmación es verificable con un grep.
 | `settings/` | identidad, apariencia, moneda, sesión, eliminación y `RequireAuth` | `RequireAuth` y secciones de ajustes |
 | `share/` | enlaces del usuario, vista pública, `InstallCta` | `PublicCollectionView` / `ShareLinksSection` |
 | `auth/` | login, registro, recuperación y eliminación de cuenta | `AuthShell`, `RecoveryExperience`, `AccountDeletionExperience` |
-| `visual-preview/` | apariencia V2 predeterminada, selector Clásica/Actual y navegación compatible | `VisualPreviewProvider` |
+| `visual-preview/` | efectos de la apariencia única, memoria de grilla y superficies de diálogos | `AppVisualsProvider` |
 | `home/` | inicio PWA: reanudación, mock y CTA de sesión | `app/(app)/inicio/page.tsx` (server) |
 | `marketing/` | landing pública, planes y FAQ | `app/(marketing)/page.tsx` (server) |
 | `brand/` | `AppMark` | `AppMark` |
@@ -931,8 +931,8 @@ recurso inexistente— que se maneja con `onError` y un fallback de texto, más
 ### `CardTile` — lo que hay que saber
 
 - **El tile es la imagen, no un contenedor.** No lleva `border` ni `bg-surface`:
-  la imagen flota sobre el canvas con `shadow-sm` y usa `CardTilt` para dar
-  profundidad suave a la carta señalada. En la v1 era un
+  la imagen flota sobre el canvas con `shadow-sm` y usa `VisualCard` para dar
+  profundidad a la carta señalada. En la v1 era un
   `rounded-xl border bg-slate-900/40 p-2` con la sombra en la imagen, y el
   resultado eran 20 cajas de gris compitiendo con 20 obras de arte.
 - **`priceUsd` tiene tres estados, y el tercero es el importante**: número →
@@ -958,7 +958,9 @@ recurso inexistente— que se maneja con `onError` y un fallback de texto, más
 
 ### `CardTilt`
 
-Isla client decorativa compartida por la ficha y los tiles. Recibe `children`,
+Isla client decorativa que `VisualCard` conserva fuera de `AppShell`, para los
+tiles públicos que todavía la necesitan. No es una apariencia seleccionable.
+En la app, `VisualCard` usa `HoloCard`. Recibe `children`,
 `variant="detail" | "catalog"` y clases de ubicación. La imagen puede seguir
 renderizándose en el servidor. El detalle responde al cursor y al arrastre
 horizontal táctil; el catálogo conserva el toque para navegar o seleccionar.
@@ -995,7 +997,6 @@ la envoltura que reemplaza la regla de §9.2 (`''` → `—` con
 |---|---|
 | `catalog-search.tsx` (client) | **Punto de entrada.** La pantalla. |
 | `search-controls.tsx` (client) | Input, modo de búsqueda, filtros. |
-| `set-filter-sheet.tsx` (client) | El filtro de set en un `Sheet` buscable. |
 | `rarity-filter.tsx` (client) | Las 12 rarezas como `Chip`. |
 | `search-fallback.tsx` (server) | El `Skeleton` de la pantalla. |
 | `catalog-options.ts` (módulo) | `CATALOG_PAGE_SIZE = 24`, `SEARCH_DEBOUNCE_MS = 300`. |
@@ -1044,7 +1045,7 @@ Lo no obvio:
 
 La página `/escanear` mantiene la sesión y ejecuta DINOv2. `CameraView` conserva el video durante la consulta y captura automáticamente un encuadre estable. `CardFrame` dibuja rojo/verde; `ActionBar` ofrece captura manual de respaldo, galería, descarte y organización. Los controles de flash/infinito están ocultos.
 
-`DetectedCardBar` y `PriceChip` muestran la carta elegida y sus precios sin consultar APIs. `VisualDiagnostics` muestra ranking y tiempos de una foto subida. `IdlePanel` ofrece cámara solo en teléfonos. `OrganizeSheet` guarda las entradas en la colección elegida; la primera predicción se suma por defecto y no hay un selector de candidatos.
+`DetectedCardBar` y `PriceChip` muestran la carta elegida y sus precios sin consultar APIs. `IdlePanel` ofrece cámara solo en teléfonos. `OrganizeSheet` guarda las entradas en la colección elegida; la primera predicción se suma por defecto y no hay un selector de candidatos.
 
 `image-input.ts` decodifica archivos; `lib/scanner/visual-photo.ts` prepara el recorte de galería. La cámara ya captura la guía y no vuelve a rotarla. `copy.ts` contiene mensajes y fases. `types.ts` y `session-storage.ts` definen/persisten la sesión, hasta 30 entradas. Ver [scanner.md](scanner.md) para cancelación, tiempos, geometría y actualización del índice.
 

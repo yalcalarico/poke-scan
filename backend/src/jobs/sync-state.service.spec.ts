@@ -8,15 +8,12 @@ import {
 } from '../modules/providers/card-provider.interface.js';
 import { PrismaService } from '../prisma/index.js';
 import { JobsRecoveryService } from './jobs-recovery.service.js';
-import { PriceQueueService } from './price-queue.service.js';
 import { SyncStateService } from './sync-state.service.js';
 
 const provider: CardDataProvider = {
   id: PROVIDER_IDS.POKEMON_TCG_IO,
   getSets: async () => ({ data: [], page: 1, pageSize: 1, total: 0, totalPages: 1 }),
   getCardsPage: async () => ({ data: [], page: 1, pageSize: 1, total: 0, totalPages: 1 }),
-  getCard: async () => null,
-  getPricesForCard: async () => [],
 };
 
 describe('SyncStateService', () => {
@@ -116,19 +113,16 @@ describe('SyncStateService', () => {
 describe('JobsRecoveryService', () => {
   const prismaClient = new PrismaClient();
   let recovery: JobsRecoveryService;
-  let queue: PriceQueueService;
   let systemUserId: string;
 
   beforeAll(async () => {
     const moduleRef: TestingModule = await Test.createTestingModule({
       providers: [
         JobsRecoveryService,
-        PriceQueueService,
         { provide: PrismaService, useValue: prismaClient },
       ],
     }).compile();
     recovery = moduleRef.get(JobsRecoveryService);
-    queue = moduleRef.get(PriceQueueService);
 
     const user = await prismaClient.user.findFirst({ select: { id: true } });
     if (!user) throw new Error('El spec necesita al menos un usuario en la base');
@@ -136,15 +130,11 @@ describe('JobsRecoveryService', () => {
   });
 
   afterAll(async () => {
-    // Sin esto, la última fila que crea el test queda `completed` en la base de
-    // desarrollo y aparece en cualquier `SELECT` de la cola.
-    await prismaClient.priceRefreshJob.deleteMany({});
     await prismaClient.scanJob.deleteMany({ where: { jobType: 'sync-catalog' } });
     await prismaClient.$disconnect();
   });
 
   beforeEach(async () => {
-    await prismaClient.priceRefreshJob.deleteMany({});
     await prismaClient.scanJob.deleteMany({ where: { jobType: 'sync-catalog' } });
   });
 
@@ -186,24 +176,4 @@ describe('JobsRecoveryService', () => {
     expect(row.status).toBe('running');
   });
 
-  it('un refresh de precio en processing abandonado vuelve a la cola', async () => {
-    await prismaClient.priceRefreshJob.create({
-      data: {
-        id: 'abandonado-recuperacion',
-        cardId: 'test-recovery-card',
-        status: 'processing',
-        lockedBy: 'proceso-muerto',
-        lockedAt: new Date(Date.now() - 60 * 60 * 1000),
-      },
-    });
-
-    await recovery.onModuleInit();
-
-    const row = await prismaClient.priceRefreshJob.findUniqueOrThrow({
-      where: { cardId: 'test-recovery-card' },
-    });
-    expect(row.status).toBe('pending');
-    expect(row.lockedBy).toBeNull();
-    expect(await queue.pendingCount()).toBe(1);
-  });
 });

@@ -26,8 +26,6 @@ import { analyzeCaptureQuality, type CaptureQuality } from '@/lib/scanner/captur
 import { fileToImageData, DEFAULT_CAPTURE_WIDTH } from '@/components/scanner/image-input';
 import { CaptureQualityNotice } from '@/components/scanner/capture-quality-notice';
 import { VisualScanResult } from '@/components/scanner/visual-result';
-import { previewHref } from '@/components/visual-preview/preview-link';
-import { useVisualPreview } from '@/components/visual-preview/visual-preview';
 
 const AUTO_IDENTIFY_INTERVAL_MS = 2500;
 interface BrowserEnv { supported: boolean; secure: boolean }
@@ -40,7 +38,6 @@ function subscribeToEnv(): () => void { return () => {}; }
 interface Notice { kind: CameraNoticeKind; detail: string | null }
 
 export default function ScanPage() {
-  const visual = useVisualPreview();
   const [exitPending, setExitPending] = useState(false);
   const router = useRouter();
   const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
@@ -121,7 +118,7 @@ export default function ScanPage() {
   const cameraAvailable = mobileCamera && !!env?.supported && !!env?.secure;
   const detected = session.at(-1) ?? null;
   const showCamera = mobileCamera && isCameraStage(stage) && captureMode === 'camera';
-  const goManualSearch = useCallback(() => router.push(previewHref('/buscar', visual)), [router, visual]);
+  const goManualSearch = useCallback(() => router.push('/buscar'), [router]);
 
   // La cámara ya entrega el recorte del marco. Solo la galería detecta y orienta.
   const runRecognition = useCallback(async (load: () => Promise<{ image: string; quality?: CaptureQuality }>, from: 'camera' | 'gallery') => {
@@ -293,7 +290,7 @@ export default function ScanPage() {
     </> : null;
   return <>
     {showShell ? <>
-      <ScreenHeader title="Escanear" back={{ href: previewHref('/buscar', visual), label: 'buscar' }} />
+      <ScreenHeader title="Escanear" back={{ href: '/buscar', label: 'buscar' }} />
       <ScreenContainer className="flex flex-col gap-4">
         {stage === 'idle' ? <>
           {!isAuthLoading && !isAuthenticated ? <Alert tone="info" title="Iniciá sesión para reconocer cartas">Podés explorar el catálogo sin cuenta. Para usar el escáner, entrá a tu cuenta primero.</Alert> : null}

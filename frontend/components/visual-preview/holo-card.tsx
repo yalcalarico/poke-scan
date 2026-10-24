@@ -3,7 +3,7 @@
 import { useEffect, useRef, type ReactNode } from 'react';
 import { CardTilt } from '@/components/cards/card-tilt';
 import { cn } from '@/lib/cn';
-import { useVisualPreview } from './visual-preview';
+import { useAppVisuals } from './visual-preview';
 import styles from './visual-preview.module.css';
 
 export function HoloCard({ children, variant = 'detail', className }: { children: ReactNode; variant?: 'detail' | 'catalog'; className?: string }) {
@@ -74,7 +74,7 @@ export function HoloCard({ children, variant = 'detail', className }: { children
 
 /** Mantiene el arte compuesto en servidor; únicamente el marco es interactivo. */
 export function VisualCard({ children, variant = 'detail', className, plainCurrent = false }: { children: ReactNode; variant?: 'detail' | 'catalog'; className?: string; plainCurrent?: boolean }) {
-  const active = useVisualPreview();
+  const active = useAppVisuals();
   if (active) return <div className={cn(variant === 'detail' && styles.cardReveal)}><HoloCard variant={variant} className={className}>{children}</HoloCard></div>;
   return plainCurrent ? <>{children}</> : <CardTilt variant={variant} className={className}>{children}</CardTilt>;
 }

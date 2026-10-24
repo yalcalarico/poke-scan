@@ -82,7 +82,7 @@ La API ejecuta DINOv2 con el modelo ONNX local, compara el vector de consulta co
 
 `lib/scanner/camera-visual.ts` selecciona el candidato #1 DINOv2 y consulta `/cards/:id/prices` solo para ese ID. La falta o demora del precio no cambia la identidad. La consulta completa admite cancelación y tiene un límite de 35 s; los precios tienen un límite de 5 s. Los contadores de corrida impiden que una respuesta anterior reemplace una captura posterior.
 
-`components/scanner/visual-diagnostics.tsx` permite revisar candidatos y tiempos después de subir una foto, sin abrir un selector. La sesión usa `sessionStorage`, pausa nuevas capturas al llegar a 30 lecturas pendientes y se restaura después de hidratar. Un legado que excede ese límite se conserva completo para organizarlo sin perder lecturas. Cada captura conserva su `runId`; el draft de organización también se versiona como `pcs.scanDraft` y excluye fotos y recortes.
+La sesión usa `sessionStorage`, pausa nuevas capturas al llegar a 30 lecturas pendientes y se restaura después de hidratar. Un legado que excede ese límite se conserva completo para organizarlo sin perder lecturas. Cada captura conserva su `runId`; el draft de organización también se versiona como `pcs.scanDraft` y excluye fotos y recortes.
 
 ## Modelo e índice
 

@@ -2,7 +2,7 @@
 
 import { PreviewSheet as Sheet } from '@/components/visual-preview/preview-sheet';
 
-import { PreviewLink as Link } from '@/components/visual-preview/preview-link';
+import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, Button, Field, Input, RetryButton, Select, Skeleton, useToast, buttonVariants } from '@/components/ui';
 import { useAsync } from '@/hooks/use-async';
