@@ -8,6 +8,7 @@ datasource db {
 }
 
 enum PriceSyncSetOrigin {
+  validated
   curated
   collection
   manual
@@ -144,6 +145,7 @@ model CardSet {
 
   cards       Card[]
   externalIds CardSetExternalId[]
+  tcgcsvGroups TcgcsvSetGroup[]
   priceSyncSet PriceSyncSet?
   priceSyncSetDays PriceSyncSetDay[]
   priceSyncCardDays PriceSyncCardDay[]
@@ -581,6 +583,40 @@ model PriceIngestionRun {
   @@map("price_ingestion_runs")
 }
 
+// Sólo productos: los precios y la publicación siempre se consultan en su ciclo reservado.
+model TcgcsvProductCache {
+  groupId Int @id
+  content String @db.Text
+  checksum String @db.VarChar(64)
+  contentBytes Int
+  etag String?
+  lastModified String?
+  receivedAt DateTime
+  validatedAt DateTime
+
+  @@map("tcgcsv_product_cache")
+}
+
+// Una fila por intento HTTP; no almacena cuerpos, credenciales ni errores arbitrarios.
+model TcgcsvHttpRequest {
+  id String @id @default(uuid())
+  path String
+  file String
+  groupId Int?
+  requestedAt DateTime @default(now())
+  status Int?
+  receivedBytes Int
+  durationMs Int
+  conditional Boolean
+  reusedCache Boolean
+  retryAfterMs Float?
+  outcome String
+
+  @@index([requestedAt, file])
+  @@index([groupId, requestedAt])
+  @@map("tcgcsv_http_requests")
+}
+
 model CollectionComparisonSnapshot {
   collectionId String
   provider String
@@ -604,4 +640,14 @@ model CollectionComparisonSnapshot {
   @@id([collectionId, provider, policy, day])
   @@index([day, provider, policy])
   @@map("collection_comparison_snapshots")
+}
+
+model TcgcsvSetGroup {
+  groupId Int
+  setId String
+  createdAt DateTime @default(now())
+  set CardSet @relation(fields: [setId], references: [id], onDelete: Cascade)
+  @@id([groupId, setId])
+  @@index([setId])
+  @@map("tcgcsv_set_groups")
 }

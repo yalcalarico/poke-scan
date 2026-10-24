@@ -56,17 +56,18 @@ límites corresponden a ese proveedor de catálogo, no a los cronjobs de precios
 **Nunca** llames a pokemontcg.io ni a los proveedores de precios desde un
 handler público. El catálogo se consulta en PostgreSQL (sync manual/semanal).
 
-- **TCGdex** es la referencia activa de precios; Redis (1 h), PostgreSQL y cola
-  persistente evitan consultas repetidas. El gate durable conserva 2,3 s entre
-  requests de precios (~26/min), además de las pausas del proveedor.
-- **TCGCSV** alimenta una comparación separada de la misma referencia TCGplayer
-  USD; no se promedian ni se mezclan los proveedores en los totales activos.
-- Ambos tienen ciclos diarios sobre los sets habilitados en `price_sync_sets`
-  (semilla curada + sets de colecciones): TCGdex 03:15 UTC, TCGCSV 21:00 UTC,
-  con reanudación cada 15 min. Requieren la API y sus flags habilitados.
-- TCGCSV valida `last-updated.txt`/build y conserva una descarga por archivo
-  de precios cada 24 h; no tiene los antiguos topes internos de 40 sets/500
-  requests. Mantener identidad segura, ejecución serial y pausas 429/Retry-After.
+- **TCGCSV es la única fuente activa de precios**, por decisión del usuario del
+  20/10/2026. Cartas, búsqueda, colecciones, portafolio y enlaces compartidos
+  usan sus observaciones TCGplayer USD persistidas en PostgreSQL.
+- Las lecturas sólo encolan grupos locales; nunca descargan desde un handler.
+  El ciclo diario recorre `price_sync_sets` a las 21:00 UTC, con reanudación cada
+  15 minutos, API y `ENABLE_TCGCSV_INGESTION=true`.
+- TCGCSV valida `last-updated.txt`/build y conserva una descarga por archivo cada
+  24 h; mantener identidad segura, ejecución serial y pausas 429/Retry-After.
+  No tiene los antiguos topes globales de 40 sets/500 requests.
+- TCGdex, su mapper, worker y ciclo diario no se registran en la aplicación.
+  Sus observaciones anteriores se conservan como historia, fuera de precios y
+  totales activos. No volver a introducir fallback ni mezclar fuentes.
 
 Ver [jobs](backend/docs/jobs.md), [precios](backend/docs/pricing.md) y
 [fuentes](docs/data-sources.md). No inventar precios ni días históricos ausentes.

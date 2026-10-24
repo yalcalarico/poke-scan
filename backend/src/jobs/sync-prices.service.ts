@@ -1,4 +1,4 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger, Optional } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import {
   PRICE_PROVIDER,
@@ -11,6 +11,7 @@ import { ProviderRateGate } from './provider-rate.gate.js';
 import { PriceQueueService } from './price-queue.service.js';
 import { TCGDEX_SET_MAPPING, TcgdexSetMappingService } from './tcgdex-set-mapping.service.js';
 import { priceMetadata, validDate, type PriceMetadataDto } from '../common/price-metadata.js';
+import { TcgcsvService } from './tcgcsv/tcgcsv.service.js';
 import { ProviderRateLimitError } from '../common/errors/provider-rate-limit.error.js';
 
 function utcDate(at: Date): Date {
@@ -131,9 +132,17 @@ export class SyncPricesService {
     @Inject(TCGDEX_SET_MAPPING)
     private readonly mapping: Pick<TcgdexSetMappingService, 'resolve'>,
     @Inject(PRICE_PROVIDER) private readonly priceProvider: PriceProvider,
+    @Optional() private readonly ingestion?: TcgcsvService,
   ) {}
 
   async getPricesForCard(cardId: string): Promise<CardPriceView[]> {
+    if (this.priceProvider.id === 'tcgcsv') {
+      // El feed puede publicarse entre dos lecturas: PostgreSQL refleja el lote
+      // confirmado sin conservar una cifra vieja en la caché de cartas.
+      const prices = await this.latestPrices(cardId, 'tcgcsv');
+      if (prices.length === 0 || this.isStale(prices)) this.enqueueRefresh(cardId);
+      return prices;
+    }
     const cached = await this.redis.getJson<CardPriceView[]>(this.cacheKey(cardId));
     if (cached) {
       const evaluatedAt = new Date();
@@ -216,6 +225,10 @@ export class SyncPricesService {
    * volvería a haber dos relojes.
    */
   async refresh(cardId: string): Promise<CardPriceView[]> {
+    if (this.priceProvider.id === 'tcgcsv') {
+      await this.ingestion?.enqueueCards([cardId]);
+      return this.latestPrices(cardId, 'tcgcsv');
+    }
     return this.refreshThrottled(cardId);
   }
 
@@ -254,6 +267,11 @@ export class SyncPricesService {
     checkedAt: Date | null;
     quoteCount: number;
   }> {
+    if (this.priceProvider.id === 'tcgcsv') {
+      await this.ingestion?.enqueueCards([cardId]);
+      const prices = await this.latestPrices(cardId, 'tcgcsv');
+      return { prices, status: prices.some((price) => price.market !== null) ? 'quoted' : 'no_quote', checkedAt: null, quoteCount: 0 };
+    }
     if (dailyDeduplicate) {
       const today = utcDate(new Date());
       const observed = await this.prisma.priceSyncCardDay.findUnique({
@@ -447,7 +465,12 @@ export class SyncPricesService {
     refreshed: number;
     failed: number;
     results: Record<string, CardPriceView[]>;
+    queued?: number;
   }> {
+    if (this.priceProvider.id === 'tcgcsv') {
+      const queued = await this.ingestion?.enqueueCards(cardIds) ?? 0;
+      return { refreshed: 0, failed: 0, queued, results: {} };
+    }
     const results: Record<string, CardPriceView[]> = {};
     let failed = 0;
     for (const cardId of cardIds) {
@@ -477,6 +500,10 @@ export class SyncPricesService {
    * lo aplica el worker de la cola antes de cada llamada al proveedor.
    */
   enqueueRefresh(cardId: string): void {
+    if (this.priceProvider.id === 'tcgcsv') {
+      void this.ingestion?.enqueueCards([cardId]).catch(() => this.logger.warn('No se pudo encolar la actualización TCGCSV'));
+      return;
+    }
     this.queue.enqueue(cardId);
   }
 

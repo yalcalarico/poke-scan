@@ -13,7 +13,6 @@ import { CardPricesRetentionService } from './card-prices-retention.service.js';
 import { CatalogSyncService } from './catalog-sync.service.js';
 import { PriceBackfillService } from './price-backfill.service.js';
 import { ScheduledJobsService } from './scheduled-jobs.service.js';
-import { PriceQueueWorker } from './price-queue.worker.js';
 import { PriceQueueService } from './price-queue.service.js';
 import { ProviderRateGate } from './provider-rate.gate.js';
 import { SyncCardsService } from './sync-cards.service.js';
@@ -22,7 +21,6 @@ import { SyncSetsService } from './sync-sets.service.js';
 import { SyncStateService } from './sync-state.service.js';
 import { TCGDEX_SET_MAPPING, TcgdexSetMappingService } from './tcgdex-set-mapping.service.js';
 import { PriceSyncRegistryService } from './price-sync-registry.service.js';
-import { PriceSyncDailyService } from './price-sync-daily.service.js';
 
 /**
  * ## Por qué el grafo de jobs es acíclico
@@ -47,7 +45,6 @@ import { PriceSyncDailyService } from './price-sync-daily.service.js';
     ProviderRateGate,
     PriceQueueService,
     PriceSyncRegistryService,
-    PriceSyncDailyService,
     // La retención corre a mano (dry run por default) y una vez por mes por el
     // cron. La misma política, las dos entradas.
     CardPricesRetentionService,
@@ -59,10 +56,7 @@ import { PriceSyncDailyService } from './price-sync-daily.service.js';
     // Recovery primero: reconcilia los jobs del proceso anterior antes de que
     // el worker empiece a tomar trabajo nuevo.
     JobsRecoveryService,
-    // El worker no se exporta: corre solo, desde `onModuleInit`.
-    PriceQueueWorker,
-    { provide: TCGDEX_SET_MAPPING, useClass: TcgdexSetMappingService },
-    TcgdexSetMappingService,
+    { provide: TCGDEX_SET_MAPPING, useValue: { resolve: async () => null } satisfies Pick<TcgdexSetMappingService, 'resolve'> },
   ],
   exports: [
     CardComparisonService, CollectionComparisonService, TcgcsvService,
@@ -72,12 +66,10 @@ import { PriceSyncDailyService } from './price-sync-daily.service.js';
     SyncPricesService,
     PriceQueueService,
     PriceSyncRegistryService,
-    PriceSyncDailyService,
     CatalogSyncService,
     PriceBackfillService,
     CardPricesRetentionService,
     TCGDEX_SET_MAPPING,
-    TcgdexSetMappingService,
   ],
 })
 export class JobsModule {}

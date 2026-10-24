@@ -1,6 +1,6 @@
 # Estado actual de PokéScan
 
-Revisión documental: **20/10/2026**. Entrada única para continuar el proyecto.
+Revisión documental: **21/10/2026**. Entrada única para continuar el proyecto.
 Este archivo resume entregas aceptadas; no verifica procesos vivos, ejecución de
 cronjobs ni estado de servicios por el mero paso del tiempo.
 
@@ -21,8 +21,9 @@ sin copiar la bitácora en los seis registros.
 | Cuenta | Recuperación, sesiones y consumidor FE-04; eliminación autoservicio BE-05 y restore local | [CUENTA](plans/lanzamiento-2026-10-07/RESULTADOS/LOTE-CUENTA-validacion.md), [baja local](plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-eliminacion-validacion.md). Correo/custodia/operación externos separados. |
 | Redis | Recuperación tras arranque sin Redis y corte sostenido, mismo PID de API | [Gate BE-07](plans/lanzamiento-2026-10-07/RESULTADOS/LOTE-REDIS-revalidacion-global.md). El socket hang up histórico sigue sin causa/fix demostrados. |
 | QA local | Login 500 reparado con migraciones existentes y QA de flujos reales; adquisición y preview locales aceptados | [QA](plans/lanzamiento-2026-10-07/RESULTADOS/LOCAL-APP-QA-validacion.md), [adquisición](plans/lanzamiento-2026-10-07/RESULTADOS/LOTE-ADQUISICION-cierre.md). No acredita producción ni dispositivos físicos. |
-| Precios y gráficas | TCGdex activo y comparación TCGCSV separada; observaciones persistentes, fechas/cobertura/huecos | [Comparación](plans/lanzamiento-2026-10-07/RESULTADOS/PRECIOS-comparacion-validacion.md), [guía](../frontend/docs/comparison.md). Sin promedio de fuentes ni histórico inventado. |
-| Ciclos diarios | Sets habilitados/curados y de colecciones, prioridad y reanudación; migración local y flujo aislado aceptados | [Cierre 18–20/10](plans/precios-diarios-priorizados-2026-10-18-estado.md). TCGdex 03:15 UTC; TCGCSV 21:00 UTC; reanudación cada 15 min. API y flags deben estar activos. |
+| Precios y gráficas | TCGCSV como única fuente activa para precios y totales; historial de una fuente | [Política](../backend/docs/pricing.md), [guía](../frontend/docs/comparison.md). TCGdex retirado del arranque; historia previa conservada y excluida. |
+| Referencias en colección | Ficha, tarjeta y resumen usan la misma referencia TCGCSV | [Fuente única](evaluations/tcgcsv-single-source-2026-10-20.md). Dos copias de USD 1,09 suman USD 2,18; sin fallback ni mezcla de fuentes. |
+| Ciclos diarios | Sets habilitados/curados y de colecciones, prioridad y reanudación; migración local y flujo aislado aceptados | [Cierre 18–20/10](plans/precios-diarios-priorizados-2026-10-18-estado.md). TCGCSV 21:00 UTC; reanudación cada 15 min. El ciclo TCGdex del cierre histórico está retirado. API y flags deben estar activos. |
 | Apariencia | V2 predeterminada, Clásica explícita, cinco destinos de navegación | [Entrega](evaluations/visual-v2-default-2026-10-20.md). `/buscar-v2` y `visual=v2` siguen compatibles; un mismo catálogo y sesión. |
 | Recorte de galería | Evita elegir arte interior cuando hay marco exterior; número usa total impreso | [Corrección](evaluations/scanner-crop-fix-2026-10-20.md): gate estándar 1.322 pruebas, cero skips, lint/tipos/builds; flujo aislado real y cleanup. Umbreon del recorte pasa del puesto 563 al 3; Luxray sigue primero. |
 | Contraste DINOv2 | Cinco originales con decoder nativo actual: 3/5 top-1 y 5/5 top-8 antes y después del último parche | [Contraste](evaluations/scanner-baseline-contrast-2026-10-20.md). No reproduce exactamente el pipeline del 5/5 histórico; causa de la diferencia no demostrada. |
@@ -41,6 +42,21 @@ comparación de píxeles de un test y el destino del proxy QA señalado por Code
 remota corresponde a los checks del nuevo commit en GitHub.
 
 ## Decisiones humanas y trabajo pendiente
+
+- **TCGCSV — cobertura y descargas diarias:** implementación local entregada el
+  21/10: 173 sets asociados / 171 grupos / 173 habilitados; caché condicional de
+  productos, telemetría, grupos compartidos e informe operativo. Corrección del
+  22/10: prefijos SV/TG/GG, Classic, promos revisadas, cobertura parcial y cruce
+  de medianoche. Gate de 1.355 pruebas y flujo HTTP aislado aceptados.
+  Replay válido en los 25 grupos afectados. Tras reinicio: 146 grupos completados,
+  25 esperando las reservas, cero fallidos en cola; scheduler con heartbeat
+  reciente, API y web 200. Reencolar no acredita una publicación nueva: verificar
+  tras las ventanas 22/10 23:24–23/10 19:13 ARG. Recuperación productiva y ahorro
+  entre ciclos siguen abiertos, además de tres sets sin identidad validada.
+  Historial evaluado, backfill diferido.
+  [Recuperación y evidencia](evaluations/tcgcsv-groups-recovery-2026-10-22.md) ·
+  [Entrega y evidencia](evaluations/tcgcsv-coverage-2026-10-21.md) ·
+  [Plan](plans/tcgcsv-cobertura-optimizacion-2026-10-21.md).
 
 - **Beta y corpus:** el dueño gestiona encuestas y cartas con identidad exacta.
   [Interfaz HTML y guía](beta/README.md); protocolos RES y feedback no equivalen

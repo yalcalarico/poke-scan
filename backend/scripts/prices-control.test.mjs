@@ -19,7 +19,12 @@ test('status sólo ejecuta once lecturas agregadas y no contiene nombres de usua
 });
 test('pedido manual sólo cambia la señal coalescida, conserva cuotas y leases', async () => {
   let sql;
-  await requestCycles({ $executeRaw: async (parts) => { sql = parts.join('?'); return 2; } });
+  const oldFlag = process.env.ENABLE_TCGCSV_INGESTION;
+  process.env.ENABLE_TCGCSV_INGESTION = 'true';
+  try {
+    const requested = await requestCycles({ $executeRaw: async (parts) => { sql = parts.join('?'); return 1; } });
+    assert.deepEqual(requested, ['tcgcsv']);
+  } finally { if (oldFlag === undefined) delete process.env.ENABLE_TCGCSV_INGESTION; else process.env.ENABLE_TCGCSV_INGESTION = oldFlag; }
   assert.match(sql, /UPDATE price_sync_controls/);
   assert.match(sql, /"requestedGeneration" = "handledGeneration"/);
   assert.doesNotMatch(sql, /tcgcsv_group_jobs|downloadStartedAt|nextCheckAt|leaseUntil|DELETE|TRUNCATE/);

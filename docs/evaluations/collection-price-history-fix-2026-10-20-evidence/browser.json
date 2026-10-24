@@ -1,0 +1,131 @@
+{
+  "card": "me55-92",
+  "checks": [
+    "Detalle e histórico TCGCSV: Holofoil USD 1.09, cinco observaciones reales.",
+    "Alta y listado: referencia exacta, dos copias USD 2.18, separadas del total TCGdex.",
+    "Navegador desktop/mobile: precio y subtotal visibles, Holofoil fija en alta/edición, gráfico con cinco puntos y fechas; claro/oscuro y movimiento reducido sin desborde ni errores."
+  ],
+  "views": [
+    {
+      "width": 1440,
+      "height": 1000,
+      "theme": "light",
+      "viewport": 1440,
+      "periods": [
+        {
+          "text": "7 días",
+          "width": 123,
+          "labelWidth": 42
+        },
+        {
+          "text": "30 días",
+          "width": 123,
+          "labelWidth": 54
+        },
+        {
+          "text": "90 días",
+          "width": 123,
+          "labelWidth": 54
+        },
+        {
+          "text": "1 año",
+          "width": 123,
+          "labelWidth": 37
+        }
+      ],
+      "reducedMotion": true,
+      "points": 5
+    },
+    {
+      "width": 1440,
+      "height": 1000,
+      "theme": "dark",
+      "viewport": 1440,
+      "periods": [
+        {
+          "text": "7 días",
+          "width": 123,
+          "labelWidth": 42
+        },
+        {
+          "text": "30 días",
+          "width": 123,
+          "labelWidth": 54
+        },
+        {
+          "text": "90 días",
+          "width": 123,
+          "labelWidth": 54
+        },
+        {
+          "text": "1 año",
+          "width": 123,
+          "labelWidth": 37
+        }
+      ],
+      "reducedMotion": true,
+      "points": 5
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "theme": "light",
+      "viewport": 390,
+      "periods": [
+        {
+          "text": "7 días",
+          "width": 78,
+          "labelWidth": 42
+        },
+        {
+          "text": "30 días",
+          "width": 78,
+          "labelWidth": 54
+        },
+        {
+          "text": "90 días",
+          "width": 78,
+          "labelWidth": 54
+        },
+        {
+          "text": "1 año",
+          "width": 78,
+          "labelWidth": 37
+        }
+      ],
+      "reducedMotion": true,
+      "points": 5
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "theme": "dark",
+      "viewport": 390,
+      "periods": [
+        {
+          "text": "7 días",
+          "width": 78,
+          "labelWidth": 42
+        },
+        {
+          "text": "30 días",
+          "width": 78,
+          "labelWidth": 54
+        },
+        {
+          "text": "90 días",
+          "width": 78,
+          "labelWidth": 54
+        },
+        {
+          "text": "1 año",
+          "width": 78,
+          "labelWidth": 37
+        }
+      ],
+      "reducedMotion": true,
+      "points": 5
+    }
+  ],
+  "screenshots": false
+}

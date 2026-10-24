@@ -1,0 +1,30 @@
+{
+  "command": "pnpm run check",
+  "exitCode": 0,
+  "stopBeforeTests": true,
+  "backend": {
+    "files": 59,
+    "tests": 598
+  },
+  "backendE2e": {
+    "files": 2,
+    "tests": 6
+  },
+  "frontend": {
+    "files": 79,
+    "tests": 625
+  },
+  "nodeSuites": {
+    "backendScripts": 22,
+    "monitor": 15,
+    "backups": 54,
+    "custody": 7,
+    "qa": 5
+  },
+  "builds": [
+    "backend",
+    "frontend"
+  ],
+  "reviewer": "Sin hallazgos accionables; s\u00f3lo lectura, sin suites ni capturas.",
+  "delegatedAssignments": 1
+}

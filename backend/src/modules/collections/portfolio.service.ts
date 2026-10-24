@@ -28,6 +28,10 @@ export class PortfolioService {
   @Cron('45 23 * * *', { timeZone: 'UTC' })
   async captureDaily(): Promise<void> {
     if (process.env.ENABLE_PORTFOLIO_SNAPSHOTS_CRON === 'false') return;
+    if (this.prices.id === 'tcgcsv') {
+      await this.comparisonSnapshots?.capture();
+      return;
+    }
     const day = new Date().toISOString().slice(0, 10);
     await this.prisma.$executeRaw(Prisma.sql`
       INSERT INTO portfolio_snapshots ("userId", day, "valueUsd", "totalCards", "unpricedCards")
@@ -81,12 +85,15 @@ export class PortfolioService {
     // Una observación por día UTC: consultar de nuevo actualiza el mismo punto.
     // No reconstruimos el pasado con las cantidades que el usuario tiene hoy.
     const day = new Date(`${evaluatedAt.toISOString().slice(0, 10)}T00:00:00Z`);
-    await this.prisma.portfolioSnapshot.upsert({
+    if (this.prices.id !== 'tcgcsv') await this.prisma.portfolioSnapshot.upsert({
       where: { userId_day: { userId, day } },
       create: { userId, day, valueUsd, totalCards: total.totalCards, unpricedCards: total.unpricedCards },
       update: { valueUsd, totalCards: total.totalCards, unpricedCards: total.unpricedCards },
     });
-    const history = await this.prisma.portfolioSnapshot.findMany({ where: { userId }, orderBy: { day: 'desc' }, take: 365 });
+    const history = this.prices.id === 'tcgcsv'
+      ? ((await this.comparisonSnapshots?.comparison(userId, null, 365))?.series.find((series) => series.provider === 'tcgcsv')?.points ?? [])
+        .map((point) => ({ day: new Date(`${point.date}T00:00:00Z`), valueUsd: point.valueUsd, totalCards: point.totalCopies, unpricedCards: point.unpricedCopies })).reverse()
+      : await this.prisma.portfolioSnapshot.findMany({ where: { userId }, orderBy: { day: 'desc' }, take: 365 });
     return { totalCards: total.totalCards, unpricedCards: total.unpricedCards, valueUsd, valuation, topCards: topCards.map((card) => ({
       cardId: card.cardId, name: card.name, imageSmall: card.imageSmall, setName: card.setName, number: card.number,
       variant: card.variant, quantity: card.quantity, marketUsd: card.marketUsd, valueUsd: card.valueUsd,

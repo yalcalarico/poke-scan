@@ -280,9 +280,7 @@ describe('PriceHistory: la geometría se dibuja siempre que haya datos', () => {
   });
 
   it('los puntos con market nulo no cuentan como días', async () => {
-    // 3 filas de las cuales solo 2 tienen precio: la serie efectiva es de 2, así
-    // que hay una línea. Es el caso real de `card_prices` cuando una jornada no
-    // se consultó —y el que antes se confundía con "no hay línea".
+    // Un día sin cotización corta la línea aunque haya precios a ambos lados.
     getCardPriceHistory.mockResolvedValue(
       history({
         points: [point('2026-09-27', 29.9), point('2026-09-28', null), point('2026-09-29', 31.5)],
@@ -293,7 +291,8 @@ describe('PriceHistory: la geometría se dibuja siempre que haya datos', () => {
     render(<PriceHistory cardId="base1-4" />);
 
     await screen.findByText(/2 días de precio/);
-    await waitFor(() => expect(document.querySelector('polyline')).not.toBeNull());
+    expect(document.querySelector('polyline')).toBeNull();
+    expect(document.querySelectorAll('circle')).toHaveLength(2);
   });
 });
 
@@ -471,4 +470,13 @@ it('los días UTC no se convierten en el día anterior y variant null no se vuel
   expect(await screen.findByRole('img')).toHaveAccessibleName(/27.*sept.*2026/);
   expect(screen.getByText(/1 día de precio registrado/)).toHaveTextContent('Mejor referencia disponible por día; puede cambiar de variante');
   expect(screen.getByText(/29.90/)).toHaveTextContent(/27.*sept.*2026/);
+});
+
+it('consulta la misma fuente y variante del precio visible y corta los días ausentes', async () => {
+  getCardPriceHistory.mockResolvedValue(history({ provider: 'tcgcsv', variant: 'holofoil', points: [point('2026-10-13', 1.04), point('2026-10-16', 0.96)] }));
+  render(<PriceHistory cardId="me55-92" variant="holofoil" provider="tcgcsv" />);
+  await waitFor(() => expect(getCardPriceHistory).toHaveBeenCalledWith('me55-92', { days: 30, variant: 'holofoil', provider: 'tcgcsv' }));
+  await screen.findByRole('img');
+  expect(document.querySelector('polyline')).toBeNull();
+  expect(document.querySelectorAll('circle')).toHaveLength(2);
 });

@@ -43,3 +43,12 @@ describe('comparison DTO guards', () => {
     expect(toCollectionComparison({ ...collection, series: collection.series.map((s, i) => i === 0 ? { ...s, policy: 'other' } : s) })).toBeNull();
   });
 });
+
+it('acepta una sola fuente TCGCSV y rechaza mezclarle la serie retirada', () => {
+  const onlyCard = { ...card, activeProvider: 'tcgcsv', series: card.series.filter((series) => series.provider === 'tcgcsv') };
+  const onlyCollection = { ...collection, activeProvider: 'tcgcsv', series: collection.series.filter((series) => series.provider === 'tcgcsv') };
+  expect(toCardComparison(onlyCard)?.series).toHaveLength(1);
+  expect(toCollectionComparison(onlyCollection)?.series).toHaveLength(1);
+  expect(toCardComparison({ ...card, activeProvider: 'tcgcsv' })).toBeNull();
+  expect(toCollectionComparison({ ...collection, activeProvider: 'tcgcsv' })).toBeNull();
+});

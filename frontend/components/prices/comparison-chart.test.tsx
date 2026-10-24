@@ -15,7 +15,7 @@ describe('ComparisonChart', () => {
     expect((groups[0]?.match(/<circle/g) ?? []).length).toBe(3);
     expect((groups[1]?.match(/<polyline/g) ?? []).length).toBe(1);
     expect((html.match(/<polyline/g) ?? []).length).toBe(1);
-    expect((html.match(/<circle/g) ?? []).length).toBe(3);
+    expect((html.match(/<circle/g) ?? []).length).toBe(5);
   });
   it('ajusta el eje al rango observado para que las variaciones sean legibles', () => {
     const html = renderToStaticMarkup(<ComparisonChart series={[{ provider: 'tcgcsv', points: [
@@ -24,7 +24,7 @@ describe('ComparisonChart', () => {
     expect(html).toContain('<polyline');
     expect(html).toContain('Escala ajustada');
     expect(html).not.toContain('Rango de US$ 0,00');
-    expect((html.match(/<text /g) ?? []).length).toBe(3);
+    expect((html.match(/<text /g) ?? []).length).toBe(5);
   });
   it('explica los huecos sin inventar una línea entre precios aislados', () => {
     const html = renderToStaticMarkup(<ComparisonChart series={[{ provider: 'tcgcsv', points: [

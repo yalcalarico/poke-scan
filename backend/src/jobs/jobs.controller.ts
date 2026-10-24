@@ -74,6 +74,7 @@ export class JobsController {
       requested: dto.cardIds.length,
       refreshed: result.refreshed,
       failed: result.failed,
+      ...(result.queued === undefined ? {} : { queued: result.queued }),
     };
   }
 

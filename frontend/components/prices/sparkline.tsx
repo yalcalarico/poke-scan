@@ -19,7 +19,7 @@ const VIEW_HEIGHT = 32;
 const PADDING_Y = 3;
 
 export interface SparklinePoint {
-  /** El día, `YYYY-MM-DD`. Solo se usa para el texto equivalente. */
+  /** El día UTC, `YYYY-MM-DD`, determina la posición y los cortes. */
   date: string;
   value: number;
 }
@@ -85,13 +85,9 @@ export interface SparklineProps {
  *
  * ## Escala y forma
  *
- * La escala vertical es **relativa** a la serie (min/max del rango), no desde
- * cero: un precio que se mueve de 29,90 a 31,50 tiene que verse como un cambio
- * o no se ve. La escala temporal es **índice**, no fecha: `DISTINCT ON
- * (fetchedAt::date)` puede dejar saltarse un día, y un hueco de calendario
- * en el medio de la línea dibujaría una bajada que no ocurrió. Con el eje por
- * índice esa bajada no existe; el día exacto de cada punto está en el texto
- * equivalente, que es donde se lee.
+ * La escala vertical es relativa al rango observado. La posición horizontal
+ * usa fechas UTC y cada día ausente corta la línea; los puntos conservan
+ * sus distancias reales en el calendario.
  *
  * Una serie **plana** (todos los valores iguales) se dibuja en la mitad, no
  * pegada al borde: una línea horizontal en el tope del `viewBox` se lee como
@@ -109,16 +105,24 @@ export function Sparkline({ points, label, className }: SparklineProps) {
 
   const span = max - min;
   const usableHeight = VIEW_HEIGHT - PADDING_Y * 2;
-  const stepX = VIEW_WIDTH / (points.length - 1);
+  const times = points.map((point) => Date.parse(point.date));
+  const start = times[0]!;
+  const end = times.at(-1)!;
 
   const coords = points.map((point, index) => {
-    const x = index * stepX;
+    const x = end === start ? VIEW_WIDTH / 2 : (times[index]! - start) / (end - start) * VIEW_WIDTH;
     // El caso plano va al centro en vez de al tope: ver el JSDoc.
     const y =
       span === 0
         ? VIEW_HEIGHT / 2
         : PADDING_Y + (1 - (point.value - min) / span) * usableHeight;
     return `${x.toFixed(2)},${y.toFixed(2)}`;
+  });
+
+  const runs: string[][] = [];
+  coords.forEach((coord, index) => {
+    if (index === 0 || times[index]! - times[index - 1]! !== 86_400_000) runs.push([]);
+    runs.at(-1)!.push(coord);
   });
 
   return (
@@ -137,15 +141,17 @@ export function Sparkline({ points, label, className }: SparklineProps) {
           Con `preserveAspectRatio="none"` el vector-effect es el único mecanismo
           que hay para eso (no hay `px` en el viewBox).
         */}
-        <polyline
-          points={coords.join(' ')}
+        {runs.filter((run) => run.length > 1).map((run, index) => <polyline
+          key={index}
+          points={run.join(' ')}
           fill="none"
           stroke="currentColor"
           strokeWidth={2}
           strokeLinecap="round"
           strokeLinejoin="round"
           vectorEffect="non-scaling-stroke"
-        />
+        />)}
+        {coords.map((coord, index) => { const [cx, cy] = coord.split(','); return <circle key={index} cx={cx} cy={cy} r="1" fill="currentColor" />; })}
       </svg>
       <figcaption className="sr-only">{label}</figcaption>
     </figure>

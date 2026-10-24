@@ -24,10 +24,11 @@ import {
   useFieldA11y,
   useToast,
 } from '@/components/ui';
+import { useCardVariants } from '@/hooks/use-card-variants';
 import { ApiError } from '@/lib/api/api-client';
 import { createCollection, deleteItem, listCollections, updateItem, addItem } from '@/lib/api/collections';
 import { formatRelativeTime, pluralize } from '@/lib/format';
-import { CONDITION_OPTIONS, VARIANT_OPTIONS, conditionLabel, variantLabel } from '@/lib/variants';
+import { CONDITION_OPTIONS, conditionLabel, variantLabel } from '@/lib/variants';
 import type {
   CardCondition,
   CardVariant,
@@ -37,11 +38,6 @@ import type {
 
 const MAX_QUANTITY = 999;
 const MAX_NOTES = 500;
-
-const VARIANT_SELECT_OPTIONS = VARIANT_OPTIONS.map((option) => ({
-  value: option.value,
-  label: option.label,
-}));
 
 const CONDITION_SELECT_OPTIONS = CONDITION_OPTIONS.map((option) => ({
   value: option.value,
@@ -104,6 +100,7 @@ export interface ItemSheetProps {
 export function ItemSheet({ item, open, onClose, onUpdated, onDeleted }: ItemSheetProps) {
   const visual = useVisualPreview();
   const toast = useToast();
+  const { options: variantOptions, loading: loadingVariants } = useCardVariants(item?.card.id, open, item?.variant);
   const confirmRef = useRef<HTMLDivElement>(null);
   const confirmTitleId = useId();
 
@@ -197,7 +194,8 @@ export function ItemSheet({ item, open, onClose, onUpdated, onDeleted }: ItemShe
 
   if (!item) return null;
 
-  const marketPrice = item.price?.market ?? null;
+  const reference = item.price;
+  const marketPrice = reference?.market ?? null;
   const variantPriceMatches = variant === item.variant;
   const total = !variantPriceMatches || marketPrice === null ? null : marketPrice * quantity;
 
@@ -287,7 +285,9 @@ export function ItemSheet({ item, open, onClose, onUpdated, onDeleted }: ItemShe
         </div> : null}
         <ItemForm
           marketPrice={variantPriceMatches ? marketPrice : null}
-          reference={variantPriceMatches ? item.price : null}
+          reference={variantPriceMatches ? reference : null}
+          variantOptions={variantOptions}
+          loadingVariants={loadingVariants}
           variantPriceMatches={variantPriceMatches}
           total={total}
           quantity={quantity}
@@ -313,6 +313,8 @@ interface ItemFormProps {
   /** Precio de mercado de la variante, en USD. `null` si no hay. */
   marketPrice: number | null;
   reference: CollectionItemDto['price'];
+  variantOptions: { value: CardVariant; label: string }[];
+  loadingVariants: boolean;
   variantPriceMatches: boolean;
   /** Mercado × cantidad, en USD. */
   total: number | null;
@@ -333,6 +335,8 @@ interface ItemFormProps {
 function ItemForm({
   marketPrice,
   reference,
+  variantOptions,
+  loadingVariants,
   variantPriceMatches,
   total,
   quantity,
@@ -376,7 +380,7 @@ function ItemForm({
       </StatGrid>
       <div className="flex flex-col gap-1 text-caption text-secondary" aria-live="polite">
         {variantPriceMatches && marketPrice === null ? <p className="text-warning">Sin referencia de precio para esta variante.</p> : null}
-        {variantPriceMatches ? reference ? <PriceReferenceDetails reference={reference} showConversion /> : <p className="text-warning">Sin referencia de precio para esta variante · antigüedad no disponible.</p> : <p className="text-warning">Guardá el cambio de variante para ver su referencia de precio.</p>}
+        {variantPriceMatches ? reference ? <PriceReferenceDetails reference={reference} showConversion /> : null : <p className="text-warning">Guardá el cambio de variante para ver su referencia de precio.</p>}
         <p>Condición: {conditionLabel(condition)} · la condición no ajusta este valor.</p>
       </div>
 
@@ -417,16 +421,16 @@ function ItemForm({
           escribirlo, como hacen `organize-sheet.tsx:345` y
           `share-link-creator.tsx:217`.
         */}
-        <Field {...variantField} label="Variante">
+        {loadingVariants ? <p role="status" className="text-caption text-secondary">Variante guardada: {variantLabel(variant)} · comprobando opciones…</p> : variantOptions.length === 1 ? <div><p className="text-label text-secondary">Variante</p><p className="text-body text-primary">{variantLabel(variant)}</p></div> : <Field {...variantField} label="Variante">
           <Select
             id={variantField.id}
-            options={VARIANT_SELECT_OPTIONS}
+            options={variantOptions}
             value={variant}
             onChange={onVariantChange}
             disabled={disabled}
             invalid={variantField.invalid}
           />
-        </Field>
+        </Field>}
 
         <Field {...conditionField} label="Condición">
           <Select
@@ -515,13 +519,15 @@ export function AddToCollectionSheet({
   defaultCollectionId,
 }: AddToCollectionSheetProps) {
   const toast = useToast();
+  const { options: variantOptions, preferred: preferredVariant, loading: loadingVariants } = useCardVariants(cardId, open);
 
   const [collections, setCollections] = useState<CollectionDto[] | null>(null);
   const [collectionId, setCollectionId] = useState<string | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [reloadToken, setReloadToken] = useState(0);
 
-  const [variant, setVariant] = useState<CardVariant>('normal');
+  const [selectedVariant, setVariant] = useState<CardVariant | null>(null);
+  const variant = variantOptions.some((option) => option.value === selectedVariant) && selectedVariant ? selectedVariant : preferredVariant ?? 'normal';
   const [condition, setCondition] = useState<CardCondition>('NM');
   const [quantity, setQuantity] = useState(1);
   const [isForTrade, setIsForTrade] = useState(false);
@@ -538,7 +544,7 @@ export function AddToCollectionSheet({
   if (open !== wasOpen) {
     setWasOpen(open);
     if (open) {
-      setVariant('normal');
+      setVariant(null);
       setCondition('NM');
       setQuantity(1);
       setIsForTrade(defaultForTrade);
@@ -601,6 +607,7 @@ export function AddToCollectionSheet({
   )?.name;
 
   const handleSubmit = useCallback(async () => {
+    if (loadingVariants) return;
     if (!collectionId) {
       setSubmitError('Elegí una colección.');
       return;
@@ -636,6 +643,7 @@ export function AddToCollectionSheet({
     }
   }, [
     cardId,
+    loadingVariants,
     collectionId,
     condition,
     isForTrade,
@@ -676,6 +684,7 @@ export function AddToCollectionSheet({
               }}
               loading={isSaving}
               pendingLabel="Guardando…"
+              disabled={loadingVariants}
             >
               Añadir
             </Button>
@@ -767,15 +776,15 @@ export function AddToCollectionSheet({
           </Field>
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field {...variantField} label="Variante">
+            {loadingVariants ? <p role="status" className="text-caption text-secondary">Cargando variantes…</p> : variantOptions.length === 1 ? <div><p className="text-label text-secondary">Variante</p><p className="text-body text-primary">{variantLabel(variant)}</p></div> : <Field {...variantField} label="Variante">
               <Select
                 id={variantField.id}
-                options={VARIANT_SELECT_OPTIONS}
+                options={variantOptions}
                 value={variant}
                 onChange={setVariant}
                 invalid={variantField.invalid}
               />
-            </Field>
+            </Field>}
             <Field {...conditionField} label="Condición">
               <Select
                 id={conditionField.id}

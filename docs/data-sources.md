@@ -8,8 +8,7 @@
 | Fuente | Uso en la app | Integración |
 |---|---|---|
 | pokemontcg.io v2 | Catálogo, sets e imágenes de referencia | `CARD_DATA_PROVIDER`, catálogo espejado en PostgreSQL |
-| TCGdex | Precios bajo demanda y ciclo diario; referencia activa TCGplayer USD | `PRICE_PROVIDER` / `TcgdexProvider` |
-| TCGCSV | Comparación e histórico TCGplayer USD | Jobs separados, sin reemplazar el binding activo |
+| TCGCSV | Única fuente activa de precios e histórico TCGplayer USD | `PRICE_PROVIDER` / `TcgcsvPriceProvider`, ingesta por grupo |
 | DolarApi | Conversión USD→ARS blue/oficial | Caché backend y fallback de último conocido |
 | Scrydex | Alternativa estudiada | Sin adaptador ni binding implementados |
 
@@ -22,28 +21,18 @@ requiere implementar y verificar el adaptador y sus mappings: no basta renombrar
 un proveedor. Las PK canónicas de cartas deben conservarse porque son FK de las
 colecciones.
 
-## TCGdex — referencia activa de precios
+## TCGCSV — única fuente activa de precios
 
-- Base utilizada: `https://api.tcgdex.net/v2/en`, sin API key.
-- Precio por carta y variante; el adaptador recibe datos TCGplayer USD y
-  Cardmarket EUR. La política activa de valuación no mezcla mercados/monedas.
-- Redis 1 h, persistencia PostgreSQL y cola con gate durable de 2,3 s entre
-  requests. Las respuestas sin precio y los errores tienen estados propios;
-  un reintento no garantiza que exista una cotización.
-- Ciclo diario 03:15 UTC, reanudación cada 15 min y al arrancar después del corte,
-  con `ENABLE_PRICE_BACKFILL_CRON` y `PRICE_QUEUE_ENABLED` habilitados.
-- El alcance sale de `price_sync_sets`: semilla curada y sets de colecciones,
-  con prioridad y habilitación explícitas. No es un barrido horario de todo el catálogo.
+Por decisión del usuario del 20/10/2026, la aplicación utiliza sólo las
+observaciones TCGCSV en cartas, búsqueda, colecciones, portafolio, amigos y
+compartidos. TCGdex dejó de registrarse en el arranque; su mapper, worker y ciclo
+diario están retirados del flujo activo. Los registros anteriores se conservan
+como historia y no completan faltantes de la fuente nueva.
 
-Consultar [operación diaria](../backend/docs/pricing.md) y
-[mappings/procedencia](../backend/docs/providers.md). Fechas de consulta y upstream
-son distintas: una respuesta nueva puede seguir sin precio o tener datos antiguos.
-
-## TCGCSV — comparación e ingesta por grupo
-
-Los dos proveedores pueden informar **la misma referencia TCGplayer USD**; no son
-dos mercados independientes. TCGCSV guarda sus observaciones por separado, sin
-promediar ni cambiar la referencia activa.
+Las lecturas de precio usan PostgreSQL y sólo encolan grupos locales. No hay
+fallback a otros proveedores ni una caché de carta que demore la publicación de
+un build confirmado. Los totales exigen variante, mercado y moneda exactos.
+Consultar [precios](../backend/docs/pricing.md) y [providers](../backend/docs/providers.md).
 
 - Descubrimiento de grupos cada 10 min; la asociación exige identidad segura.
 - Ciclo de precios 21:00 UTC para los sets habilitados; reanudación cada 15 min.
@@ -103,7 +92,7 @@ nada, solo reescribía el mismo dato viejo con un `fetchedAt` nuevo.
 | Requests por minuto | **30** |
 
 Estos límites rigen el sync de catálogo. No aplicarlos como cuotas globales de
-TCGdex/TCGCSV; cada flujo conserva su gate, caché y política de descarga.
+TCGCSV, que conserva su política de descarga por archivo.
 
 ### La API es lenta e inestable
 
@@ -246,10 +235,10 @@ de recibir observaciones válidas.
 ## Reglas para no romper el rate limit
 
 1. **Nunca** llamar a la fuente desde un handler público.
-2. Los precios pasan por `SyncPricesService`, que ya aplica Redis + Postgres.
+2. Los precios pasan por `SyncPricesService`, que lee las observaciones TCGCSV confirmadas en PostgreSQL.
 3. El sync de catálogo respeta el límite de pokemontcg.io (30/min, 1.000/día).
-   La cola de precios tiene 2,3 s entre requests por cortesía hacia TCGdex; es
-   otro proveedor y ese ritmo no consume la cuota de pokemontcg.io.
+   La cola TCGCSV conserva una descarga por archivo cada 24 h, ejecución serial
+   y pausas 429/Retry-After; no consume la cuota de pokemontcg.io.
 4. Los jobs de sync son los únicos autorizados a paginar el catálogo entero.
 5. Antes de agregar cualquier llamada externa, preguntate si podría pasar por
    el servicio de precios o por la cola.

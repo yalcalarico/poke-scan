@@ -1,0 +1,382 @@
+[
+  {
+    "groupId": 1452,
+    "sets": [
+      "pop4"
+    ],
+    "mapped": 13,
+    "local": [
+      {
+        "name": "Heal Energy",
+        "number": "8",
+        "printedTotal": 17
+      },
+      {
+        "name": "Pidgey",
+        "number": "12",
+        "printedTotal": 17
+      },
+      {
+        "name": "Pikachu",
+        "number": "13",
+        "printedTotal": 17
+      }
+    ],
+    "remote": [
+      {
+        "name": "Chimecho (Delta Species)",
+        "number": "001/017"
+      },
+      {
+        "name": "Combusken",
+        "number": "006/017"
+      },
+      {
+        "name": "Deoxys (Delta Species)",
+        "number": "002/017"
+      }
+    ]
+  },
+  {
+    "groupId": 1455,
+    "sets": [
+      "bp"
+    ],
+    "mapped": 7,
+    "local": [
+      {
+        "name": "Electabuzz",
+        "number": "1",
+        "printedTotal": 9
+      },
+      {
+        "name": "Hitmonchan",
+        "number": "2",
+        "printedTotal": 9
+      },
+      {
+        "name": "Rocket's Scizor",
+        "number": "4",
+        "printedTotal": 9
+      }
+    ],
+    "remote": [
+      {
+        "name": "Dark Ivysaur - 6",
+        "number": "006/009"
+      },
+      {
+        "name": "Dark Venusaur - 7",
+        "number": "007/009"
+      },
+      {
+        "name": "Electabuzz - 1",
+        "number": "001/009"
+      }
+    ]
+  },
+  {
+    "groupId": 2594,
+    "sets": [
+      "sma"
+    ],
+    "mapped": 0,
+    "local": [
+      {
+        "name": "Metang",
+        "number": "SV31",
+        "printedTotal": 94
+      },
+      {
+        "name": "Pheromosa",
+        "number": "SV5",
+        "printedTotal": 94
+      },
+      {
+        "name": "Dartrix",
+        "number": "SV3",
+        "printedTotal": 94
+      }
+    ],
+    "remote": [
+      {
+        "name": "Scyther",
+        "number": "SV1/SV94"
+      },
+      {
+        "name": "Rowlet",
+        "number": "SV2/SV94"
+      },
+      {
+        "name": "Dartrix",
+        "number": "SV3/SV94"
+      }
+    ]
+  },
+  {
+    "groupId": 2781,
+    "sets": [
+      "swsh45sv"
+    ],
+    "mapped": 0,
+    "local": [
+      {
+        "name": "Rowlet",
+        "number": "SV001",
+        "printedTotal": 122
+      },
+      {
+        "name": "Dartrix",
+        "number": "SV002",
+        "printedTotal": 122
+      },
+      {
+        "name": "Decidueye",
+        "number": "SV003",
+        "printedTotal": 122
+      }
+    ],
+    "remote": [
+      {
+        "name": "Rowlet",
+        "number": "SV001/SV122"
+      },
+      {
+        "name": "Dartrix",
+        "number": "SV002/SV122"
+      },
+      {
+        "name": "Decidueye",
+        "number": "SV003/SV122"
+      }
+    ]
+  },
+  {
+    "groupId": 2931,
+    "sets": [
+      "cel25c"
+    ],
+    "mapped": 0,
+    "local": [
+      {
+        "name": "Charizard",
+        "number": "4",
+        "printedTotal": 25
+      },
+      {
+        "name": "Blastoise",
+        "number": "2",
+        "printedTotal": 25
+      },
+      {
+        "name": "Venusaur",
+        "number": "15",
+        "printedTotal": 25
+      }
+    ],
+    "remote": [
+      {
+        "name": "Dark Gyarados",
+        "number": "8/82"
+      },
+      {
+        "name": "Blastoise",
+        "number": "2/102"
+      },
+      {
+        "name": "Charizard",
+        "number": "4/102"
+      }
+    ]
+  },
+  {
+    "groupId": 3020,
+    "sets": [
+      "swsh9tg"
+    ],
+    "mapped": 0,
+    "local": [
+      {
+        "name": "Café Master",
+        "number": "TG25",
+        "printedTotal": 30
+      },
+      {
+        "name": "Flareon",
+        "number": "TG01",
+        "printedTotal": 30
+      },
+      {
+        "name": "Vaporeon",
+        "number": "TG02",
+        "printedTotal": 30
+      }
+    ],
+    "remote": [
+      {
+        "name": "Boltund V",
+        "number": "TG13/TG30"
+      },
+      {
+        "name": "Cafe Master",
+        "number": "TG25/TG30"
+      },
+      {
+        "name": "Ariados",
+        "number": "TG09/TG30"
+      }
+    ]
+  },
+  {
+    "groupId": 3068,
+    "sets": [
+      "swsh10tg"
+    ],
+    "mapped": 0,
+    "local": [
+      {
+        "name": "Abomasnow",
+        "number": "TG01",
+        "printedTotal": 30
+      },
+      {
+        "name": "Flapple",
+        "number": "TG02",
+        "printedTotal": 30
+      },
+      {
+        "name": "Kingdra",
+        "number": "TG03",
+        "printedTotal": 30
+      }
+    ],
+    "remote": [
+      {
+        "name": "Abomasnow",
+        "number": "TG01/TG30"
+      },
+      {
+        "name": "Flapple",
+        "number": "TG02/TG30"
+      },
+      {
+        "name": "Kingdra",
+        "number": "TG03/TG30"
+      }
+    ]
+  },
+  {
+    "groupId": 3172,
+    "sets": [
+      "swsh11tg"
+    ],
+    "mapped": 0,
+    "local": [
+      {
+        "name": "Parasect",
+        "number": "TG01",
+        "printedTotal": 30
+      },
+      {
+        "name": "Roserade",
+        "number": "TG02",
+        "printedTotal": 30
+      },
+      {
+        "name": "Charizard",
+        "number": "TG03",
+        "printedTotal": 30
+      }
+    ],
+    "remote": [
+      {
+        "name": "Charizard",
+        "number": "TG03/TG30"
+      },
+      {
+        "name": "Parasect",
+        "number": "TG01/TG30"
+      },
+      {
+        "name": "Roserade",
+        "number": "TG02/TG30"
+      }
+    ]
+  },
+  {
+    "groupId": 17674,
+    "sets": [
+      "swsh12tg"
+    ],
+    "mapped": 0,
+    "local": [
+      {
+        "name": "Braixen",
+        "number": "TG01",
+        "printedTotal": 30
+      },
+      {
+        "name": "Milotic",
+        "number": "TG02",
+        "printedTotal": 30
+      },
+      {
+        "name": "Flaaffy",
+        "number": "TG03",
+        "printedTotal": 30
+      }
+    ],
+    "remote": [
+      {
+        "name": "Mawile V",
+        "number": "TG17/TG30"
+      },
+      {
+        "name": "Zeraora V",
+        "number": "TG16/TG30"
+      },
+      {
+        "name": "Braixen",
+        "number": "TG01/TG30"
+      }
+    ]
+  },
+  {
+    "groupId": 17689,
+    "sets": [
+      "swsh12pt5gg"
+    ],
+    "mapped": 0,
+    "local": [
+      {
+        "name": "Hisuian Voltorb",
+        "number": "GG01",
+        "printedTotal": 70
+      },
+      {
+        "name": "Kricketune",
+        "number": "GG02",
+        "printedTotal": 70
+      },
+      {
+        "name": "Magmortar",
+        "number": "GG03",
+        "printedTotal": 70
+      }
+    ],
+    "remote": [
+      {
+        "name": "Altaria",
+        "number": "GG19/GG70"
+      },
+      {
+        "name": "Ditto",
+        "number": "GG22/GG70"
+      },
+      {
+        "name": "Bibarel",
+        "number": "GG25/GG70"
+      }
+    ]
+  }
+]

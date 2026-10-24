@@ -1,0 +1,19 @@
+{
+  "passed": true,
+  "database": "test",
+  "feed": "HTTP local",
+  "prefixedNumberPublished": true,
+  "status": "completed",
+  "setStatus": "partial",
+  "missingQuote": "no_quote",
+  "previousPricePreserved": true,
+  "httpStatus": 200,
+  "market": 1.25,
+  "downloadBudgetPreserved": true,
+  "requests": [
+    "/last-updated.txt",
+    "/tcgplayer/3/998822121/products",
+    "/tcgplayer/3/998822121/prices",
+    "/last-updated.txt"
+  ]
+}

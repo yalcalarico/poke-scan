@@ -13,14 +13,13 @@ flowchart TD
   API --> JOBS["Jobs · cola, gate persistente y ciclos diarios"]
   JOBS --> PG
   JOBS --> CATALOG["pokemontcg.io · catálogo"]
-  JOBS --> PRICES["TCGdex · referencia activa"]
-  JOBS --> CSV["TCGCSV · comparación separada"]
+  JOBS --> CSV["TCGCSV · única fuente de precios"]
   API --> CURRENCY["Servicio de moneda · DolarApi con caché/fallback"]
 ```
 
 Los handlers públicos de cartas consultan datos locales; encolan lo necesario
 sin llamar directamente a los proveedores de catálogo/precios. La cuota de
-pokemontcg.io corresponde al sync de catálogo, no a ambos proveedores de precios.
+pokemontcg.io corresponde al sync de catálogo, no al proveedor de precios.
 
 
 ## El flujo de datos, paso a paso
@@ -43,32 +42,31 @@ Usuario abre /carta/[id]
    ├─ HTML de la ficha se entrega sin esperar el precio
    │
    └─ el cliente pide /cards/:id/prices y el backend decide:
-      Redis (1 h) → Postgres (24 h) → cola/fuente
+      PostgreSQL (lote TCGCSV confirmado) → solicitud local a cola por grupo
       el hero muestra su skeleton mientras tanto
 ```
 
-Las dos capas autoritativas de caché viven **solo en el backend** a propósito:
-si el cliente tuviera su propia caché, la regla de 24 h podría quedar desalineada
-entre dispositivos. La carga de precio en cliente evita que una respuesta lenta
-de la fuente retenga todo el SSR de la ficha.
+La lectura TCGCSV evita la antigua caché por carta para reflejar inmediatamente
+un lote confirmado. La fuente se descarga únicamente desde su consumidor serial;
+la visita no espera una nueva importación ni llama al proveedor.
 
 ### 3. Ciclos e históricos de precios
 
-`price_sync_sets` define el alcance diario común (semilla curada y sets usados en
-colecciones). TCGdex planifica a las 03:15 UTC y TCGCSV a las 21:00 UTC; ambos
-reanudan cada 15 min sobre PostgreSQL mientras la API y sus flags estén activos.
-La consulta interactiva de precio conserva cola y caché: no pagina todo el catálogo.
+`price_sync_sets` define el alcance diario (semilla curada y sets usados en
+colecciones). TCGCSV planifica a las 21:00 UTC y reanuda cada 15 min mientras la
+API y `ENABLE_TCGCSV_INGESTION` estén activos. La consulta interactiva sólo
+solicita grupos locales; no pagina el catálogo.
 
-TCGCSV descubre identidades por separado, comprueba `last-updated.txt`/build y
-reserva cada archivo de precios durante 24 h. La publicación es atómica y sólo
-asocia productos con identidad segura. No hay topes globales de 40 sets/500
-requests; sí ejecución serial, deduplicación y pausas 429/Retry-After.
+TCGCSV descubre identidades, comprueba `last-updated.txt`/build y reserva cada
+archivo de precios durante 24 h. La publicación es atómica y sólo asocia
+productos con identidad segura. No hay topes globales de 40 sets/500 requests;
+sí ejecución serial, deduplicación y pausas 429/Retry-After.
 
-Las observaciones guardan proveedor, variante, moneda, consulta y fecha upstream
-cuando existe. El feed publicado no demuestra la hora real de cotización. Las
-gráficas conservan huecos, cobertura y cambios de composición; no reconstruyen
-siete días anteriores que nunca se recibieron. TCGCSV compara con TCGdex sin
-promediar ni sustituir la referencia activa. Ver [comparación](../frontend/docs/comparison.md)
+Las gráficas conservan huecos, cobertura y cambios de composición; no reconstruyen
+días que nunca se recibieron. El portafolio usa snapshots atribuidos a TCGCSV y no
+los une con historia anterior sin proveedor. TCGdex, su mapper, worker y ciclo
+no se registran en la aplicación. Se conservan las observaciones previas como
+historia, fuera de precios/totales activos. Ver [historial](../frontend/docs/comparison.md)
 y [jobs](../backend/docs/jobs.md).
 
 ### 4. Compartir

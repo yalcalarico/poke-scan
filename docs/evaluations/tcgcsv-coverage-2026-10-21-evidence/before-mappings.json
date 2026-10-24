@@ -1,0 +1,5191 @@
+{
+  "evaluatedAt": "2026-10-22T02:02:41.295Z",
+  "sets": [
+    {
+      "id": "base1",
+      "name": "Base",
+      "series": "Base",
+      "printedTotal": 102,
+      "cards": 102,
+      "englishOnly": true
+    },
+    {
+      "id": "base2",
+      "name": "Jungle",
+      "series": "Base",
+      "printedTotal": 64,
+      "cards": 64,
+      "englishOnly": true
+    },
+    {
+      "id": "base3",
+      "name": "Fossil",
+      "series": "Base",
+      "printedTotal": 62,
+      "cards": 62,
+      "englishOnly": true
+    },
+    {
+      "id": "base4",
+      "name": "Base Set 2",
+      "series": "Base",
+      "printedTotal": 130,
+      "cards": 130,
+      "englishOnly": true
+    },
+    {
+      "id": "base5",
+      "name": "Team Rocket",
+      "series": "Base",
+      "printedTotal": 82,
+      "cards": 83,
+      "englishOnly": true
+    },
+    {
+      "id": "base6",
+      "name": "Legendary Collection",
+      "series": "Other",
+      "printedTotal": 110,
+      "cards": 110,
+      "englishOnly": true
+    },
+    {
+      "id": "basep",
+      "name": "Wizards Black Star Promos",
+      "series": "Base",
+      "printedTotal": 53,
+      "cards": 53,
+      "englishOnly": true
+    },
+    {
+      "id": "bp",
+      "name": "Best of Game",
+      "series": "Other",
+      "printedTotal": 9,
+      "cards": 9,
+      "englishOnly": true
+    },
+    {
+      "id": "bw1",
+      "name": "Black & White",
+      "series": "Black & White",
+      "printedTotal": 114,
+      "cards": 115,
+      "englishOnly": true
+    },
+    {
+      "id": "bw10",
+      "name": "Plasma Blast",
+      "series": "Black & White",
+      "printedTotal": 101,
+      "cards": 105,
+      "englishOnly": true
+    },
+    {
+      "id": "bw11",
+      "name": "Legendary Treasures",
+      "series": "Black & White",
+      "printedTotal": 113,
+      "cards": 140,
+      "englishOnly": true
+    },
+    {
+      "id": "bw2",
+      "name": "Emerging Powers",
+      "series": "Black & White",
+      "printedTotal": 98,
+      "cards": 98,
+      "englishOnly": true
+    },
+    {
+      "id": "bw3",
+      "name": "Noble Victories",
+      "series": "Black & White",
+      "printedTotal": 101,
+      "cards": 102,
+      "englishOnly": true
+    },
+    {
+      "id": "bw4",
+      "name": "Next Destinies",
+      "series": "Black & White",
+      "printedTotal": 99,
+      "cards": 103,
+      "englishOnly": true
+    },
+    {
+      "id": "bw5",
+      "name": "Dark Explorers",
+      "series": "Black & White",
+      "printedTotal": 108,
+      "cards": 111,
+      "englishOnly": true
+    },
+    {
+      "id": "bw6",
+      "name": "Dragons Exalted",
+      "series": "Black & White",
+      "printedTotal": 124,
+      "cards": 128,
+      "englishOnly": true
+    },
+    {
+      "id": "bw7",
+      "name": "Boundaries Crossed",
+      "series": "Black & White",
+      "printedTotal": 149,
+      "cards": 153,
+      "englishOnly": true
+    },
+    {
+      "id": "bw8",
+      "name": "Plasma Storm",
+      "series": "Black & White",
+      "printedTotal": 135,
+      "cards": 138,
+      "englishOnly": true
+    },
+    {
+      "id": "bw9",
+      "name": "Plasma Freeze",
+      "series": "Black & White",
+      "printedTotal": 116,
+      "cards": 122,
+      "englishOnly": true
+    },
+    {
+      "id": "bwp",
+      "name": "BW Black Star Promos",
+      "series": "Black & White",
+      "printedTotal": 101,
+      "cards": 101,
+      "englishOnly": true
+    },
+    {
+      "id": "cel25",
+      "name": "Celebrations",
+      "series": "Sword & Shield",
+      "printedTotal": 25,
+      "cards": 25,
+      "englishOnly": true
+    },
+    {
+      "id": "cel25c",
+      "name": "Celebrations: Classic Collection",
+      "series": "Sword & Shield",
+      "printedTotal": 25,
+      "cards": 25,
+      "englishOnly": true
+    },
+    {
+      "id": "col1",
+      "name": "Call of Legends",
+      "series": "HeartGold & SoulSilver",
+      "printedTotal": 95,
+      "cards": 106,
+      "englishOnly": true
+    },
+    {
+      "id": "dc1",
+      "name": "Double Crisis",
+      "series": "XY",
+      "printedTotal": 34,
+      "cards": 34,
+      "englishOnly": true
+    },
+    {
+      "id": "det1",
+      "name": "Detective Pikachu",
+      "series": "Sun & Moon",
+      "printedTotal": 18,
+      "cards": 18,
+      "englishOnly": true
+    },
+    {
+      "id": "dp1",
+      "name": "Diamond & Pearl",
+      "series": "Diamond & Pearl",
+      "printedTotal": 130,
+      "cards": 130,
+      "englishOnly": true
+    },
+    {
+      "id": "dp2",
+      "name": "Mysterious Treasures",
+      "series": "Diamond & Pearl",
+      "printedTotal": 123,
+      "cards": 124,
+      "englishOnly": true
+    },
+    {
+      "id": "dp3",
+      "name": "Secret Wonders",
+      "series": "Diamond & Pearl",
+      "printedTotal": 132,
+      "cards": 132,
+      "englishOnly": true
+    },
+    {
+      "id": "dp4",
+      "name": "Great Encounters",
+      "series": "Diamond & Pearl",
+      "printedTotal": 106,
+      "cards": 106,
+      "englishOnly": true
+    },
+    {
+      "id": "dp5",
+      "name": "Majestic Dawn",
+      "series": "Diamond & Pearl",
+      "printedTotal": 100,
+      "cards": 100,
+      "englishOnly": true
+    },
+    {
+      "id": "dp6",
+      "name": "Legends Awakened",
+      "series": "Diamond & Pearl",
+      "printedTotal": 146,
+      "cards": 146,
+      "englishOnly": true
+    },
+    {
+      "id": "dp7",
+      "name": "Stormfront",
+      "series": "Diamond & Pearl",
+      "printedTotal": 100,
+      "cards": 106,
+      "englishOnly": true
+    },
+    {
+      "id": "dpp",
+      "name": "DP Black Star Promos",
+      "series": "Diamond & Pearl",
+      "printedTotal": 56,
+      "cards": 56,
+      "englishOnly": true
+    },
+    {
+      "id": "dv1",
+      "name": "Dragon Vault",
+      "series": "Black & White",
+      "printedTotal": 20,
+      "cards": 21,
+      "englishOnly": true
+    },
+    {
+      "id": "ecard1",
+      "name": "Expedition Base Set",
+      "series": "E-Card",
+      "printedTotal": 165,
+      "cards": 165,
+      "englishOnly": true
+    },
+    {
+      "id": "ecard2",
+      "name": "Aquapolis",
+      "series": "E-Card",
+      "printedTotal": 147,
+      "cards": 182,
+      "englishOnly": true
+    },
+    {
+      "id": "ecard3",
+      "name": "Skyridge",
+      "series": "E-Card",
+      "printedTotal": 144,
+      "cards": 182,
+      "englishOnly": true
+    },
+    {
+      "id": "ex1",
+      "name": "Ruby & Sapphire",
+      "series": "EX",
+      "printedTotal": 109,
+      "cards": 109,
+      "englishOnly": true
+    },
+    {
+      "id": "ex10",
+      "name": "Unseen Forces",
+      "series": "EX",
+      "printedTotal": 115,
+      "cards": 145,
+      "englishOnly": true
+    },
+    {
+      "id": "ex11",
+      "name": "Delta Species",
+      "series": "EX",
+      "printedTotal": 113,
+      "cards": 114,
+      "englishOnly": true
+    },
+    {
+      "id": "ex12",
+      "name": "Legend Maker",
+      "series": "EX",
+      "printedTotal": 92,
+      "cards": 93,
+      "englishOnly": true
+    },
+    {
+      "id": "ex13",
+      "name": "Holon Phantoms",
+      "series": "EX",
+      "printedTotal": 110,
+      "cards": 111,
+      "englishOnly": true
+    },
+    {
+      "id": "ex14",
+      "name": "Crystal Guardians",
+      "series": "EX",
+      "printedTotal": 100,
+      "cards": 100,
+      "englishOnly": true
+    },
+    {
+      "id": "ex15",
+      "name": "Dragon Frontiers",
+      "series": "EX",
+      "printedTotal": 101,
+      "cards": 101,
+      "englishOnly": true
+    },
+    {
+      "id": "ex16",
+      "name": "Power Keepers",
+      "series": "EX",
+      "printedTotal": 108,
+      "cards": 108,
+      "englishOnly": true
+    },
+    {
+      "id": "ex2",
+      "name": "Sandstorm",
+      "series": "EX",
+      "printedTotal": 100,
+      "cards": 100,
+      "englishOnly": true
+    },
+    {
+      "id": "ex3",
+      "name": "Dragon",
+      "series": "EX",
+      "printedTotal": 97,
+      "cards": 100,
+      "englishOnly": true
+    },
+    {
+      "id": "ex4",
+      "name": "Team Magma vs Team Aqua",
+      "series": "EX",
+      "printedTotal": 95,
+      "cards": 97,
+      "englishOnly": true
+    },
+    {
+      "id": "ex5",
+      "name": "Hidden Legends",
+      "series": "EX",
+      "printedTotal": 101,
+      "cards": 102,
+      "englishOnly": true
+    },
+    {
+      "id": "ex6",
+      "name": "FireRed & LeafGreen",
+      "series": "EX",
+      "printedTotal": 112,
+      "cards": 116,
+      "englishOnly": true
+    },
+    {
+      "id": "ex7",
+      "name": "Team Rocket Returns",
+      "series": "EX",
+      "printedTotal": 109,
+      "cards": 111,
+      "englishOnly": true
+    },
+    {
+      "id": "ex8",
+      "name": "Deoxys",
+      "series": "EX",
+      "printedTotal": 107,
+      "cards": 108,
+      "englishOnly": true
+    },
+    {
+      "id": "ex9",
+      "name": "Emerald",
+      "series": "EX",
+      "printedTotal": 106,
+      "cards": 107,
+      "englishOnly": true
+    },
+    {
+      "id": "fut20",
+      "name": "Pokémon Futsal Collection",
+      "series": "Other",
+      "printedTotal": 5,
+      "cards": 5,
+      "englishOnly": true
+    },
+    {
+      "id": "g1",
+      "name": "Generations",
+      "series": "XY",
+      "printedTotal": 83,
+      "cards": 117,
+      "englishOnly": true
+    },
+    {
+      "id": "gym1",
+      "name": "Gym Heroes",
+      "series": "Gym",
+      "printedTotal": 132,
+      "cards": 132,
+      "englishOnly": true
+    },
+    {
+      "id": "gym2",
+      "name": "Gym Challenge",
+      "series": "Gym",
+      "printedTotal": 132,
+      "cards": 132,
+      "englishOnly": true
+    },
+    {
+      "id": "hgss1",
+      "name": "HeartGold & SoulSilver",
+      "series": "HeartGold & SoulSilver",
+      "printedTotal": 123,
+      "cards": 124,
+      "englishOnly": true
+    },
+    {
+      "id": "hgss2",
+      "name": "HS—Unleashed",
+      "series": "HeartGold & SoulSilver",
+      "printedTotal": 95,
+      "cards": 96,
+      "englishOnly": true
+    },
+    {
+      "id": "hgss3",
+      "name": "HS—Undaunted",
+      "series": "HeartGold & SoulSilver",
+      "printedTotal": 90,
+      "cards": 91,
+      "englishOnly": true
+    },
+    {
+      "id": "hgss4",
+      "name": "HS—Triumphant",
+      "series": "HeartGold & SoulSilver",
+      "printedTotal": 102,
+      "cards": 103,
+      "englishOnly": true
+    },
+    {
+      "id": "hsp",
+      "name": "HGSS Black Star Promos",
+      "series": "HeartGold & SoulSilver",
+      "printedTotal": 25,
+      "cards": 25,
+      "englishOnly": true
+    },
+    {
+      "id": "mcd11",
+      "name": "McDonald's Collection 2011",
+      "series": "Other",
+      "printedTotal": 12,
+      "cards": 12,
+      "englishOnly": true
+    },
+    {
+      "id": "mcd12",
+      "name": "McDonald's Collection 2012",
+      "series": "Other",
+      "printedTotal": 12,
+      "cards": 12,
+      "englishOnly": true
+    },
+    {
+      "id": "mcd14",
+      "name": "McDonald's Collection 2014",
+      "series": "Other",
+      "printedTotal": 12,
+      "cards": 12,
+      "englishOnly": true
+    },
+    {
+      "id": "mcd15",
+      "name": "McDonald's Collection 2015",
+      "series": "Other",
+      "printedTotal": 12,
+      "cards": 12,
+      "englishOnly": true
+    },
+    {
+      "id": "mcd16",
+      "name": "McDonald's Collection 2016",
+      "series": "Other",
+      "printedTotal": 12,
+      "cards": 12,
+      "englishOnly": true
+    },
+    {
+      "id": "mcd17",
+      "name": "McDonald's Collection 2017",
+      "series": "Other",
+      "printedTotal": 12,
+      "cards": 12,
+      "englishOnly": true
+    },
+    {
+      "id": "mcd18",
+      "name": "McDonald's Collection 2018",
+      "series": "Other",
+      "printedTotal": 12,
+      "cards": 12,
+      "englishOnly": true
+    },
+    {
+      "id": "mcd19",
+      "name": "McDonald's Collection 2019",
+      "series": "Other",
+      "printedTotal": 12,
+      "cards": 12,
+      "englishOnly": true
+    },
+    {
+      "id": "mcd21",
+      "name": "McDonald's Collection 2021",
+      "series": "Other",
+      "printedTotal": 25,
+      "cards": 25,
+      "englishOnly": true
+    },
+    {
+      "id": "mcd22",
+      "name": "McDonald's Collection 2022",
+      "series": "Other",
+      "printedTotal": 15,
+      "cards": 15,
+      "englishOnly": true
+    },
+    {
+      "id": "me1",
+      "name": "Mega Evolution",
+      "series": "Mega Evolution",
+      "printedTotal": 132,
+      "cards": 188,
+      "englishOnly": true
+    },
+    {
+      "id": "me2",
+      "name": "Phantasmal Flames",
+      "series": "Mega Evolution",
+      "printedTotal": 94,
+      "cards": 130,
+      "englishOnly": true
+    },
+    {
+      "id": "me2pt5",
+      "name": "Ascended Heroes",
+      "series": "Mega Evolution",
+      "printedTotal": 217,
+      "cards": 295,
+      "englishOnly": true
+    },
+    {
+      "id": "me3",
+      "name": "Perfect Order",
+      "series": "Mega Evolution",
+      "printedTotal": 88,
+      "cards": 124,
+      "englishOnly": true
+    },
+    {
+      "id": "me4",
+      "name": "Chaos Rising",
+      "series": "Mega Evolution",
+      "printedTotal": 86,
+      "cards": 122,
+      "englishOnly": true
+    },
+    {
+      "id": "me5",
+      "name": "Pitch Black",
+      "series": "Mega Evolution",
+      "printedTotal": 84,
+      "cards": 120,
+      "englishOnly": true
+    },
+    {
+      "id": "me55",
+      "name": "30th Celebration",
+      "series": "Mega Evolution",
+      "printedTotal": 128,
+      "cards": 161,
+      "englishOnly": true
+    },
+    {
+      "id": "me55c",
+      "name": "30th Celebration: Classic Collection",
+      "series": "Mega Evolution",
+      "printedTotal": null,
+      "cards": 30,
+      "englishOnly": true
+    },
+    {
+      "id": "neo1",
+      "name": "Neo Genesis",
+      "series": "Neo",
+      "printedTotal": 111,
+      "cards": 111,
+      "englishOnly": true
+    },
+    {
+      "id": "neo2",
+      "name": "Neo Discovery",
+      "series": "Neo",
+      "printedTotal": 75,
+      "cards": 75,
+      "englishOnly": true
+    },
+    {
+      "id": "neo3",
+      "name": "Neo Revelation",
+      "series": "Neo",
+      "printedTotal": 64,
+      "cards": 66,
+      "englishOnly": true
+    },
+    {
+      "id": "neo4",
+      "name": "Neo Destiny",
+      "series": "Neo",
+      "printedTotal": 105,
+      "cards": 113,
+      "englishOnly": true
+    },
+    {
+      "id": "np",
+      "name": "Nintendo Black Star Promos",
+      "series": "NP",
+      "printedTotal": 40,
+      "cards": 40,
+      "englishOnly": true
+    },
+    {
+      "id": "pgo",
+      "name": "Pokémon GO",
+      "series": "Sword & Shield",
+      "printedTotal": 78,
+      "cards": 88,
+      "englishOnly": true
+    },
+    {
+      "id": "pl1",
+      "name": "Platinum",
+      "series": "Platinum",
+      "printedTotal": 127,
+      "cards": 133,
+      "englishOnly": true
+    },
+    {
+      "id": "pl2",
+      "name": "Rising Rivals",
+      "series": "Platinum",
+      "printedTotal": 111,
+      "cards": 120,
+      "englishOnly": true
+    },
+    {
+      "id": "pl3",
+      "name": "Supreme Victors",
+      "series": "Platinum",
+      "printedTotal": 147,
+      "cards": 153,
+      "englishOnly": true
+    },
+    {
+      "id": "pl4",
+      "name": "Arceus",
+      "series": "Platinum",
+      "printedTotal": 99,
+      "cards": 111,
+      "englishOnly": true
+    },
+    {
+      "id": "pop1",
+      "name": "POP Series 1",
+      "series": "POP",
+      "printedTotal": 17,
+      "cards": 17,
+      "englishOnly": true
+    },
+    {
+      "id": "pop2",
+      "name": "POP Series 2",
+      "series": "POP",
+      "printedTotal": 17,
+      "cards": 17,
+      "englishOnly": true
+    },
+    {
+      "id": "pop3",
+      "name": "POP Series 3",
+      "series": "POP",
+      "printedTotal": 17,
+      "cards": 17,
+      "englishOnly": true
+    },
+    {
+      "id": "pop4",
+      "name": "POP Series 4",
+      "series": "POP",
+      "printedTotal": 17,
+      "cards": 17,
+      "englishOnly": true
+    },
+    {
+      "id": "pop5",
+      "name": "POP Series 5",
+      "series": "POP",
+      "printedTotal": 17,
+      "cards": 17,
+      "englishOnly": true
+    },
+    {
+      "id": "pop6",
+      "name": "POP Series 6",
+      "series": "POP",
+      "printedTotal": 17,
+      "cards": 17,
+      "englishOnly": true
+    },
+    {
+      "id": "pop7",
+      "name": "POP Series 7",
+      "series": "POP",
+      "printedTotal": 17,
+      "cards": 17,
+      "englishOnly": true
+    },
+    {
+      "id": "pop8",
+      "name": "POP Series 8",
+      "series": "POP",
+      "printedTotal": 17,
+      "cards": 17,
+      "englishOnly": true
+    },
+    {
+      "id": "pop9",
+      "name": "POP Series 9",
+      "series": "POP",
+      "printedTotal": 17,
+      "cards": 17,
+      "englishOnly": true
+    },
+    {
+      "id": "rsv10pt5",
+      "name": "White Flare",
+      "series": "Scarlet & Violet",
+      "printedTotal": 86,
+      "cards": 173,
+      "englishOnly": true
+    },
+    {
+      "id": "ru1",
+      "name": "Pokémon Rumble",
+      "series": "Other",
+      "printedTotal": 16,
+      "cards": 16,
+      "englishOnly": true
+    },
+    {
+      "id": "si1",
+      "name": "Southern Islands",
+      "series": "Other",
+      "printedTotal": 18,
+      "cards": 18,
+      "englishOnly": true
+    },
+    {
+      "id": "sm1",
+      "name": "Sun & Moon",
+      "series": "Sun & Moon",
+      "printedTotal": 149,
+      "cards": 173,
+      "englishOnly": true
+    },
+    {
+      "id": "sm10",
+      "name": "Unbroken Bonds",
+      "series": "Sun & Moon",
+      "printedTotal": 214,
+      "cards": 238,
+      "englishOnly": true
+    },
+    {
+      "id": "sm11",
+      "name": "Unified Minds",
+      "series": "Sun & Moon",
+      "printedTotal": 236,
+      "cards": 261,
+      "englishOnly": true
+    },
+    {
+      "id": "sm115",
+      "name": "Hidden Fates",
+      "series": "Sun & Moon",
+      "printedTotal": 68,
+      "cards": 69,
+      "englishOnly": true
+    },
+    {
+      "id": "sm12",
+      "name": "Cosmic Eclipse",
+      "series": "Sun & Moon",
+      "printedTotal": 236,
+      "cards": 272,
+      "englishOnly": true
+    },
+    {
+      "id": "sm2",
+      "name": "Guardians Rising",
+      "series": "Sun & Moon",
+      "printedTotal": 145,
+      "cards": 180,
+      "englishOnly": true
+    },
+    {
+      "id": "sm3",
+      "name": "Burning Shadows",
+      "series": "Sun & Moon",
+      "printedTotal": 147,
+      "cards": 177,
+      "englishOnly": true
+    },
+    {
+      "id": "sm35",
+      "name": "Shining Legends",
+      "series": "Sun & Moon",
+      "printedTotal": 73,
+      "cards": 81,
+      "englishOnly": true
+    },
+    {
+      "id": "sm4",
+      "name": "Crimson Invasion",
+      "series": "Sun & Moon",
+      "printedTotal": 111,
+      "cards": 126,
+      "englishOnly": true
+    },
+    {
+      "id": "sm5",
+      "name": "Ultra Prism",
+      "series": "Sun & Moon",
+      "printedTotal": 156,
+      "cards": 178,
+      "englishOnly": true
+    },
+    {
+      "id": "sm6",
+      "name": "Forbidden Light",
+      "series": "Sun & Moon",
+      "printedTotal": 131,
+      "cards": 150,
+      "englishOnly": true
+    },
+    {
+      "id": "sm7",
+      "name": "Celestial Storm",
+      "series": "Sun & Moon",
+      "printedTotal": 168,
+      "cards": 187,
+      "englishOnly": true
+    },
+    {
+      "id": "sm75",
+      "name": "Dragon Majesty",
+      "series": "Sun & Moon",
+      "printedTotal": 70,
+      "cards": 80,
+      "englishOnly": true
+    },
+    {
+      "id": "sm8",
+      "name": "Lost Thunder",
+      "series": "Sun & Moon",
+      "printedTotal": 214,
+      "cards": 240,
+      "englishOnly": true
+    },
+    {
+      "id": "sm9",
+      "name": "Team Up",
+      "series": "Sun & Moon",
+      "printedTotal": 181,
+      "cards": 198,
+      "englishOnly": true
+    },
+    {
+      "id": "sma",
+      "name": "Hidden Fates Shiny Vault",
+      "series": "Sun & Moon",
+      "printedTotal": 94,
+      "cards": 94,
+      "englishOnly": true
+    },
+    {
+      "id": "smp",
+      "name": "SM Black Star Promos",
+      "series": "Sun & Moon",
+      "printedTotal": 248,
+      "cards": 251,
+      "englishOnly": true
+    },
+    {
+      "id": "sv1",
+      "name": "Scarlet & Violet",
+      "series": "Scarlet & Violet",
+      "printedTotal": 198,
+      "cards": 258,
+      "englishOnly": true
+    },
+    {
+      "id": "sv10",
+      "name": "Destined Rivals",
+      "series": "Scarlet & Violet",
+      "printedTotal": 182,
+      "cards": 244,
+      "englishOnly": true
+    },
+    {
+      "id": "sv2",
+      "name": "Paldea Evolved",
+      "series": "Scarlet & Violet",
+      "printedTotal": 193,
+      "cards": 279,
+      "englishOnly": true
+    },
+    {
+      "id": "sv3",
+      "name": "Obsidian Flames",
+      "series": "Scarlet & Violet",
+      "printedTotal": 197,
+      "cards": 230,
+      "englishOnly": true
+    },
+    {
+      "id": "sv3pt5",
+      "name": "151",
+      "series": "Scarlet & Violet",
+      "printedTotal": 165,
+      "cards": 207,
+      "englishOnly": true
+    },
+    {
+      "id": "sv4",
+      "name": "Paradox Rift",
+      "series": "Scarlet & Violet",
+      "printedTotal": 182,
+      "cards": 266,
+      "englishOnly": true
+    },
+    {
+      "id": "sv4pt5",
+      "name": "Paldean Fates",
+      "series": "Scarlet & Violet",
+      "printedTotal": 91,
+      "cards": 245,
+      "englishOnly": true
+    },
+    {
+      "id": "sv5",
+      "name": "Temporal Forces",
+      "series": "Scarlet & Violet",
+      "printedTotal": 162,
+      "cards": 218,
+      "englishOnly": true
+    },
+    {
+      "id": "sv6",
+      "name": "Twilight Masquerade",
+      "series": "Scarlet & Violet",
+      "printedTotal": 167,
+      "cards": 226,
+      "englishOnly": true
+    },
+    {
+      "id": "sv6pt5",
+      "name": "Shrouded Fable",
+      "series": "Scarlet & Violet",
+      "printedTotal": 64,
+      "cards": 99,
+      "englishOnly": true
+    },
+    {
+      "id": "sv7",
+      "name": "Stellar Crown",
+      "series": "Scarlet & Violet",
+      "printedTotal": 142,
+      "cards": 175,
+      "englishOnly": true
+    },
+    {
+      "id": "sv8",
+      "name": "Surging Sparks",
+      "series": "Scarlet & Violet",
+      "printedTotal": 191,
+      "cards": 252,
+      "englishOnly": true
+    },
+    {
+      "id": "sv8pt5",
+      "name": "Prismatic Evolutions",
+      "series": "Scarlet & Violet",
+      "printedTotal": 131,
+      "cards": 180,
+      "englishOnly": true
+    },
+    {
+      "id": "sv9",
+      "name": "Journey Together",
+      "series": "Scarlet & Violet",
+      "printedTotal": 159,
+      "cards": 190,
+      "englishOnly": true
+    },
+    {
+      "id": "sve",
+      "name": "Scarlet & Violet Energies",
+      "series": "Scarlet & Violet",
+      "printedTotal": 8,
+      "cards": 16,
+      "englishOnly": true
+    },
+    {
+      "id": "svp",
+      "name": "Scarlet & Violet Black Star Promos",
+      "series": "Scarlet & Violet",
+      "printedTotal": 215,
+      "cards": 200,
+      "englishOnly": true
+    },
+    {
+      "id": "swsh1",
+      "name": "Sword & Shield",
+      "series": "Sword & Shield",
+      "printedTotal": 202,
+      "cards": 216,
+      "englishOnly": true
+    },
+    {
+      "id": "swsh10",
+      "name": "Astral Radiance",
+      "series": "Sword & Shield",
+      "printedTotal": 189,
+      "cards": 216,
+      "englishOnly": true
+    },
+    {
+      "id": "swsh10tg",
+      "name": "Astral Radiance Trainer Gallery",
+      "series": "Sword & Shield",
+      "printedTotal": 30,
+      "cards": 30,
+      "englishOnly": true
+    },
+    {
+      "id": "swsh11",
+      "name": "Lost Origin",
+      "series": "Sword & Shield",
+      "printedTotal": 196,
+      "cards": 217,
+      "englishOnly": true
+    },
+    {
+      "id": "swsh11tg",
+      "name": "Lost Origin Trainer Gallery",
+      "series": "Sword & Shield",
+      "printedTotal": 30,
+      "cards": 30,
+      "englishOnly": true
+    },
+    {
+      "id": "swsh12",
+      "name": "Silver Tempest",
+      "series": "Sword & Shield",
+      "printedTotal": 195,
+      "cards": 215,
+      "englishOnly": true
+    },
+    {
+      "id": "swsh12pt5",
+      "name": "Crown Zenith",
+      "series": "Sword & Shield",
+      "printedTotal": 159,
+      "cards": 160,
+      "englishOnly": true
+    },
+    {
+      "id": "swsh12pt5gg",
+      "name": "Crown Zenith Galarian Gallery",
+      "series": "Sword & Shield",
+      "printedTotal": 70,
+      "cards": 70,
+      "englishOnly": true
+    },
+    {
+      "id": "swsh12tg",
+      "name": "Silver Tempest Trainer Gallery",
+      "series": "Sword & Shield",
+      "printedTotal": 30,
+      "cards": 30,
+      "englishOnly": true
+    },
+    {
+      "id": "swsh2",
+      "name": "Rebel Clash",
+      "series": "Sword & Shield",
+      "printedTotal": 192,
+      "cards": 209,
+      "englishOnly": true
+    },
+    {
+      "id": "swsh3",
+      "name": "Darkness Ablaze",
+      "series": "Sword & Shield",
+      "printedTotal": 189,
+      "cards": 201,
+      "englishOnly": true
+    },
+    {
+      "id": "swsh35",
+      "name": "Champion's Path",
+      "series": "Sword & Shield",
+      "printedTotal": 73,
+      "cards": 80,
+      "englishOnly": true
+    },
+    {
+      "id": "swsh4",
+      "name": "Vivid Voltage",
+      "series": "Sword & Shield",
+      "printedTotal": 185,
+      "cards": 203,
+      "englishOnly": true
+    },
+    {
+      "id": "swsh45",
+      "name": "Shining Fates",
+      "series": "Sword & Shield",
+      "printedTotal": 72,
+      "cards": 73,
+      "englishOnly": true
+    },
+    {
+      "id": "swsh45sv",
+      "name": "Shining Fates Shiny Vault",
+      "series": "Sword & Shield",
+      "printedTotal": 122,
+      "cards": 122,
+      "englishOnly": true
+    },
+    {
+      "id": "swsh5",
+      "name": "Battle Styles",
+      "series": "Sword & Shield",
+      "printedTotal": 163,
+      "cards": 183,
+      "englishOnly": true
+    },
+    {
+      "id": "swsh6",
+      "name": "Chilling Reign",
+      "series": "Sword & Shield",
+      "printedTotal": 198,
+      "cards": 233,
+      "englishOnly": true
+    },
+    {
+      "id": "swsh7",
+      "name": "Evolving Skies",
+      "series": "Sword & Shield",
+      "printedTotal": 203,
+      "cards": 237,
+      "englishOnly": true
+    },
+    {
+      "id": "swsh8",
+      "name": "Fusion Strike",
+      "series": "Sword & Shield",
+      "printedTotal": 264,
+      "cards": 284,
+      "englishOnly": true
+    },
+    {
+      "id": "swsh9",
+      "name": "Brilliant Stars",
+      "series": "Sword & Shield",
+      "printedTotal": 172,
+      "cards": 186,
+      "englishOnly": true
+    },
+    {
+      "id": "swsh9tg",
+      "name": "Brilliant Stars Trainer Gallery",
+      "series": "Sword & Shield",
+      "printedTotal": 30,
+      "cards": 30,
+      "englishOnly": true
+    },
+    {
+      "id": "swshp",
+      "name": "SWSH Black Star Promos",
+      "series": "Sword & Shield",
+      "printedTotal": 307,
+      "cards": 304,
+      "englishOnly": true
+    },
+    {
+      "id": "tk1a",
+      "name": "EX Trainer Kit Latias",
+      "series": "EX",
+      "printedTotal": 10,
+      "cards": 10,
+      "englishOnly": true
+    },
+    {
+      "id": "tk1b",
+      "name": "EX Trainer Kit Latios",
+      "series": "EX",
+      "printedTotal": 10,
+      "cards": 10,
+      "englishOnly": true
+    },
+    {
+      "id": "tk2a",
+      "name": "EX Trainer Kit 2 Plusle",
+      "series": "EX",
+      "printedTotal": 12,
+      "cards": 12,
+      "englishOnly": true
+    },
+    {
+      "id": "tk2b",
+      "name": "EX Trainer Kit 2 Minun",
+      "series": "EX",
+      "printedTotal": 12,
+      "cards": 12,
+      "englishOnly": true
+    },
+    {
+      "id": "xy0",
+      "name": "Kalos Starter Set",
+      "series": "XY",
+      "printedTotal": 39,
+      "cards": 39,
+      "englishOnly": true
+    },
+    {
+      "id": "xy1",
+      "name": "XY",
+      "series": "XY",
+      "printedTotal": 146,
+      "cards": 146,
+      "englishOnly": true
+    },
+    {
+      "id": "xy10",
+      "name": "Fates Collide",
+      "series": "XY",
+      "printedTotal": 124,
+      "cards": 129,
+      "englishOnly": true
+    },
+    {
+      "id": "xy11",
+      "name": "Steam Siege",
+      "series": "XY",
+      "printedTotal": 114,
+      "cards": 116,
+      "englishOnly": true
+    },
+    {
+      "id": "xy12",
+      "name": "Evolutions",
+      "series": "XY",
+      "printedTotal": 108,
+      "cards": 113,
+      "englishOnly": true
+    },
+    {
+      "id": "xy2",
+      "name": "Flashfire",
+      "series": "XY",
+      "printedTotal": 106,
+      "cards": 110,
+      "englishOnly": true
+    },
+    {
+      "id": "xy3",
+      "name": "Furious Fists",
+      "series": "XY",
+      "printedTotal": 111,
+      "cards": 114,
+      "englishOnly": true
+    },
+    {
+      "id": "xy4",
+      "name": "Phantom Forces",
+      "series": "XY",
+      "printedTotal": 119,
+      "cards": 124,
+      "englishOnly": true
+    },
+    {
+      "id": "xy5",
+      "name": "Primal Clash",
+      "series": "XY",
+      "printedTotal": 160,
+      "cards": 164,
+      "englishOnly": true
+    },
+    {
+      "id": "xy6",
+      "name": "Roaring Skies",
+      "series": "XY",
+      "printedTotal": 108,
+      "cards": 112,
+      "englishOnly": true
+    },
+    {
+      "id": "xy7",
+      "name": "Ancient Origins",
+      "series": "XY",
+      "printedTotal": 98,
+      "cards": 101,
+      "englishOnly": true
+    },
+    {
+      "id": "xy8",
+      "name": "BREAKthrough",
+      "series": "XY",
+      "printedTotal": 162,
+      "cards": 165,
+      "englishOnly": true
+    },
+    {
+      "id": "xy9",
+      "name": "BREAKpoint",
+      "series": "XY",
+      "printedTotal": 122,
+      "cards": 126,
+      "englishOnly": true
+    },
+    {
+      "id": "xyp",
+      "name": "XY Black Star Promos",
+      "series": "XY",
+      "printedTotal": 211,
+      "cards": 216,
+      "englishOnly": true
+    },
+    {
+      "id": "zsv10pt5",
+      "name": "Black Bolt",
+      "series": "Scarlet & Violet",
+      "printedTotal": 86,
+      "cards": 172,
+      "englishOnly": true
+    }
+  ],
+  "mappings": [
+    {
+      "provider": "tcgcsv",
+      "externalId": "24380",
+      "setId": "me1",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "1372",
+      "setId": "ecard3",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "2906",
+      "setId": "swsh8",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "1383",
+      "setId": "ex16",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "1398",
+      "setId": "ex10",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "1387",
+      "setId": "xy1",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "1701",
+      "setId": "xy9",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "2464",
+      "setId": "sm11",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "23228",
+      "setId": "sv3",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "1411",
+      "setId": "ex15",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "2675",
+      "setId": "swsh3",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "23120",
+      "setId": "sv2",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "2765",
+      "setId": "swsh5",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "2071",
+      "setId": "sm4",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "1375",
+      "setId": "ecard1",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "1442",
+      "setId": "pop3",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "1368",
+      "setId": "dp2",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "24326",
+      "setId": "rsv10pt5",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "1815",
+      "setId": "xy11",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "1430",
+      "setId": "dp1",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "1863",
+      "setId": "sm1",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "1404",
+      "setId": "ex8",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "23529",
+      "setId": "sv6pt5",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "1415",
+      "setId": "col1",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "1397",
+      "setId": "ecard2",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "23537",
+      "setId": "sv7",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "1422",
+      "setId": "pop1",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "2807",
+      "setId": "swsh6",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "1378",
+      "setId": "ex12",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "1661",
+      "setId": "xy8",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "1440",
+      "setId": "gym2",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "1957",
+      "setId": "sm3",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "1494",
+      "setId": "xy4",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "2701",
+      "setId": "swsh4",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "635",
+      "setId": "base2",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "1481",
+      "setId": "xy3",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "1780",
+      "setId": "xy10",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "1413",
+      "setId": "bw8",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "1410",
+      "setId": "ex9",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "1400",
+      "setId": "bw1",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "1439",
+      "setId": "pop5",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "1386",
+      "setId": "bw5",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "605",
+      "setId": "base4",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "3020",
+      "setId": "swsh9tg",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "24448",
+      "setId": "me2",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "2626",
+      "setId": "swsh2",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "1406",
+      "setId": "pl1",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "17674",
+      "setId": "swsh12tg",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "1446",
+      "setId": "pop9",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "17688",
+      "setId": "swsh12pt5",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "24587",
+      "setId": "me3",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "1441",
+      "setId": "gym1",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "1377",
+      "setId": "ex4",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "1522",
+      "setId": "xy0",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "1394",
+      "setId": "bw6",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "1534",
+      "setId": "xy6",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "1405",
+      "setId": "dp4",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "2480",
+      "setId": "sm115",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "1728",
+      "setId": "g1",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "2178",
+      "setId": "sm5",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "23651",
+      "setId": "sv8",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "3068",
+      "setId": "swsh10tg",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "1373",
+      "setId": "base5",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "23286",
+      "setId": "sv4",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "1374",
+      "setId": "base6",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "24688",
+      "setId": "me5",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "23473",
+      "setId": "sv6",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "1370",
+      "setId": "bw10",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "24541",
+      "setId": "me2pt5",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "1428",
+      "setId": "ex7",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "1414",
+      "setId": "pop7",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "22873",
+      "setId": "sv1",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "3172",
+      "setId": "swsh11tg",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "1450",
+      "setId": "pop8",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "1402",
+      "setId": "hgss1",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "1432",
+      "setId": "pop6",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "23821",
+      "setId": "sv8pt5",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "2948",
+      "setId": "swsh9",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "1389",
+      "setId": "neo3",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "2848",
+      "setId": "swsh7",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "3064",
+      "setId": "pgo",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "2328",
+      "setId": "sm8",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "1376",
+      "setId": "ex3",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "2585",
+      "setId": "swsh1",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "1419",
+      "setId": "ex6",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "2278",
+      "setId": "sm7",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "1525",
+      "setId": "dc1",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "1842",
+      "setId": "xy12",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "1390",
+      "setId": "dp5",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "24722",
+      "setId": "me55",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "1382",
+      "setId": "bw9",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "2420",
+      "setId": "sm10",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "2377",
+      "setId": "sm9",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "2409",
+      "setId": "det1",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "2931",
+      "setId": "cel25c",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "1369",
+      "setId": "dp7",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "1385",
+      "setId": "bw3",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "1393",
+      "setId": "ex1",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "1424",
+      "setId": "bw2",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "2054",
+      "setId": "sm35",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "1391",
+      "setId": "pl4",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "630",
+      "setId": "base3",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "1509",
+      "setId": "xy5",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "24655",
+      "setId": "me4",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "24269",
+      "setId": "sv10",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "3170",
+      "setId": "swsh12",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "1367",
+      "setId": "pl2",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "2754",
+      "setId": "swsh45",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "1396",
+      "setId": "neo1",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "3118",
+      "setId": "swsh11",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "648",
+      "setId": "si1",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "2867",
+      "setId": "cel25",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "1409",
+      "setId": "bw11",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "1392",
+      "setId": "ex2",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "1576",
+      "setId": "xy7",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "24837",
+      "setId": "me55c",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "1429",
+      "setId": "ex11",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "1426",
+      "setId": "dv1",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "2685",
+      "setId": "swsh35",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "1452",
+      "setId": "pop4",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "23381",
+      "setId": "sv5",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "1379",
+      "setId": "ex13",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "3040",
+      "setId": "swsh10",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "1444",
+      "setId": "neo4",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "1434",
+      "setId": "neo2",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "2295",
+      "setId": "sm75",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "1464",
+      "setId": "xy2",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "604",
+      "setId": "base1",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "24073",
+      "setId": "sv9",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "2209",
+      "setId": "sm6",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "1447",
+      "setId": "pop2",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "1395",
+      "setId": "ex14",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "1919",
+      "setId": "sm2",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "1380",
+      "setId": "dp3",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "24325",
+      "setId": "zsv10pt5",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "2534",
+      "setId": "sm12",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "1384",
+      "setId": "pl3",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "1417",
+      "setId": "dp6",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "23353",
+      "setId": "sv4pt5",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "1412",
+      "setId": "bw4",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "23237",
+      "setId": "sv3pt5",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "1408",
+      "setId": "bw7",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "1416",
+      "setId": "ex5",
+      "createdAt": "2026-10-14T00:37:16.797Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "2594",
+      "setId": "sma",
+      "createdAt": "2026-10-20T12:57:41.046Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "17689",
+      "setId": "swsh12pt5gg",
+      "createdAt": "2026-10-20T12:57:41.046Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "1403",
+      "setId": "hgss3",
+      "createdAt": "2026-10-20T12:57:41.046Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "2781",
+      "setId": "swsh45sv",
+      "createdAt": "2026-10-20T12:57:41.046Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "1381",
+      "setId": "hgss4",
+      "createdAt": "2026-10-20T12:57:41.046Z"
+    },
+    {
+      "provider": "tcgcsv",
+      "externalId": "1399",
+      "setId": "hgss2",
+      "createdAt": "2026-10-20T12:57:41.046Z"
+    }
+  ],
+  "registry": [
+    {
+      "setId": "me55c",
+      "enabled": true,
+      "priority": 1,
+      "origin": "curated",
+      "activatedAt": "2026-10-20T12:00:31.234Z",
+      "lastDemandAt": null,
+      "createdAt": "2026-10-20T12:00:31.234Z",
+      "updatedAt": "2026-10-20T12:00:31.234Z"
+    },
+    {
+      "setId": "me2pt5",
+      "enabled": true,
+      "priority": 2,
+      "origin": "curated",
+      "activatedAt": "2026-10-20T12:00:31.234Z",
+      "lastDemandAt": null,
+      "createdAt": "2026-10-20T12:00:31.234Z",
+      "updatedAt": "2026-10-20T12:00:31.234Z"
+    },
+    {
+      "setId": "sv8pt5",
+      "enabled": true,
+      "priority": 3,
+      "origin": "curated",
+      "activatedAt": "2026-10-20T12:00:31.234Z",
+      "lastDemandAt": null,
+      "createdAt": "2026-10-20T12:00:31.234Z",
+      "updatedAt": "2026-10-20T12:00:31.234Z"
+    },
+    {
+      "setId": "sv3pt5",
+      "enabled": true,
+      "priority": 4,
+      "origin": "curated",
+      "activatedAt": "2026-10-20T12:00:31.234Z",
+      "lastDemandAt": null,
+      "createdAt": "2026-10-20T12:00:31.234Z",
+      "updatedAt": "2026-10-20T12:00:31.234Z"
+    },
+    {
+      "setId": "me2",
+      "enabled": true,
+      "priority": 5,
+      "origin": "curated",
+      "activatedAt": "2026-10-20T12:00:31.234Z",
+      "lastDemandAt": null,
+      "createdAt": "2026-10-20T12:00:31.234Z",
+      "updatedAt": "2026-10-20T12:00:31.234Z"
+    },
+    {
+      "setId": "me5",
+      "enabled": true,
+      "priority": 6,
+      "origin": "curated",
+      "activatedAt": "2026-10-20T12:00:31.234Z",
+      "lastDemandAt": null,
+      "createdAt": "2026-10-20T12:00:31.234Z",
+      "updatedAt": "2026-10-20T12:00:31.234Z"
+    },
+    {
+      "setId": "me4",
+      "enabled": true,
+      "priority": 7,
+      "origin": "curated",
+      "activatedAt": "2026-10-20T12:00:31.234Z",
+      "lastDemandAt": null,
+      "createdAt": "2026-10-20T12:00:31.234Z",
+      "updatedAt": "2026-10-20T12:00:31.234Z"
+    },
+    {
+      "setId": "me3",
+      "enabled": true,
+      "priority": 8,
+      "origin": "curated",
+      "activatedAt": "2026-10-20T12:00:31.234Z",
+      "lastDemandAt": null,
+      "createdAt": "2026-10-20T12:00:31.234Z",
+      "updatedAt": "2026-10-20T12:00:31.234Z"
+    },
+    {
+      "setId": "sv10",
+      "enabled": true,
+      "priority": 9,
+      "origin": "curated",
+      "activatedAt": "2026-10-20T12:00:31.234Z",
+      "lastDemandAt": null,
+      "createdAt": "2026-10-20T12:00:31.234Z",
+      "updatedAt": "2026-10-20T12:00:31.234Z"
+    },
+    {
+      "setId": "me1",
+      "enabled": true,
+      "priority": 10,
+      "origin": "curated",
+      "activatedAt": "2026-10-20T12:00:31.234Z",
+      "lastDemandAt": null,
+      "createdAt": "2026-10-20T12:00:31.234Z",
+      "updatedAt": "2026-10-20T12:00:31.234Z"
+    },
+    {
+      "setId": "base1",
+      "enabled": true,
+      "priority": 100,
+      "origin": "collection",
+      "activatedAt": "2026-10-20T12:00:45.337Z",
+      "lastDemandAt": "2026-10-20T12:00:45.337Z",
+      "createdAt": "2026-10-20T12:00:45.337Z",
+      "updatedAt": "2026-10-20T12:00:45.337Z"
+    },
+    {
+      "setId": "base2",
+      "enabled": true,
+      "priority": 100,
+      "origin": "collection",
+      "activatedAt": "2026-10-20T12:00:45.337Z",
+      "lastDemandAt": "2026-10-20T12:00:45.337Z",
+      "createdAt": "2026-10-20T12:00:45.337Z",
+      "updatedAt": "2026-10-20T12:00:45.337Z"
+    },
+    {
+      "setId": "dp2",
+      "enabled": true,
+      "priority": 100,
+      "origin": "collection",
+      "activatedAt": "2026-10-20T12:00:45.337Z",
+      "lastDemandAt": "2026-10-20T12:00:45.337Z",
+      "createdAt": "2026-10-20T12:00:45.337Z",
+      "updatedAt": "2026-10-20T12:00:45.337Z"
+    },
+    {
+      "setId": "mcd19",
+      "enabled": true,
+      "priority": 100,
+      "origin": "collection",
+      "activatedAt": "2026-10-20T12:00:45.337Z",
+      "lastDemandAt": "2026-10-20T12:00:45.337Z",
+      "createdAt": "2026-10-20T12:00:45.337Z",
+      "updatedAt": "2026-10-20T12:00:45.337Z"
+    },
+    {
+      "setId": "sv9",
+      "enabled": true,
+      "priority": 100,
+      "origin": "collection",
+      "activatedAt": "2026-10-20T12:00:45.337Z",
+      "lastDemandAt": "2026-10-20T12:00:45.337Z",
+      "createdAt": "2026-10-20T12:00:45.337Z",
+      "updatedAt": "2026-10-20T12:00:45.337Z"
+    },
+    {
+      "setId": "swshp",
+      "enabled": true,
+      "priority": 100,
+      "origin": "collection",
+      "activatedAt": "2026-10-20T12:00:45.337Z",
+      "lastDemandAt": "2026-10-20T12:00:45.337Z",
+      "createdAt": "2026-10-20T12:00:45.337Z",
+      "updatedAt": "2026-10-20T12:00:45.337Z"
+    },
+    {
+      "setId": "zsv10pt5",
+      "enabled": true,
+      "priority": 100,
+      "origin": "collection",
+      "activatedAt": "2026-10-20T12:00:45.337Z",
+      "lastDemandAt": "2026-10-20T12:00:45.337Z",
+      "createdAt": "2026-10-20T12:00:45.337Z",
+      "updatedAt": "2026-10-20T12:00:45.337Z"
+    },
+    {
+      "setId": "me55",
+      "enabled": true,
+      "priority": 1,
+      "origin": "curated",
+      "activatedAt": "2026-10-20T12:00:31.234Z",
+      "lastDemandAt": "2026-10-21T01:31:20.042Z",
+      "createdAt": "2026-10-20T12:00:31.234Z",
+      "updatedAt": "2026-10-21T01:31:20.042Z"
+    }
+  ],
+  "discovery": {
+    "groupsJson": {
+      "errors": [],
+      "results": [
+        {
+          "name": "ME06: Delta Reign",
+          "groupId": 24831,
+          "categoryId": 3,
+          "modifiedOn": "2026-10-19T20:12:05.4",
+          "publishedOn": "2026-11-06T00:00:00",
+          "abbreviation": "DLR",
+          "isSupplemental": false
+        },
+        {
+          "name": "ME: 30th Celebration",
+          "groupId": 24722,
+          "categoryId": 3,
+          "modifiedOn": "2026-10-21T17:23:42.083",
+          "publishedOn": "2026-09-16T00:00:00",
+          "abbreviation": "30C",
+          "isSupplemental": false
+        },
+        {
+          "name": "ME: 30th Celebration Classic Collection",
+          "groupId": 24837,
+          "categoryId": 3,
+          "modifiedOn": "2026-09-10T17:49:09.697",
+          "publishedOn": "2026-09-16T00:00:00",
+          "abbreviation": "30C",
+          "isSupplemental": true
+        },
+        {
+          "name": "ME05: Pitch Black",
+          "groupId": 24688,
+          "categoryId": 3,
+          "modifiedOn": "2026-10-21T02:30:27.933",
+          "publishedOn": "2026-07-17T00:00:00",
+          "abbreviation": "PBL",
+          "isSupplemental": false
+        },
+        {
+          "name": "ME04: Chaos Rising",
+          "groupId": 24655,
+          "categoryId": 3,
+          "modifiedOn": "2026-10-21T02:32:06.3",
+          "publishedOn": "2026-05-22T00:00:00",
+          "abbreviation": "CRI",
+          "isSupplemental": false
+        },
+        {
+          "name": "First Partner Collection 2026",
+          "groupId": 24584,
+          "categoryId": 3,
+          "modifiedOn": "2026-09-01T16:20:54.39",
+          "publishedOn": "2026-03-30T00:00:00",
+          "abbreviation": "",
+          "isSupplemental": false
+        },
+        {
+          "name": "ME03: Perfect Order",
+          "groupId": 24587,
+          "categoryId": 3,
+          "modifiedOn": "2026-10-21T02:32:48.213",
+          "publishedOn": "2026-03-27T00:00:00",
+          "abbreviation": "POR",
+          "isSupplemental": false
+        },
+        {
+          "name": "ME: Ascended Heroes",
+          "groupId": 24541,
+          "categoryId": 3,
+          "modifiedOn": "2026-10-21T15:41:05.407",
+          "publishedOn": "2026-01-30T00:00:00",
+          "abbreviation": "ASC",
+          "isSupplemental": false
+        },
+        {
+          "name": "Player Placement Trainer Promos",
+          "groupId": 24529,
+          "categoryId": 3,
+          "modifiedOn": "2026-09-25T14:30:40.993",
+          "publishedOn": "2026-01-02T00:00:00",
+          "abbreviation": "",
+          "isSupplemental": false
+        },
+        {
+          "name": "ME02: Phantasmal Flames",
+          "groupId": 24448,
+          "categoryId": 3,
+          "modifiedOn": "2026-10-07T20:32:08.55",
+          "publishedOn": "2025-11-14T00:00:00",
+          "abbreviation": "PFL",
+          "isSupplemental": false
+        },
+        {
+          "name": "ME: Mega Evolution Promo",
+          "groupId": 24451,
+          "categoryId": 3,
+          "modifiedOn": "2026-10-16T17:32:44.313",
+          "publishedOn": "2025-09-26T00:00:00",
+          "abbreviation": "MEP",
+          "isSupplemental": false
+        },
+        {
+          "name": "ME01: Mega Evolution",
+          "groupId": 24380,
+          "categoryId": 3,
+          "modifiedOn": "2026-10-14T13:05:08.167",
+          "publishedOn": "2025-09-26T00:00:00",
+          "abbreviation": "MEG",
+          "isSupplemental": false
+        },
+        {
+          "name": "MEE: Mega Evolution Energies",
+          "groupId": 24461,
+          "categoryId": 3,
+          "modifiedOn": "2026-09-25T14:31:21.853",
+          "publishedOn": "2025-09-26T00:00:00",
+          "abbreviation": "MEE",
+          "isSupplemental": false
+        },
+        {
+          "name": "SV: Black Bolt",
+          "groupId": 24325,
+          "categoryId": 3,
+          "modifiedOn": "2026-09-14T22:47:08.69",
+          "publishedOn": "2025-07-18T00:00:00",
+          "abbreviation": "BLK",
+          "isSupplemental": false
+        },
+        {
+          "name": "SV: White Flare",
+          "groupId": 24326,
+          "categoryId": 3,
+          "modifiedOn": "2026-10-02T13:30:45.787",
+          "publishedOn": "2025-07-18T00:00:00",
+          "abbreviation": "WHT",
+          "isSupplemental": false
+        },
+        {
+          "name": "SV10: Destined Rivals",
+          "groupId": 24269,
+          "categoryId": 3,
+          "modifiedOn": "2026-10-21T04:47:15.563",
+          "publishedOn": "2025-05-30T00:00:00",
+          "abbreviation": "DRI",
+          "isSupplemental": false
+        },
+        {
+          "name": "SV09: Journey Together",
+          "groupId": 24073,
+          "categoryId": 3,
+          "modifiedOn": "2026-09-23T00:58:54.653",
+          "publishedOn": "2025-03-28T00:00:00",
+          "abbreviation": "JTG",
+          "isSupplemental": false
+        },
+        {
+          "name": "McDonald's Promos 2024",
+          "groupId": 24163,
+          "categoryId": 3,
+          "modifiedOn": "2026-07-18T03:03:38.667",
+          "publishedOn": "2025-01-21T00:00:00",
+          "abbreviation": "M24",
+          "isSupplemental": false
+        },
+        {
+          "name": "SV: Prismatic Evolutions",
+          "groupId": 23821,
+          "categoryId": 3,
+          "modifiedOn": "2026-10-15T20:22:55.687",
+          "publishedOn": "2025-01-17T00:00:00",
+          "abbreviation": "PRE",
+          "isSupplemental": false
+        },
+        {
+          "name": "SV08: Surging Sparks",
+          "groupId": 23651,
+          "categoryId": 3,
+          "modifiedOn": "2026-10-13T00:02:55.823",
+          "publishedOn": "2024-11-08T00:00:00",
+          "abbreviation": "SSP",
+          "isSupplemental": false
+        },
+        {
+          "name": "SV07: Stellar Crown",
+          "groupId": 23537,
+          "categoryId": 3,
+          "modifiedOn": "2026-09-09T17:14:32.977",
+          "publishedOn": "2024-09-13T00:00:00",
+          "abbreviation": "SCR",
+          "isSupplemental": false
+        },
+        {
+          "name": "Trick or Trade BOOster Bundle 2024",
+          "groupId": 23561,
+          "categoryId": 3,
+          "modifiedOn": "2026-10-21T00:37:50.9",
+          "publishedOn": "2024-08-30T00:00:00",
+          "abbreviation": "TTBB24",
+          "isSupplemental": false
+        },
+        {
+          "name": "SV: Shrouded Fable",
+          "groupId": 23529,
+          "categoryId": 3,
+          "modifiedOn": "2026-09-23T01:00:48.55",
+          "publishedOn": "2024-08-02T00:00:00",
+          "abbreviation": "SFA",
+          "isSupplemental": false
+        },
+        {
+          "name": "Battle Academy 2024",
+          "groupId": 23520,
+          "categoryId": 3,
+          "modifiedOn": "2025-06-16T17:22:44.953",
+          "publishedOn": "2024-06-21T00:00:00",
+          "abbreviation": "BA24",
+          "isSupplemental": false
+        },
+        {
+          "name": "SV06: Twilight Masquerade",
+          "groupId": 23473,
+          "categoryId": 3,
+          "modifiedOn": "2026-10-15T20:11:12.313",
+          "publishedOn": "2024-05-24T00:00:00",
+          "abbreviation": "TWM",
+          "isSupplemental": false
+        },
+        {
+          "name": "SV05: Temporal Forces",
+          "groupId": 23381,
+          "categoryId": 3,
+          "modifiedOn": "2026-09-15T00:37:21.72",
+          "publishedOn": "2024-03-22T00:00:00",
+          "abbreviation": "TEF",
+          "isSupplemental": false
+        },
+        {
+          "name": "SV: Paldean Fates",
+          "groupId": 23353,
+          "categoryId": 3,
+          "modifiedOn": "2026-10-21T15:43:04.217",
+          "publishedOn": "2024-01-26T00:00:00",
+          "abbreviation": "PAF",
+          "isSupplemental": false
+        },
+        {
+          "name": "Trading Card Game Classic",
+          "groupId": 23323,
+          "categoryId": 3,
+          "modifiedOn": "2026-09-10T14:54:31.72",
+          "publishedOn": "2023-11-17T00:00:00",
+          "abbreviation": "CL",
+          "isSupplemental": false
+        },
+        {
+          "name": "SV04: Paradox Rift",
+          "groupId": 23286,
+          "categoryId": 3,
+          "modifiedOn": "2026-10-13T02:46:08.73",
+          "publishedOn": "2023-11-03T00:00:00",
+          "abbreviation": "PAR",
+          "isSupplemental": false
+        },
+        {
+          "name": "My First Battle",
+          "groupId": 23330,
+          "categoryId": 3,
+          "modifiedOn": "2025-10-08T18:54:49.893",
+          "publishedOn": "2023-09-29T00:00:00",
+          "abbreviation": "",
+          "isSupplemental": false
+        },
+        {
+          "name": "SV: Scarlet & Violet 151",
+          "groupId": 23237,
+          "categoryId": 3,
+          "modifiedOn": "2026-10-21T15:30:45.03",
+          "publishedOn": "2023-09-22T00:00:00",
+          "abbreviation": "MEW",
+          "isSupplemental": false
+        },
+        {
+          "name": "McDonald's Promos 2023",
+          "groupId": 23306,
+          "categoryId": 3,
+          "modifiedOn": "2026-06-24T19:34:22.467",
+          "publishedOn": "2023-09-12T00:00:00",
+          "abbreviation": "M23",
+          "isSupplemental": false
+        },
+        {
+          "name": "Trick or Trade BOOster Bundle 2023",
+          "groupId": 23266,
+          "categoryId": 3,
+          "modifiedOn": "2026-08-14T00:21:48.173",
+          "publishedOn": "2023-09-01T00:00:00",
+          "abbreviation": "TTBB23",
+          "isSupplemental": false
+        },
+        {
+          "name": "SV03: Obsidian Flames",
+          "groupId": 23228,
+          "categoryId": 3,
+          "modifiedOn": "2026-10-21T15:44:09.54",
+          "publishedOn": "2023-08-11T00:00:00",
+          "abbreviation": "OBF",
+          "isSupplemental": false
+        },
+        {
+          "name": "Southeast Asia Exclusives",
+          "groupId": 24864,
+          "categoryId": 3,
+          "modifiedOn": "2026-10-12T16:12:14.923",
+          "publishedOn": "2023-08-05T00:00:00",
+          "abbreviation": "SEA",
+          "isSupplemental": false
+        },
+        {
+          "name": "SV02: Paldea Evolved",
+          "groupId": 23120,
+          "categoryId": 3,
+          "modifiedOn": "2026-10-10T05:48:14.047",
+          "publishedOn": "2023-06-09T00:00:00",
+          "abbreviation": "PAL",
+          "isSupplemental": false
+        },
+        {
+          "name": "SV: Scarlet & Violet Promo Cards",
+          "groupId": 22872,
+          "categoryId": 3,
+          "modifiedOn": "2026-10-15T12:59:04.453",
+          "publishedOn": "2023-03-31T00:00:00",
+          "abbreviation": "SVP",
+          "isSupplemental": false
+        },
+        {
+          "name": "SV01: Scarlet & Violet Base Set",
+          "groupId": 22873,
+          "categoryId": 3,
+          "modifiedOn": "2026-10-15T20:24:39.313",
+          "publishedOn": "2023-03-31T00:00:00",
+          "abbreviation": "SVI",
+          "isSupplemental": false
+        },
+        {
+          "name": "SVE: Scarlet & Violet Energies",
+          "groupId": 24382,
+          "categoryId": 3,
+          "modifiedOn": "2026-09-25T14:31:54.223",
+          "publishedOn": "2023-03-31T00:00:00",
+          "abbreviation": "SVE",
+          "isSupplemental": false
+        },
+        {
+          "name": "SWSH: Crown Zenith",
+          "groupId": 17688,
+          "categoryId": 3,
+          "modifiedOn": "2026-10-21T04:45:42.56",
+          "publishedOn": "2023-01-20T00:00:00",
+          "abbreviation": "CRZ",
+          "isSupplemental": false
+        },
+        {
+          "name": "SWSH: Crown Zenith: Galarian Gallery",
+          "groupId": 17689,
+          "categoryId": 3,
+          "modifiedOn": "2026-09-25T14:33:05.1",
+          "publishedOn": "2023-01-20T00:00:00",
+          "abbreviation": "CRZ:GG",
+          "isSupplemental": false
+        },
+        {
+          "name": "Prize Pack Series Cards",
+          "groupId": 22880,
+          "categoryId": 3,
+          "modifiedOn": "2026-10-16T14:50:26.923",
+          "publishedOn": "2022-11-30T00:00:00",
+          "abbreviation": "",
+          "isSupplemental": false
+        },
+        {
+          "name": "SWSH12: Silver Tempest",
+          "groupId": 3170,
+          "categoryId": 3,
+          "modifiedOn": "2026-10-14T13:14:39.083",
+          "publishedOn": "2022-11-11T00:00:00",
+          "abbreviation": "SWSH12",
+          "isSupplemental": false
+        },
+        {
+          "name": "SWSH12: Silver Tempest Trainer Gallery",
+          "groupId": 17674,
+          "categoryId": 3,
+          "modifiedOn": "2026-09-10T18:13:54.153",
+          "publishedOn": "2022-11-11T00:00:00",
+          "abbreviation": "SWSH12: TG",
+          "isSupplemental": false
+        },
+        {
+          "name": "SWSH11: Lost Origin",
+          "groupId": 3118,
+          "categoryId": 3,
+          "modifiedOn": "2026-10-14T13:10:00.38",
+          "publishedOn": "2022-09-09T00:00:00",
+          "abbreviation": "SWSH11",
+          "isSupplemental": false
+        },
+        {
+          "name": "SWSH11: Lost Origin Trainer Gallery",
+          "groupId": 3172,
+          "categoryId": 3,
+          "modifiedOn": "2026-09-09T01:37:46.2",
+          "publishedOn": "2022-09-09T00:00:00",
+          "abbreviation": "SWSH11: TG",
+          "isSupplemental": false
+        },
+        {
+          "name": "Trick or Trade BOOster Bundle",
+          "groupId": 3179,
+          "categoryId": 3,
+          "modifiedOn": "2026-07-07T05:23:40.913",
+          "publishedOn": "2022-09-01T00:00:00",
+          "abbreviation": "TTBB",
+          "isSupplemental": false
+        },
+        {
+          "name": "McDonald's Promos 2022",
+          "groupId": 3150,
+          "categoryId": 3,
+          "modifiedOn": "2026-02-13T16:52:16.443",
+          "publishedOn": "2022-08-03T00:00:00",
+          "abbreviation": "M22",
+          "isSupplemental": false
+        },
+        {
+          "name": "Pokemon GO",
+          "groupId": 3064,
+          "categoryId": 3,
+          "modifiedOn": "2026-09-12T03:17:00.77",
+          "publishedOn": "2022-07-01T00:00:00",
+          "abbreviation": "PGO",
+          "isSupplemental": false
+        },
+        {
+          "name": "SWSH10: Astral Radiance",
+          "groupId": 3040,
+          "categoryId": 3,
+          "modifiedOn": "2026-09-14T21:49:27.48",
+          "publishedOn": "2022-05-27T00:00:00",
+          "abbreviation": "SWSH10",
+          "isSupplemental": false
+        },
+        {
+          "name": "SWSH10: Astral Radiance Trainer Gallery",
+          "groupId": 3068,
+          "categoryId": 3,
+          "modifiedOn": "2026-09-09T01:36:14.657",
+          "publishedOn": "2022-05-27T00:00:00",
+          "abbreviation": "SWSH10:TG",
+          "isSupplemental": false
+        },
+        {
+          "name": "Battle Academy 2022",
+          "groupId": 3051,
+          "categoryId": 3,
+          "modifiedOn": "2026-05-02T00:16:34.76",
+          "publishedOn": "2022-04-01T00:00:00",
+          "abbreviation": "BA22",
+          "isSupplemental": false
+        },
+        {
+          "name": "SWSH09: Brilliant Stars",
+          "groupId": 2948,
+          "categoryId": 3,
+          "modifiedOn": "2026-10-21T15:45:00.6",
+          "publishedOn": "2022-02-25T00:00:00",
+          "abbreviation": "SWSH09",
+          "isSupplemental": false
+        },
+        {
+          "name": "SWSH09: Brilliant Stars Trainer Gallery",
+          "groupId": 3020,
+          "categoryId": 3,
+          "modifiedOn": "2026-08-11T04:10:02.08",
+          "publishedOn": "2022-02-25T00:00:00",
+          "abbreviation": "SWSH09:TG",
+          "isSupplemental": false
+        },
+        {
+          "name": "SWSH08: Fusion Strike",
+          "groupId": 2906,
+          "categoryId": 3,
+          "modifiedOn": "2026-10-21T15:32:01.723",
+          "publishedOn": "2021-11-12T00:00:00",
+          "abbreviation": "SWSH08",
+          "isSupplemental": false
+        },
+        {
+          "name": "Celebrations",
+          "groupId": 2867,
+          "categoryId": 3,
+          "modifiedOn": "2026-08-27T17:14:32.333",
+          "publishedOn": "2021-10-08T00:00:00",
+          "abbreviation": "CLB",
+          "isSupplemental": false
+        },
+        {
+          "name": "Celebrations: Classic Collection",
+          "groupId": 2931,
+          "categoryId": 3,
+          "modifiedOn": "2026-10-06T13:34:51.207",
+          "publishedOn": "2021-10-08T00:00:00",
+          "abbreviation": "CCC",
+          "isSupplemental": false
+        },
+        {
+          "name": "SWSH07: Evolving Skies",
+          "groupId": 2848,
+          "categoryId": 3,
+          "modifiedOn": "2026-09-23T01:10:12.697",
+          "publishedOn": "2021-08-27T00:00:00",
+          "abbreviation": "SWSH07",
+          "isSupplemental": false
+        },
+        {
+          "name": "SWSH06: Chilling Reign",
+          "groupId": 2807,
+          "categoryId": 3,
+          "modifiedOn": "2026-10-12T18:41:04.683",
+          "publishedOn": "2021-06-18T00:00:00",
+          "abbreviation": "SWSH06",
+          "isSupplemental": false
+        },
+        {
+          "name": "SWSH05: Battle Styles",
+          "groupId": 2765,
+          "categoryId": 3,
+          "modifiedOn": "2026-09-10T19:01:40.95",
+          "publishedOn": "2021-03-19T00:00:00",
+          "abbreviation": "SWSH05",
+          "isSupplemental": false
+        },
+        {
+          "name": "Shining Fates",
+          "groupId": 2754,
+          "categoryId": 3,
+          "modifiedOn": "2026-09-10T18:09:22",
+          "publishedOn": "2021-02-19T00:00:00",
+          "abbreviation": "SHF",
+          "isSupplemental": false
+        },
+        {
+          "name": "Shining Fates: Shiny Vault",
+          "groupId": 2781,
+          "categoryId": 3,
+          "modifiedOn": "2026-10-15T02:54:41.96",
+          "publishedOn": "2021-02-19T00:00:00",
+          "abbreviation": "SHFSV",
+          "isSupplemental": false
+        },
+        {
+          "name": "McDonald's 25th Anniversary Promos",
+          "groupId": 2782,
+          "categoryId": 3,
+          "modifiedOn": "2026-06-24T22:27:22.56",
+          "publishedOn": "2021-02-09T00:00:00",
+          "abbreviation": "M21",
+          "isSupplemental": true
+        },
+        {
+          "name": "SWSH04: Vivid Voltage",
+          "groupId": 2701,
+          "categoryId": 3,
+          "modifiedOn": "2026-10-05T13:23:27.303",
+          "publishedOn": "2020-11-13T00:00:00",
+          "abbreviation": "SWSH04",
+          "isSupplemental": false
+        },
+        {
+          "name": "Champion's Path",
+          "groupId": 2685,
+          "categoryId": 3,
+          "modifiedOn": "2026-09-10T17:58:40.943",
+          "publishedOn": "2020-09-25T00:00:00",
+          "abbreviation": "CHP",
+          "isSupplemental": false
+        },
+        {
+          "name": "SWSH03: Darkness Ablaze",
+          "groupId": 2675,
+          "categoryId": 3,
+          "modifiedOn": "2026-10-01T19:39:45.627",
+          "publishedOn": "2020-08-14T00:00:00",
+          "abbreviation": "SWSH03",
+          "isSupplemental": false
+        },
+        {
+          "name": "Battle Academy",
+          "groupId": 2686,
+          "categoryId": 3,
+          "modifiedOn": "2026-06-19T03:04:36.477",
+          "publishedOn": "2020-07-31T00:00:00",
+          "abbreviation": "BTA",
+          "isSupplemental": true
+        },
+        {
+          "name": "SWSH02: Rebel Clash",
+          "groupId": 2626,
+          "categoryId": 3,
+          "modifiedOn": "2026-10-01T19:46:28.44",
+          "publishedOn": "2020-05-01T00:00:00",
+          "abbreviation": "SWSH02",
+          "isSupplemental": false
+        },
+        {
+          "name": "SWSH01: Sword & Shield Base Set",
+          "groupId": 2585,
+          "categoryId": 3,
+          "modifiedOn": "2026-10-21T15:33:19.85",
+          "publishedOn": "2020-02-07T00:00:00",
+          "abbreviation": "SWSH01",
+          "isSupplemental": false
+        },
+        {
+          "name": "SWSH: Sword & Shield Promo Cards",
+          "groupId": 2545,
+          "categoryId": 3,
+          "modifiedOn": "2026-10-16T17:54:26.373",
+          "publishedOn": "2019-11-15T00:00:00",
+          "abbreviation": "SWSD",
+          "isSupplemental": false
+        },
+        {
+          "name": "SM - Cosmic Eclipse",
+          "groupId": 2534,
+          "categoryId": 3,
+          "modifiedOn": "2026-10-09T07:16:13.5",
+          "publishedOn": "2019-11-01T00:00:00",
+          "abbreviation": "SM12",
+          "isSupplemental": false
+        },
+        {
+          "name": "McDonald's Promos 2019",
+          "groupId": 2555,
+          "categoryId": 3,
+          "modifiedOn": "2026-02-13T16:52:12.86",
+          "publishedOn": "2019-10-01T00:00:00",
+          "abbreviation": "M19",
+          "isSupplemental": false
+        },
+        {
+          "name": "Hidden Fates",
+          "groupId": 2480,
+          "categoryId": 3,
+          "modifiedOn": "2026-10-05T13:25:31.123",
+          "publishedOn": "2019-08-23T00:00:00",
+          "abbreviation": "HIF",
+          "isSupplemental": false
+        },
+        {
+          "name": "Hidden Fates: Shiny Vault",
+          "groupId": 2594,
+          "categoryId": 3,
+          "modifiedOn": "2026-08-10T22:11:30.393",
+          "publishedOn": "2019-08-23T00:00:00",
+          "abbreviation": "HIF:SV",
+          "isSupplemental": false
+        },
+        {
+          "name": "SM - Unified Minds",
+          "groupId": 2464,
+          "categoryId": 3,
+          "modifiedOn": "2026-09-26T03:50:34.823",
+          "publishedOn": "2019-08-02T00:00:00",
+          "abbreviation": "SM11",
+          "isSupplemental": false
+        },
+        {
+          "name": "SM - Unbroken Bonds",
+          "groupId": 2420,
+          "categoryId": 3,
+          "modifiedOn": "2026-09-10T18:02:43.33",
+          "publishedOn": "2019-05-03T00:00:00",
+          "abbreviation": "SM10",
+          "isSupplemental": false
+        },
+        {
+          "name": "Detective Pikachu",
+          "groupId": 2409,
+          "categoryId": 3,
+          "modifiedOn": "2026-10-09T14:28:51.73",
+          "publishedOn": "2019-04-05T00:00:00",
+          "abbreviation": "DEP",
+          "isSupplemental": false
+        },
+        {
+          "name": "SM - Team Up",
+          "groupId": 2377,
+          "categoryId": 3,
+          "modifiedOn": "2026-10-05T13:27:07.44",
+          "publishedOn": "2019-02-01T00:00:00",
+          "abbreviation": "SM9",
+          "isSupplemental": false
+        },
+        {
+          "name": "SM - Lost Thunder",
+          "groupId": 2328,
+          "categoryId": 3,
+          "modifiedOn": "2026-07-16T02:35:49.79",
+          "publishedOn": "2018-11-02T00:00:00",
+          "abbreviation": "SM8",
+          "isSupplemental": false
+        },
+        {
+          "name": "McDonald's Promos 2018",
+          "groupId": 2364,
+          "categoryId": 3,
+          "modifiedOn": "2026-02-13T16:52:09.113",
+          "publishedOn": "2018-11-02T00:00:00",
+          "abbreviation": "M18",
+          "isSupplemental": true
+        },
+        {
+          "name": "Dragon Majesty",
+          "groupId": 2295,
+          "categoryId": 3,
+          "modifiedOn": "2026-07-20T19:23:31.107",
+          "publishedOn": "2018-09-07T00:00:00",
+          "abbreviation": "DRM",
+          "isSupplemental": false
+        },
+        {
+          "name": "SM - Celestial Storm",
+          "groupId": 2278,
+          "categoryId": 3,
+          "modifiedOn": "2026-10-21T15:35:20.64",
+          "publishedOn": "2018-08-03T00:00:00",
+          "abbreviation": "CES",
+          "isSupplemental": false
+        },
+        {
+          "name": "World Championship Decks",
+          "groupId": 2282,
+          "categoryId": 3,
+          "modifiedOn": "2026-10-19T18:36:32.967",
+          "publishedOn": "2018-07-01T00:00:00",
+          "abbreviation": "WCD",
+          "isSupplemental": false
+        },
+        {
+          "name": "SM - Forbidden Light",
+          "groupId": 2209,
+          "categoryId": 3,
+          "modifiedOn": "2026-07-15T15:34:01.38",
+          "publishedOn": "2018-05-04T00:00:00",
+          "abbreviation": "SM06",
+          "isSupplemental": false
+        },
+        {
+          "name": "SM Trainer Kit: Alolan Sandslash & Alolan Ninetales",
+          "groupId": 2208,
+          "categoryId": 3,
+          "modifiedOn": "2023-01-06T21:37:31.22",
+          "publishedOn": "2018-04-06T00:00:00",
+          "abbreviation": "SMK2",
+          "isSupplemental": true
+        },
+        {
+          "name": "SM - Ultra Prism",
+          "groupId": 2178,
+          "categoryId": 3,
+          "modifiedOn": "2026-08-11T04:58:48.65",
+          "publishedOn": "2018-02-02T00:00:00",
+          "abbreviation": "SM05",
+          "isSupplemental": false
+        },
+        {
+          "name": "McDonald's Promos 2017",
+          "groupId": 2148,
+          "categoryId": 3,
+          "modifiedOn": "2026-02-13T16:52:06.293",
+          "publishedOn": "2017-11-07T00:00:00",
+          "abbreviation": "M17",
+          "isSupplemental": true
+        },
+        {
+          "name": "SM - Crimson Invasion",
+          "groupId": 2071,
+          "categoryId": 3,
+          "modifiedOn": "2026-07-21T20:07:58.323",
+          "publishedOn": "2017-11-03T00:00:00",
+          "abbreviation": "SM04",
+          "isSupplemental": false
+        },
+        {
+          "name": "Shining Legends",
+          "groupId": 2054,
+          "categoryId": 3,
+          "modifiedOn": "2026-08-11T05:00:03.887",
+          "publishedOn": "2017-10-06T00:00:00",
+          "abbreviation": "SHL",
+          "isSupplemental": false
+        },
+        {
+          "name": "SM - Burning Shadows",
+          "groupId": 1957,
+          "categoryId": 3,
+          "modifiedOn": "2026-08-26T02:13:03.99",
+          "publishedOn": "2017-08-04T00:00:00",
+          "abbreviation": "SM03",
+          "isSupplemental": false
+        },
+        {
+          "name": "SM - Guardians Rising",
+          "groupId": 1919,
+          "categoryId": 3,
+          "modifiedOn": "2026-10-21T15:37:23.713",
+          "publishedOn": "2017-05-05T00:00:00",
+          "abbreviation": "SM02",
+          "isSupplemental": false
+        },
+        {
+          "name": "Ash vs Team Rocket Deck Kit (JP Exclusive)",
+          "groupId": 23095,
+          "categoryId": 3,
+          "modifiedOn": "2026-02-27T17:37:47.043",
+          "publishedOn": "2017-04-21T00:00:00",
+          "abbreviation": "AVTR",
+          "isSupplemental": false
+        },
+        {
+          "name": "SM Trainer Kit: Lycanroc & Alolan Raichu",
+          "groupId": 2069,
+          "categoryId": 3,
+          "modifiedOn": "2026-05-12T18:24:21.697",
+          "publishedOn": "2017-04-21T00:00:00",
+          "abbreviation": "SMK1",
+          "isSupplemental": false
+        },
+        {
+          "name": "SM Base Set",
+          "groupId": 1863,
+          "categoryId": 3,
+          "modifiedOn": "2026-10-13T02:11:38.51",
+          "publishedOn": "2017-02-03T00:00:00",
+          "abbreviation": "SM01",
+          "isSupplemental": false
+        },
+        {
+          "name": "SM Promos",
+          "groupId": 1861,
+          "categoryId": 3,
+          "modifiedOn": "2026-10-09T04:24:44.283",
+          "publishedOn": "2016-12-14T00:00:00",
+          "abbreviation": "SMP",
+          "isSupplemental": false
+        },
+        {
+          "name": "XY - Evolutions",
+          "groupId": 1842,
+          "categoryId": 3,
+          "modifiedOn": "2026-10-15T19:20:37.107",
+          "publishedOn": "2016-11-02T00:00:00",
+          "abbreviation": "EVO",
+          "isSupplemental": false
+        },
+        {
+          "name": "Deck Exclusives",
+          "groupId": 1840,
+          "categoryId": 3,
+          "modifiedOn": "2026-10-21T19:24:49.387",
+          "publishedOn": "2016-09-01T00:00:00",
+          "abbreviation": "PR",
+          "isSupplemental": false
+        },
+        {
+          "name": "McDonald's Promos 2016",
+          "groupId": 3087,
+          "categoryId": 3,
+          "modifiedOn": "2026-02-13T16:52:02.947",
+          "publishedOn": "2016-08-05T00:00:00",
+          "abbreviation": "M16",
+          "isSupplemental": true
+        },
+        {
+          "name": "XY - Steam Siege",
+          "groupId": 1815,
+          "categoryId": 3,
+          "modifiedOn": "2026-07-08T05:20:58.057",
+          "publishedOn": "2016-08-03T00:00:00",
+          "abbreviation": "STS",
+          "isSupplemental": false
+        },
+        {
+          "name": "League & Championship Cards",
+          "groupId": 1539,
+          "categoryId": 3,
+          "modifiedOn": "2026-10-20T19:34:00.857",
+          "publishedOn": "2016-06-01T00:00:00",
+          "abbreviation": "PR",
+          "isSupplemental": false
+        },
+        {
+          "name": "XY - Fates Collide",
+          "groupId": 1780,
+          "categoryId": 3,
+          "modifiedOn": "2026-10-19T21:12:22.457",
+          "publishedOn": "2016-05-02T00:00:00",
+          "abbreviation": "FCO",
+          "isSupplemental": false
+        },
+        {
+          "name": "XY Trainer Kit: Pikachu Libre & Suicune",
+          "groupId": 1796,
+          "categoryId": 3,
+          "modifiedOn": "2024-08-20T18:24:14.493",
+          "publishedOn": "2016-04-27T00:00:00",
+          "abbreviation": "PR",
+          "isSupplemental": false
+        },
+        {
+          "name": "Generations",
+          "groupId": 1728,
+          "categoryId": 3,
+          "modifiedOn": "2026-07-15T22:47:14.113",
+          "publishedOn": "2016-02-22T00:00:00",
+          "abbreviation": "GEN",
+          "isSupplemental": false
+        },
+        {
+          "name": "Generations: Radiant Collection",
+          "groupId": 1729,
+          "categoryId": 3,
+          "modifiedOn": "2026-09-10T16:46:02.777",
+          "publishedOn": "2016-02-22T00:00:00",
+          "abbreviation": "GEN",
+          "isSupplemental": false
+        },
+        {
+          "name": "XY - BREAKpoint",
+          "groupId": 1701,
+          "categoryId": 3,
+          "modifiedOn": "2026-07-31T04:55:19.957",
+          "publishedOn": "2016-02-03T00:00:00",
+          "abbreviation": "BKP",
+          "isSupplemental": false
+        },
+        {
+          "name": "McDonald's Promos 2015",
+          "groupId": 1694,
+          "categoryId": 3,
+          "modifiedOn": "2026-02-13T16:51:59.243",
+          "publishedOn": "2015-11-23T00:00:00",
+          "abbreviation": "M15",
+          "isSupplemental": false
+        },
+        {
+          "name": "XY - BREAKthrough",
+          "groupId": 1661,
+          "categoryId": 3,
+          "modifiedOn": "2026-10-13T02:44:18.553",
+          "publishedOn": "2015-11-04T00:00:00",
+          "abbreviation": "BKT",
+          "isSupplemental": false
+        },
+        {
+          "name": "XY - Ancient Origins",
+          "groupId": 1576,
+          "categoryId": 3,
+          "modifiedOn": "2026-09-26T03:48:35.41",
+          "publishedOn": "2015-08-12T00:00:00",
+          "abbreviation": "AOR",
+          "isSupplemental": false
+        },
+        {
+          "name": "XY - Roaring Skies",
+          "groupId": 1534,
+          "categoryId": 3,
+          "modifiedOn": "2026-09-23T01:19:41.763",
+          "publishedOn": "2015-05-06T00:00:00",
+          "abbreviation": "ROS",
+          "isSupplemental": false
+        },
+        {
+          "name": "XY Trainer Kit: Latias & Latios",
+          "groupId": 1536,
+          "categoryId": 3,
+          "modifiedOn": "2024-10-25T17:06:18",
+          "publishedOn": "2015-04-29T00:00:00",
+          "abbreviation": "PR",
+          "isSupplemental": false
+        },
+        {
+          "name": "Jumbo Cards",
+          "groupId": 1528,
+          "categoryId": 3,
+          "modifiedOn": "2026-08-26T17:04:21.797",
+          "publishedOn": "2015-04-01T00:00:00",
+          "abbreviation": "PR",
+          "isSupplemental": false
+        },
+        {
+          "name": "Double Crisis",
+          "groupId": 1525,
+          "categoryId": 3,
+          "modifiedOn": "2026-07-20T19:23:47.967",
+          "publishedOn": "2015-03-25T00:00:00",
+          "abbreviation": "DCR",
+          "isSupplemental": false
+        },
+        {
+          "name": "XY - Primal Clash",
+          "groupId": 1509,
+          "categoryId": 3,
+          "modifiedOn": "2026-10-21T04:44:47.057",
+          "publishedOn": "2015-02-04T00:00:00",
+          "abbreviation": "PRC",
+          "isSupplemental": false
+        },
+        {
+          "name": "XY Trainer Kit: Bisharp & Wigglytuff",
+          "groupId": 1533,
+          "categoryId": 3,
+          "modifiedOn": "2023-03-31T16:31:12.98",
+          "publishedOn": "2014-11-14T00:00:00",
+          "abbreviation": "PR",
+          "isSupplemental": false
+        },
+        {
+          "name": "XY - Phantom Forces",
+          "groupId": 1494,
+          "categoryId": 3,
+          "modifiedOn": "2026-02-19T12:37:47.213",
+          "publishedOn": "2014-11-05T00:00:00",
+          "abbreviation": "PHF",
+          "isSupplemental": false
+        },
+        {
+          "name": "XY - Furious Fists",
+          "groupId": 1481,
+          "categoryId": 3,
+          "modifiedOn": "2026-08-05T21:44:18.65",
+          "publishedOn": "2014-08-13T00:00:00",
+          "abbreviation": "FFI",
+          "isSupplemental": false
+        },
+        {
+          "name": "McDonald's Promos 2014",
+          "groupId": 1692,
+          "categoryId": 3,
+          "modifiedOn": "2026-02-13T16:51:56.47",
+          "publishedOn": "2014-05-23T00:00:00",
+          "abbreviation": "M14",
+          "isSupplemental": false
+        },
+        {
+          "name": "XY - Flashfire",
+          "groupId": 1464,
+          "categoryId": 3,
+          "modifiedOn": "2026-03-16T12:54:43.597",
+          "publishedOn": "2014-05-07T00:00:00",
+          "abbreviation": "FLF",
+          "isSupplemental": false
+        },
+        {
+          "name": "XY Trainer Kit: Sylveon & Noivern",
+          "groupId": 1532,
+          "categoryId": 3,
+          "modifiedOn": "2026-08-10T16:07:20.71",
+          "publishedOn": "2014-03-12T00:00:00",
+          "abbreviation": "PR",
+          "isSupplemental": false
+        },
+        {
+          "name": "XY Base Set",
+          "groupId": 1387,
+          "categoryId": 3,
+          "modifiedOn": "2026-08-05T21:48:06.933",
+          "publishedOn": "2014-02-05T00:00:00",
+          "abbreviation": "XY",
+          "isSupplemental": false
+        },
+        {
+          "name": "XY Promos",
+          "groupId": 1451,
+          "categoryId": 3,
+          "modifiedOn": "2026-10-05T13:33:22.817",
+          "publishedOn": "2013-12-16T00:00:00",
+          "abbreviation": "PR",
+          "isSupplemental": false
+        },
+        {
+          "name": "Kalos Starter Set",
+          "groupId": 1522,
+          "categoryId": 3,
+          "modifiedOn": "2026-02-26T16:49:45.357",
+          "publishedOn": "2013-11-08T00:00:00",
+          "abbreviation": "KSS",
+          "isSupplemental": false
+        },
+        {
+          "name": "Legendary Treasures",
+          "groupId": 1409,
+          "categoryId": 3,
+          "modifiedOn": "2026-03-11T11:58:07.333",
+          "publishedOn": "2013-11-06T00:00:00",
+          "abbreviation": "LTR",
+          "isSupplemental": false
+        },
+        {
+          "name": "Legendary Treasures: Radiant Collection",
+          "groupId": 1465,
+          "categoryId": 3,
+          "modifiedOn": "2026-10-01T19:09:27.63",
+          "publishedOn": "2013-11-06T00:00:00",
+          "abbreviation": "LTR",
+          "isSupplemental": false
+        },
+        {
+          "name": "Plasma Blast",
+          "groupId": 1370,
+          "categoryId": 3,
+          "modifiedOn": "2026-06-20T14:14:42.317",
+          "publishedOn": "2013-08-14T00:00:00",
+          "abbreviation": "PLB",
+          "isSupplemental": false
+        },
+        {
+          "name": "Plasma Freeze",
+          "groupId": 1382,
+          "categoryId": 3,
+          "modifiedOn": "2026-09-22T23:07:50.35",
+          "publishedOn": "2013-05-08T00:00:00",
+          "abbreviation": "PLF",
+          "isSupplemental": false
+        },
+        {
+          "name": "Plasma Storm",
+          "groupId": 1413,
+          "categoryId": 3,
+          "modifiedOn": "2026-04-23T19:54:48.11",
+          "publishedOn": "2013-02-06T00:00:00",
+          "abbreviation": "PLS",
+          "isSupplemental": false
+        },
+        {
+          "name": "Boundaries Crossed",
+          "groupId": 1408,
+          "categoryId": 3,
+          "modifiedOn": "2026-06-12T18:36:12.473",
+          "publishedOn": "2012-11-07T00:00:00",
+          "abbreviation": "BCR",
+          "isSupplemental": false
+        },
+        {
+          "name": "Dragon Vault",
+          "groupId": 1426,
+          "categoryId": 3,
+          "modifiedOn": "2026-05-30T01:43:52.483",
+          "publishedOn": "2012-10-05T00:00:00",
+          "abbreviation": "DRV",
+          "isSupplemental": false
+        },
+        {
+          "name": "Dragons Exalted",
+          "groupId": 1394,
+          "categoryId": 3,
+          "modifiedOn": "2026-05-21T15:19:00.913",
+          "publishedOn": "2012-08-15T00:00:00",
+          "abbreviation": "DRX",
+          "isSupplemental": false
+        },
+        {
+          "name": "McDonald's Promos 2012",
+          "groupId": 1427,
+          "categoryId": 3,
+          "modifiedOn": "2026-02-13T16:50:43.277",
+          "publishedOn": "2012-06-15T00:00:00",
+          "abbreviation": "M12",
+          "isSupplemental": false
+        },
+        {
+          "name": "Dark Explorers",
+          "groupId": 1386,
+          "categoryId": 3,
+          "modifiedOn": "2026-10-05T13:29:57.007",
+          "publishedOn": "2012-05-09T00:00:00",
+          "abbreviation": "DEX",
+          "isSupplemental": false
+        },
+        {
+          "name": "Next Destinies",
+          "groupId": 1412,
+          "categoryId": 3,
+          "modifiedOn": "2026-07-15T22:02:08.043",
+          "publishedOn": "2012-02-08T00:00:00",
+          "abbreviation": "NXD",
+          "isSupplemental": false
+        },
+        {
+          "name": "Noble Victories",
+          "groupId": 1385,
+          "categoryId": 3,
+          "modifiedOn": "2026-10-01T19:08:28.487",
+          "publishedOn": "2011-11-16T00:00:00",
+          "abbreviation": "NVI",
+          "isSupplemental": false
+        },
+        {
+          "name": "BW Trainer Kit: Excadrill & Zoroark",
+          "groupId": 1538,
+          "categoryId": 3,
+          "modifiedOn": "2024-11-13T20:34:29.653",
+          "publishedOn": "2011-09-05T00:00:00",
+          "abbreviation": "BLW",
+          "isSupplemental": false
+        },
+        {
+          "name": "Emerging Powers",
+          "groupId": 1424,
+          "categoryId": 3,
+          "modifiedOn": "2026-05-05T20:28:59.87",
+          "publishedOn": "2011-08-31T00:00:00",
+          "abbreviation": "EPO",
+          "isSupplemental": false
+        },
+        {
+          "name": "McDonald's Promos 2011",
+          "groupId": 1401,
+          "categoryId": 3,
+          "modifiedOn": "2026-05-01T22:46:56.633",
+          "publishedOn": "2011-06-17T00:00:00",
+          "abbreviation": "M11",
+          "isSupplemental": false
+        },
+        {
+          "name": "Black and White",
+          "groupId": 1400,
+          "categoryId": 3,
+          "modifiedOn": "2026-05-09T04:25:37.463",
+          "publishedOn": "2011-04-25T00:00:00",
+          "abbreviation": "BLW",
+          "isSupplemental": false
+        },
+        {
+          "name": "Black and White Promos",
+          "groupId": 1407,
+          "categoryId": 3,
+          "modifiedOn": "2026-09-10T15:04:16.067",
+          "publishedOn": "2011-04-25T00:00:00",
+          "abbreviation": "PR",
+          "isSupplemental": false
+        },
+        {
+          "name": "Call of Legends",
+          "groupId": 1415,
+          "categoryId": 3,
+          "modifiedOn": "2026-10-02T02:56:14.3",
+          "publishedOn": "2011-02-09T00:00:00",
+          "abbreviation": "CL",
+          "isSupplemental": false
+        },
+        {
+          "name": "Triumphant",
+          "groupId": 1381,
+          "categoryId": 3,
+          "modifiedOn": "2026-03-09T14:35:36.257",
+          "publishedOn": "2010-11-03T00:00:00",
+          "abbreviation": "TM",
+          "isSupplemental": false
+        },
+        {
+          "name": "Undaunted",
+          "groupId": 1403,
+          "categoryId": 3,
+          "modifiedOn": "2026-06-01T11:58:14.59",
+          "publishedOn": "2010-08-18T00:00:00",
+          "abbreviation": "UD",
+          "isSupplemental": false
+        },
+        {
+          "name": "HGSS Trainer Kit: Gyarados & Raichu",
+          "groupId": 1540,
+          "categoryId": 3,
+          "modifiedOn": "2023-12-20T19:38:47.463",
+          "publishedOn": "2010-05-12T00:00:00",
+          "abbreviation": "PR",
+          "isSupplemental": false
+        },
+        {
+          "name": "Unleashed",
+          "groupId": 1399,
+          "categoryId": 3,
+          "modifiedOn": "2026-08-05T21:54:09.06",
+          "publishedOn": "2010-05-12T00:00:00",
+          "abbreviation": "UL",
+          "isSupplemental": false
+        },
+        {
+          "name": "HeartGold SoulSilver",
+          "groupId": 1402,
+          "categoryId": 3,
+          "modifiedOn": "2026-08-05T21:55:55.037",
+          "publishedOn": "2010-02-10T00:00:00",
+          "abbreviation": "HS",
+          "isSupplemental": false
+        },
+        {
+          "name": "HGSS Promos",
+          "groupId": 1453,
+          "categoryId": 3,
+          "modifiedOn": "2026-07-15T00:40:55.08",
+          "publishedOn": "2010-02-01T00:00:00",
+          "abbreviation": "PR",
+          "isSupplemental": false
+        },
+        {
+          "name": "Rumble",
+          "groupId": 1433,
+          "categoryId": 3,
+          "modifiedOn": "2022-11-17T21:25:24.627",
+          "publishedOn": "2009-11-16T00:00:00",
+          "abbreviation": "RUM",
+          "isSupplemental": false
+        },
+        {
+          "name": "Arceus",
+          "groupId": 1391,
+          "categoryId": 3,
+          "modifiedOn": "2026-09-10T14:52:34.547",
+          "publishedOn": "2009-11-04T00:00:00",
+          "abbreviation": "AR",
+          "isSupplemental": false
+        },
+        {
+          "name": "Supreme Victors",
+          "groupId": 1384,
+          "categoryId": 3,
+          "modifiedOn": "2026-04-28T13:50:53.263",
+          "publishedOn": "2009-08-19T00:00:00",
+          "abbreviation": "SV",
+          "isSupplemental": false
+        },
+        {
+          "name": "Rising Rivals",
+          "groupId": 1367,
+          "categoryId": 3,
+          "modifiedOn": "2026-09-09T13:16:38.357",
+          "publishedOn": "2009-05-16T00:00:00",
+          "abbreviation": "RR",
+          "isSupplemental": false
+        },
+        {
+          "name": "Platinum",
+          "groupId": 1406,
+          "categoryId": 3,
+          "modifiedOn": "2026-10-06T12:59:36.35",
+          "publishedOn": "2009-02-11T00:00:00",
+          "abbreviation": "PL",
+          "isSupplemental": false
+        },
+        {
+          "name": "Stormfront",
+          "groupId": 1369,
+          "categoryId": 3,
+          "modifiedOn": "2026-08-05T22:09:23.03",
+          "publishedOn": "2008-11-05T00:00:00",
+          "abbreviation": "SF",
+          "isSupplemental": false
+        },
+        {
+          "name": "Countdown Calendar Promos",
+          "groupId": 2155,
+          "categoryId": 3,
+          "modifiedOn": "2025-12-08T23:43:27.863",
+          "publishedOn": "2008-10-01T00:00:00",
+          "abbreviation": "CCP",
+          "isSupplemental": true
+        },
+        {
+          "name": "Legends Awakened",
+          "groupId": 1417,
+          "categoryId": 3,
+          "modifiedOn": "2026-10-21T15:53:28.097",
+          "publishedOn": "2008-08-20T00:00:00",
+          "abbreviation": "LA",
+          "isSupplemental": false
+        },
+        {
+          "name": "Majestic Dawn",
+          "groupId": 1390,
+          "categoryId": 3,
+          "modifiedOn": "2026-06-18T20:49:43.077",
+          "publishedOn": "2008-05-21T00:00:00",
+          "abbreviation": "MD",
+          "isSupplemental": false
+        },
+        {
+          "name": "Great Encounters",
+          "groupId": 1405,
+          "categoryId": 3,
+          "modifiedOn": "2026-07-13T19:59:07.167",
+          "publishedOn": "2008-02-13T00:00:00",
+          "abbreviation": "GE",
+          "isSupplemental": false
+        },
+        {
+          "name": "Secret Wonders",
+          "groupId": 1380,
+          "categoryId": 3,
+          "modifiedOn": "2026-08-05T22:10:45.743",
+          "publishedOn": "2007-11-07T00:00:00",
+          "abbreviation": "SW",
+          "isSupplemental": false
+        },
+        {
+          "name": "DP Training Kit 1 Blue",
+          "groupId": 609,
+          "categoryId": 3,
+          "modifiedOn": "2026-09-25T14:45:19.627",
+          "publishedOn": "2007-09-24T00:00:00",
+          "abbreviation": "PR",
+          "isSupplemental": false
+        },
+        {
+          "name": "DP Training Kit 1 Gold",
+          "groupId": 610,
+          "categoryId": 3,
+          "modifiedOn": "2026-09-25T14:45:31.127",
+          "publishedOn": "2007-09-24T00:00:00",
+          "abbreviation": "PR",
+          "isSupplemental": false
+        },
+        {
+          "name": "DP Trainer Kit: Manaphy & Lucario",
+          "groupId": 1541,
+          "categoryId": 3,
+          "modifiedOn": "2024-10-14T11:32:25.06",
+          "publishedOn": "2007-09-03T00:00:00",
+          "abbreviation": "PR",
+          "isSupplemental": false
+        },
+        {
+          "name": "Mysterious Treasures",
+          "groupId": 1368,
+          "categoryId": 3,
+          "modifiedOn": "2026-09-22T23:26:25.453",
+          "publishedOn": "2007-08-22T00:00:00",
+          "abbreviation": "MT",
+          "isSupplemental": false
+        },
+        {
+          "name": "Diamond and Pearl",
+          "groupId": 1430,
+          "categoryId": 3,
+          "modifiedOn": "2026-03-16T12:25:02.253",
+          "publishedOn": "2007-05-23T00:00:00",
+          "abbreviation": "DP",
+          "isSupplemental": false
+        },
+        {
+          "name": "Diamond and Pearl Promos",
+          "groupId": 1421,
+          "categoryId": 3,
+          "modifiedOn": "2026-09-14T14:13:41.68",
+          "publishedOn": "2007-05-01T00:00:00",
+          "abbreviation": "PR",
+          "isSupplemental": false
+        },
+        {
+          "name": "EX Power Keepers",
+          "groupId": 1383,
+          "categoryId": 3,
+          "modifiedOn": "2026-09-15T19:49:59.573",
+          "publishedOn": "2007-02-01T00:00:00",
+          "abbreviation": "PK",
+          "isSupplemental": false
+        },
+        {
+          "name": "EX Dragon Frontiers",
+          "groupId": 1411,
+          "categoryId": 3,
+          "modifiedOn": "2026-10-13T02:56:25.523",
+          "publishedOn": "2006-11-08T00:00:00",
+          "abbreviation": "DF",
+          "isSupplemental": false
+        },
+        {
+          "name": "EX Crystal Guardians",
+          "groupId": 1395,
+          "categoryId": 3,
+          "modifiedOn": "2026-08-20T17:38:22.023",
+          "publishedOn": "2006-08-30T00:00:00",
+          "abbreviation": "CG",
+          "isSupplemental": false
+        },
+        {
+          "name": "EX Holon Phantoms",
+          "groupId": 1379,
+          "categoryId": 3,
+          "modifiedOn": "2026-09-22T23:06:36.793",
+          "publishedOn": "2006-05-03T00:00:00",
+          "abbreviation": "HP",
+          "isSupplemental": false
+        },
+        {
+          "name": "EX Legend Maker",
+          "groupId": 1378,
+          "categoryId": 3,
+          "modifiedOn": "2026-07-24T13:50:13.83",
+          "publishedOn": "2006-02-13T00:00:00",
+          "abbreviation": "LM",
+          "isSupplemental": false
+        },
+        {
+          "name": "EX Delta Species",
+          "groupId": 1429,
+          "categoryId": 3,
+          "modifiedOn": "2026-10-07T23:24:17.853",
+          "publishedOn": "2005-10-31T00:00:00",
+          "abbreviation": "DS",
+          "isSupplemental": false
+        },
+        {
+          "name": "EX Unseen Forces",
+          "groupId": 1398,
+          "categoryId": 3,
+          "modifiedOn": "2026-08-18T19:14:13.46",
+          "publishedOn": "2005-08-22T00:00:00",
+          "abbreviation": "UF",
+          "isSupplemental": false
+        },
+        {
+          "name": "EX Emerald",
+          "groupId": 1410,
+          "categoryId": 3,
+          "modifiedOn": "2026-09-04T20:26:04.723",
+          "publishedOn": "2005-05-09T00:00:00",
+          "abbreviation": "EM",
+          "isSupplemental": false
+        },
+        {
+          "name": "EX Deoxys",
+          "groupId": 1404,
+          "categoryId": 3,
+          "modifiedOn": "2026-07-30T13:37:59.207",
+          "publishedOn": "2005-02-14T00:00:00",
+          "abbreviation": "DX",
+          "isSupplemental": false
+        },
+        {
+          "name": "EX Team Rocket Returns",
+          "groupId": 1428,
+          "categoryId": 3,
+          "modifiedOn": "2026-10-09T07:17:26.247",
+          "publishedOn": "2004-11-01T00:00:00",
+          "abbreviation": "RR",
+          "isSupplemental": false
+        },
+        {
+          "name": "EX Battle Stadium",
+          "groupId": 1853,
+          "categoryId": 3,
+          "modifiedOn": "2026-10-21T18:48:16.48",
+          "publishedOn": "2004-10-18T00:00:00",
+          "abbreviation": "BST",
+          "isSupplemental": false
+        },
+        {
+          "name": "EX FireRed & LeafGreen",
+          "groupId": 1419,
+          "categoryId": 3,
+          "modifiedOn": "2026-08-05T22:16:35.483",
+          "publishedOn": "2004-08-30T00:00:00",
+          "abbreviation": "RG",
+          "isSupplemental": false
+        },
+        {
+          "name": "Kids WB Promos",
+          "groupId": 2214,
+          "categoryId": 3,
+          "modifiedOn": "2022-09-26T18:33:37.613",
+          "publishedOn": "2004-07-02T00:00:00",
+          "abbreviation": "KWBP",
+          "isSupplemental": false
+        },
+        {
+          "name": "EX Hidden Legends",
+          "groupId": 1416,
+          "categoryId": 3,
+          "modifiedOn": "2026-08-05T22:19:31.943",
+          "publishedOn": "2004-06-14T00:00:00",
+          "abbreviation": "HL",
+          "isSupplemental": false
+        },
+        {
+          "name": "EX Team Magma vs Team Aqua",
+          "groupId": 1377,
+          "categoryId": 3,
+          "modifiedOn": "2026-08-04T20:39:39.937",
+          "publishedOn": "2004-03-15T00:00:00",
+          "abbreviation": "MA",
+          "isSupplemental": false
+        },
+        {
+          "name": "EX Dragon",
+          "groupId": 1376,
+          "categoryId": 3,
+          "modifiedOn": "2026-07-24T13:46:15.197",
+          "publishedOn": "2003-11-24T00:00:00",
+          "abbreviation": "DR",
+          "isSupplemental": false
+        },
+        {
+          "name": "EX Sandstorm",
+          "groupId": 1392,
+          "categoryId": 3,
+          "modifiedOn": "2026-09-02T13:42:41.75",
+          "publishedOn": "2003-09-18T00:00:00",
+          "abbreviation": "SS",
+          "isSupplemental": false
+        },
+        {
+          "name": "EX Ruby and Sapphire",
+          "groupId": 1393,
+          "categoryId": 3,
+          "modifiedOn": "2026-07-24T13:44:56.453",
+          "publishedOn": "2003-06-18T00:00:00",
+          "abbreviation": "RS",
+          "isSupplemental": false
+        },
+        {
+          "name": "Skyridge",
+          "groupId": 1372,
+          "categoryId": 3,
+          "modifiedOn": "2026-06-10T12:57:57.68",
+          "publishedOn": "2003-05-12T00:00:00",
+          "abbreviation": "SK",
+          "isSupplemental": false
+        },
+        {
+          "name": "Aquapolis",
+          "groupId": 1397,
+          "categoryId": 3,
+          "modifiedOn": "2026-06-10T17:22:08.587",
+          "publishedOn": "2003-01-15T00:00:00",
+          "abbreviation": "AQ",
+          "isSupplemental": false
+        },
+        {
+          "name": "Best of Promos",
+          "groupId": 1455,
+          "categoryId": 3,
+          "modifiedOn": "2026-02-17T14:48:00.32",
+          "publishedOn": "2002-12-01T00:00:00",
+          "abbreviation": "PR",
+          "isSupplemental": false
+        },
+        {
+          "name": "Expedition",
+          "groupId": 1375,
+          "categoryId": 3,
+          "modifiedOn": "2026-10-19T13:57:48.007",
+          "publishedOn": "2002-09-15T00:00:00",
+          "abbreviation": "EX",
+          "isSupplemental": false
+        },
+        {
+          "name": "e-Reader Sample Cards",
+          "groupId": 24493,
+          "categoryId": 3,
+          "modifiedOn": "2026-09-25T16:04:09.953",
+          "publishedOn": "2002-08-02T00:00:00",
+          "abbreviation": "SAMPLE",
+          "isSupplemental": false
+        },
+        {
+          "name": "Legendary Collection",
+          "groupId": 1374,
+          "categoryId": 3,
+          "modifiedOn": "2026-09-23T01:21:27.493",
+          "publishedOn": "2002-05-24T00:00:00",
+          "abbreviation": "LC",
+          "isSupplemental": false
+        },
+        {
+          "name": "Neo Destiny",
+          "groupId": 1444,
+          "categoryId": 3,
+          "modifiedOn": "2026-08-27T15:08:57.063",
+          "publishedOn": "2002-02-28T00:00:00",
+          "abbreviation": "N4",
+          "isSupplemental": false
+        },
+        {
+          "name": "Neo Revelation",
+          "groupId": 1389,
+          "categoryId": 3,
+          "modifiedOn": "2026-08-26T02:20:34.713",
+          "publishedOn": "2001-09-21T00:00:00",
+          "abbreviation": "N3",
+          "isSupplemental": false
+        },
+        {
+          "name": "Southern Islands",
+          "groupId": 648,
+          "categoryId": 3,
+          "modifiedOn": "2026-07-11T00:04:03.753",
+          "publishedOn": "2001-07-31T00:00:00",
+          "abbreviation": "SI",
+          "isSupplemental": false
+        },
+        {
+          "name": "Neo Discovery",
+          "groupId": 1434,
+          "categoryId": 3,
+          "modifiedOn": "2026-10-16T19:07:10.983",
+          "publishedOn": "2001-06-01T00:00:00",
+          "abbreviation": "N2",
+          "isSupplemental": false
+        },
+        {
+          "name": "Neo Genesis",
+          "groupId": 1396,
+          "categoryId": 3,
+          "modifiedOn": "2026-08-27T14:58:11.337",
+          "publishedOn": "2000-12-16T00:00:00",
+          "abbreviation": "N1",
+          "isSupplemental": false
+        },
+        {
+          "name": "Gym Challenge",
+          "groupId": 1440,
+          "categoryId": 3,
+          "modifiedOn": "2026-09-23T07:06:11.403",
+          "publishedOn": "2000-10-16T00:00:00",
+          "abbreviation": "G2",
+          "isSupplemental": false
+        },
+        {
+          "name": "Gym Heroes",
+          "groupId": 1441,
+          "categoryId": 3,
+          "modifiedOn": "2026-10-12T13:30:25.363",
+          "publishedOn": "2000-10-14T00:00:00",
+          "abbreviation": "G1",
+          "isSupplemental": false
+        },
+        {
+          "name": "Team Rocket",
+          "groupId": 1373,
+          "categoryId": 3,
+          "modifiedOn": "2026-10-15T20:26:58.26",
+          "publishedOn": "2000-04-24T00:00:00",
+          "abbreviation": "TR",
+          "isSupplemental": false
+        },
+        {
+          "name": "Base Set 2",
+          "groupId": 605,
+          "categoryId": 3,
+          "modifiedOn": "2026-09-16T21:51:39.683",
+          "publishedOn": "2000-02-24T00:00:00",
+          "abbreviation": "BS2",
+          "isSupplemental": false
+        },
+        {
+          "name": "Fossil",
+          "groupId": 630,
+          "categoryId": 3,
+          "modifiedOn": "2026-10-12T19:48:03.723",
+          "publishedOn": "1999-10-10T00:00:00",
+          "abbreviation": "FO",
+          "isSupplemental": false
+        },
+        {
+          "name": "WoTC Promo",
+          "groupId": 1418,
+          "categoryId": 3,
+          "modifiedOn": "2026-09-09T17:11:50.003",
+          "publishedOn": "1999-07-01T00:00:00",
+          "abbreviation": "PR",
+          "isSupplemental": false
+        },
+        {
+          "name": "Jungle",
+          "groupId": 635,
+          "categoryId": 3,
+          "modifiedOn": "2026-10-07T23:25:10.67",
+          "publishedOn": "1999-06-16T00:00:00",
+          "abbreviation": "JU",
+          "isSupplemental": false
+        },
+        {
+          "name": "Base Set",
+          "groupId": 604,
+          "categoryId": 3,
+          "modifiedOn": "2026-10-19T18:50:49.3",
+          "publishedOn": "1999-01-09T00:00:00",
+          "abbreviation": "BS",
+          "isSupplemental": false
+        },
+        {
+          "name": "Base Set (Shadowless)",
+          "groupId": 1663,
+          "categoryId": 3,
+          "modifiedOn": "2026-10-02T23:10:07.707",
+          "publishedOn": "1999-01-09T00:00:00",
+          "abbreviation": "BSS",
+          "isSupplemental": false
+        },
+        {
+          "name": "EX Trainer Kit 1: Latias & Latios",
+          "groupId": 1543,
+          "categoryId": 3,
+          "modifiedOn": "2026-04-09T23:37:53.05",
+          "publishedOn": "2026-10-21T20:00:06.2250354Z",
+          "abbreviation": "PR",
+          "isSupplemental": false
+        },
+        {
+          "name": "EX Trainer Kit 2: Plusle & Minun",
+          "groupId": 1542,
+          "categoryId": 3,
+          "modifiedOn": "2026-05-29T11:31:40.867",
+          "publishedOn": "2026-10-21T20:00:06.2250354Z",
+          "abbreviation": "PR",
+          "isSupplemental": false
+        },
+        {
+          "name": "Nintendo Promos",
+          "groupId": 1423,
+          "categoryId": 3,
+          "modifiedOn": "2026-08-21T13:51:33.157",
+          "publishedOn": "2026-10-21T20:00:06.2250354Z",
+          "abbreviation": "PR",
+          "isSupplemental": false
+        },
+        {
+          "name": "POP Series 1",
+          "groupId": 1422,
+          "categoryId": 3,
+          "modifiedOn": "2025-03-17T17:09:52.317",
+          "publishedOn": "2026-10-21T20:00:06.2250354Z",
+          "abbreviation": "POP",
+          "isSupplemental": false
+        },
+        {
+          "name": "POP Series 2",
+          "groupId": 1447,
+          "categoryId": 3,
+          "modifiedOn": "2025-11-12T14:26:44.223",
+          "publishedOn": "2026-10-21T20:00:06.2250354Z",
+          "abbreviation": "POP",
+          "isSupplemental": false
+        },
+        {
+          "name": "POP Series 3",
+          "groupId": 1442,
+          "categoryId": 3,
+          "modifiedOn": "2026-06-05T14:52:20.137",
+          "publishedOn": "2026-10-21T20:00:06.2250354Z",
+          "abbreviation": "POP",
+          "isSupplemental": false
+        },
+        {
+          "name": "POP Series 4",
+          "groupId": 1452,
+          "categoryId": 3,
+          "modifiedOn": "2023-02-01T15:02:28.727",
+          "publishedOn": "2026-10-21T20:00:06.2250354Z",
+          "abbreviation": "POP",
+          "isSupplemental": false
+        },
+        {
+          "name": "POP Series 5",
+          "groupId": 1439,
+          "categoryId": 3,
+          "modifiedOn": "2026-05-07T13:10:16.383",
+          "publishedOn": "2026-10-21T20:00:06.2250354Z",
+          "abbreviation": "POP",
+          "isSupplemental": false
+        },
+        {
+          "name": "POP Series 6",
+          "groupId": 1432,
+          "categoryId": 3,
+          "modifiedOn": "2025-11-20T07:00:15.483",
+          "publishedOn": "2026-10-21T20:00:06.2250354Z",
+          "abbreviation": "POP",
+          "isSupplemental": false
+        },
+        {
+          "name": "POP Series 7",
+          "groupId": 1414,
+          "categoryId": 3,
+          "modifiedOn": "2026-02-27T00:51:24.283",
+          "publishedOn": "2026-10-21T20:00:06.2250354Z",
+          "abbreviation": "POP",
+          "isSupplemental": false
+        },
+        {
+          "name": "POP Series 8",
+          "groupId": 1450,
+          "categoryId": 3,
+          "modifiedOn": "2025-11-20T01:24:25.957",
+          "publishedOn": "2026-10-21T20:00:06.2250354Z",
+          "abbreviation": "POP",
+          "isSupplemental": false
+        },
+        {
+          "name": "POP Series 9",
+          "groupId": 1446,
+          "categoryId": 3,
+          "modifiedOn": "2026-06-18T13:23:49.917",
+          "publishedOn": "2026-10-21T20:00:06.2250354Z",
+          "abbreviation": "POP",
+          "isSupplemental": false
+        },
+        {
+          "name": "Alternate Art Promos",
+          "groupId": 1938,
+          "categoryId": 3,
+          "modifiedOn": "2026-08-20T17:41:47.18",
+          "publishedOn": "2026-10-21T20:00:06.2250354Z",
+          "abbreviation": "PR",
+          "isSupplemental": true
+        },
+        {
+          "name": "Blister Exclusives",
+          "groupId": 2289,
+          "categoryId": 3,
+          "modifiedOn": "2026-10-19T13:34:52.953",
+          "publishedOn": "2026-10-21T20:00:06.2250354Z",
+          "abbreviation": "BLE",
+          "isSupplemental": true
+        },
+        {
+          "name": "Burger King Promos",
+          "groupId": 2175,
+          "categoryId": 3,
+          "modifiedOn": "2026-04-14T16:51:40.05",
+          "publishedOn": "2026-10-21T20:00:06.2250354Z",
+          "abbreviation": "BKP",
+          "isSupplemental": true
+        },
+        {
+          "name": "First Partner Pack",
+          "groupId": 2776,
+          "categoryId": 3,
+          "modifiedOn": "2026-04-14T16:53:56.683",
+          "publishedOn": "2026-10-21T20:00:06.2250354Z",
+          "abbreviation": "FPP",
+          "isSupplemental": true
+        },
+        {
+          "name": "Miscellaneous Cards & Products",
+          "groupId": 2374,
+          "categoryId": 3,
+          "modifiedOn": "2026-10-21T18:22:29.49",
+          "publishedOn": "2026-10-21T20:00:06.2250354Z",
+          "abbreviation": "MCAP",
+          "isSupplemental": true
+        },
+        {
+          "name": "Pikachu World Collection Promos",
+          "groupId": 2205,
+          "categoryId": 3,
+          "modifiedOn": "2026-05-05T13:38:49.02",
+          "publishedOn": "2026-10-21T20:00:06.2250354Z",
+          "abbreviation": "PWCP",
+          "isSupplemental": true
+        },
+        {
+          "name": "Professor Program Promos",
+          "groupId": 2332,
+          "categoryId": 3,
+          "modifiedOn": "2026-10-07T16:24:58.283",
+          "publishedOn": "2026-10-21T20:00:06.2250354Z",
+          "abbreviation": "PPP",
+          "isSupplemental": true
+        }
+      ],
+      "success": true,
+      "totalItems": 220
+    },
+    "report": {
+      "groups": 220,
+      "missing": [
+        {
+          "setId": "tk1a",
+          "reason": "sin grupo exacto compatible"
+        },
+        {
+          "setId": "mcd18",
+          "reason": "sin grupo exacto compatible"
+        },
+        {
+          "setId": "mcd21",
+          "reason": "sin grupo exacto compatible"
+        },
+        {
+          "setId": "basep",
+          "reason": "sin grupo exacto compatible"
+        },
+        {
+          "setId": "xyp",
+          "reason": "sin grupo exacto compatible"
+        },
+        {
+          "setId": "mcd19",
+          "reason": "sin grupo exacto compatible"
+        },
+        {
+          "setId": "bp",
+          "reason": "sin grupo exacto compatible"
+        },
+        {
+          "setId": "tk1b",
+          "reason": "sin grupo exacto compatible"
+        },
+        {
+          "setId": "tk2a",
+          "reason": "sin grupo exacto compatible"
+        },
+        {
+          "setId": "hsp",
+          "reason": "sin grupo exacto compatible"
+        },
+        {
+          "setId": "smp",
+          "reason": "sin grupo exacto compatible"
+        },
+        {
+          "setId": "fut20",
+          "reason": "sin grupo exacto compatible"
+        },
+        {
+          "setId": "tk2b",
+          "reason": "sin grupo exacto compatible"
+        },
+        {
+          "setId": "mcd12",
+          "reason": "sin grupo exacto compatible"
+        },
+        {
+          "setId": "swshp",
+          "reason": "sin grupo exacto compatible"
+        },
+        {
+          "setId": "mcd11",
+          "reason": "sin grupo exacto compatible"
+        },
+        {
+          "setId": "mcd17",
+          "reason": "sin grupo exacto compatible"
+        },
+        {
+          "setId": "mcd22",
+          "reason": "sin grupo exacto compatible"
+        },
+        {
+          "setId": "svp",
+          "reason": "sin grupo exacto compatible"
+        },
+        {
+          "setId": "dpp",
+          "reason": "sin grupo exacto compatible"
+        },
+        {
+          "setId": "mcd14",
+          "reason": "sin grupo exacto compatible"
+        },
+        {
+          "setId": "mcd15",
+          "reason": "sin grupo exacto compatible"
+        },
+        {
+          "setId": "bwp",
+          "reason": "sin grupo exacto compatible"
+        },
+        {
+          "setId": "sve",
+          "reason": "sin grupo exacto compatible"
+        },
+        {
+          "setId": "ru1",
+          "reason": "sin grupo exacto compatible"
+        },
+        {
+          "setId": "mcd16",
+          "reason": "sin grupo exacto compatible"
+        },
+        {
+          "setId": "np",
+          "reason": "sin grupo exacto compatible"
+        }
+      ],
+      "mappings": [
+        {
+          "setId": "me1",
+          "groupId": 24380
+        },
+        {
+          "setId": "ecard3",
+          "groupId": 1372
+        },
+        {
+          "setId": "swsh8",
+          "groupId": 2906
+        },
+        {
+          "setId": "xy1",
+          "groupId": 1387
+        },
+        {
+          "setId": "ex10",
+          "groupId": 1398
+        },
+        {
+          "setId": "ex16",
+          "groupId": 1383
+        },
+        {
+          "setId": "xy9",
+          "groupId": 1701
+        },
+        {
+          "setId": "sm11",
+          "groupId": 2464
+        },
+        {
+          "setId": "sv3",
+          "groupId": 23228
+        },
+        {
+          "setId": "swsh3",
+          "groupId": 2675
+        },
+        {
+          "setId": "ex15",
+          "groupId": 1411
+        },
+        {
+          "setId": "sv2",
+          "groupId": 23120
+        },
+        {
+          "setId": "swsh5",
+          "groupId": 2765
+        },
+        {
+          "setId": "ecard1",
+          "groupId": 1375
+        },
+        {
+          "setId": "sm4",
+          "groupId": 2071
+        },
+        {
+          "setId": "pop3",
+          "groupId": 1442
+        },
+        {
+          "setId": "dp2",
+          "groupId": 1368
+        },
+        {
+          "setId": "rsv10pt5",
+          "groupId": 24326
+        },
+        {
+          "setId": "xy11",
+          "groupId": 1815
+        },
+        {
+          "setId": "dp1",
+          "groupId": 1430
+        },
+        {
+          "setId": "sm1",
+          "groupId": 1863
+        },
+        {
+          "setId": "ex8",
+          "groupId": 1404
+        },
+        {
+          "setId": "sv6pt5",
+          "groupId": 23529
+        },
+        {
+          "setId": "col1",
+          "groupId": 1415
+        },
+        {
+          "setId": "ecard2",
+          "groupId": 1397
+        },
+        {
+          "setId": "sv7",
+          "groupId": 23537
+        },
+        {
+          "setId": "sma",
+          "groupId": 2594
+        },
+        {
+          "setId": "pop1",
+          "groupId": 1422
+        },
+        {
+          "setId": "swsh6",
+          "groupId": 2807
+        },
+        {
+          "setId": "ex12",
+          "groupId": 1378
+        },
+        {
+          "setId": "gym2",
+          "groupId": 1440
+        },
+        {
+          "setId": "sm3",
+          "groupId": 1957
+        },
+        {
+          "setId": "xy8",
+          "groupId": 1661
+        },
+        {
+          "setId": "swsh4",
+          "groupId": 2701
+        },
+        {
+          "setId": "xy4",
+          "groupId": 1494
+        },
+        {
+          "setId": "base2",
+          "groupId": 635
+        },
+        {
+          "setId": "xy3",
+          "groupId": 1481
+        },
+        {
+          "setId": "bw8",
+          "groupId": 1413
+        },
+        {
+          "setId": "xy10",
+          "groupId": 1780
+        },
+        {
+          "setId": "ex9",
+          "groupId": 1410
+        },
+        {
+          "setId": "bw1",
+          "groupId": 1400
+        },
+        {
+          "setId": "pop5",
+          "groupId": 1439
+        },
+        {
+          "setId": "bw5",
+          "groupId": 1386
+        },
+        {
+          "setId": "base4",
+          "groupId": 605
+        },
+        {
+          "setId": "swsh9tg",
+          "groupId": 3020
+        },
+        {
+          "setId": "me2",
+          "groupId": 24448
+        },
+        {
+          "setId": "swsh2",
+          "groupId": 2626
+        },
+        {
+          "setId": "pl1",
+          "groupId": 1406
+        },
+        {
+          "setId": "swsh12tg",
+          "groupId": 17674
+        },
+        {
+          "setId": "pop9",
+          "groupId": 1446
+        },
+        {
+          "setId": "swsh12pt5",
+          "groupId": 17688
+        },
+        {
+          "setId": "me3",
+          "groupId": 24587
+        },
+        {
+          "setId": "gym1",
+          "groupId": 1441
+        },
+        {
+          "setId": "ex4",
+          "groupId": 1377
+        },
+        {
+          "setId": "xy0",
+          "groupId": 1522
+        },
+        {
+          "setId": "bw6",
+          "groupId": 1394
+        },
+        {
+          "setId": "swsh12pt5gg",
+          "groupId": 17689
+        },
+        {
+          "setId": "xy6",
+          "groupId": 1534
+        },
+        {
+          "setId": "dp4",
+          "groupId": 1405
+        },
+        {
+          "setId": "sm115",
+          "groupId": 2480
+        },
+        {
+          "setId": "hgss3",
+          "groupId": 1403
+        },
+        {
+          "setId": "g1",
+          "groupId": 1728
+        },
+        {
+          "setId": "sm5",
+          "groupId": 2178
+        },
+        {
+          "setId": "sv8",
+          "groupId": 23651
+        },
+        {
+          "setId": "base5",
+          "groupId": 1373
+        },
+        {
+          "setId": "swsh10tg",
+          "groupId": 3068
+        },
+        {
+          "setId": "sv4",
+          "groupId": 23286
+        },
+        {
+          "setId": "base6",
+          "groupId": 1374
+        },
+        {
+          "setId": "me5",
+          "groupId": 24688
+        },
+        {
+          "setId": "sv6",
+          "groupId": 23473
+        },
+        {
+          "setId": "bw10",
+          "groupId": 1370
+        },
+        {
+          "setId": "me2pt5",
+          "groupId": 24541
+        },
+        {
+          "setId": "ex7",
+          "groupId": 1428
+        },
+        {
+          "setId": "pop7",
+          "groupId": 1414
+        },
+        {
+          "setId": "sv1",
+          "groupId": 22873
+        },
+        {
+          "setId": "swsh11tg",
+          "groupId": 3172
+        },
+        {
+          "setId": "pop8",
+          "groupId": 1450
+        },
+        {
+          "setId": "swsh45sv",
+          "groupId": 2781
+        },
+        {
+          "setId": "hgss1",
+          "groupId": 1402
+        },
+        {
+          "setId": "pop6",
+          "groupId": 1432
+        },
+        {
+          "setId": "sv8pt5",
+          "groupId": 23821
+        },
+        {
+          "setId": "swsh9",
+          "groupId": 2948
+        },
+        {
+          "setId": "neo3",
+          "groupId": 1389
+        },
+        {
+          "setId": "swsh7",
+          "groupId": 2848
+        },
+        {
+          "setId": "pgo",
+          "groupId": 3064
+        },
+        {
+          "setId": "ex3",
+          "groupId": 1376
+        },
+        {
+          "setId": "sm8",
+          "groupId": 2328
+        },
+        {
+          "setId": "swsh1",
+          "groupId": 2585
+        },
+        {
+          "setId": "ex6",
+          "groupId": 1419
+        },
+        {
+          "setId": "sm7",
+          "groupId": 2278
+        },
+        {
+          "setId": "dc1",
+          "groupId": 1525
+        },
+        {
+          "setId": "xy12",
+          "groupId": 1842
+        },
+        {
+          "setId": "dp5",
+          "groupId": 1390
+        },
+        {
+          "setId": "me55",
+          "groupId": 24722
+        },
+        {
+          "setId": "bw9",
+          "groupId": 1382
+        },
+        {
+          "setId": "sm9",
+          "groupId": 2377
+        },
+        {
+          "setId": "sm10",
+          "groupId": 2420
+        },
+        {
+          "setId": "det1",
+          "groupId": 2409
+        },
+        {
+          "setId": "cel25c",
+          "groupId": 2931
+        },
+        {
+          "setId": "dp7",
+          "groupId": 1369
+        },
+        {
+          "setId": "bw3",
+          "groupId": 1385
+        },
+        {
+          "setId": "hgss4",
+          "groupId": 1381
+        },
+        {
+          "setId": "ex1",
+          "groupId": 1393
+        },
+        {
+          "setId": "bw2",
+          "groupId": 1424
+        },
+        {
+          "setId": "sm35",
+          "groupId": 2054
+        },
+        {
+          "setId": "pl4",
+          "groupId": 1391
+        },
+        {
+          "setId": "base3",
+          "groupId": 630
+        },
+        {
+          "setId": "xy5",
+          "groupId": 1509
+        },
+        {
+          "setId": "me4",
+          "groupId": 24655
+        },
+        {
+          "setId": "sv10",
+          "groupId": 24269
+        },
+        {
+          "setId": "swsh12",
+          "groupId": 3170
+        },
+        {
+          "setId": "pl2",
+          "groupId": 1367
+        },
+        {
+          "setId": "swsh45",
+          "groupId": 2754
+        },
+        {
+          "setId": "neo1",
+          "groupId": 1396
+        },
+        {
+          "setId": "swsh11",
+          "groupId": 3118
+        },
+        {
+          "setId": "si1",
+          "groupId": 648
+        },
+        {
+          "setId": "cel25",
+          "groupId": 2867
+        },
+        {
+          "setId": "bw11",
+          "groupId": 1409
+        },
+        {
+          "setId": "ex2",
+          "groupId": 1392
+        },
+        {
+          "setId": "xy7",
+          "groupId": 1576
+        },
+        {
+          "setId": "me55c",
+          "groupId": 24837
+        },
+        {
+          "setId": "ex11",
+          "groupId": 1429
+        },
+        {
+          "setId": "dv1",
+          "groupId": 1426
+        },
+        {
+          "setId": "swsh35",
+          "groupId": 2685
+        },
+        {
+          "setId": "pop4",
+          "groupId": 1452
+        },
+        {
+          "setId": "sv5",
+          "groupId": 23381
+        },
+        {
+          "setId": "ex13",
+          "groupId": 1379
+        },
+        {
+          "setId": "swsh10",
+          "groupId": 3040
+        },
+        {
+          "setId": "hgss2",
+          "groupId": 1399
+        },
+        {
+          "setId": "neo4",
+          "groupId": 1444
+        },
+        {
+          "setId": "neo2",
+          "groupId": 1434
+        },
+        {
+          "setId": "sm75",
+          "groupId": 2295
+        },
+        {
+          "setId": "xy2",
+          "groupId": 1464
+        },
+        {
+          "setId": "base1",
+          "groupId": 604
+        },
+        {
+          "setId": "sv9",
+          "groupId": 24073
+        },
+        {
+          "setId": "sm6",
+          "groupId": 2209
+        },
+        {
+          "setId": "pop2",
+          "groupId": 1447
+        },
+        {
+          "setId": "ex14",
+          "groupId": 1395
+        },
+        {
+          "setId": "sm2",
+          "groupId": 1919
+        },
+        {
+          "setId": "dp3",
+          "groupId": 1380
+        },
+        {
+          "setId": "zsv10pt5",
+          "groupId": 24325
+        },
+        {
+          "setId": "sm12",
+          "groupId": 2534
+        },
+        {
+          "setId": "dp6",
+          "groupId": 1417
+        },
+        {
+          "setId": "pl3",
+          "groupId": 1384
+        },
+        {
+          "setId": "bw4",
+          "groupId": 1412
+        },
+        {
+          "setId": "sv4pt5",
+          "groupId": 23353
+        },
+        {
+          "setId": "sv3pt5",
+          "groupId": 23237
+        },
+        {
+          "setId": "bw7",
+          "groupId": 1408
+        },
+        {
+          "setId": "ex5",
+          "groupId": 1416
+        }
+      ]
+    }
+  }
+}

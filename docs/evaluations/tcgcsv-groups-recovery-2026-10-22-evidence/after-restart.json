@@ -1,0 +1,411 @@
+{
+  "evaluatedAt": "2026-10-22T23:44:05.080Z",
+  "http": {
+    "api": 200,
+    "web": 200
+  },
+  "controls": [
+    {
+      "provider": "tcgcsv",
+      "cyclePending": false,
+      "lastHandledAt": "2026-10-22T02:24:26.998Z",
+      "heartbeatAt": "2026-10-22T23:44:05.004Z",
+      "schedulerEnabled": true,
+      "workerConfiguredEnabled": true,
+      "nextCycleAt": "2026-10-22T02:25:26.998Z",
+      "lastError": null,
+      "heartbeatRecent": true
+    }
+  ],
+  "queues": [
+    {
+      "provider": "tcgcsv",
+      "status": "completed",
+      "jobs": 146
+    },
+    {
+      "provider": "tcgcsv",
+      "status": "waiting",
+      "jobs": 25
+    }
+  ],
+  "pauses": [],
+  "groups": [
+    {
+      "id": 1376,
+      "sets": [
+        "ex3"
+      ],
+      "status": "pending",
+      "matched": 100,
+      "cards": 100,
+      "cache": "validated",
+      "download": "2026-10-22T02:25:30.646Z",
+      "available": "2026-10-23T02:27:30.500Z",
+      "wait": "download_cooldown",
+      "verificationPending": false,
+      "phase": null
+    },
+    {
+      "id": 1384,
+      "sets": [
+        "pl3"
+      ],
+      "status": "pending",
+      "matched": 144,
+      "cards": 153,
+      "cache": "validated",
+      "download": "2026-10-22T02:26:10.532Z",
+      "available": "2026-10-23T02:28:10.382Z",
+      "wait": "download_cooldown",
+      "verificationPending": true,
+      "phase": "No se pudo validar o publicar el lote TCGCSV"
+    },
+    {
+      "id": 1390,
+      "sets": [
+        "dp5"
+      ],
+      "status": "pending",
+      "matched": 83,
+      "cards": 100,
+      "cache": "validated",
+      "download": "2026-10-22T02:26:35.829Z",
+      "available": "2026-10-23T02:28:35.687Z",
+      "wait": "download_cooldown",
+      "verificationPending": true,
+      "phase": "No se pudo validar o publicar el lote TCGCSV"
+    },
+    {
+      "id": 1394,
+      "sets": [
+        "bw6"
+      ],
+      "status": "pending",
+      "matched": 90,
+      "cards": 128,
+      "cache": "validated",
+      "download": "2026-10-22T02:26:55.760Z",
+      "available": "2026-10-23T02:28:55.618Z",
+      "wait": "download_cooldown",
+      "verificationPending": false,
+      "phase": null
+    },
+    {
+      "id": 1398,
+      "sets": [
+        "ex10"
+      ],
+      "status": "pending",
+      "matched": 110,
+      "cards": 145,
+      "cache": "validated",
+      "download": "2026-10-22T02:27:15.561Z",
+      "available": "2026-10-23T02:29:15.383Z",
+      "wait": "download_cooldown",
+      "verificationPending": true,
+      "phase": "No se pudo validar o publicar el lote TCGCSV"
+    },
+    {
+      "id": 1401,
+      "sets": [
+        "mcd11"
+      ],
+      "status": "pending",
+      "matched": 12,
+      "cards": 12,
+      "cache": "validated",
+      "download": "2026-10-22T02:27:30.830Z",
+      "available": "2026-10-23T02:29:30.674Z",
+      "wait": "download_cooldown",
+      "verificationPending": true,
+      "phase": "No se pudo validar o publicar el lote TCGCSV"
+    },
+    {
+      "id": 1407,
+      "sets": [
+        "bwp"
+      ],
+      "status": "pending",
+      "matched": 63,
+      "cards": 101,
+      "cache": "validated",
+      "download": "2026-10-22T02:28:00.789Z",
+      "available": "2026-10-23T02:30:00.642Z",
+      "wait": "download_cooldown",
+      "verificationPending": true,
+      "phase": "No se pudo validar o publicar el lote TCGCSV"
+    },
+    {
+      "id": 1418,
+      "sets": [
+        "basep"
+      ],
+      "status": "pending",
+      "matched": 34,
+      "cards": 53,
+      "cache": "validated",
+      "download": "2026-10-22T02:28:56.205Z",
+      "available": "2026-10-23T02:30:56.059Z",
+      "wait": "download_cooldown",
+      "verificationPending": true,
+      "phase": "No se pudo validar o publicar el lote TCGCSV"
+    },
+    {
+      "id": 1421,
+      "sets": [
+        "dpp"
+      ],
+      "status": "pending",
+      "matched": 51,
+      "cards": 56,
+      "cache": "validated",
+      "download": "2026-10-22T02:29:06.249Z",
+      "available": "2026-10-23T02:31:06.105Z",
+      "wait": "download_cooldown",
+      "verificationPending": true,
+      "phase": "No se pudo validar o publicar el lote TCGCSV"
+    },
+    {
+      "id": 1423,
+      "sets": [
+        "np"
+      ],
+      "status": "pending",
+      "matched": 27,
+      "cards": 40,
+      "cache": "validated",
+      "download": "2026-10-22T02:29:16.047Z",
+      "available": "2026-10-23T02:31:15.837Z",
+      "wait": "download_cooldown",
+      "verificationPending": true,
+      "phase": "No se pudo validar o publicar el lote TCGCSV"
+    },
+    {
+      "id": 1427,
+      "sets": [
+        "mcd12"
+      ],
+      "status": "pending",
+      "matched": 12,
+      "cards": 12,
+      "cache": "validated",
+      "download": "2026-10-22T02:29:31.429Z",
+      "available": "2026-10-23T02:31:31.290Z",
+      "wait": "download_cooldown",
+      "verificationPending": true,
+      "phase": "No se pudo validar o publicar el lote TCGCSV"
+    },
+    {
+      "id": 1428,
+      "sets": [
+        "ex7"
+      ],
+      "status": "pending",
+      "matched": 106,
+      "cards": 111,
+      "cache": "validated",
+      "download": "2026-10-22T02:29:36.499Z",
+      "available": "2026-10-23T02:31:36.280Z",
+      "wait": "download_cooldown",
+      "verificationPending": true,
+      "phase": "No se pudo validar o publicar el lote TCGCSV"
+    },
+    {
+      "id": 1452,
+      "sets": [
+        "pop4"
+      ],
+      "status": "pending",
+      "matched": 13,
+      "cards": 17,
+      "cache": "validated",
+      "download": "2026-10-22T21:55:16.228Z",
+      "available": "2026-10-23T21:57:16.075Z",
+      "wait": "download_cooldown",
+      "verificationPending": true,
+      "phase": "No se pudo validar o publicar el lote TCGCSV"
+    },
+    {
+      "id": 1455,
+      "sets": [
+        "bp"
+      ],
+      "status": "pending",
+      "matched": 7,
+      "cards": 9,
+      "cache": "validated",
+      "download": "2026-10-22T21:55:25.980Z",
+      "available": "2026-10-23T21:57:25.808Z",
+      "wait": "download_cooldown",
+      "verificationPending": true,
+      "phase": "No se pudo validar o publicar el lote TCGCSV"
+    },
+    {
+      "id": 1494,
+      "sets": [
+        "xy4"
+      ],
+      "status": "pending",
+      "matched": 97,
+      "cards": 124,
+      "cache": "validated",
+      "download": "2026-10-22T02:22:45.565Z",
+      "available": "2026-10-23T02:24:45.402Z",
+      "wait": "download_cooldown",
+      "verificationPending": false,
+      "phase": null
+    },
+    {
+      "id": 1701,
+      "sets": [
+        "xy9"
+      ],
+      "status": "pending",
+      "matched": 100,
+      "cards": 126,
+      "cache": "validated",
+      "download": "2026-10-22T21:56:30.897Z",
+      "available": "2026-10-23T21:58:30.718Z",
+      "wait": "download_cooldown",
+      "verificationPending": false,
+      "phase": null
+    },
+    {
+      "id": 2555,
+      "sets": [
+        "mcd19"
+      ],
+      "status": "pending",
+      "matched": 12,
+      "cards": 12,
+      "cache": "validated",
+      "download": "2026-10-22T02:24:36.483Z",
+      "available": "2026-10-23T02:26:36.259Z",
+      "wait": "download_cooldown",
+      "verificationPending": true,
+      "phase": "No se pudo validar o publicar el lote TCGCSV"
+    },
+    {
+      "id": 2594,
+      "sets": [
+        "sma"
+      ],
+      "status": "pending",
+      "matched": 55,
+      "cards": 94,
+      "cache": "validated",
+      "download": "2026-10-22T22:09:26.059Z",
+      "available": "2026-10-23T22:11:25.840Z",
+      "wait": "download_cooldown",
+      "verificationPending": true,
+      "phase": "No se pudo validar o publicar el lote TCGCSV"
+    },
+    {
+      "id": 2781,
+      "sets": [
+        "swsh45sv"
+      ],
+      "status": "pending",
+      "matched": 122,
+      "cards": 122,
+      "cache": "validated",
+      "download": "2026-10-22T22:10:00.983Z",
+      "available": "2026-10-23T22:12:00.831Z",
+      "wait": "download_cooldown",
+      "verificationPending": true,
+      "phase": "No se pudo validar o publicar el lote TCGCSV"
+    },
+    {
+      "id": 2931,
+      "sets": [
+        "cel25c"
+      ],
+      "status": "pending",
+      "matched": 25,
+      "cards": 25,
+      "cache": "validated",
+      "download": "2026-10-22T22:10:30.770Z",
+      "available": "2026-10-23T22:12:30.450Z",
+      "wait": "download_cooldown",
+      "verificationPending": true,
+      "phase": "No se pudo validar o publicar el lote TCGCSV"
+    },
+    {
+      "id": 3020,
+      "sets": [
+        "swsh9tg"
+      ],
+      "status": "pending",
+      "matched": 27,
+      "cards": 30,
+      "cache": "validated",
+      "download": "2026-10-22T22:10:40.510Z",
+      "available": "2026-10-23T22:12:40.329Z",
+      "wait": "download_cooldown",
+      "verificationPending": true,
+      "phase": "No se pudo validar o publicar el lote TCGCSV"
+    },
+    {
+      "id": 3068,
+      "sets": [
+        "swsh10tg"
+      ],
+      "status": "pending",
+      "matched": 28,
+      "cards": 30,
+      "cache": "validated",
+      "download": "2026-10-22T22:10:55.834Z",
+      "available": "2026-10-23T22:12:55.604Z",
+      "wait": "download_cooldown",
+      "verificationPending": true,
+      "phase": "No se pudo validar o publicar el lote TCGCSV"
+    },
+    {
+      "id": 3172,
+      "sets": [
+        "swsh11tg"
+      ],
+      "status": "pending",
+      "matched": 28,
+      "cards": 30,
+      "cache": "validated",
+      "download": "2026-10-22T22:11:20.875Z",
+      "available": "2026-10-23T22:13:20.692Z",
+      "wait": "download_cooldown",
+      "verificationPending": true,
+      "phase": "No se pudo validar o publicar el lote TCGCSV"
+    },
+    {
+      "id": 17674,
+      "sets": [
+        "swsh12tg"
+      ],
+      "status": "pending",
+      "matched": 28,
+      "cards": 30,
+      "cache": "validated",
+      "download": "2026-10-22T22:11:25.738Z",
+      "available": "2026-10-23T22:13:25.602Z",
+      "wait": "download_cooldown",
+      "verificationPending": true,
+      "phase": "No se pudo validar o publicar el lote TCGCSV"
+    },
+    {
+      "id": 17689,
+      "sets": [
+        "swsh12pt5gg"
+      ],
+      "status": "pending",
+      "matched": 66,
+      "cards": 70,
+      "cache": "validated",
+      "download": "2026-10-22T22:11:35.717Z",
+      "available": "2026-10-23T22:13:35.580Z",
+      "wait": "download_cooldown",
+      "verificationPending": true,
+      "phase": "No se pudo validar o publicar el lote TCGCSV"
+    }
+  ],
+  "budgetsPreserved": true
+}

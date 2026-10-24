@@ -260,6 +260,9 @@ describe('PriceBackfillService', () => {
           cardId: negativaVieja,
           status: 'completed',
           completedAt: new Date(now.getTime() - 25 * 60 * 60 * 1000),
+          // La elegibilidad depende también de availableAt; no del redondeo
+          // submilisegundo entre el DEFAULT now() y la consulta siguiente.
+          availableAt: new Date(now.getTime() - 60_000),
         },
       ],
     });

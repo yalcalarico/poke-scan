@@ -53,7 +53,7 @@ export interface PriceHistoryParams {
    */
   variant?: CardVariant;
   /** Proveedor histórico; `legacy` solicita filas sin procedencia verificable. */
-  provider?: 'pokemontcg.io' | 'tcgdex' | 'scrydex' | 'legacy';
+  provider?: 'pokemontcg.io' | 'tcgdex' | 'scrydex' | 'tcgcsv' | 'legacy';
 }
 
 export function buildCardsSearchPath(params: CardSearchParams = {}): string {
