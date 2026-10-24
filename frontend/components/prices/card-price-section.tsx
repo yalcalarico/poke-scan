@@ -240,6 +240,7 @@ export function CardPriceSection({ cardId, initialPrices = [], showComparison = 
           windowLabel={delta?.windowLabel}
           onOpenDetails={hasPrices ? () => setIsSheetOpen(true) : undefined}
           variant={reference?.variant}
+          provider={reference?.provider}
         />
       )}
 

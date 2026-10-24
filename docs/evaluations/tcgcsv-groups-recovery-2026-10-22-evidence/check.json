@@ -1,0 +1,17 @@
+{
+  "command": "pnpm run check",
+  "exitCode": 0,
+  "tests": {
+    "backend": 619,
+    "e2e": 6,
+    "frontend": 626,
+    "scripts": 104,
+    "total": 1355
+  },
+  "lint": true,
+  "typecheck": true,
+  "backendBuild": true,
+  "frontendBuild": true,
+  "focusedTcgcsv": true,
+  "flow": true
+}

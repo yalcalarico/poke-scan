@@ -20,7 +20,7 @@ describe('TCGCSV: ciclo de descubrimiento y cache por build', () => {
       if (text.includes('provider_rate_limits')) return [{ waitMs: 0 }];
       if (text.includes('BOOL_AND')) return [{ id: 'sv4', name: 'Paradox Rift', series: 'Scarlet & Violet', englishOnly: true }];
       if (text.includes('FOR UPDATE')) return [{ id: 'global' }];
-      if (text.includes('card_set_external_ids') && text.includes(' IN ')) return [{ setId: 'sv4', groupId: 23286 }];
+      if (text.includes('tcgcsv_set_mappings') && text.includes(' IN ')) return [{ setId: 'sv4', groupId: 23286 }];
       return [];
     });
     const tx = { $queryRaw: query, $executeRaw: execute };
@@ -36,7 +36,7 @@ describe('TCGCSV: ciclo de descubrimiento y cache por build', () => {
     await h.service.onModuleInit();
     expect(h.fetch.mock.calls.map(([path]) => path)).toEqual(['last-updated.txt', 'tcgplayer/3/groups', 'last-updated.txt']);
     const statements = h.execute.mock.calls.map(([query]) => sqlText(query));
-    expect(statements.some((sql) => sql.includes('INSERT INTO card_set_external_ids'))).toBe(true);
+    expect(statements.some((sql) => sql.includes('INSERT INTO tcgcsv_set_groups'))).toBe(true);
     expect(statements.some((sql) => sql.includes('INSERT INTO tcgcsv_group_jobs'))).toBe(false);
   });
   it('build igual usa catálogo cacheado sin encolar el backlog', async () => {

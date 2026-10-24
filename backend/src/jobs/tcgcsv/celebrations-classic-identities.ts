@@ -1,0 +1,30 @@
+// Grupo 2931 revisado contra productos recibidos el 22/10/2026 22:10 UTC.
+// SHA256: 0c4e4b3899291abeb7b5298ca3055b7a1f43305e371db1688c452a5b2922cc4a.
+// Las reimpresiones conservan el denominador original, no el total del subset.
+export const CELEBRATIONS_CLASSIC_IDENTITIES = [
+  { cardId: 'cel25c-4_A', localName: 'Charizard', localNumber: '4', productId: 250320, productName: 'Charizard', fullNumber: '4/102' },
+  { cardId: 'cel25c-2_A', localName: 'Blastoise', localNumber: '2', productId: 250319, productName: 'Blastoise', fullNumber: '2/102' },
+  { cardId: 'cel25c-15_A1', localName: 'Venusaur', localNumber: '15', productId: 250321, productName: 'Venusaur', fullNumber: '15/102' },
+  { cardId: 'cel25c-15_A2', localName: 'Here Comes Team Rocket!', localNumber: '15', productId: 250323, productName: 'Here Comes Team Rocket!', fullNumber: '15/82' },
+  { cardId: 'cel25c-15_A3', localName: "Rocket's Zapdos", localNumber: '15', productId: 250324, productName: "Rocket's Zapdos", fullNumber: '15/132' },
+  { cardId: 'cel25c-15_A4', localName: 'Claydol', localNumber: '15', productId: 250333, productName: 'Claydol', fullNumber: '15/106' },
+  { cardId: 'cel25c-73_A', localName: 'Imposter Professor Oak', localNumber: '73', productId: 250322, productName: 'Imposter Professor Oak', fullNumber: '73/102' },
+  { cardId: 'cel25c-8_A', localName: 'Dark Gyarados', localNumber: '8', productId: 250294, productName: 'Dark Gyarados', fullNumber: '8/82' },
+  { cardId: 'cel25c-66_A', localName: 'Shining Magikarp', localNumber: '66', productId: 250327, productName: 'Shining Magikarp', fullNumber: '66/64' },
+  { cardId: 'cel25c-88_A', localName: 'Mew ex', localNumber: '88', productId: 250330, productName: 'Mew ex', fullNumber: '88/92' },
+  { cardId: 'cel25c-24_A', localName: "_____'s Pikachu", localNumber: '24', productId: 250325, productName: "______'s Pikachu", fullNumber: '24/53' },
+  { cardId: 'cel25c-20_A', localName: 'Cleffa', localNumber: '20', productId: 250326, productName: 'Cleffa', fullNumber: '20/111' },
+  { cardId: 'cel25c-86_A', localName: "Rocket's Admin.", localNumber: '86', productId: 250329, productName: "Rocket's Admin.", fullNumber: '86/109' },
+  { cardId: 'cel25c-17_A', localName: 'Umbreon ★', localNumber: '17', productId: 250332, productName: 'Umbreon Star', fullNumber: '17/17' },
+  { cardId: 'cel25c-93_A', localName: 'Gardevoir ex δ', localNumber: '93', productId: 250331, productName: 'Gardevoir ex (Delta Species)', fullNumber: '93/101' },
+  { cardId: 'cel25c-9_A', localName: "Team Magma's Groudon", localNumber: '9', productId: 250328, productName: "Team Magma's Groudon", fullNumber: '9/95' },
+  { cardId: 'cel25c-109_A', localName: 'Luxray GL LV.X', localNumber: '109', productId: 250334, productName: 'Luxray GL LV.X', fullNumber: '109/111' },
+  { cardId: 'cel25c-145_A', localName: 'Garchomp C LV.X', localNumber: '145', productId: 250335, productName: 'Garchomp C LV.X', fullNumber: '145/147' },
+  { cardId: 'cel25c-113_A', localName: 'Reshiram', localNumber: '113', productId: 250337, productName: 'Reshiram', fullNumber: '113/114' },
+  { cardId: 'cel25c-114_A', localName: 'Zekrom', localNumber: '114', productId: 250338, productName: 'Zekrom', fullNumber: '114/114' },
+  { cardId: 'cel25c-54_A', localName: 'Mewtwo-EX', localNumber: '54', productId: 250339, productName: 'Mewtwo EX', fullNumber: '54/99' },
+  { cardId: 'cel25c-97_A', localName: 'Xerneas-EX', localNumber: '97', productId: 250340, productName: 'Xerneas EX', fullNumber: '97/146' },
+  { cardId: 'cel25c-60_A', localName: 'Tapu Lele-GX', localNumber: '60', productId: 250342, productName: 'Tapu Lele GX', fullNumber: '60/145' },
+  { cardId: 'cel25c-107_A', localName: 'Donphan', localNumber: '107', productId: 250336, productName: 'Donphan (Prime)', fullNumber: '107/123' },
+  { cardId: 'cel25c-76_A', localName: 'M Rayquaza-EX', localNumber: '76', productId: 250341, productName: 'M Rayquaza EX', fullNumber: '76/108' },
+] as const;

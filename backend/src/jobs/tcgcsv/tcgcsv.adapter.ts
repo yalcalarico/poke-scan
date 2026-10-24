@@ -1,4 +1,7 @@
+import { REVIEWED_SETS } from './tcgcsv.identities.js';
 import { CLASSIC_IDENTITIES } from './classic-identities.js';
+import { CELEBRATIONS_CLASSIC_IDENTITIES } from './celebrations-classic-identities.js';
+import { NINTENDO_PROMO_IDENTITIES } from './nintendo-promo-identities.js';
 export const TCGCSV_GROUPS = { me55: 24722, me55c: 24837, me2pt5: 24541 } as const;
 export const TCGCSV_VARIANTS: Readonly<Record<string, string>> = {
   Normal: 'normal', Holofoil: 'holofoil', 'Reverse Holofoil': 'reverseHolofoil',
@@ -12,6 +15,17 @@ export interface TcgcsvPrice {
   low: number | null; mid: number | null; high: number | null; market: number | null;
 }
 export interface LocalTcgcsvCard { id: string; name: string; number: string; language: string | null; setId: string; printedTotal: number | null; externalId?: string }
+
+interface ReviewedProductIdentity { cardId: string; localName: string; localNumber: string; productId: number; productName: string; fullNumber: string }
+const reviewedProducts: Readonly<Record<string, { groupId: number; identities: readonly ReviewedProductIdentity[] }>> = {
+  me55c: { groupId: 24837, identities: CLASSIC_IDENTITIES },
+  cel25c: { groupId: 2931, identities: CELEBRATIONS_CLASSIC_IDENTITIES },
+  np: { groupId: 1423, identities: NINTENDO_PROMO_IDENTITIES },
+};
+// Supreme Victors omite el denominador en Number; el grupo y el nombre siguen siendo exactos.
+const bareNumberGroups: Readonly<Record<string, { groupId: number; printedTotal: number }>> = {
+  pl3: { groupId: 1384, printedTotal: 147 },
+};
 
 function object(value: unknown): Record<string, unknown> {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) throw new Error('Formato TCGCSV inválido');
@@ -68,15 +82,20 @@ export function parsePrices(value: unknown, products: readonly TcgcsvProduct[]):
 }
 function productName(product: TcgcsvProduct): string {
   if (product.number === null) return product.name;
-  const suffix = ` - ${product.number}`;
-  return product.name.endsWith(suffix) ? product.name.slice(0, -suffix.length) : product.name;
+  const suffix = / - ([A-Za-z]*\d+(?:\/[A-Za-z]*\d+)?)$/.exec(product.name);
+  // El feed puede escribir 1/12 en el título y 001/012 en Number.
+  const number = normalizedNumber(product.number);
+  const titleNumber = suffix ? normalizedNumber(suffix[1]) : null;
+  return suffix && titleNumber !== null && number !== null
+    && (titleNumber === number || (!titleNumber.includes('/') && titleNumber === number.split('/')[0]))
+    ? product.name.slice(0, suffix.index) : product.name;
 }
 function normalized(value: string): string { return value.normalize('NFKC').trim().replace(/\s+/g, ' ').toLocaleLowerCase('en'); }
 export function normalizedNumber(value: string): string | null {
   if (!/^[A-Za-z]*\d+(?:\/[A-Za-z]*\d+)?$/.test(value.trim())) return null;
   return value.trim().split('/').map((part) => part.replace(/^(\D*)0+(?=\d)/, '$1').toUpperCase()).join('/');
 }
-/** Classic exige una identidad revisada completa; no une números ambiguos. */
+/** Reimpresiones/promos revisadas exigen identidad completa; no se eligen números ambiguos. */
 export function matchProducts(cards: readonly LocalTcgcsvCard[], products: readonly TcgcsvProduct[], groups: Readonly<Record<string, number>> = TCGCSV_GROUPS): Map<number, string> {
   const candidates = new Map<number, string[]>();
   for (const card of cards) {
@@ -86,9 +105,11 @@ export function matchProducts(cards: readonly LocalTcgcsvCard[], products: reado
     if (!localNumber) continue;
     if (!localNumber.includes('/') && card.setId !== 'me55c' && card.printedTotal !== null) localNumber += `/${card.printedTotal}`;
     const matching = products.filter((product) => {
-      if (card.setId === 'me55c') {
-        const reviewed = CLASSIC_IDENTITIES.find((identity) => identity.cardId === card.id);
+      const reviewedSet = reviewedProducts[card.setId];
+      if (reviewedSet) {
+        const reviewed = reviewedSet.identities.find((identity) => identity.cardId === card.id);
         return reviewed !== undefined && card.name === reviewed.localName && card.number === reviewed.localNumber
+          && group === reviewedSet.groupId
           && product.groupId === group && normalized(product.language) === 'english'
           && product.productId === reviewed.productId && product.name === reviewed.productName
           && product.number === reviewed.fullNumber
@@ -97,7 +118,14 @@ export function matchProducts(cards: readonly LocalTcgcsvCard[], products: reado
       if (product.groupId !== group || product.number === null || normalized(product.language) !== 'english' || normalized(productName(product)) !== normalized(card.name)) return false;
       const remoteNumber = normalizedNumber(product.number);
       if (!remoteNumber) return false;
-      return remoteNumber === localNumber && (card.externalId === undefined || card.externalId === String(product.productId));
+      const localPrefix = /^([A-Z]+)\d+$/.exec(normalizedNumber(card.number) ?? '')?.[1];
+      const prefixedTotal = localPrefix && card.printedTotal !== null
+        ? `${normalizedNumber(card.number)}/${localPrefix}${card.printedTotal}` : null;
+      const numberMatches = remoteNumber === localNumber || remoteNumber === prefixedTotal
+        || ((REVIEWED_SETS[card.setId]?.bareNumber === true
+          || (bareNumberGroups[card.setId]?.groupId === group && bareNumberGroups[card.setId]?.printedTotal === card.printedTotal)) && !remoteNumber.includes('/')
+          && remoteNumber === normalizedNumber(card.number));
+      return numberMatches && (card.externalId === undefined || card.externalId === String(product.productId));
     });
     if (matching.length !== 1) continue;
     const productId = matching[0].productId;

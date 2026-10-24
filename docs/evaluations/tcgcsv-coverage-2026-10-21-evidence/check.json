@@ -1,0 +1,28 @@
+{
+  "command": "pnpm run check",
+  "date": "2026-10-22",
+  "exitCode": 0,
+  "vitest": [
+    612,
+    6,
+    626
+  ],
+  "nodeTest": [
+    23,
+    15,
+    54,
+    7,
+    5
+  ],
+  "total": 1348,
+  "lint": true,
+  "types": true,
+  "backendBuild": true,
+  "frontendBuild": true,
+  "notes": [
+    "Stop de API y watcher padre antes de suites.",
+    "Regresiones de padding y denominador verificadas con productos recibidos.",
+    "Warnings existentes del toolchain sin errores de gate.",
+    "Diagn\u00f3stico adicional tsc --noEmit backend detecta errores de tipos en specs ajenos al lote; el build est\u00e1ndar excluye specs."
+  ]
+}

@@ -65,7 +65,7 @@ await check('precio: del proveedor activo y fresco', async () => {
   assert(Array.isArray(body.prices) && body.prices.length > 0, 'sin precios');
   const conPrecio = body.prices.find((p) => p.market !== null);
   assert(conPrecio, 'ningún precio de mercado');
-  assert(conPrecio.provider === 'tcgdex', `provider ${conPrecio.provider}`);
+  assert(conPrecio.provider === 'tcgcsv', `provider ${conPrecio.provider}`);
   assert(conPrecio.isStale === false, 'el precio vigente está marcado viejo');
   return `${conPrecio.variant} $${conPrecio.market} (${conPrecio.provider}/${conPrecio.source})`;
 });
@@ -73,7 +73,7 @@ await check('precio: del proveedor activo y fresco', async () => {
 await check('histórico: serie del proveedor activo', async () => {
   const { status, body } = await json('/cards/base1-4/prices/history');
   assert(status === 200, `status ${status}`);
-  assert(body.provider === 'tcgdex', `provider ${body.provider}`);
+  assert(body.provider === 'tcgcsv', `provider ${body.provider}`);
   assert(body.source === 'tcgplayer', `source ${body.source}`);
   assert(Array.isArray(body.points), 'sin puntos');
   return `${body.points.length} punto(s), ventana de ${body.windowDays} días`;

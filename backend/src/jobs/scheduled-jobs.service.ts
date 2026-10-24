@@ -49,6 +49,10 @@ export class ScheduledJobsService implements OnModuleInit {
   }
 
   onModuleInit(): void {
+    if (this.provider?.id === 'tcgcsv' && this.prisma) {
+      void this.prisma.$executeRaw`UPDATE price_sync_controls SET "schedulerEnabled" = FALSE, "workerConfiguredEnabled" = FALSE WHERE provider = 'tcgdex'`
+        .catch(() => this.logger.warn('No se pudo actualizar el estado del proveedor retirado'));
+    }
     const enabled = this.describeSchedule();
     if (enabled.length === 0) {
       this.logger.warn('Todos los crons de mantenimiento están desactivados por configuración.');
@@ -71,7 +75,7 @@ export class ScheduledJobsService implements OnModuleInit {
   @Cron('*/5 * * * * *', { timeZone: 'UTC' })
   async pollPriceCycles(): Promise<void> {
     if (!this.prisma) return;
-    for (const provider of ['tcgdex', 'tcgcsv'] as const) {
+    for (const provider of (this.provider?.id === 'tcgcsv' ? ['tcgcsv'] : ['tcgdex', 'tcgcsv']) as readonly ('tcgdex' | 'tcgcsv')[]) {
       const enabled = provider === 'tcgdex'
         ? this.backfillEnabled && this.provider?.id === 'tcgdex'
         : this.tcgcsv?.enabled() === true;
@@ -119,7 +123,9 @@ export class ScheduledJobsService implements OnModuleInit {
   describeSchedule(): string[] {
     const jobs: string[] = [];
     if (this.catalogSyncEnabled) jobs.push('sync de catálogo (lunes 04:07)');
-    if (this.backfillEnabled) jobs.push('precios tcgdex diarios (03:15 UTC)');
+    if (this.provider?.id === 'tcgcsv') {
+      if (this.tcgcsv?.enabled()) jobs.push('precios TCGCSV diarios (21:00 UTC)');
+    } else if (this.backfillEnabled) jobs.push('precios tcgdex diarios (03:15 UTC)');
     if (this.retentionEnabled) jobs.push('retención de precios (mensual)');
     return jobs;
   }

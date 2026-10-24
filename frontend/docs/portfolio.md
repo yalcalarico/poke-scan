@@ -12,7 +12,12 @@ El total con cartas sin precio es parcial. Si ninguna tiene precio, se explica q
 
 ## Historial
 
-Una observación por usuario y día UTC se guarda en PostgreSQL al consultar el resumen. Consultas posteriores ese día actualizan ese punto. No hay muestreo automático en días sin consulta ni reconstrucción de compras pasadas a partir de las cantidades actuales. El historial devuelve hasta 365 observaciones; los controles muestran 7 días, 30 días o un año calendario. Una sola valoración no dibuja una tendencia. Las valoraciones sin precio quedan registradas con valor nulo y no dibujan un punto.
+El portafolio usa cortes por colección atribuidos a TCGCSV, con un mismo corte
+y alcance completo por usuario. Las lecturas actualizan hoy y el corte diario
+conserva el inventario real; no se unen snapshots antiguos sin proveedor a la
+serie nueva. Se devuelven hasta 365 días observados. Una sola valoración no
+dibuja tendencia; una valoración sin precio permanece nula. No se reconstruyen
+compras ni precios pasados desde el inventario actual.
 
 La variación expresa cambios de valor del portafolio: incluye incorporaciones, retiradas y cambios de precios. No es retorno de inversión ni ganancia. El gráfico usa `history[].valuation.amount` y ofrece su listado con fechas, valores y cobertura del snapshot, también accesible con teclado. La antigüedad de los precios en los snapshots no está registrada. Los montos históricos en ARS usan la conversión vigente del usuario, no un histórico de cotizaciones cambiarias.
 
@@ -34,7 +39,7 @@ Los instantes de consulta y evaluación conservan hora y zona UTC. Las fechas de
 ## Actualización de referencias y eliminación — 16/10/2026
 
 Al abrir colecciones o el portafolio, la API solicita por cola las variantes sin
-referencia del proveedor activo o con consulta vencida (24 horas). La UI consulta
+referencia del proveedor TCGCSV o con consulta vencida (24 horas). La UI consulta
 los resultados cada 10 segundos, durante hasta dos minutos, sin tráfico directo
 al proveedor. Al llegar una cotización se renuevan ítems, totales, ranking y
 observación del día. «Actualizar precios» permite volver a solicitar y consultar;

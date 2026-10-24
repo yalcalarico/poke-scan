@@ -17,12 +17,14 @@ trabajo ni estados vivos de procesos.
 | Cronjobs, cola y operación de precios | [Jobs](../backend/docs/jobs.md), [precios](../backend/docs/pricing.md) |
 | Frontend | [Rutas](../frontend/docs/routes.md), [componentes](../frontend/docs/components.md), [construcción](../frontend/docs/build-guide.md), [diseño](../frontend/docs/design-system.md) |
 | Sesión y reconocimiento | [Cliente/sesión](../frontend/docs/api-client.md), [escáner DINOv2](../frontend/docs/scanner.md) |
-| Gráficas | [Comparación](../frontend/docs/comparison.md), [portafolio](../frontend/docs/portfolio.md) |
+| Gráficas | [Historial de fuente única](../frontend/docs/comparison.md), [portafolio](../frontend/docs/portfolio.md) |
 | Verificación | [Backend](../backend/docs/testing.md), [frontend](../frontend/docs/testing.md) |
 | Trampas conocidas | [Backend](../backend/docs/gotchas.md), [frontend](../frontend/docs/gotchas.md) |
 
 ## Operación y evaluación pendientes
 
+- [TCGCSV: cobertura y optimización — implementación parcial validada; pendientes registrados](plans/tcgcsv-cobertura-optimizacion-2026-10-21.md).
+- [TCGCSV: recuperación de grupos — causas corregidas, reintentos sujetos a reservas](evaluations/tcgcsv-groups-recovery-2026-10-22.md).
 - [Mini PC + Cloudflare Tunnel: prompt para el final](infra/PROMPT-mini-pc-cloudflare.md).
 - [Red local/HTTPS para dispositivos](local-network.md).
 - [Resend: preparación y activación futura](infra/resend-recovery.md).

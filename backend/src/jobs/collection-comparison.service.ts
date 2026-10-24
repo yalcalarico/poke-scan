@@ -5,7 +5,7 @@ import { randomUUID } from 'node:crypto';
 import { PrismaService } from '../prisma/index.js';
 import { PRICE_PROVIDER, type PriceProvider } from '../modules/providers/card-provider.interface.js';
 import { COMPARISON_CLOCK, type ComparisonClock } from './comparison-clock.js';
-import { COMPARISON_POLICY, COMPARISON_PROVIDERS, type CollectionComparisonDto, type CollectionComparisonPointDto, type ComparisonProvider } from './comparison.dto.js';
+import { COMPARISON_POLICY, historyProviders, type CollectionComparisonDto, type CollectionComparisonPointDto, type ComparisonProvider } from './comparison.dto.js';
 
 interface SnapshotRow {
   day: Date; provider: ComparisonProvider; valueUsd: Prisma.Decimal | null;
@@ -28,6 +28,7 @@ export class CollectionComparisonService {
 
   /** Una única sentencia toma cantidades y referencias de ambos proveedores con el mismo snapshot MVCC. */
   async capture(userId: string | null = null): Promise<void> {
+    const providers = historyProviders(this.active.id);
     await this.prisma.$transaction(async (tx) => {
       // Serializa cortes entre lectores y crons; nunca mezcla dos snapshots del mismo usuario.
       await tx.$queryRaw`SELECT pg_advisory_xact_lock(732147201)::text`;
@@ -59,7 +60,7 @@ export class CollectionComparisonService {
             MIN(lp."fetchedAt") FILTER (WHERE lp.market IS NOT NULL) AS oldest,
             MAX(lp."fetchedAt") FILTER (WHERE lp.market IS NOT NULL) AS newest,
             MIN(lp."feedPublishedAt") FILTER (WHERE lp.market IS NOT NULL) AS build
-          FROM inventory c CROSS JOIN (VALUES ('tcgdex'), ('tcgcsv')) AS providers(provider)
+          FROM inventory c CROSS JOIN (VALUES ${Prisma.join(providers.map((provider) => Prisma.sql`(${provider})`))}) AS providers(provider)
           LEFT JOIN collection_items i ON i."collectionId" = c.id
           LEFT JOIN LATERAL (
             SELECT p.market, p."fetchedAt", p."feedPublishedAt",
@@ -101,10 +102,11 @@ export class CollectionComparisonService {
     const today = at.toISOString().slice(0, 10);
     const from = new Date(`${today}T00:00:00Z`);
     from.setUTCDate(from.getUTCDate() - days + 1);
+    const providers = historyProviders(this.active.id);
     const rows = collectionId !== null
       ? await this.prisma.$queryRaw<SnapshotRow[]>(Prisma.sql`
           SELECT s.* FROM collection_comparison_snapshots s JOIN collections c ON c.id = s."collectionId"
-          WHERE c."userId" = ${userId} AND c.id = ${collectionId} AND s.policy = ${COMPARISON_POLICY}
+          WHERE c."userId" = ${userId} AND c.id = ${collectionId} AND s.provider IN (${Prisma.join(providers)}) AND s.policy = ${COMPARISON_POLICY}
             AND s.day >= ${from.toISOString().slice(0, 10)}::date AND s.day <= ${today}::date ORDER BY s.day
         `)
       : await this.prisma.$queryRaw<SnapshotRow[]>(Prisma.sql`
@@ -118,12 +120,12 @@ export class CollectionComparisonService {
             md5(string_agg(s."collectionId" || ':' || s."compositionFingerprint", '|' ORDER BY s."collectionId")) AS "compositionFingerprint",
             bool_or(s."compositionChanged") AS "compositionChanged"
           FROM collection_comparison_snapshots s JOIN collections c ON c.id = s."collectionId"
-          WHERE c."userId" = ${userId} AND s.policy = ${COMPARISON_POLICY} AND s.day >= ${from.toISOString().slice(0, 10)}::date AND s.day <= ${today}::date
+          WHERE c."userId" = ${userId} AND s.provider IN (${Prisma.join(providers)}) AND s.policy = ${COMPARISON_POLICY} AND s.day >= ${from.toISOString().slice(0, 10)}::date AND s.day <= ${today}::date
           GROUP BY s.day, s.provider HAVING COUNT(DISTINCT s."snapshotCut") = 1 AND COUNT(*) = MAX(s."scopeCount")
           ORDER BY s.day
         `);
     const collectionCount = collectionId === null ? await this.prisma.collection.count({ where: { userId } }) : 1;
-    if (collectionCount > 0 && COMPARISON_PROVIDERS.some((provider) => !rows.some((row) => row.provider === provider && row.day.toISOString().slice(0, 10) === today))) {
+    if (collectionCount > 0 && providers.some((provider) => !rows.some((row) => row.provider === provider && row.day.toISOString().slice(0, 10) === today))) {
       throw new ServiceUnavailableException('No hay un corte local coherente para la comparación');
     }
     const map = (row: SnapshotRow): CollectionComparisonPointDto => ({
@@ -136,7 +138,7 @@ export class CollectionComparisonService {
       evaluatedAt: row.evaluatedAt.toISOString(), cutAt: row.evaluatedAt.toISOString(),
     });
     return { collectionId, activeProvider: this.active.id, currency: 'USD', windowDays: days, evaluatedAt: at.toISOString(),
-      series: COMPARISON_PROVIDERS.map((provider) => {
+      series: providers.map((provider) => {
         const points = rows.filter((row) => row.provider === provider).map(map);
         const current = points.find((point) => point.date === today) ?? {
           date: today, valueUsd: 0, totalCopies: 0, pricedCopies: 0, unpricedCopies: 0, freshCopies: 0, staleCopies: 0, unknownFreshnessCopies: 0,

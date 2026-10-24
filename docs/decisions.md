@@ -51,41 +51,31 @@ nuevo, no aparece hasta el próximo sync. Aceptado: son semanas, no minutos.
 
 ---
 
-## 3. Precios bajo demanda y ciclos diarios por alcance
+## 3. TCGCSV como única fuente de precios — 20/10/2026
 
-**Contexto histórico:** el catálogo y el precio se separaron cuando los datos de
-pokemontcg.io dejaron de ofrecer precios útiles. Su cuota de catálogo no es la
-cuota de TCGdex ni TCGCSV.
+El usuario pidió retirar TCGdex tras observar una carta con precio TCGCSV en la
+ficha y total ausente en la colección. Se eligió un solo proveedor activo para
+ficha, búsqueda, inventario, colecciones, portafolio y compartidos: TCGCSV,
+TCGplayer USD, variante exacta. Se retiró la comparación de fuentes de la UI.
 
-**Elegido actualmente:** Redis 1 h y PostgreSQL con histórico/procedencia, cola
-persistente para consultas interactivas y registro de sets diarios habilitados
-(semilla curada y sets de colecciones). TCGdex planifica 03:15 UTC y TCGCSV
-21:00 UTC; ambos reanudan cada 15 min con API/flags activos.
-
-TCGCSV compara una referencia TCGplayer USD separada, sin promedio ni sustitución
-del proveedor activo. Validar build/fecha y una descarga por archivo cada 24 h;
-no hay antiguos topes globales de sets/requests. Ver [jobs](../backend/docs/jobs.md)
-y [precios](../backend/docs/pricing.md).
-
-**Consecuencia:** los precios pueden demorar o faltar. Vacío es 0; desconocido
-es null; un total parcial conserva importe conocido y advierte cobertura. No
-tratar una carta sin precio como si su valor demostrado fuera cero ni prometer
-cotización en dos segundos. Las gráficas guardan observaciones, huecos y cambios
-de composición; no inventar días históricos.
+Los handlers leen las observaciones confirmadas en PostgreSQL. No usan fallback
+ni caché de carta que prolongue el precio anterior tras una publicación. Un cero
+es conocido; una ausencia es null; los totales parciales explican cobertura.
+Los registros TCGdex y snapshots sin proveedor se conservan como historia y no
+se atribuyen a la nueva serie. Ver [precios](../backend/docs/pricing.md).
 
 ---
 
-## 4. Cola en background con throttling
+## 4. Cola por grupo y publicación real
 
-**Contexto:** agregar 50 cartas seguidas dispararía 50 requests al mismo tiempo
-hacia el proveedor de precios, que pide "consideración" aunque no publique un límite.
+Una solicitud interactiva resuelve grupos en SQL local, sin requests por carta.
+La cola TCGCSV valida identidad, build y límites de archivo, procesa serialmente,
+conserva reservas de 24 h y respeta 429/Retry-After. Ciclo diario 21:00 UTC y
+reanudación cada quince minutos para sets habilitados. Encolar no afirma haber
+actualizado un precio; sólo el consumidor publica observaciones reales.
 
-**Elegido:** `enqueueRefresh` encola y procesa secuencialmente con 2,3 s entre
-requests (~26/min) como cortesía hacia TCGdex. No es el límite de pokemontcg.io:
-esa API entrega el catálogo y su cuota se aplica al sync de catálogo.
-
-**Por qué no awaited en el request:** el usuario tardaría 2 minutos en ver su
-alta confirmada. Fire-and-forget mantiene el alta en 54 ms.
+El mapper, worker y ciclo TCGdex ya no se registran. La cuota de pokemontcg.io
+sigue limitada al catálogo: 30/min y 1.000/día. No se inventan días históricos.
 
 ---
 

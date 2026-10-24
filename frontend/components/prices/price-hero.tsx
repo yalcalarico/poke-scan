@@ -33,6 +33,7 @@ export interface PriceHeroProps
    */
   cardId?: string;
   variant?: import('@/types/api').CardVariant;
+  provider?: import('@/types/api').PriceDto['provider'];
   /** El precio todavía está viajando: `Skeleton`, no un guion (§9.2). */
   isLoading?: boolean;
   /**
@@ -84,6 +85,7 @@ export function PriceHero({
   usd,
   cardId,
   variant,
+  provider,
   isLoading = false,
   changeUsd,
   changePercent,
@@ -167,7 +169,7 @@ export function PriceHero({
         <div className="flex w-full flex-col items-start gap-1 p-4">{content}</div>
       )}
       {cardId && !isLoading && hasPrice ? (
-        <div className="px-4 pb-4"><PriceHistory cardId={cardId} /></div>
+        <div className="px-4 pb-4"><PriceHistory cardId={cardId} variant={variant} provider={provider === null ? 'legacy' : provider === 'tcgdex' || provider === 'tcgcsv' || provider === 'scrydex' || provider === 'pokemontcg.io' ? provider : undefined} /></div>
       ) : null}
     </Surface>
   );

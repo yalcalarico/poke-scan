@@ -94,6 +94,23 @@ export class PriceSyncRegistryService {
     `;
   }
 
+  /** Agrega identidades validadas sin alterar bajas manuales ni prioridades existentes. */
+  async reconcileValidatedSets(): Promise<number> {
+    return this.prisma.$executeRaw`
+      INSERT INTO price_sync_sets ("setId", enabled, priority, origin, "activatedAt", "createdAt", "updatedAt")
+      SELECT x."setId", true, 200, 'validated'::"PriceSyncSetOrigin", NOW(), NOW(), NOW()
+      FROM tcgcsv_set_mappings x JOIN cards c ON c."setId" = x."setId"
+      WHERE x."externalId" ~ '^[1-9][0-9]{0,8}$'
+        AND NOT EXISTS (SELECT 1 FROM tcgcsv_set_mappings other WHERE other."setId" = x."setId" AND other."externalId" <> x."externalId")
+        AND NOT EXISTS (SELECT 1 FROM tcgcsv_set_mappings other WHERE other."externalId" = x."externalId" AND other."setId" <> x."setId"
+          AND NOT ((x."externalId" = '1543' AND x."setId" IN ('tk1a','tk1b') AND other."setId" IN ('tk1a','tk1b'))
+            OR (x."externalId" = '1542' AND x."setId" IN ('tk2a','tk2b') AND other."setId" IN ('tk2a','tk2b'))))
+        AND NOT EXISTS (SELECT 1 FROM tcgcsv_set_mappings sibling JOIN tcgcsv_set_mappings other ON other."setId" = sibling."setId"
+          WHERE sibling."externalId" = x."externalId" AND other."externalId" <> x."externalId")
+      GROUP BY x."setId" ON CONFLICT ("setId") DO NOTHING
+    `;
+  }
+
   /** Una nueva alta en colección registra demanda sin reactivar un set deshabilitado. */
   async enableForCollection(setId: string): Promise<void> {
     await this.assertSetExists(setId);
@@ -152,7 +169,7 @@ export class PriceSyncRegistryService {
   private async requestCycle(): Promise<void> {
     await this.prisma.$executeRaw`
       INSERT INTO price_sync_controls (provider, "requestedGeneration", "handledGeneration", "nextCycleAt")
-      VALUES ('tcgdex', 1, 0, NOW()), ('tcgcsv', 1, 0, NOW())
+      VALUES ('tcgcsv', 1, 0, NOW())
       ON CONFLICT (provider) DO UPDATE SET "requestedGeneration" = CASE
         WHEN price_sync_controls."requestedGeneration" = price_sync_controls."handledGeneration" THEN price_sync_controls."requestedGeneration" + 1 ELSE price_sync_controls."requestedGeneration" END
     `;

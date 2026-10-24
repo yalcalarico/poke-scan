@@ -62,7 +62,10 @@
     "ops:backups:test": "node --test scripts/inf03-inventory-common.test.mjs scripts/inf03-retention.test.mjs scripts/inf03-transfer.test.mjs scripts/inf03-custody.test.mjs scripts/inf03-schedule.test.mjs",
     "ops:custody-package:test": "node --test scripts/infra/inf02-custody-package.test.mjs",
     "ops:backups:schedule": "node scripts/inf03-schedule.mjs",
-    "test:qa": "node --test scripts/qa/*.test.mjs"
+    "test:qa": "node --test scripts/qa/*.test.mjs",
+    "prices:coverage": "pnpm --dir backend run prices:coverage",
+    "prices:diagnose": "pnpm --dir backend run prices:diagnose",
+    "prices:reconcile": "pnpm --dir backend run prices:reconcile"
   },
   "dependencies": {
     "ui-ux-pro-max-cli": "^2.15.0"

@@ -113,6 +113,23 @@ describe('TCGCSV: publicación SQL y presupuesto durable', () => {
     await service.enqueue(24722); await service.runOne(24722);
     expect((await prisma.cardPrice.findFirst({ where: { cardId: CARD } }))?.market).toBeNull();
   });
+  it('publica un feed válido con cobertura parcial sin inventar ni renovar el precio ausente', async () => {
+    const unquotedProduct = PRODUCT + 1;
+    const missingProducts = JSON.parse(products) as { results: unknown[]; totalItems: number };
+    missingProducts.results.push({ productId: unquotedProduct, categoryId: 3, groupId: 24722, name: 'UnquotedFixture - 019/128', extendedData: [{ name: 'Number', value: '019/128' }] });
+    missingProducts.totalItems = 2;
+    await prisma.card.create({ data: { id: OTHER, name: 'UnquotedFixture', number: '19', setId: 'me55', language: 'en', supertype: 'Pokémon', subtypes: [], types: [], imageSmall: '', imageLarge: '', rawJson: {} } });
+    const oldAt = new Date('2026-10-11T12:00:00Z');
+    await prisma.cardPrice.create({ data: { cardId: OTHER, variant: 'holofoil', market: 3.5, provider: 'tcgcsv', source: 'tcgplayer', currency: 'USD', fetchedAt: oldAt, feedPublishedAt: oldAt } });
+    const original = vi.mocked(client.fetchFeed).getMockImplementation()!;
+    vi.mocked(client.fetchFeed).mockImplementation((path, limit) => path.endsWith('/products') ? Promise.resolve(JSON.stringify(missingProducts)) : original(path, limit));
+    await service.enqueue(24722);
+    await service.runOne(24722);
+    expect(await prisma.tcgcsvGroupJob.findUnique({ where: { groupId: 24722 } })).toMatchObject({ status: 'completed' });
+    expect(await prisma.cardPrice.count({ where: { cardId: CARD } })).toBe(1);
+    expect(await prisma.cardPrice.findMany({ where: { cardId: OTHER } })).toEqual([expect.objectContaining({ fetchedAt: oldAt })]);
+    expect(await prisma.priceSyncCardDay.findUnique({ where: { provider_cardId_syncDate: { provider: 'tcgcsv', cardId: OTHER, syncDate: new Date('2026-10-13') } } })).toMatchObject({ status: 'no_quote', quoteCount: 0 });
+  });
   it('un build repetido no vuelve a descargar contenido ni cambia fetchedAt', async () => {
     await service.enqueue(24722); await service.runOne(24722);
     const previous = await prisma.cardPrice.findFirstOrThrow({ where: { cardId: CARD } });

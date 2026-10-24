@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { matchProducts, parseBuild, parsePrices, parseProducts, type LocalTcgcsvCard } from './tcgcsv.adapter.js';
 import { CLASSIC_IDENTITIES } from './classic-identities.js';
+import { CELEBRATIONS_CLASSIC_IDENTITIES } from './celebrations-classic-identities.js';
+import { NINTENDO_PROMO_IDENTITIES } from './nintendo-promo-identities.js';
 
 const envelope = (results: unknown[], extra: Record<string, unknown> = {}): unknown => ({ success: true, errors: [], results, ...extra });
 const product = (extra: Record<string, unknown> = {}): Record<string, unknown> => ({
@@ -62,4 +64,78 @@ describe('Ascended Heroes: asociación explícita del grupo', () => {
     expect(matchProducts([local], [{ ...remote, name: 'Pikachu (Poke Ball Pattern) - 054/217' }]).size).toBe(0);
     expect(matchProducts([local], [remote, { ...remote, productId: 654321 }]).size).toBe(0);
   });
+});
+
+it('promos conservan número sin denominador y Trainer Kits rechazan productos ambiguos entre sets', () => {
+  const promo: LocalTcgcsvCard = { ...card, id: 'swshp-SWSH001', setId: 'swshp', name: 'Grookey', number: 'SWSH001', printedTotal: 307 };
+  expect(matchProducts([promo], [{ productId: 1, groupId: 2545, name: 'Grookey - SWSH001', number: 'SWSH001', language: 'English' }], { swshp: 2545 })).toEqual(new Map([[1, promo.id]]));
+  const a: LocalTcgcsvCard = { ...card, id: 'tk1a-1', setId: 'tk1a', name: 'Pikachu', number: '1', printedTotal: 10 };
+  const b = { ...a, id: 'tk1b-1', setId: 'tk1b' };
+  const remote = [{ productId: 2, groupId: 1543, name: 'Pikachu - 1/10', number: '1/10', language: 'English' }];
+  expect(matchProducts([a, b], remote, { tk1a: 1543, tk1b: 1543 }).size).toBe(0);
+  expect(matchProducts([a, { ...b, name: 'Raichu' }], remote, { tk1a: 1543, tk1b: 1543 })).toEqual(new Map([[2, a.id]]));
+});
+
+it('tolera padding equivalente en sufijo McDonald y promos con denominador verificado', () => {
+  const mc: LocalTcgcsvCard = { ...card, id: 'mcd19-1', setId: 'mcd19', name: 'Caterpie', number: '1', printedTotal: 12 };
+  const remote = [{ productId: 3, groupId: 2555, name: 'Caterpie - 1/12', number: '001/012', language: 'English' }];
+  expect(matchProducts([mc], remote, { mcd19: 2555 })).toEqual(new Map([[3, mc.id]]));
+  expect(matchProducts([mc], [{ ...remote[0], number: '001/013' }], { mcd19: 2555 }).size).toBe(0);
+  const promo = { ...mc, id: 'basep-6', setId: 'basep', name: 'Arcanine', number: '6', printedTotal: 53 };
+  const products = [{ productId: 4, groupId: 1418, name: 'Arcanine', number: '06/53', language: 'English' }];
+  expect(matchProducts([promo], products, { basep: 1418 })).toEqual(new Map([[4, promo.id]]));
+  expect(matchProducts([promo], [{ ...products[0], number: '06/54' }], { basep: 1418 }).size).toBe(0);
+  expect(matchProducts([promo], [{ ...products[0], name: 'Arcanine (1st Edition)' }], { basep: 1418 }).size).toBe(0);
+  const best = { ...promo, id: 'bp-1', setId: 'bp', name: 'Electabuzz', number: '1', printedTotal: 9 };
+  const bestProduct = { productId: 5, groupId: 1455, name: 'Electabuzz - 1', number: '001/009', language: 'English' };
+  expect(matchProducts([best], [bestProduct], { bp: 1455 })).toEqual(new Map([[5, best.id]]));
+  expect(matchProducts([best], [{ ...bestProduct, name: 'Electabuzz - 2' }], { bp: 1455 }).size).toBe(0);
+  expect(matchProducts([best], [{ ...bestProduct, number: '001/010' }], { bp: 1455 }).size).toBe(0);
+});
+
+it('conserva los prefijos SV/TG/GG al completar el total de un subset', () => {
+  for (const [prefix, total] of [['SV', 94], ['TG', 30], ['GG', 70]] as const) {
+    const local: LocalTcgcsvCard = { ...card, id: `test-${prefix}`, setId: `subset-${prefix}`, name: 'SubsetCard', number: `${prefix}001`, printedTotal: total };
+    const remote = { productId: 10, groupId: 1234, name: 'SubsetCard', number: `${prefix}1/${prefix}${total}`, language: 'English' };
+    const groups = { [local.setId]: 1234 };
+    expect(matchProducts([local], [remote], groups)).toEqual(new Map([[10, local.id]]));
+    expect(matchProducts([local], [{ ...remote, number: `${prefix}1/OTHER${total}` }], groups).size).toBe(0);
+    expect(matchProducts([local], [{ ...remote, number: `${prefix}1/${prefix}${total + 1}` }], groups).size).toBe(0);
+    expect(matchProducts([local], [{ ...remote, number: `OTHER1/${prefix}${total}` }], groups).size).toBe(0);
+    expect(matchProducts([local], [{ ...remote, language: 'Japanese' }], groups).size).toBe(0);
+    expect(matchProducts([local], [remote, { ...remote, productId: 11 }], groups).size).toBe(0);
+  }
+});
+
+it('Celebrations Classic exige las 25 identidades revisadas y sus denominadores originales', () => {
+  const cards = CELEBRATIONS_CLASSIC_IDENTITIES.map((r) => ({ id: r.cardId, setId: 'cel25c', name: r.localName, number: r.localNumber, language: 'en', printedTotal: 25 }));
+  const products = CELEBRATIONS_CLASSIC_IDENTITIES.map((r) => ({ productId: r.productId, groupId: 2931, name: r.productName, number: r.fullNumber, language: 'English' }));
+  expect(matchProducts(cards, products, { cel25c: 2931 }).size).toBe(25);
+  expect(matchProducts(cards, products.map((r) => ({ ...r, number: r.number.replace(/\/.*/, '/999') })), { cel25c: 2931 }).size).toBe(0);
+  expect(matchProducts(cards, products.map((r) => ({ ...r, groupId: 24837 })), { cel25c: 24837 }).size).toBe(0);
+  expect(matchProducts(cards, products.map((r) => ({ ...r, productId: r.productId + 1_000_000 })), { cel25c: 2931 }).size).toBe(0);
+  expect(matchProducts(cards, products.map((r) => ({ ...r, name: `${r.name} (otra edición)` })), { cel25c: 2931 }).size).toBe(0);
+});
+
+it('Nintendo Promos usa productos revisados y conserva ambiguas las versiones alternativas', () => {
+  const cards = NINTENDO_PROMO_IDENTITIES.map((r) => ({ id: r.cardId, setId: 'np', name: r.localName, number: r.localNumber, language: 'en', printedTotal: 40 }));
+  const products = NINTENDO_PROMO_IDENTITIES.map((r) => ({ productId: r.productId, groupId: 1423, name: r.productName, number: r.fullNumber, language: 'English' }));
+  expect(matchProducts(cards, products, { np: 1423 }).size).toBe(27);
+  expect(matchProducts(cards, products.map((r) => ({ ...r, productId: r.productId + 1_000_000 })), { np: 1423 }).size).toBe(0);
+  expect(matchProducts(cards, products.map((r) => ({ ...r, name: `${r.name} [Winner]` })), { np: 1423 }).size).toBe(0);
+  expect(matchProducts(cards, products.map((r) => ({ ...r, groupId: 1453 })), { np: 1453 }).size).toBe(0);
+  const ambiguous = { ...card, id: 'np-17', setId: 'np', name: 'Torchic', number: '17', printedTotal: 40 };
+  expect(matchProducts([ambiguous], [
+    { productId: 89953, groupId: 1423, name: 'Torchic - 017 (EX Deck Tin)', number: '017', language: 'English' },
+    { productId: 153317, groupId: 1423, name: 'Torchic - 017 (Target Promo)', number: '017', language: 'English' },
+  ], { np: 1423 }).size).toBe(0);
+});
+
+it('Supreme Victors acepta el número corto sólo con su grupo y total revisados', () => {
+  const local = { ...card, id: 'pl3-1', setId: 'pl3', name: 'Absol G', number: '1', printedTotal: 147 };
+  const remote = { productId: 83457, groupId: 1384, name: 'Absol G', number: '1', language: 'English' };
+  expect(matchProducts([local], [remote], { pl3: 1384 })).toEqual(new Map([[83457, 'pl3-1']]));
+  expect(matchProducts([{ ...local, printedTotal: 148 }], [remote], { pl3: 1384 }).size).toBe(0);
+  expect(matchProducts([local], [{ ...remote, groupId: 1234 }], { pl3: 1234 }).size).toBe(0);
+  expect(matchProducts([local], [{ ...remote, name: 'Absol G (otra edición)' }], { pl3: 1384 }).size).toBe(0);
 });

@@ -51,7 +51,7 @@ describe('API (e2e)', () => {
                   mid: null,
                   high: null,
                   market: 999.99,
-                  provider: 'tcgdex',
+                  provider: 'tcgcsv',
                   source: 'tcgplayer',
                   currency: 'USD',
                   fetchedAt: priceStamp,
@@ -80,13 +80,13 @@ describe('API (e2e)', () => {
      * **no** dispara una llamada externa mientras corre la suite.
      */
     priceStamp = new Date();
-    await redis.del('prices:v2:tcgdex:base1-4');
+    await redis.del('prices:v2:tcgcsv:base1-4');
     await prisma.cardPrice.create({
       data: {
         cardId: 'base1-4',
         variant: 'holofoil',
         market: new Prisma.Decimal('999.99'),
-        provider: 'tcgdex',
+        provider: 'tcgcsv',
         source: 'tcgplayer',
         currency: 'USD',
         fetchedAt: priceStamp,
@@ -97,13 +97,13 @@ describe('API (e2e)', () => {
   afterAll(async () => {
     if (prisma) {
       await prisma.cardPrice.deleteMany({
-        where: { cardId: 'base1-4', provider: 'tcgdex', fetchedAt: priceStamp },
+        where: { cardId: 'base1-4', provider: 'tcgcsv', fetchedAt: priceStamp },
       });
       for (const id of sessions) {
         await prisma.user.deleteMany({ where: { id } });
       }
     }
-    if (redis) await redis.del('prices:v2:tcgdex:base1-4');
+    if (redis) await redis.del('prices:v2:tcgcsv:base1-4');
     await app?.close();
   });
 
@@ -155,7 +155,7 @@ describe('API (e2e)', () => {
     expect(price.body.prices).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
-          provider: 'tcgdex',
+          provider: 'tcgcsv',
           source: 'tcgplayer',
           market: 999.99,
           isStale: false,
@@ -166,7 +166,7 @@ describe('API (e2e)', () => {
     const history = await request(app.getHttpServer())
       .get('/api/cards/base1-4/prices/history')
       .expect(200);
-    expect(history.body.provider).toBe('tcgdex');
+    expect(history.body.provider).toBe('tcgcsv');
     expect(history.body.points.length).toBeGreaterThan(0);
     expect(history.body.points.at(-1).market).toBe(999.99);
 

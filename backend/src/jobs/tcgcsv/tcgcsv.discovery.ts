@@ -1,3 +1,4 @@
+import { compatibleGroupSets, REVIEWED_SETS } from './tcgcsv.identities.js';
 import { TCGCSV_GROUPS } from './tcgcsv.adapter.js';
 
 export interface TcgcsvGroup { groupId: number; name: string; isSupplemental: boolean }
@@ -34,6 +35,9 @@ export function discoverSetMappings(sets: readonly TcgcsvLocalSet[], groups: rea
   const candidateGroups = (set: TcgcsvLocalSet): TcgcsvGroup[] => {
     const local = identity(set.name);
     return groups.filter((group) => {
+      const reviewed = REVIEWED_SETS[set.id];
+      if (reviewed && set.name === reviewed.name && group.groupId === reviewed.groupId && group.name === reviewed.groupName
+        && group.isSupplemental === (reviewed.supplemental ?? false)) return true;
       if (group.isSupplemental || forbidden.test(group.name) || forbidden.test(set.name)) return false;
       const remote = identity(group.name);
       return remote.title === local.title && (remote.series === null || canonical(set.series ?? '') === remote.series);
@@ -42,7 +46,7 @@ export function discoverSetMappings(sets: readonly TcgcsvLocalSet[], groups: rea
   for (const set of sets) {
     const known = registered.filter((mapping) => mapping.setId === set.id);
     const uniqueKnown = [...new Set(known.map((mapping) => mapping.groupId))];
-    if (uniqueKnown.length === 1 && !registered.some((mapping) => mapping.groupId === uniqueKnown[0] && mapping.setId !== set.id)) {
+    if (uniqueKnown.length === 1 && compatibleGroupSets(uniqueKnown[0], [set.id, ...registered.filter((mapping) => mapping.groupId === uniqueKnown[0]).map((mapping) => mapping.setId)])) {
       mappings.push({ setId: set.id, groupId: uniqueKnown[0] });
       continue;
     }
@@ -55,8 +59,9 @@ export function discoverSetMappings(sets: readonly TcgcsvLocalSet[], groups: rea
     }
     const candidate = candidates[0];
     // La identidad debe ser uno a uno en ambos catálogos, no sólo en este recorrido.
-    if (registered.some((mapping) => mapping.groupId === candidate.groupId && mapping.setId !== set.id)
-      || sets.filter((other) => other.englishOnly && candidateGroups(other).some((group) => group.groupId === candidate.groupId)).length !== 1) {
+    if (!compatibleGroupSets(candidate.groupId, [set.id,
+      ...registered.filter((mapping) => mapping.groupId === candidate.groupId).map((mapping) => mapping.setId),
+      ...sets.filter((other) => other.englishOnly && candidateGroups(other).some((group) => group.groupId === candidate.groupId)).map((other) => other.id)])) {
       missing.push({ setId: set.id, reason: 'identidad local ambigua o grupo reservado' });
       continue;
     }

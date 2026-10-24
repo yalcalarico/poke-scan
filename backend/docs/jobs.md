@@ -1,5 +1,32 @@
 # Jobs — sincronización del catálogo y precios
 
+## Precios: operación vigente desde 20/10/2026
+
+La única fuente activa es TCGCSV. `JobsModule` no registra mapper, worker ni ciclo
+diario TCGdex. Las secciones que describen esos adaptadores explican historia;
+no son pasos de operación actuales. El catálogo conserva su sincronización.
+
+`tcgcsv/tcgcsv.service.ts` administra descubrimiento, cola por grupo, build y
+publicación; ciclo diario 21:00 UTC, reanudación cada 15 min y consumidor serial.
+Se mantienen identidad segura, reserva de 24 h por archivo y pausas del proveedor.
+Desde el 21/10 el registro incorpora asociaciones validadas además de curados y
+colecciones, sin reactivar bajas. Promos y grupos suplementarios requieren
+identidades explícitas; Trainer Kits revisados comparten job y descarga.
+`prices:coverage` muestra cobertura y tráfico; `prices:reconcile -- --apply`
+concilia asociaciones almacenadas sin red. Ver la sección de cobertura en
+[precios](pricing.md#cobertura-y-caché-de-productos--21102026).
+`SyncPricesService` lee PostgreSQL y solicita grupos; el refresco de colección
+usa selección local por ownership y variante, sin consultas externas ni N+1.
+`prices:sync` solicita sólo TCGCSV. Ver [precios](pricing.md) y [providers](providers.md).
+
+Desde el 22/10, los jobs diarios pendientes/fallidos de ayer se retoman con
+objetivos de hoy aunque todavía no sean las 21 UTC. El resumidor conserva las
+24 h del archivo y el backoff; no inicia el ciclo adelantado de sets nuevos ni
+reconstruye observaciones de días anteriores. `prices:diagnose` permite distinguir
+la espera de una validación fallida usando sólo datos locales. Ver
+[recuperación de grupos](../../docs/evaluations/tcgcsv-groups-recovery-2026-10-22.md).
+
+
 > Los servicios de sync, cómo el sync de cartas es **reanudable**, el **mapeo
 > de IDs de set** que habilita los precios en vivo, cuánto cuesta en requests,
 > el script de catálogo completo y los endpoints de admin. Requisito previo: el

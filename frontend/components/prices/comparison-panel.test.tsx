@@ -19,11 +19,11 @@ describe('CardComparisonPanel', () => {
     let finish!: (data: typeof response) => void;
     getCardComparison.mockResolvedValueOnce(response).mockImplementationOnce(() => new Promise((resolve) => { finish = resolve; }));
     render(<CardComparisonPanel cardId="base1-1" variants={['normal', 'holofoil']} />);
-    const oldPrice = () => screen.queryByText((_, element) => element !== null && element.tagName === 'P' && element.className.includes('text-positive') && element.textContent.includes('12'));
+    const oldPrice = () => screen.queryByText((_, element) => element !== null && element.tagName === 'P' && element.className.includes('text-positive') && element.textContent.includes('13'));
     await waitFor(() => expect(oldPrice()).toBeInTheDocument());
-    fireEvent.click(screen.getByRole('combobox', { name: 'Variante de la carta para comparar' }));
+    fireEvent.click(screen.getByRole('combobox', { name: 'Variante de la carta del historial' }));
     fireEvent.click(await screen.findByRole('option', { name: 'Holofoil' }));
-    expect(await screen.findByRole('status', { name: 'Cargando comparación' })).toBeInTheDocument();
+    expect(await screen.findByRole('status', { name: 'Cargando historial' })).toBeInTheDocument();
     expect(oldPrice()).not.toBeInTheDocument();
     await waitFor(() => expect(getCardComparison).toHaveBeenCalledTimes(2));
     finish({ ...response, variant: 'holofoil' });
@@ -52,7 +52,7 @@ describe('Variantes reales de la carta', () => {
     render(<CardComparisonPanel cardId="base1-1" variants={['normal', 'holofoil']} preferredVariant="holofoil" />);
     await waitFor(() => expect(getCardComparison).toHaveBeenCalled());
     expect(getCardComparison.mock.calls[0][1]).toBe('holofoil');
-    fireEvent.click(screen.getByRole('combobox', { name: 'Variante de la carta para comparar' }));
+    fireEvent.click(screen.getByRole('combobox', { name: 'Variante de la carta del historial' }));
     expect(await screen.findAllByRole('option')).toHaveLength(2);
     expect(screen.queryByRole('option', { name: 'Reversa holofoil' })).not.toBeInTheDocument();
   });
@@ -60,7 +60,7 @@ describe('Variantes reales de la carta', () => {
   it('no inventa Normal cuando todavía no hay variantes conocidas', () => {
     render(<CardComparisonPanel cardId="me55-R" variants={[]} />);
     expect(screen.queryByRole('combobox')).not.toBeInTheDocument();
-    expect(screen.getByText('Todavía no hay variantes conocidas para comparar.')).toBeInTheDocument();
+    expect(screen.getByText('Todavía no hay variantes conocidas del historial.')).toBeInTheDocument();
     expect(getCardComparison).not.toHaveBeenCalled();
   });
 
@@ -76,7 +76,7 @@ describe('Variantes reales de la carta', () => {
   it('descarta una selección anterior si cambia la carta o desaparece la variante', async () => {
     const { rerender } = render(<CardComparisonPanel cardId="base1-1" variants={['normal', 'holofoil']} />);
     await waitFor(() => expect(getCardComparison).toHaveBeenCalled());
-    fireEvent.click(screen.getByRole('combobox', { name: 'Variante de la carta para comparar' }));
+    fireEvent.click(screen.getByRole('combobox', { name: 'Variante de la carta del historial' }));
     fireEvent.click(await screen.findByRole('option', { name: 'Holofoil' }));
     await waitFor(() => expect(getCardComparison.mock.calls.at(-1)?.[1]).toBe('holofoil'));
     rerender(<CardComparisonPanel cardId="base1-1" variants={['normal']} />);

@@ -1,5 +1,10 @@
 # API — referencia de endpoints
 
+> Desde 20/10/2026 TCGCSV es la única fuente activa de precios y valuaciones.
+> Los endpoints `/comparison` mantienen su URL y devuelven una serie TCGCSV.
+> El refresco admin encola grupos: `queued` cuenta grupos, `refreshed: 0` no
+> afirma una actualización ya terminada. Ver [política vigente](pricing.md).
+
 > Los endpoints del backend y cómo llamarlos: método, ruta, auth, query
 > params con su validación, body (el DTO real), respuesta (la forma real),
 > errores posibles y un ejemplo. Si vas a tocar un controller, este es el doc.
@@ -963,7 +968,7 @@ interface CollectionItemDto {
   card: CardDto;
   variant: string; condition: string; quantity: number;
   isForTrade: boolean; notes: string | null; addedAt: string;
-  price: PriceDto | null;  // el más reciente de esa variante
+  price: PriceDto | null;  // última fila TCGCSV de esa variante
 }
 
 interface PriceDto {

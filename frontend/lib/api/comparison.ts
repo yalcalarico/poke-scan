@@ -41,7 +41,7 @@ export function toCardComparison(v: unknown): CardComparisonDto | null {
     if (s.current !== null && !parsePrice(s.current)) return null;
     if (!s.points.every((p) => parsePrice(p) !== null) || new Set(s.points.map((p) => isRecord(p) ? p.date : '')).size !== s.points.length) return null;
   }
-  if (seen.size !== 2) return null;
+  if (v.activeProvider === 'tcgcsv' ? seen.size !== 1 || !seen.has('tcgcsv') : seen.size !== 2) return null;
   return v as unknown as CardComparisonDto;
 }
 export function toCollectionComparison(v: unknown): CollectionComparisonDto | null {
@@ -53,7 +53,7 @@ export function toCollectionComparison(v: unknown): CollectionComparisonDto | nu
     seen.add(String(s.provider));
     if (!parsePoint(s.current) || !s.points.every((p) => parsePoint(p) !== null) || new Set(s.points.map((p) => isRecord(p) ? p.date : '')).size !== s.points.length) return null;
   }
-  if (seen.size !== 2) return null;
+  if (v.activeProvider === 'tcgcsv' ? seen.size !== 1 || !seen.has('tcgcsv') : seen.size !== 2) return null;
   return v as unknown as CollectionComparisonDto;
 }
 function required<T>(value: T | null): T { if (value === null) throw new ApiError(502, 'No pudimos leer la comparación recibida.'); return value; }

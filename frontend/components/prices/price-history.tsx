@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 
-import { getCardPriceHistory } from '@/lib/api/cards';
+import { getCardPriceHistory, type PriceHistoryParams } from '@/lib/api/cards';
 import { cn } from '@/lib/cn';
 import { formatPrice } from '@/lib/format';
 import { formatObservedDay } from '@/lib/prices/format';
@@ -77,6 +77,7 @@ export interface PriceHistoryProps {
   cardId: string;
   /** Se acota a una variante. Sin esto, la serie es la mejor disponible por día. */
   variant?: CardVariant;
+  provider?: PriceHistoryParams['provider'];
   /**
    * Días pedidos. El default es 30, el mismo que el delta de `PriceDelta`.
    *
@@ -98,10 +99,11 @@ interface HistorySummary {
 export function PriceHistory({
   cardId,
   variant,
+  provider,
   days = 30,
   className,
 }: PriceHistoryProps) {
-  const queryKey = `${cardId}:${variant ?? '*'}:${days}`;
+  const queryKey = `${cardId}:${variant ?? '*'}:${provider ?? 'active'}:${days}`;
   const [result, setResult] = useState<{ queryKey: string; history: PriceHistoryDto | null; status: 'ready' | 'error' } | null>(null);
   const current = result?.queryKey === queryKey ? result : null;
   const history = current?.history ?? null;
@@ -118,7 +120,7 @@ export function PriceHistory({
      */
     queueMicrotask(() => {
       if (disposed) return;
-      getCardPriceHistory(cardId, { days, variant })
+      getCardPriceHistory(cardId, { days, variant, ...(provider === undefined ? {} : { provider }) })
         .then((data) => {
           if (disposed) return;
           setResult({ queryKey, history: data, status: 'ready' });
@@ -132,7 +134,7 @@ export function PriceHistory({
     return () => {
       disposed = true;
     };
-  }, [cardId, days, variant, queryKey]);
+  }, [cardId, days, variant, provider, queryKey]);
 
   const summary = useMemo(() => buildSummary(history), [history]);
 
@@ -241,6 +243,8 @@ function buildSummary(history: PriceHistoryDto | null): HistorySummary | null {
       ? 'origen no identificado'
       : history.provider === 'tcgdex'
         ? 'TCGdex'
+        : history.provider === 'tcgcsv'
+          ? 'TCGCSV'
         : history.provider === 'scrydex'
           ? 'Scrydex'
           : history.provider;

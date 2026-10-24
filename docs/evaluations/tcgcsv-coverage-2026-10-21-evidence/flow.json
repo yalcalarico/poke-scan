@@ -1,0 +1,53 @@
+{
+  "passed": true,
+  "source": "fixture HTTP local; PostgreSQL de tests; AppModule real",
+  "api": {
+    "status": 200,
+    "provider": "tcgcsv",
+    "market": 1.25
+  },
+  "requests": [
+    {
+      "path": "/last-updated.txt",
+      "conditional": false
+    },
+    {
+      "path": "/tcgplayer/3/998822111/products",
+      "conditional": false
+    },
+    {
+      "path": "/tcgplayer/3/998822111/prices",
+      "conditional": false
+    },
+    {
+      "path": "/last-updated.txt",
+      "conditional": false
+    },
+    {
+      "path": "/tcgplayer/3/998822111/products",
+      "conditional": true
+    }
+  ],
+  "telemetry": [
+    {
+      "file": "products",
+      "status": 200,
+      "receivedBytes": 175,
+      "reusedCache": false
+    },
+    {
+      "file": "prices",
+      "status": 200,
+      "receivedBytes": 152,
+      "reusedCache": false
+    },
+    {
+      "file": "products",
+      "status": 304,
+      "receivedBytes": 0,
+      "reusedCache": true
+    }
+  ],
+  "cooldownPreserved": true,
+  "receivedAtPreserved": true
+}

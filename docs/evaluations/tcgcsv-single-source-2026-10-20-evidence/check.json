@@ -1,0 +1,35 @@
+{
+  "command": "pnpm run check",
+  "exitCode": 0,
+  "backend": {
+    "files": 60,
+    "tests": 600
+  },
+  "backendE2e": {
+    "files": 2,
+    "tests": 6
+  },
+  "frontend": {
+    "files": 79,
+    "tests": 626
+  },
+  "nodeSuites": {
+    "backendScripts": 22,
+    "monitor": 15,
+    "backups": 54,
+    "custody": 7,
+    "qa": 5
+  },
+  "builds": [
+    "backend",
+    "frontend"
+  ],
+  "source": "tcgcsv",
+  "originalCollection": {
+    "copies": 2,
+    "valueUsd": 2.18
+  },
+  "qaAccountsRemaining": 0,
+  "delegatedAssignments": 2,
+  "screenshots": false
+}

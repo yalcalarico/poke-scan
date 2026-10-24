@@ -1,8 +1,7 @@
 /** Sólo SQL local: pedir un ciclo no crea un segundo consumidor ni llama a feeds. */
 export async function requestCycles(prisma) {
-  const tcgdexEnabled = !isDisabled(process.env.ENABLE_PRICE_BACKFILL_CRON) && !isDisabled(process.env.PRICE_QUEUE_ENABLED);
   const tcgcsvEnabled = process.env.ENABLE_TCGCSV_INGESTION === 'true';
-  const providers = [tcgdexEnabled ? 'tcgdex' : null, tcgcsvEnabled ? 'tcgcsv' : null].filter(Boolean);
+  const providers = [tcgcsvEnabled ? 'tcgcsv' : null].filter(Boolean);
   if (providers.length === 0) return providers;
   await prisma.$executeRaw`
     UPDATE price_sync_controls SET "requestedGeneration" = CASE
@@ -47,9 +46,9 @@ export async function readPriceStatus(prisma) {
     `,
     prisma.$queryRaw`
       SELECT COUNT(*)::int AS "catalogCards", COUNT(*) FILTER (WHERE NOT EXISTS (
-        SELECT 1 FROM card_prices p WHERE p."cardId" = c.id AND p.provider = 'tcgdex' AND p.source = 'tcgplayer'
+        SELECT 1 FROM card_prices p WHERE p."cardId" = c.id AND p.provider = 'tcgcsv' AND p.source = 'tcgplayer'
           AND p.currency = 'USD' AND p."fetchedAt" >= NOW() - INTERVAL '24 hours'
-      ))::int AS "tcgdexCardsWithoutFreshObservation" FROM cards c
+      ))::int AS "tcgcsvCardsWithoutFreshObservation" FROM cards c
     `,
     prisma.$queryRaw`SELECT s."setId", s.enabled, s.priority, s.origin, s."activatedAt", s."lastDemandAt",
       COUNT(c.id)::int AS "targetCards" FROM price_sync_sets s LEFT JOIN cards c ON c."setId" = s."setId"
@@ -94,10 +93,10 @@ export async function readPriceStatus(prisma) {
         (SELECT MAX("fetchedAt") FROM card_prices WHERE provider = 'tcgcsv' AND source = 'tcgplayer' AND currency = 'USD' AND market IS NOT NULL)
       )`,
   ]);
-  const dailyWithEstimate = daily.map((run) => ({ ...run, estimatedTcgdexMinutes: run.provider === 'tcgdex' ? Math.ceil(run.pending * 2300 / 60_000) : null }));
-  return { evaluatedAt: new Date().toISOString(), controls, queues, coverage, discovery: discovery[0] ?? null, catalog: pending[0] ?? null,
-    registry, daily: dailyWithEstimate, pauses, legacy, interactive, activity, flags: { tcgdexScheduler: !isDisabled(process.env.ENABLE_PRICE_BACKFILL_CRON),
-      tcgcsvScheduler: process.env.ENABLE_TCGCSV_INGESTION === 'true', worker: !isDisabled(process.env.PRICE_QUEUE_ENABLED) } };
+  const dailyWithEstimate = daily.filter((run) => run.provider === 'tcgcsv').map((run) => ({ ...run, estimatedTcgdexMinutes: run.provider === 'tcgdex' ? Math.ceil(run.pending * 2300 / 60_000) : null }));
+  return { evaluatedAt: new Date().toISOString(), controls: controls.filter((row) => row.provider === 'tcgcsv'), queues: queues.filter((row) => row.provider === 'tcgcsv'), coverage: coverage.filter((row) => row.provider === 'tcgcsv'), discovery: discovery[0] ?? null, catalog: pending[0] ?? null,
+    registry, daily: dailyWithEstimate, pauses: pauses.filter((row) => row.provider === 'tcgcsv'), legacy: legacy.filter((row) => row.provider === 'tcgcsv'), interactive: interactive.filter((row) => row.provider === 'tcgcsv'), activity: activity.filter((row) => row.provider === 'tcgcsv'), flags: { tcgdexScheduler: false,
+      tcgcsvScheduler: process.env.ENABLE_TCGCSV_INGESTION === 'true', worker: process.env.ENABLE_TCGCSV_INGESTION === 'true' } };
 }
 
 export function formatStatus(status) {
@@ -113,13 +112,13 @@ export function formatStatus(status) {
     lines.push(`  Cartas con cotización: ${coverage?.quotedCards ?? 0}; observaciones con precio: ${coverage?.observations ?? 0}`);
     if (control.lastError) lines.push(`  ${control.lastError}`);
   }
-  if (status.flags) lines.push(`Programación: TCGdex ${status.flags.tcgdexScheduler ? 'habilitada' : 'apagada'}, TCGCSV ${status.flags.tcgcsvScheduler ? 'habilitada' : 'apagada'}; worker ${status.flags.worker ? 'habilitado' : 'apagado'}`);
+  if (status.flags) lines.push(`Programación: TCGCSV ${status.flags.tcgcsvScheduler ? 'habilitada' : 'apagada'}; worker ${status.flags.worker ? 'habilitado' : 'apagado'}`);
   if (status.registry) lines.push(`Registro diario habilitado: ${status.registry.length} sets / ${status.registry.reduce((n, row) => n + row.targetCards, 0)} cartas`);
   for (const run of status.daily ?? []) lines.push(`  ${run.provider} ${run.setId} (${run.syncDate.toISOString().slice(0, 10)} UTC): ${run.status}; cotizadas ${run.quoted}, sin cotización ${run.no_quote}, unmapped ${run.unmapped}, unsupported ${run.unsupported}, sin build ${run.no_new_feed}, pendientes ${run.pending}, en proceso ${run.processing}, fallidas ${run.failed} / ${run.expectedCards}; observaciones ${run.observations}; última cotización ${run.lastQuoteAt?.toISOString?.() ?? 'ninguna'}; intentos ${run.attempts}; inicio ${run.startedAt?.toISOString?.() ?? 'sin iniciar'}; fin ${run.finishedAt?.toISOString?.() ?? 'sin finalizar'}; próximo intento ${run.nextAttemptAt?.toISOString?.() ?? 'sin espera'}; build ${run.feedPublishedAt?.toISOString?.() ?? 'sin build'}${run.estimatedTcgdexMinutes === null ? '' : `; estimado ${run.estimatedTcgdexMinutes} min a 2,3 s por carta, sin fallos ni pausas`}${run.lastError ? `; ${run.lastError}` : ''}`);
   for (const pause of status.pauses ?? []) lines.push(`Pausa ${pause.provider}: hasta ${pause.blockedUntil.toISOString()}`);
   if (status.activity) for (const row of status.activity) lines.push(`Última comprobación o cotización ${row.provider}: ${row.lastActivityAt?.toISOString?.() ?? 'sin actividad'}`);
   if (status.legacy) for (const row of status.legacy) lines.push(`Legacy diferido ${row.provider} ${row.status}: ${row.jobs}`);
-  if (status.catalog) lines.push(`Catálogo completo (referencia global, fuera del alcance diario): ${status.catalog.tcgdexCardsWithoutFreshObservation}/${status.catalog.catalogCards} cartas sin observación TCGdex vigente`);
+  if (status.catalog) lines.push(`Catálogo completo (referencia global, fuera del alcance diario): ${status.catalog.tcgcsvCardsWithoutFreshObservation}/${status.catalog.catalogCards} cartas sin observación TCGCSV vigente`);
   if (status.discovery) {
     const state = status.discovery;
     lines.push(`TCGCSV: ${state.mappedSets} sets asociados; ${state.missingSets} sin identidad segura`);

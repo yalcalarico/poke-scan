@@ -20,6 +20,9 @@ export class CardComparisonQueryDto extends ComparisonQueryDto {
 
 export const COMPARISON_PROVIDERS = ['tcgdex', 'tcgcsv'] as const;
 export type ComparisonProvider = (typeof COMPARISON_PROVIDERS)[number];
+export function historyProviders(active: string): readonly ComparisonProvider[] {
+  return active === 'tcgcsv' ? ['tcgcsv'] : COMPARISON_PROVIDERS;
+}
 export const COMPARISON_POLICY = 'exact-variant-market-usd-v1';
 
 export interface ComparisonPriceDto {

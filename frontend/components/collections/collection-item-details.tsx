@@ -7,7 +7,8 @@ import type { CollectionItemDto } from '@/types/api';
 
 export function CollectionItemDetails({ item }: { item: CollectionItemDto }) {
   const { formatMoney } = useCurrency();
-  const market = item.price?.market ?? null;
+  const reference = item.price;
+  const market = reference?.market ?? null;
   return <div className="flex w-full flex-col gap-1 text-caption text-secondary">
     <p>#{item.card.number} · {variantLabel(item.variant)}</p>
     <p>{conditionLabel(item.condition)}</p>
@@ -18,7 +19,7 @@ export function CollectionItemDetails({ item }: { item: CollectionItemDto }) {
     </div>
     {item.isForTrade ? <p className="text-brand">Para intercambio</p> : null}
     {market === null ? <p className="text-warning">Sin referencia de precio para esta variante.</p> : null}
-    {item.price ? <PriceReferenceDetails reference={item.price} showConversion /> : <p className="text-warning">Sin referencia de precio para esta variante · antigüedad no disponible.</p>}
+    {reference ? <PriceReferenceDetails reference={reference} showConversion /> : null}
     <p>La condición {conditionLabel(item.condition)} no ajusta este valor.</p>
   </div>;
 }

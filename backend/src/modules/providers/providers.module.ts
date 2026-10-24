@@ -4,12 +4,12 @@ import {
   PRICE_PROVIDER,
 } from './card-provider.interface.js';
 import { PokemonTcgIoProvider } from './pokemon-tcg-io.provider.js';
-import { TcgdexProvider } from './tcgdex.provider.js';
+import { TcgcsvPriceProvider } from './tcgcsv-price.provider.js';
 
 @Module({
   providers: [
     { provide: CARD_DATA_PROVIDER, useClass: PokemonTcgIoProvider },
-    { provide: PRICE_PROVIDER, useClass: TcgdexProvider },
+    { provide: PRICE_PROVIDER, useClass: TcgcsvPriceProvider },
   ],
   exports: [CARD_DATA_PROVIDER, PRICE_PROVIDER],
 })

@@ -4,7 +4,7 @@ import { freshnessAt } from '../common/price-metadata.js';
 import { PRICE_PROVIDER, type PriceProvider } from '../modules/providers/card-provider.interface.js';
 import { PrismaService } from '../prisma/index.js';
 import { COMPARISON_CLOCK, type ComparisonClock } from './comparison-clock.js';
-import { COMPARISON_PROVIDERS, type CardComparisonDto, type CardComparisonQueryDto, type ComparisonPriceDto, type ComparisonProvider } from './comparison.dto.js';
+import { historyProviders, type CardComparisonDto, type CardComparisonQueryDto, type ComparisonPriceDto, type ComparisonProvider } from './comparison.dto.js';
 import { TcgcsvService } from './tcgcsv/tcgcsv.service.js';
 
 interface PriceRow { provider: ComparisonProvider; market: Prisma.Decimal | null; low: Prisma.Decimal | null; mid: Prisma.Decimal | null; high: Prisma.Decimal | null; fetchedAt: Date; feedPublishedAt: Date | null }
@@ -25,18 +25,19 @@ export class CardComparisonService {
     const from = new Date(`${today}T00:00:00Z`);
     from.setUTCDate(from.getUTCDate() - query.days + 1);
     const variant = query.variant;
+    const providers = historyProviders(this.active.id);
     const [current, history, jobs] = await Promise.all([
       this.prisma.$queryRaw<PriceRow[]>(Prisma.sql`
         SELECT DISTINCT ON (p.provider) p.provider, p.market, p.low, p.mid, p.high, p."fetchedAt", p."feedPublishedAt"
         FROM card_prices p WHERE p."cardId" = ${id} AND p.variant = ${variant} AND p.source = 'tcgplayer' AND p.currency = 'USD'
-          AND p.provider IN ('tcgdex','tcgcsv') AND p."fetchedAt" <= ${at}
+          AND p.provider IN (${Prisma.join(providers)}) AND p."fetchedAt" <= ${at}
         ORDER BY p.provider, p."fetchedAt" DESC, p.id DESC
       `),
       this.prisma.$queryRaw<PriceRow[]>(Prisma.sql`
         SELECT DISTINCT ON (p.provider, p."fetchedAt"::date)
           p.provider, p.market, p.low, p.mid, p.high, p."fetchedAt", p."feedPublishedAt"
         FROM card_prices p WHERE p."cardId" = ${id} AND p.variant = ${variant} AND p.source = 'tcgplayer' AND p.currency = 'USD'
-          AND p.provider IN ('tcgdex','tcgcsv') AND p."fetchedAt" >= ${from} AND p."fetchedAt" <= ${at}
+          AND p.provider IN (${Prisma.join(providers)}) AND p."fetchedAt" >= ${from} AND p."fetchedAt" <= ${at}
         ORDER BY p.provider, p."fetchedAt"::date, p."fetchedAt" DESC, p.id DESC
       `),
       groupId === null ? Promise.resolve([]) : this.prisma.$queryRaw<{ status: string; publishedBuild: Date | null; availableAt: Date }[]>`
@@ -53,7 +54,7 @@ export class CardComparisonService {
       tcgcsv: { enabled: this.ingestion.enabled(), groupId,
         state: !this.ingestion.enabled() ? 'disabled' : groupId === null ? 'unsupported' : job?.status === 'failed' ? 'failed' : job?.publishedBuild ? 'ready' : 'pending',
         nextAttemptAt: job?.availableAt.toISOString() ?? null },
-      series: COMPARISON_PROVIDERS.map((provider) => ({ provider, source: 'tcgplayer', currency: 'USD',
+      series: providers.map((provider) => ({ provider, source: 'tcgplayer', currency: 'USD',
         current: current.find((row) => row.provider === provider) ? toPoint(current.find((row) => row.provider === provider)!) : null,
         points: history.filter((row) => row.provider === provider).map(toPoint),
       })),

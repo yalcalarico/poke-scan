@@ -22,7 +22,7 @@ describe('TCGCSV: descarga acotada con origen cerrado', () => {
   });
   it('autoriza rutas dinámicas solamente mediante el registro durable de grupos validados', async () => {
     const findUnique = vi.fn(async (): Promise<{ setId: string; provider: string; externalId: string } | null> => ({ setId: 'test-set', provider: 'tcgcsv', externalId: '23286' }));
-    const dynamic = new TcgcsvClient({ cardSetExternalId: { findUnique } } as unknown as PrismaService);
+    const dynamic = new TcgcsvClient({ cardSetExternalId: { findUnique }, tcgcsvSetGroup: { findFirst: async () => null } } as unknown as PrismaService);
     const fetchMock = vi.fn(async () => new Response('fixture'));
     globalThis.fetch = fetchMock as unknown as typeof fetch;
     expect(await dynamic.fetchFeed('tcgplayer/3/23286/prices', 100)).toBe('fixture');
@@ -66,11 +66,12 @@ describe('TCGCSV: descarga acotada con origen cerrado', () => {
 
 it('admite sólo las rutas de productos/precios de Ascended Heroes, sin abrir otros grupos', async () => {
   const original = globalThis.fetch;
-  const fetchMock = vi.fn(async () => new Response('fixture'));
+  const products = JSON.stringify({ success: true, errors: [], results: [{ productId: 1, groupId: 24541, categoryId: 3, name: 'Pikachu', extendedData: [] }] });
+  const fetchMock = vi.fn(async (url: string) => new Response(url.endsWith('/products') ? products : 'fixture'));
   globalThis.fetch = fetchMock as unknown as typeof fetch;
   try {
     const client = new TcgcsvClient();
-    expect(await client.fetchFeed('tcgplayer/3/24541/products', 100)).toBe('fixture');
+    expect(await client.fetchFeed('tcgplayer/3/24541/products', 1000)).toBe(products);
     expect(await client.fetchFeed('tcgplayer/3/24541/prices', 100)).toBe('fixture');
     await expect(client.fetchFeed('tcgplayer/3/24542/prices', 100)).rejects.toThrow('Ruta');
     await expect(client.fetchFeed('tcgplayer/3/24541/prices?x=1', 100)).rejects.toThrow('Ruta');

@@ -81,3 +81,24 @@ describe('TCGCSV: descubrimiento conserva identidades', () => {
     expect(buildIsNew(new Date(build.getTime() + 1), build)).toBe(true);
   });
 });
+
+it('admite únicamente equivalencias revisadas, incluidos suplementarios y grupos compartidos', () => {
+  const sets: TcgcsvLocalSet[] = [
+    { id: 'swshp', name: 'SWSH Black Star Promos', series: 'Sword & Shield', englishOnly: true },
+    { id: 'tk1a', name: 'EX Trainer Kit Latias', series: 'EX', englishOnly: true },
+    { id: 'tk1b', name: 'EX Trainer Kit Latios', series: 'EX', englishOnly: true },
+    { id: 'mcd21', name: "McDonald's Collection 2021", series: 'Other', englishOnly: true },
+  ];
+  const groups: TcgcsvGroup[] = [
+    { groupId: 2545, name: 'SWSH: Sword & Shield Promo Cards', isSupplemental: false },
+    { groupId: 1543, name: 'EX Trainer Kit 1: Latias & Latios', isSupplemental: false },
+    { groupId: 2782, name: "McDonald's 25th Anniversary Promos", isSupplemental: true },
+  ];
+  expect(discoverSetMappings(sets, groups).mappings).toEqual([
+    { setId: 'swshp', groupId: 2545 }, { setId: 'tk1a', groupId: 1543 },
+    { setId: 'tk1b', groupId: 1543 }, { setId: 'mcd21', groupId: 2782 },
+  ]);
+  expect(discoverSetMappings(sets, groups.map((g) => ({ ...g, name: `${g.name} Japanese` }))).mappings).toHaveLength(0);
+  expect(discoverSetMappings([{ ...sets[3], englishOnly: false }], groups).mappings).toHaveLength(0);
+  expect(discoverSetMappings(sets.slice(1, 3), groups, [{ setId: 'other', groupId: 1543 }]).mappings).toHaveLength(0);
+});
