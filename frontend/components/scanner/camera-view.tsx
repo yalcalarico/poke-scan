@@ -70,6 +70,7 @@ export interface CameraViewProps {
   autoCapturePaused?: boolean;
   reviewOpen?: boolean;
   onReview?: () => void;
+  diagnosticStatus?: { label: string; onOpen: () => void } | null;
 }
 
 /** `torch` no está en `MediaTrackConstraintSet` del lib.dom: es una extensión. */
@@ -161,6 +162,7 @@ export function CameraView({
   autoCapturePaused = false,
   reviewOpen = false,
   onReview,
+  diagnosticStatus,
 }: CameraViewProps) {
   const viewportRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -508,6 +510,10 @@ export function CameraView({
         <div className="pointer-events-none absolute inset-x-16 top-[calc(env(safe-area-inset-top)+1rem)] flex min-h-11 items-center justify-center rounded-panel bg-on-media px-3 py-2 text-center text-on-media-text backdrop-blur-md">
           <p className="truncate text-body-strong">{detected?.candidate.card.set?.name ?? detected?.candidate.card.setId ?? 'Encuadrá una carta'}</p>
         </div>
+        {diagnosticStatus ? <button type="button" onClick={diagnosticStatus.onOpen}
+          className="absolute left-4 right-20 top-[calc(env(safe-area-inset-top)+4.5rem)] rounded-control bg-on-media px-3 py-2 text-left text-caption text-on-media-text backdrop-blur-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-on-media-text">
+          {diagnosticStatus.label}
+        </button> : null}
 
         {!hideControls ? <CameraControls
           showContinuous={!autoVisual}

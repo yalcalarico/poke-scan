@@ -38,10 +38,11 @@ export interface OrganizeSheetProps {
   onRemove: (runId: number) => void;
   onReview?: (runId: number) => void;
   onCorrect?: (runId: number, card: CardDto) => void;
+  onManualSearchOpen?: (runId: number) => void;
   manualReviewRunId?: number | null;
 }
 
-export function OrganizeSheet({ open, entries, onClose, onSaved, onRemove, onReview, onCorrect, manualReviewRunId }: OrganizeSheetProps) {
+export function OrganizeSheet({ open, entries, onClose, onSaved, onRemove, onReview, onCorrect, onManualSearchOpen, manualReviewRunId }: OrganizeSheetProps) {
   const toast = useToast();
   const { user } = useAuth();
   const userId = user?.id ?? '';
@@ -288,7 +289,7 @@ export function OrganizeSheet({ open, entries, onClose, onSaved, onRemove, onRev
           <div className="flex gap-3"><button type="button" className="min-h-11 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--focus-ring)]" disabled={locked} onClick={() => onReview?.(allocation.runId)} aria-label={`Revisar carta ${card.name}`}><CardThumb card={card} width={88} /></button>
             <div className="min-w-0 flex-1"><p className="text-body-strong text-primary">{card.name}</p><p className="text-caption text-secondary">{card.set?.name ?? card.setId} · {formatCardNumber(card.number, card.set?.printedTotal ?? null)}</p>
               <p className="text-caption text-warning">{allocation.reviewed ? entry.selectionSource === 'manual' ? 'Selección manual confirmada' : 'Carta revisada' : 'Propuesta por revisar'}</p>
-              {onCorrect ? <Button variant="secondary" onClick={() => setCorrectionRunId(allocation.runId)} disabled={locked}>Buscar carta a mano</Button> : null}
+              {onCorrect ? <Button variant="secondary" onClick={() => { onManualSearchOpen?.(allocation.runId); setCorrectionRunId(allocation.runId); }} disabled={locked}>Buscar carta a mano</Button> : null}
               {onReview ? <Button variant="ghost" onClick={() => onReview(allocation.runId)} disabled={locked}>Revisar carta</Button> : null}</div></div>
           <Field id={`variant-${allocation.id}`} label="Variante"><Select id={`variant-${allocation.id}`} value={allocation.variant ?? (allocation.variantReviewed ? '__unknown' : '')} placeholder="Elegí una variante"
             options={[{ value: '__unknown', label: 'No sé todavía' }, ...VARIANT_OPTIONS.map(({ value, label }) => ({ value, label }))]} disabled={locked} onChange={(value) => {

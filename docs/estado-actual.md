@@ -44,7 +44,13 @@ remota corresponde a los checks del nuevo commit en GitHub.
 
 ## Decisiones humanas y trabajo pendiente
 
-- **TCGCSV — cobertura y descargas diarias:** implementación local entregada el
+- **TCGCSV — cobertura y descargas diarias:** el 25/10 se verificaron productos
+  de Rumble y SVE y se incorporaron equivalencias
+  exactas para sus 32 cartas; Futsal sigue sin asociación. Los errores de transporte
+  del ciclo del domingo coinciden con suspensiones de la Mac: para operación local
+  debe permanecer despierta, con la tapa abierta. Las reservas de 24 h se conservan.
+  [Diagnóstico y condiciones](evaluations/tcgcsv-recovery-2026-10-25.md).
+  Antecedente: implementación local entregada el
   21/10: 173 sets asociados / 171 grupos / 173 habilitados; caché condicional de
   productos, telemetría, grupos compartidos e informe operativo. Corrección del
   22/10: prefijos SV/TG/GG, Classic, promos revisadas, cobertura parcial y cruce

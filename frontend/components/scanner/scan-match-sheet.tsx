@@ -3,7 +3,7 @@
 import { PreviewSheet as Sheet } from '@/components/visual-preview/preview-sheet';
 
 import Image from 'next/image';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Button, SheetBody, SheetFooter, SheetHeader } from '@/components/ui';
 import { formatCardNumber } from '@/lib/format';
 import type { CaptureReview } from '@/lib/scanner/capture-review';
@@ -16,19 +16,26 @@ import { VisualCard } from '@/components/visual-preview/holo-card';
 
 type Match = VisualIdentifyResponseDto['candidates'][number];
 
-export function ScanMatchSheet({ review, candidate, open, pending, onOpenChange, onConfirm, onManualSearch }: {
+export function ScanMatchSheet({ review, candidate, open, pending, onOpenChange, onConfirm, onSelect, onOpened, onManualSearch }: {
   review: CaptureReview;
   candidate: RecognizedCard;
   open: boolean;
   pending: boolean;
   onOpenChange: (open: boolean) => void;
   onConfirm: (match: Match) => void;
+  onSelect?: (match: Match) => void;
+  onOpened?: () => void;
   onManualSearch: () => void;
 }) {
   const matches = review.result?.candidates ?? [];
   const [selectedId, setSelectedId] = useState(candidate.card.id);
+  const wasOpen = useRef(false);
   const selected = matches.find((match) => match.card.id === selectedId);
   const card = selected?.card ?? candidate.card;
+  useEffect(() => {
+    if (open && !wasOpen.current) onOpened?.();
+    wasOpen.current = open;
+  }, [open, onOpened]);
   return <Sheet open={open} onClose={() => onOpenChange(false)} title="Revisá la coincidencia" subtitle="Compará tu captura y elegí la carta correcta.">
     <SheetHeader />
     <SheetBody className="flex flex-col gap-4 [&>*]:shrink-0">
@@ -55,7 +62,7 @@ export function ScanMatchSheet({ review, candidate, open, pending, onOpenChange,
         <div className="mt-3 flex gap-3 overflow-x-auto pb-2" role="group" aria-label="Opciones reconocidas">
           {matches.map((match) => <button key={match.card.id} type="button" aria-pressed={card.id === match.card.id}
             aria-label={`Elegir ${match.card.name}, ${match.card.set?.name ?? match.card.setId}, número ${match.card.number}`}
-            disabled={pending} onClick={() => setSelectedId(match.card.id)}
+            disabled={pending} onClick={() => { setSelectedId(match.card.id); onSelect?.(match); }}
             className={cn('w-24 shrink-0 rounded-control border-2 p-1 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--focus-ring)]', card.id === match.card.id ? 'border-brand bg-brand-soft' : 'border-line bg-surface')}>
             <CardThumb card={match.card} width={84} />
             <span className="mt-1 block truncate text-caption text-primary">{match.card.name}</span>

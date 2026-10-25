@@ -108,6 +108,54 @@ El service worker v4 elimina las cachés de las versiones anteriores. No hay mot
 
 ## Descarga voluntaria para revisar errores
 
+### Modo de prueba de una sesión
+
+El modo de prueba es voluntario y se activa antes de capturar. Permite indicar un
+set esperado como contexto del informe: no filtra candidatos ni modifica la
+búsqueda de DINOv2. Las lecturas restauradas del borrador quedan fuera; no se
+reconstruyen recortes ni predicciones que ya no están disponibles.
+
+Cada lectura registrada vincula el recorte exacto enviado, la respuesta original,
+las alternativas, la calidad disponible y los eventos de revisión con un UUID de
+diagnóstico y su `runId`. La respuesta original se conserva aunque cambie la carta.
+La búsqueda manual dentro de Organizar mantiene esa vinculación. Abrir la
+comparativa, seleccionar provisionalmente o cancelar una búsqueda no confirma una
+corrección: se registra la identidad elegida cuando la persona la confirma.
+
+El informe HTML descargable incluye los recortes, el ranking, la elección humana
+y la cronología, con los datos JSON incorporados. Se puede abrir sin conexión.
+Separa lecturas sin revisión, propuestas confirmadas, correcciones mediante una
+alternativa o búsqueda manual, descartes y fallos técnicos. La elección humana no
+es una validación independiente; coincidir con el set esperado tampoco demuestra
+un acierto. El informe no registra el texto de las búsquedas ni credenciales.
+
+El informe señala por separado si la propuesta inicial y la identidad confirmada
+pertenecen al set esperado. Si falta el set o no se configuró uno esperado, no
+clasifica la lectura como fuera del set. Una selección manual conserva el puesto
+que esa carta tenía en el ranking original, o indica que no estaba entre las
+alternativas. La falta de ranking o de confirmación se muestra como información
+no disponible, sin atribuirle una similitud nueva a la búsqueda manual.
+
+Todo el diagnóstico vive en memoria, separado de `pcs.scanDraft`: no se envía al
+servidor ni se guarda en almacenamiento del navegador. Guardar o descartar una
+lectura conserva su evidencia diagnóstica. Finalizar congela el informe; descargar
+no borra sus datos. Para iniciar otro hay que descartar explícitamente el anterior.
+Recargar, salir de la pantalla o cambiar de cuenta libera el diagnóstico: descargalo
+antes de salir.
+
+El límite es de 30 lecturas o 64 MiB de recortes codificados. Al alcanzarlo se
+suspende la incorporación de nuevas lecturas al diagnóstico con un aviso, sin
+bloquear el escáner. Las lecturas ya registradas siguen admitiendo eventos hasta
+finalizar. Las capturas posteriores quedan fuera del informe.
+
+Finalizar queda bloqueado mientras se prepara una captura, se espera el
+reconocimiento/precio o se confirma una alternativa con precios pendientes. Abrir
+las opciones desde la cámara no interrumpe la consulta. Las cancelaciones dejan
+la lectura en estado terminal y liberan el bloqueo; las preparaciones fallidas o
+canceladas antes de producir un recorte se contabilizan por separado.
+
+### Descarga individual existente
+
 Después de una consulta de cámara o galería aparece «¿No coincidió? Guardá el recorte». Podés descargar el recorte exacto enviado (PNG/JPEG/WebP, sin recodificar) y un JSON con el mismo nombre base, origen, fecha, candidatos, versión del índice, tiempos backend y error si lo hubo. El ID correcto queda vacío (`expectedCardId: null`) para etiquetarlo después; la predicción no se convierte en ground truth.
 
 La última captura se conserva sólo en memoria del navegador, fuera de la sesión restaurable. No se descarga automáticamente ni se guarda en el servidor, sessionStorage o localStorage. La siguiente captura la reemplaza; recargar o salir de la pantalla la pierde. Descartar la lectura/sesión también libera esa revisión. Si falló antes de preparar una imagen no hay recorte para bajar.
