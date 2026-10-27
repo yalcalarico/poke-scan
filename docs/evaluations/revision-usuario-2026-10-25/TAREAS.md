@@ -3,8 +3,11 @@
 Fecha: 25/10/2026. Origen: [siete evidencias](README.md).
 Estado al 26/10/2026: **cuatro encargos GPT-6 Luna terminados; cinco revisiones
 implementadas, dos pendientes de reproducción Safari físico**.
-Seguimiento de textos/períodos implementado y comprobado en Safari de escritorio;
-gate actual pendiente por timeouts backend: [Resultado 05](RESULTADO-05-textos-y-periodos.md).
+Seguimiento de textos/períodos implementado y comprobado en Safari de escritorio.
+El gate posterior del 26/10 fue aprobado: [cierre vigente](../tcgcsv-batch-completion-2026-10-26.md).
+El timeout que se registra más abajo pertenece al intento anterior.
+Continuidad desde el 27/10: [backlog ODD](../../../odd/backlog.md); este registro
+conserva encargos y resultados históricos, no una lista paralela para actualizar.
 Las imágenes respaldan la observación del usuario, no una causa técnica confirmada.
 Root revisa reportes y mantiene este registro; los agentes implementan y verifican.
 

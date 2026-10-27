@@ -6,10 +6,11 @@ cronjobs ni estado de servicios por el mero paso del tiempo.
 
 ## Cómo continuar
 
-[AGENTS](../AGENTS.md) y [política de trabajo](orquestacion-codex.md) definen las
-reglas. El [registro por ID](plans/lanzamiento-2026-10-07/REGISTRO-TAREAS.md) y el
-[checklist](plans/lanzamiento-2026-10-07/STATUS-CHECKLIST.md) mantienen cierres y
-cantidades; no recalcular avance a partir de capturas o documentos preparatorios.
+[AGENTS](../AGENTS.md) define las reglas técnicas; [Gentle Shell / ODD](agent-workflow.md)
+aporta el proceso. La continuidad se consulta en el [índice ODD](../odd/README.md). El [backlog ODD](../odd/backlog.md) concilia los pendientes; el
+[registro por ID](plans/lanzamiento-2026-10-07/REGISTRO-TAREAS.md) y el
+[checklist](plans/lanzamiento-2026-10-07/STATUS-CHECKLIST.md) conservan sus cierres
+como snapshots. No recalcular avance a partir de capturas o documentos preparatorios.
 El pedido humano actual determina el trabajo; no retomar automáticamente una
 reserva antigua. Una entrega nueva actualiza este resumen y su propio informe,
 sin copiar la bitácora en los seis registros.
