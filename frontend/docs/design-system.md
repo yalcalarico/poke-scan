@@ -1,4 +1,4 @@
-# Design system — PokéScan v2
+# Design system — PokéScan
 
 **Apariencia única, 24/10/2026:** se retiró Clásica por decisión del usuario. La app usa siempre la apariencia actual, sin selector ni propagación del parámetro `visual`. Los enlaces antiguos con `visual=classic` o `visual=v2` siguen abriendo la misma pantalla; `/buscar-v2` conserva compatibilidad con el catálogo común. La navegación mantiene sus cinco destinos.
 
@@ -9,7 +9,8 @@
 > **todo valor visual sale de un token**. Si algo no está en este documento, no se
 > escribe con una clase suelta.
 >
-> Plan de migración por fases: [`redesign-2026.md`](redesign-2026.md).
+> Rutas vigentes: [`routes.md`](routes.md). El plan de migración sustituido
+> se recupera según el [archivo documental](../../docs/archive/README.md).
 
 ---
 
