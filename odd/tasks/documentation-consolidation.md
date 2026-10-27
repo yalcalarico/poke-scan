@@ -18,8 +18,8 @@ Rama: `docs/documentation-review-slices`; respaldo íntegro: `backup/documentati
 - T2 [S1-S4,S6] inline — done — 16 históricos contrastados/retirados, índice y estado consolidados; cierre ODD histórico reconciliado, sin permisos externos heredados; commit: `95669dd`.
 - T3 [S3-S6] inline — done — enlaces/anchors operativos, 38 comandos, recuperación Git, 1.653 evidencias y 38 IDs comprobados; RDD reviewDue=false; evidencia: `95669dd`, cierre en la última unidad documental de esta rama.
 
-- T4 [S6-S7] inline — in_progress — preservar el tip, reconstruir commits acotados y comprobar equivalencia de contenido; commits: por registrar.
-- T5 [S3,S5-S7] native review — pending — revisar cada candidato contra su padre, con consentimiento y sin truncar evidencia; detener ante una unidad indivisible que exceda el presupuesto.
+- T4 [S6-S7] inline — done — 16 unidades reconstruidas, 48 rutas originales cubiertas una vez; contenido final idéntico al respaldo salvo continuidad ODD. Commits: `0fa991f` a `7fec85d`.
+- T5 [S3,S5-S7] native review — in_progress — revisar cada candidato contra su padre, con consentimiento y sin truncar evidencia; detener ante una unidad indivisible que exceda el presupuesto.
 
 ## Log
 
@@ -242,3 +242,15 @@ no repetir START con el mismo target ni declarar ese target revisado.
 Equivalencia requerida: árbol final de producto, guías y evidencias idéntico al
 respaldo; sólo este documento ODD puede sumar autorización/estado de revisión.
 No detener servicios ni repetir suites/builds o pruebas documentales intactas.
+
+
+### L7 — Reconstrucción observada
+
+Dieciséis commits `0fa991f..7fec85d` sobre `51332f2`, enumerables con
+`git log --reverse --oneline 51332f2..7fec85d`. Las 48 rutas del diff original se
+asignaron exactamente una vez; diff entre respaldo y nuevo tip: sólo este
+archivo ODD. Árbol de trabajo limpio; `git diff --cached --check` terminó 0 en
+cada unidad. No se modificaron evidencias no versionadas ni se repitieron suites.
+Esta reconstrucción y su comprobación no equivalen a revisión nativa aprobada.
+La revisión se hará con HEAD en cada commit y baseRef en su padre completo;
+este registro de reconstrucción constituye una unidad documental final separada.
