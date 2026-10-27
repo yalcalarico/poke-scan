@@ -1,5 +1,5 @@
 # Consolidación documental de PokéScan
-Limpieza documental implementada; **reestructuración y revisión nativa en curso**, sin producto ni servicios.
+Limpieza y reestructuración documental verificadas; revisión resuelta por candidato, con dos excepciones explícitas. Sin producto ni servicios.
 Rama: `docs/documentation-review-slices`; respaldo íntegro: `backup/documentation-consolidation-513e248`. Base recuperable: `51332f2d9408b41e2e64175bde35cfcd6d7866e3`.
 
 ## Specs
@@ -21,8 +21,8 @@ Rama: `docs/documentation-review-slices`; respaldo íntegro: `backup/documentati
 - T3 [S3-S6] inline — done — enlaces/anchors operativos, 38 comandos, recuperación Git, 1.653 evidencias y 38 IDs comprobados; RDD reviewDue=false; evidencia: `95669dd`, cierre en la última unidad documental de esta rama.
 
 - T4 [S6-S7] inline — done — 16 unidades reconstruidas, 48 rutas originales cubiertas una vez; contenido final idéntico al respaldo salvo continuidad ODD. Commits: `0fa991f` a `7fec85d`.
-- T5 [S3,S5-S7,S9] native review — in_progress — unidades 1 y 3–13 aprobadas/reconocidas; 2 sin revisión por rechazo de consentimiento y 16 sin revisión por decisión humana explícita. Restan 14, 15, 17 y el seguimiento actualizado.
-- T6 [S6,S8] delivery — pending — después de T5, push y PR contra master, sin issue ni esperar CI.
+- T5 [S3,S5-S7,S9] native review — done — unidades 1, 3–15, 17 y 18 aprobadas/reconocidas (16); 2 sin revisión por rechazo de consentimiento y 16 sin revisión por decisión humana explícita. Equivalencia final y diff check verdes; cierre pasivo bajo evaluación proporcional, sin otra ronda de revisión por defecto.
+- T6 [S6,S8] delivery — in_progress — push y PR contra master autorizados, sin issue ni esperar CI; resultado de entrega en el PR y continuidad Engram, sin afirmar publicación antes de observarla.
 
 ## Log
 
@@ -296,3 +296,23 @@ Respuesta humana a la elección cerrada que nombra explícitamente el retiro de
 `ee29770`. Se conserva ese retiro exacto sin revisión nativa. No es una aprobación,
 no crea autoridad y no desactiva RDD. Se retoman las revisiones restantes y la
 publicación autorizada en S8; no se repite el START del candidato fallido.
+
+
+### L11 — Cierre de revisiones por unidad
+
+Unidades 1, 3–15, 17 (`5bec48f`) y 18 (`96e0ed2`): 16 aprobaciones nativas con
+acknowledgement consumido. Capturas reales de modelo: 9, 11, 12, 13, 14 y 15;
+las otras diez fueron cierres low sin lentes. Las excepciones 2 y 16 permanecen
+sin revisión, no aprobadas, según L9/L10. No existe aprobación del diff acumulado.
+
+Cierres adicionales observados: unidad 12 `review-8aacde15911c65f5`,
+13 `review-09d71decef86a572`, 14 `review-8b8b4c34957f00ab`,
+15 `review-7996d1f477c40d7f`, 17 `review-9b24c8bf01a1c87b` y
+18 `review-25581cf5478c1961`; todos con authority burned en acknowledgement.
+
+Comparación final contra `backup/documentation-consolidation-513e248`: sólo
+cambia este documento de continuidad. `git diff --check 51332f2..HEAD` limpio,
+árbol limpio antes de esta anotación. El producto, las evidencias y los retiros
+originales no cambiaron durante la revisión. No se ejecutaron suites/builds ni
+se detuvieron servicios: sólo documentación. Publicación en curso por S8;
+no se espera CI ni se realiza merge.
