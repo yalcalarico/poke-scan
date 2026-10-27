@@ -14,11 +14,11 @@ Entrega: `auto-chain`, `feature-branch-chain`, sin push/PR. Verificación: enlac
 ## Tasks
 
 - T1 [S1-S4] inline — done — respaldo externo 18/18 SHA-256 verificados y 2.254 hashes de preservación; commit: `7587266`.
-- T2 [S1,S4,S5] inline — done — siete documentos con enlaces válidos y 18 invariantes comprobados; AGENTS 16.630 → 6.705 bytes; commits: `bbbf247` (instrucciones), compatibilidad documental en unidad de cierre.
+- T2 [S1,S4,S5] inline — done — siete documentos con enlaces válidos y 18 invariantes comprobados; AGENTS 16.630 → 6.705 bytes; commits: `bbbf247` (instrucciones), `4c21eeb` (compatibilidad).
 - T3 [S1,S4,S5] inline — done — backlog conciliado (38 IDs/18 abiertos), cuerpos de registros preservados, enlaces de 11 documentos y tres memorias estables; commit: `daec3f4`.
-- T4 [S2-S4] inline — done — cinco archivos actualizados, diez superficies en cuarentena, cuatro hooks/14 agentes retirados; comparación diferencial verde; evidencia Git: pendiente (cambios externos respaldados, no versionados aquí).
-- T5 [S1-S6] inline — in_progress — comprobaciones locales contra la base Git, evaluación del candidato restante y commits de cierre; no accede al respaldo protegido.
-- T6 [S2-S4,S6] delegated — pending — verificación independiente de instrucciones y retiro global, sin acceso al directorio protegido ni reejecución del chequeo denegado.
+- T4 [S2-S4] inline — done — cinco archivos actualizados, diez superficies en cuarentena, cuatro hooks/14 agentes retirados; comparación diferencial verde; evidencia Git: `4c21eeb` (cambios externos respaldados, no versionados aquí).
+- T5 [S1-S6] inline — done — comprobación local (12 documentos/212 destinos, producto intacto), diff check verde y árbol limpio al cierre de `4c21eeb`; commits: `bbbf247`, `4c21eeb`.
+- T6 [S2-S4,S6] delegated — blocked — verificador no disponible: `No API key found for openai-codex`; espera proveedor autenticado o prueba independiente aportada por el humano. Un intento, sin veredicto ni reintento.
 - T7 [S2-S4,S6] inline — blocked — espera resolución humana/mantenimiento del guard para el chequeo del respaldo protegido y validación de sesiones nuevas; no hay aprobación pendiente en la UI.
 
 ## Log
@@ -176,4 +176,12 @@ Rutas: las cuatro enumeradas en S2. No se autoriza recorrer otros repositorios n
 
 - Check local con salida 0: exactamente 12 documentos respecto de la base Git; 212 destinos documentales locales existentes; producto, scripts y manifiestos sin cambios. `git diff --check` aprobado después de corregir el EOF. Es una prueba de alcance distinto, sin acceso al respaldo protegido.
 - Tercera unidad: `daec3f4..bbbf247`, sólo AGENTS (440 líneas), con justificación atómica en L7. ASSESS: nativeRisk=medium, escalación explícita ítem 5 (entorno global), risk=high, reviewDue=false/under_budget, independentVerifier=true. No se inicia revisión nativa porque no corresponde según el plan devuelto; no hay recibo de aprobación.
-- La siguiente unidad cierra la entrada compatible de política anterior y el informe de retiro global. No incluye configuraciones privadas en Git, ni cambia la base de la cadena al trabajo previo de origin/master.
+- Cuarta unidad: `bbbf247..4c21eeb`, entrada compatible de política anterior e informe de retiro global (248 líneas); ASSESS passive/reviewDue=false, structuralReadbackOnly. No incluye configuraciones privadas en Git ni cambia la base de la cadena al trabajo previo de origin/master.
+- `git status --short` sin salida después de `4c21eeb`: árbol limpio en ese punto. T5 queda terminado, no así la verificación independiente ni las pruebas externas de T7.
+
+### L11 — Resultado de verificación independiente y cierre local
+
+- Único intento T6: `subagent_run`, rol `gentle-ai-verify`, tarea `mvqsg3pf-2-mt00`. Falló antes de ejecutar: `No API key found for openai-codex`. No se produjo veredicto, no se leyeron credenciales ni se configuró otro proveedor para eludir el fallo. No hubo reintento ni más verificaciones.
+- T6 queda bloqueada por autenticación del proveedor del subagente; T7 sigue bloqueada por el guard del respaldo y la validación humana de sesiones nuevas. No se presenta la migración como completamente verificada.
+- La implementación local y el informe están confirmados en los cuatro commits de L6/L7/L10; este registro final añade sólo evidencia de estado. Cierre local completo, cierre de proof externo pendiente. Sin push, PR, instalaciones, cambios de producto o servicios.
+- Próxima decisión humana: habilitar un proveedor válido para verificación independiente o aportar esa prueba externamente, y resolver por mantenimiento/validación humana la comprobación protegida. Cambiar el modo a YOLO no reemplaza ninguno de esos requisitos.

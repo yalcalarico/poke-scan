@@ -120,6 +120,17 @@ No se repitieron suites/builds de producto ni se intervinieron servicios.
 Los commits se registran en el [documento de feature](../../odd/tasks/gentle-context-migration.md).
 Los cambios globales están fuera de Git y se revierten por el respaldo privado,
 no revirtiendo los commits locales. Las comparaciones diferenciales de configuración
-de la sección anterior terminaron aprobadas antes de la denegación. La verificación
-independiente se registra por separado; el chequeo protegido y el arranque de
-sesiones nuevas siguen sin acreditar. No se afirma ahorro de tokens medido.
+de la sección anterior terminaron aprobadas antes de la denegación.
+
+El único intento de verificador independiente (`gentle-ai-verify`) no arrancó:
+`No API key found for openai-codex`. No emitió veredicto, no se reintentó y no se
+cambiaron credenciales/proveedor. T6 espera autenticación del proveedor del agente
+o prueba independiente aportada por el humano; T7 conserva el chequeo protegido
+y el arranque de sesiones nuevas sin acreditar. No se afirma ahorro de tokens medido.
+
+Implementación local confirmada: `7587266`, `daec3f4`, `bbbf247` y `4c21eeb`.
+Los controles nativos de las dos últimas unidades dieron respectivamente
+`reviewDue=false` (con verificador independiente exigido por escalación de entorno)
+y `passive/reviewDue=false`; no hubo revisión nativa iniciada ni recibo aprobado.
+El cierre completo queda pendiente de esas pruebas externas, no de más cambios
+al producto ni de elevar permisos del agente.
