@@ -9,8 +9,10 @@ Rama: `docs/documentation-review-slices`; respaldo íntegro: `backup/documentati
 - S3: «No borres archivos no versionados, fotos únicas, parches pendientes o evidencia irrecuperable sin consultarme.» «Conservá los fixtures, manifiestos y helpers que todavía se usan.»
 - S4: «ODD: autoridad de tareas y continuidad; no varios backlogs paralelos.» «Engram: decisiones y descubrimientos seleccionados, no un volcado de Markdown.»
 - S5: «Verificá enlaces, anchors, referencias y rutas de comandos.» «No detengas servicios ni corras suites/builds de producto innecesarios.»
-- S6: «Usá ODD proporcionalmente y commits locales por unidades coherentes en una rama de documentación.» «No hagas push, PR, merge ni cierres issues sin un pedido posterior.»
+- S6: «Usá ODD proporcionalmente y commits locales por unidades coherentes en una rama de documentación.» «No hagas push, PR, merge ni cierres issues sin un pedido posterior.» Publicación posteriormente autorizada en S8; merge y cierre de issues siguen sin autorización.
 - S7: «Authorize restructuring the changes into smaller reviewable candidates, potentially replacing the three\n    local commits.»
+- S8: «cuando termines subes los cambios creando un PR contra master, no hace falta crear un issue para esto, ni esperar que terminen los CI ni nada»
+- S9: «Dejar sólo este retiro sin revisión nativa». Elección humana de la opción que identifica exclusivamente el retiro del inventario en `7fec85d` contra `ee29770`, después de su fallo de presupuesto; no amplía otras excepciones ni desactiva RDD.
 
 ## Tasks
 
@@ -19,7 +21,8 @@ Rama: `docs/documentation-review-slices`; respaldo íntegro: `backup/documentati
 - T3 [S3-S6] inline — done — enlaces/anchors operativos, 38 comandos, recuperación Git, 1.653 evidencias y 38 IDs comprobados; RDD reviewDue=false; evidencia: `95669dd`, cierre en la última unidad documental de esta rama.
 
 - T4 [S6-S7] inline — done — 16 unidades reconstruidas, 48 rutas originales cubiertas una vez; contenido final idéntico al respaldo salvo continuidad ODD. Commits: `0fa991f` a `7fec85d`.
-- T5 [S3,S5-S7] native review — in_progress — revisar cada candidato contra su padre, con consentimiento y sin truncar evidencia; detener ante una unidad indivisible que exceda el presupuesto.
+- T5 [S3,S5-S7,S9] native review — in_progress — unidades 1 y 3–13 aprobadas/reconocidas; 2 sin revisión por rechazo de consentimiento y 16 sin revisión por decisión humana explícita. Restan 14, 15, 17 y el seguimiento actualizado.
+- T6 [S6,S8] delivery — pending — después de T5, push y PR contra master, sin issue ni esperar CI.
 
 ## Log
 
@@ -254,3 +257,42 @@ cada unidad. No se modificaron evidencias no versionadas ni se repitieron suites
 Esta reconstrucción y su comprobación no equivalen a revisión nativa aprobada.
 La revisión se hará con HEAD en cada commit y baseRef en su padre completo;
 este registro de reconstrucción constituye una unidad documental final separada.
+
+
+### L8 — Publicación autorizada, sin issue ni espera de CI
+
+cuando termines subes los cambios creando un PR contra master, no hace falta crear un issue para esto, ni esperar que terminen los CI ni nada
+
+La autorización cubre push y un PR contra master en el origin identificado
+`https://github.com/yalcalarico/poke-scan.git`; no cubre merge ni omitir RDD o
+consentimientos. No se publicaron cambios mientras la revisión sigue bloqueada.
+
+### L9 — Revisión acotada observada y bloqueo indivisible
+
+- Unidades 1 y 3–13: doce cierres nativos approved con acknowledgement consumido.
+  Unidades 9, 11, 12 y 13 incluyeron capturas de modelo; las otras ocho siguieron
+  la ruta nativa low sin lentes. No confundir ambas clases de evidencia.
+- Unidad 2 (`a09bd8f` contra `0fa991f`): el host devolvió
+  consent-declined-this-candidate para
+  `sha256:aaa80d1f38c7c264e6fbc9a4cce0204be7e84e60c9ca48c8a178a24918722b62`.
+  No hubo autoridad ni revisión. La decisión no se aplica a otros targets.
+- Unidad 16 (`7fec85d` contra `ee29770`): sólo retiro de
+  `docs/audits/documentation-inventory-2026-10-20.json`, 699.202 bytes y 17.975
+  líneas. ASSESS medium; START terminó lens_context_budget_exceeded en preflight,
+  mutation none/not_started, sin autoridad. No se repite ni se trunca evidencia.
+- Se comprobó la unidad 16 antes de pagar las capturas 14/15. Las unidades 14,
+  15 y 17 quedan sin revisar, no aprobadas; publicación sin iniciar. El split
+  único ya está completo y no se vuelve a fragmentar artificialmente el JSON.
+- Se volvió a la rama `docs/documentation-review-slices`, no a HEAD detached.
+  La decisión humana pendiente es conservar ese retiro exacto sin revisión o
+  conservar el inventario en el árbol y retirar esa baja del alcance.
+
+### L10 — Decisión humana para el candidato indivisible
+
+Dejar sólo este retiro sin revisión nativa
+
+Respuesta humana a la elección cerrada que nombra explícitamente el retiro de
+`docs/audits/documentation-inventory-2026-10-20.json` en `7fec85d` contra
+`ee29770`. Se conserva ese retiro exacto sin revisión nativa. No es una aprobación,
+no crea autoridad y no desactiva RDD. Se retoman las revisiones restantes y la
+publicación autorizada en S8; no se repite el START del candidato fallido.
