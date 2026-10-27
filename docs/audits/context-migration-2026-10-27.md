@@ -2,14 +2,16 @@
 
 Gentle Shell es el entorno de orquestación elegido. Los cambios de contexto y el
 retiro de orquestación Codex/OpenCode y adaptadores HerdR están aplicados por
-pedido humano. **La comprobación local está aprobada; quedan pruebas externas
-sin acreditar.** No cambia producto, dependencias ni servicios.
+pedido humano. **Implementación y verificación del alcance aprobadas:** comprobaciones
+locales, verificador independiente, carga efectiva de configuración y confirmación
+humana del respaldo. Publicación autorizada, en curso. No cambia producto,
+dependencias ni servicios.
 Seguimiento: [feature ODD](../../odd/tasks/gentle-context-migration.md).
 
 ## Respaldo y recuperación
 
 - Base local: `7597e7fd6e52edc4fb9865b3c52f7e24924d63cc`.
-- Rama de trabajo: `chore/gentle-context-migration`; cadena elegida, sin push/PR.
+- Rama de trabajo: `chore/gentle-context-migration`; cadena elegida, push/PR autorizados después de verificar, sin merge.
 - Respaldo privado: `/Users/ysmaelalcalarico/.gentle-shell/gentle-ai/migration-backups/20261027-context/`.
 - `manifest.json` registra 18 archivos externos, 417.722 bytes, rutas, modos y
   SHA-256; las 18 copias se comprobaron contra sus originales antes de editar.
@@ -52,9 +54,9 @@ reinstalación/actualización puede reactivarlos. No se modifica la aplicación 
 - Respaldo inicial: 18/18 hashes iguales; manifiesto legible.
 - Explorador de auditoría: no disponible por falta de credencial del proveedor;
   sin reintentos. No se instalaron dependencias para resolverlo.
-- Documentación: no aplica RED/GREEN de producto. En configuración se usarán
-  aserciones de retiro y preservación sobre la interfaz declarativa, sin ejecutar
-  hooks ni crear sesiones reales.
+- Documentación: no aplica RED/GREEN de producto. Se comprobaron retiro y
+  preservación sobre la interfaz declarativa y carga por comandos públicos de
+  los clientes. No se iniciaron conversaciones de modelo ni ejecutaron hooks.
 - La validez sintáctica no acredita el arranque de los clientes. No se detienen
   servidores ni se reactivan automatizaciones Codex PAUSED para comprobarlo.
 - Riesgo: ítems 3 y 5; configuración compartida por otros proyectos. La revisión
@@ -75,8 +77,9 @@ reinstalación/actualización puede reactivarlos. No se modifica la aplicación 
 - 18 hashes de respaldo y cinco hashes posteriores comprobados; los archivos en
   cuarentena coinciden con sus copias originales. `after.json` guarda el inventario
   posterior. No se instalaron paquetes ni se ejecutaron hooks.
-- La comprobación de clientes nuevos sigue separada de estas aserciones. Sesiones
-  abiertas pueden retener configuración anterior y no se fuerzan a reiniciar.
+- La carga efectiva por procesos nuevos se comprobó al cerrar (detalle abajo).
+  Las sesiones interactivas ya abiertas pueden retener configuración anterior;
+  no se forzó su reinicio ni se las presenta como migradas en caliente.
 
 ## Medición
 
@@ -122,15 +125,44 @@ Los cambios globales están fuera de Git y se revierten por el respaldo privado,
 no revirtiendo los commits locales. Las comparaciones diferenciales de configuración
 de la sección anterior terminaron aprobadas antes de la denegación.
 
-El único intento de verificador independiente (`gentle-ai-verify`) no arrancó:
-`No API key found for openai-codex`. No emitió veredicto, no se reintentó y no se
-cambiaron credenciales/proveedor. T6 espera autenticación del proveedor del agente
-o prueba independiente aportada por el humano; T7 conserva el chequeo protegido
-y el arranque de sesiones nuevas sin acreditar. No se afirma ahorro de tokens medido.
+### Verificación final tras intervención humana
 
-Implementación local confirmada: `7587266`, `daec3f4`, `bbbf247` y `4c21eeb`.
-Los controles nativos de las dos últimas unidades dieron respectivamente
-`reviewDue=false` (con verificador independiente exigido por escalación de entorno)
-y `passive/reviewDue=false`; no hubo revisión nativa iniciada ni recibo aprobado.
-El cierre completo queda pendiente de esas pruebas externas, no de más cambios
-al producto ni de elevar permisos del agente.
+El primer intento independiente no arrancó por `No API key found for openai-codex`.
+Luego el usuario autenticó el proveedor y confirmó: «ya me logge con openai-codex
+asi que podes avanzar. El respaldo quedo ok.» No se leyó otra vez el directorio
+protegido: el respaldo se acredita por la comprobación inicial y esta confirmación
+humana, no por un nuevo rehash automatizado.
+
+- `gentle-ai-verify`, tarea `mvqtihn1-3-mmyp`: **aprobación declarativa**, sin
+  bloqueadores reproducidos de preservación. Comprobó los 12 documentos,
+  213 referencias locales, cuerpos históricos idénticos y conciliación de
+  38 IDs/18 abiertos. TOML y JSON/JSONC válidos; retiro de bloques, hooks y
+  agentes personalizados verificado; integraciones ajenas presentes.
+- Los probes exploratorios con predicados demasiado amplios dieron 1; los
+  readbacks aclaratorios dieron 0. No fueron regresiones de producto. La prueba
+  independiente no compara contra el respaldo protegido ni afirma equivalencia
+  byte a byte de las configuraciones externas previas.
+- Spotcheck del padre: `git diff --check`, salida 0.
+- Ayuda de ambos clientes disponible. Prueba funcional de carga efectiva:
+  `codex features list && opencode agent list`, **salida 0**. Codex muestra
+  `multi_agent=false`; OpenCode lista sólo `build`, `compaction`, `explore`,
+  `general` y `plan`, sin los 14 agentes personalizados retirados.
+- Advertencia no fatal de Codex: `WARNING: failed to clean up stale arg0 temp dirs:
+  Permission denied (os error 13)`. Ambos comandos completaron; no se borraron
+  temporales ni se ampliaron permisos para ocultar la advertencia.
+- No se iniciaron conversaciones con modelos: no se cambió ese flujo, y no es
+  necesario incurrir en llamadas facturables para comprobar retiro/carga de
+  configuración. No se afirma haber probado conversaciones ni sesiones abiertas.
+- No se corrieron suites/builds de producto, no aplicables al alcance documental,
+  ni se detuvieron servicios. No se afirma ahorro de tokens medido.
+
+Implementación local confirmada: `7587266`, `daec3f4`, `bbbf247`, `4c21eeb` y
+`cf36947`; el cierre posterior se registra en la feature ODD. Los controles
+nativos previos devolvieron `reviewDue=false`; para el candidato exacto
+`sha256:1896da566e973cfbe06e539ce397624458b3151bf5d61e7216b91e91461e867c`, el host
+registró revisión declinada, `lineage_created=false`. No hay recibo aprobado;
+la verificación independiente sí fue ejecutada posteriormente.
+
+T1-T7 completos dentro del alcance y método indicados. Resta la entrega remota
+T8, autorizada por el usuario; no se confunde cierre técnico con aprobación de
+merge ni se cambian controles del harness.

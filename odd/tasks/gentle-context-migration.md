@@ -1,6 +1,6 @@
 # Migración de contexto a Gentle Shell / ODD / Engram
 Objetivo: consolidar instrucciones y continuidad sin perder conocimiento ni intervenir servicios. Rama: `chore/gentle-context-migration`; base: `7597e7fd6e52edc4fb9865b3c52f7e24924d63cc`.
-Entrega: `auto-chain`, `feature-branch-chain`, sin push/PR. Verificación: enlaces, hashes y comparación estructural de configuración; sin suites de producto para documentación.
+Entrega: `auto-chain`, `feature-branch-chain`; push y PR autorizados tras completar verificación (S7-S8). Verificación: enlaces, hashes y comparación estructural de configuración; sin suites de producto para documentación.
 
 ## Specs
 
@@ -8,8 +8,10 @@ Entrega: `auto-chain`, `feature-branch-chain`, sin push/PR. Verificación: enlac
 - S2: «si, inclui esas rutas». Alcance externo confirmado: `/Users/ysmaelalcalarico/.codex/`, `/Users/ysmaelalcalarico/.config/opencode/`, `/Users/ysmaelalcalarico/.gentle-shell/`, `/Users/ysmaelalcalarico/.agents/skills/`.
 - S3: «Retirar también la orquestación global de los otros clientes». Selección humana: desactivar con respaldo la orquestación de Codex/OpenCode y HerdR; conservar credenciales y memorias.
 - S4: «Priorizá precisión, bajo consumo de tokens y preservación del conocimiento existente.» «No abras secretos, credenciales ni archivos `.env`.»
-- S5: «Cadena sobre una rama de la migración (recomendado)». Selección humana para unidades reversibles; sin autorización de publicación.
+- S5: «Cadena sobre una rama de la migración (recomendado)». Selección humana para unidades reversibles; publicación posteriormente autorizada en S7.
 - S6: «ok, termina entonces con lo que faltaba». Reanudar cierre autorizado; no implica eludir el guard ni declarar pruebas no realizadas.
+- S7: «ok, necesito que ya este marca como finalizada todo lo que hicimos, que falta para eso? una vez que termines subelo y crea un PR.» «Entonces aplica la verificacion para poder completar 100%».
+- S8: «ya me logge con openai-codex asi que podes avanzar. El respaldo quedo ok.» Confirmación humana del respaldo; no es un chequeo automatizado nuevo ni permiso para eludir el guard.
 
 ## Tasks
 
@@ -18,8 +20,9 @@ Entrega: `auto-chain`, `feature-branch-chain`, sin push/PR. Verificación: enlac
 - T3 [S1,S4,S5] inline — done — backlog conciliado (38 IDs/18 abiertos), cuerpos de registros preservados, enlaces de 11 documentos y tres memorias estables; commit: `daec3f4`.
 - T4 [S2-S4] inline — done — cinco archivos actualizados, diez superficies en cuarentena, cuatro hooks/14 agentes retirados; comparación diferencial verde; evidencia Git: `4c21eeb` (cambios externos respaldados, no versionados aquí).
 - T5 [S1-S6] inline — done — comprobación local (12 documentos/212 destinos, producto intacto), diff check verde y árbol limpio al cierre de `4c21eeb`; commits: `bbbf247`, `4c21eeb`.
-- T6 [S2-S4,S6] delegated — blocked — verificador no disponible: `No API key found for openai-codex`; espera proveedor autenticado o prueba independiente aportada por el humano. Un intento, sin veredicto ni reintento.
-- T7 [S2-S4,S6] inline — blocked — espera resolución humana/mantenimiento del guard para el chequeo del respaldo protegido y validación de sesiones nuevas; no hay aprobación pendiente en la UI.
+- T6 [S2-S4,S6-S8] delegated — done — verificador `mvqtihn1-3-mmyp` aprobó contrato/documentación/configuración declarativa, sin bloqueadores de preservación; comprobación del padre `git diff --check` verde. Respaldo human-attested; sesiones de modelo fuera de esa prueba.
+- T7 [S2-S4,S6-S8] inline — done — respaldo confirmado por el humano; `codex features list && opencode agent list` terminó 0, carga efectiva de configuración: multi_agent=false y sólo agentes nativos OpenCode. Warning no fatal de limpieza temporal Codex registrado. Sin conversaciones de modelo, instalaciones ni cambios a servicios.
+- T8 [S5,S7] inline — in_progress — registrar cierre verificado, confirmar unidad final y publicar rama/PR según política del destino; sin merge.
 
 ## Log
 
@@ -185,3 +188,21 @@ Rutas: las cuatro enumeradas en S2. No se autoriza recorrer otros repositorios n
 - T6 queda bloqueada por autenticación del proveedor del subagente; T7 sigue bloqueada por el guard del respaldo y la validación humana de sesiones nuevas. No se presenta la migración como completamente verificada.
 - La implementación local y el informe están confirmados en los cuatro commits de L6/L7/L10; este registro final añade sólo evidencia de estado. Cierre local completo, cierre de proof externo pendiente. Sin push, PR, instalaciones, cambios de producto o servicios.
 - Próxima decisión humana: habilitar un proveedor válido para verificación independiente o aportar esa prueba externamente, y resolver por mantenimiento/validación humana la comprobación protegida. Cambiar el modo a YOLO no reemplaza ninguno de esos requisitos.
+
+
+### L12 — Publicación autorizada y nueva evidencia para verificar
+
+- Usuario: «ok, necesito que ya este marca como finalizada todo lo que hicimos, que falta para eso? una vez que termines subelo y crea un PR.» Luego: «Entonces aplica la verificacion para poder completar 100%».
+- Usuario: «ya me logge con openai-codex asi que podes avanzar. El respaldo quedo ok.» T6 se reabre por nueva evidencia del proveedor; no por un reintento automático en el mismo entorno. La confirmación del respaldo es humana y no convierte en ejecutado el chequeo antes rechazado.
+- Revisión nativa del candidato sha256:1896da566e973cfbe06e539ce397624458b3151bf5d61e7216b91e91461e867c declinada en el host; lineage_created=false, sin recibo. No se reintenta para ese target. No exime al verificador independiente.
+- Destino consultado con autorización de publicación: yalcalarico/poke-scan (GitHub público), default master. Sin PR existente para esta rama; no issues abiertos ni etiquetas status:approved/type:* en esa consulta. No se inventa aprobación ni se crean etiquetas protegidas automáticamente.
+- Codex y OpenCode están instalados. Verificar la configuración/entrada CLI sólo con comandos documentados, sin sesiones de modelo, instalaciones, secretos, hooks o servicios. Si un arranque real exige otros efectos, se conserva esa falta de prueba y no se afirma un 100 % ficticio.
+
+### L13 — Verificación completa del alcance
+
+- `gentle-ai-verify`, `mvqtihn1-3-mmyp`: aprobación declarativa sin bloqueadores reproducidos. Leídos 12 documentos, 213 referencias locales existentes, cuerpos históricos preservados exactamente, 38 IDs/18 abiertos idénticos. TOML/JSON válidos; bloques, hooks y agentes retirados; integraciones ajenas presentes. No comparó el respaldo protegido. Probes exploratorios dieron 1 por predicados amplios; aclaraciones y checks finales dieron 0, sin regresión reproducida.
+- Spotcheck del padre: `git diff --check` 0. `codex --help` y `opencode --help` completaron; `codex features list && opencode agent list` (job-2) terminó con salida 0. Codex consume `multi_agent=false`; OpenCode sólo lista build, compaction, explore, general y plan.
+- Advertencia no fatal: `WARNING: failed to clean up stale arg0 temp dirs: Permission denied (os error 13)`. No se modificó ese entorno ni se la ocultó. No se iniciaron conversaciones facturables con modelos ni se reiniciaron sesiones ya abiertas; no cambia ese comportamiento y no se lo presume probado por la ayuda CLI.
+- Respaldo acreditado con comparación inicial y confirmación humana S8. La prueba de configuración efectiva y retiro está completa; no se reintentó el chequeo protegido ni se modificaron permisos. Tests/builds de producto no aplican; producto y servicios intactos.
+- No se incorporó la sugerencia de test permanente que consulta un commit fijo: no hay regresión que pinnear y las pruebas comprometidas no deben depender de historia Git. Ninguna skill ni runtime fue cambiado para obtener este resultado.
+- T6/T7 quedan done, sin bloqueos de verificación del alcance; T8 prepara cierre documental y publicación. La decisión de revisión declinada sigue limitada al target exacto de L12, no se generaliza a un candidato posterior.
