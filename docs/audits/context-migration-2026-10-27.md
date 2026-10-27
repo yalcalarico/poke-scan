@@ -1,8 +1,9 @@
 # Migración de contexto — 27/10/2026
 
-Gentle Shell es el entorno de orquestación elegido. Esta entrega consolida el
-contexto del proyecto y retira la orquestación de Codex/OpenCode y sus adaptadores
-HerdR por decisión humana explícita. No cambia producto, dependencias ni servicios.
+Gentle Shell es el entorno de orquestación elegido. Los cambios de contexto y el
+retiro de orquestación Codex/OpenCode y adaptadores HerdR están aplicados por
+pedido humano. **La comprobación local está aprobada; quedan pruebas externas
+sin acreditar.** No cambia producto, dependencias ni servicios.
 Seguimiento: [feature ODD](../../odd/tasks/gentle-context-migration.md).
 
 ## Respaldo y recuperación
@@ -30,7 +31,7 @@ esos cuerpos en el contexto de arranque.
 
 ## Alcance global
 
-| Superficie | Acción prevista | Preservar |
+| Superficie | Acción aplicada | Preservado |
 |---|---|---|
 | `~/.codex/AGENTS.md` | Retirar bloques marcados de orquestación y routing | Persona, Engram y CodeGraph |
 | `~/.codex/config.toml` | Desactivar multiagente nativo | Modelo, MCP, permisos, plugins y notificaciones ajenas |
@@ -59,6 +60,24 @@ reinstalación/actualización puede reactivarlos. No se modifica la aplicación 
 - Riesgo: ítems 3 y 5; configuración compartida por otros proyectos. La revisión
   independiente y la comprobación de sesiones nuevas se informan por separado.
 
+## Comprobaciones del retiro global
+
+- Cinco archivos actualizados y diez superficies en cuarentena (sin borrado).
+- Codex: persona, protocolo Engram y guía CodeGraph idénticos byte a byte; el
+  TOML sólo cambia `features.multi_agent` a false en comparación semántica.
+- Diez hooks no relacionados preservados exactamente y en orden; cuatro registros
+  retirados (HerdR, registry y telemetría Gentle). No se alteraron permisos ni hashes
+  de confianza existentes. Los registros de confianza de hooks retirados pueden
+  quedar como metadata inerte; no se ejecutan ni se reutilizan desde esta migración.
+- OpenCode: MCP, permisos y share sin cambios; 14 agentes y default personalizado
+  retirados. Sólo `engram.ts` permanece en la carpeta de plugins del servidor;
+  su hash es el original. TUI no relacionada y logo Gentle intactos.
+- 18 hashes de respaldo y cinco hashes posteriores comprobados; los archivos en
+  cuarentena coinciden con sus copias originales. `after.json` guarda el inventario
+  posterior. No se instalaron paquetes ni se ejecutaron hooks.
+- La comprobación de clientes nuevos sigue separada de estas aserciones. Sesiones
+  abiertas pueden retener configuración anterior y no se fuerzan a reiniciar.
+
 ## Medición
 
 La auditoría contó 364 Markdown regulares (3,71 MB), 7 entradas de skills locales
@@ -67,4 +86,40 @@ La auditoría contó 364 Markdown regulares (3,71 MB), 7 entradas de skills loca
 Línea base de superficies relevantes: `AGENTS.md` 16.630 bytes;
 `docs/orquestacion-codex.md` 13.463; Codex global `AGENTS.md` 109.253;
 OpenCode `opencode.jsonc` 148.626, con 14 agentes y default `gentle-orchestrator`.
-La comparación final medirá bytes/entradas, sin prometer porcentajes de tokens.
+Resultados medidos: `AGENTS.md` local 6.705 bytes (59,7 % menos);
+Codex global `AGENTS.md` 20.968 bytes (80,8 % menos); OpenCode config 14.054 bytes
+(90,5 % menos) y cero agentes personalizados de los 14 previos.
+No son mediciones de tokens ni de coste facturado. El ahorro efectivo requiere
+comparar sesiones nuevas con misma tarea/modelo y registrar el uso real.
+
+El backlog conserva 38 IDs de lanzamiento/18 abiertos, sin ejecutar producto;
+los registros anteriores se señalan como snapshots. Tres memorias estables
+recogen flujo, fuentes y autoridad de tareas, además de la copia ODD de continuidad.
+
+## Cierre local y límites externos
+
+El harness rechazó la comprobación final de lectura (preservación de los 2.254
+archivos, enlaces y diff/status) con el mensaje exacto:
+
+> Permission configuration is human-controlled. Use the mode settings UI; model tools cannot change it.
+
+No se obtuvo exit code ni salida del proceso. No se reintentó ni se modificó la
+configuración de permisos para eludir el bloqueo. El diagnóstico posterior halló
+un guard léxico en Gentle Pi 4.3.0: bloquea shell que menciona literalmente su
+configHome, incluso en lectura, antes de comprobar el modo. **No hay solicitud
+pendiente para aprobar y cambiar a YOLO no resuelve ese guard.** La indicación
+anterior de buscar una autorización en la UI fue incorrecta.
+
+Por pedido humano de terminar, se hizo una comprobación distinta, limitada al
+proyecto y su base Git: exactamente 12 documentos cambiados, 212 destinos locales
+existentes y ningún cambio en producto, scripts o manifiestos. Salida 0; también
+`git diff --check` pasó tras corregir una línea vacía al final de este informe.
+No se accedió al respaldo protegido ni se afirma haber ejecutado el chequeo denegado.
+No se repitieron suites/builds de producto ni se intervinieron servicios.
+
+Los commits se registran en el [documento de feature](../../odd/tasks/gentle-context-migration.md).
+Los cambios globales están fuera de Git y se revierten por el respaldo privado,
+no revirtiendo los commits locales. Las comparaciones diferenciales de configuración
+de la sección anterior terminaron aprobadas antes de la denegación. La verificación
+independiente se registra por separado; el chequeo protegido y el arranque de
+sesiones nuevas siguen sin acreditar. No se afirma ahorro de tokens medido.
