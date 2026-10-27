@@ -119,7 +119,7 @@ backend/
 | [docs/database.md](docs/database.md) | Modelos, migraciones, índices y patrones de query |
 | [docs/modules.md](docs/modules.md) | Mapa de módulos y sus dependencias |
 | [docs/providers.md](docs/providers.md) | Proveedores activos, comparación y alternativas documentadas |
-| [docs/pricing.md](docs/pricing.md) | Precios bajo demanda, 2 capas de caché, cola y conversión ARS |
+| [docs/pricing.md](docs/pricing.md) | TCGCSV como única fuente activa, lectura local y conversión ARS |
 | [docs/jobs.md](docs/jobs.md) | Sync de catálogo y precios, reanudación, endpoints admin |
 | [docs/testing.md](docs/testing.md) | Cómo escribir specs, por qué `fileParallelism: false` |
 | [docs/gotchas.md](docs/gotchas.md) | **Las trampas**: fallas reales que costaron tiempo, leé esto primero |

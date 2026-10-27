@@ -1,57 +1,63 @@
-# Archivo, historia y evidencias
+# Historia y evidencia
 
-Los documentos archivados explican decisiones anteriores. No habilitan OCR,
-endpoints públicos de reconocimiento, servicios externos ni nuevas ejecuciones.
-El [estado actual](../estado-actual.md) y las guías técnicas son la entrada operativa.
+Las guías del [índice](../README.md) describen la operación; el
+[backlog ODD](../../odd/backlog.md) reúne pendientes. Un recibo fechado no acredita
+runtime actual, permisos ni tareas nuevas.
 
-## Nueve documentos archivados en sus rutas originales
+## Nueve planes sustituidos: recuperación desde Git
 
-Se agregó una cabecera explícita de histórico, sin mover el cuerpo: así siguen
-funcionando enlaces relativos y anchors de documentos que los citan. El
-[manifiesto](in-place-2026-10-20.json) registra el hash del cuerpo original.
+Los originales retirados están completos en
+`51332f2d9408b41e2e64175bde35cfcd6d7866e3`, incluidas sus cabeceras históricas.
+Se contrastaron byte a byte antes del retiro; no se trasladaron ni dejaron stubs.
 
-| Archivo | Reemplazo operativo |
+| Ruta histórica desde raíz | Reemplazo operativo |
 |---|---|
-| [00-README.md](../files/00-README.md) | [Guía](../../frontend/docs/scanner.md) |
-| [01-CONTRACTS.md](../files/01-CONTRACTS.md) | [Guía](../../backend/docs/api.md) |
-| [02-EMBEDDINGS-spike.md](../files/02-EMBEDDINGS-spike.md) | [Guía](../evaluations/visual-indexer.md) |
-| [07-INTEGRACION-Y-RIESGOS.md](../files/07-INTEGRACION-Y-RIESGOS.md) | [Guía](../architecture.md) |
-| [08-VERSION-DISAMBIGUATION.md](../files/08-VERSION-DISAMBIGUATION.md) | [Guía](../plans/scanner-improvements.md) |
-| [frontend-improve.md](../../frontend/docs/frontend-improve.md) | [Guía](../../frontend/docs/design-system.md) |
-| [redesign-2026.md](../../frontend/docs/redesign-2026.md) | [Guía](../../frontend/docs/routes.md) |
-| [01-frontend-product.md](../plans/01-frontend-product.md) | [Guía](../estado-actual.md) |
-| [02-backend-production.md](../plans/02-backend-production.md) | [Guía](../../backend/docs/jobs.md) |
+| `docs/files/00-README.md` | [Escáner](../../frontend/docs/scanner.md) |
+| `docs/files/01-CONTRACTS.md` | [API](../../backend/docs/api.md) |
+| `docs/files/02-EMBEDDINGS-spike.md` | [Indexador](../evaluations/visual-indexer.md) |
+| `docs/files/07-INTEGRACION-Y-RIESGOS.md` | [Arquitectura](../architecture.md) |
+| `docs/files/08-VERSION-DISAMBIGUATION.md` | [Roadmap del escáner](../plans/scanner-improvements.md) |
+| `frontend/docs/frontend-improve.md` | [Design system](../../frontend/docs/design-system.md) |
+| `frontend/docs/redesign-2026.md` | [Rutas](../../frontend/docs/routes.md) |
+| `docs/plans/01-frontend-product.md` | [Backlog ODD](../../odd/backlog.md) |
+| `docs/plans/02-backend-production.md` | [Jobs](../../backend/docs/jobs.md) |
 
-Los planes terminados no implican que todos sus escenarios históricos estén
-acreditados en equipos reales. Conservá pendientes de corpus, cámara/PWA,
-mediciones de duración, operación y GO en sus registros actuales.
+También se retiraron de esa misma base las copias redundantes
+`docs/archive/orchestration-2026-10-20/` (ocho snapshots y su índice/manifiesto),
+el manifiesto de cuerpos `docs/archive/in-place-2026-10-20.json`, los cuatro
+informes/inventarios `docs/audits/documentation-*2026-10-20*` y el prompt
+`docs/orquestacion-codex.md`. Las decisiones y pendientes vigentes permanecen en
+las guías, contratos entre áreas y ODD; Gentle Shell aporta el método de trabajo.
 
-## Bitácora de coordinación
+Desde la raíz, leer un original sin restaurarlo:
 
-[Snapshots completos anteriores al 20/10](orchestration-2026-10-20/README.md):
-seis registros centrales más el prompt mini PC y roadmap antes de consolidar.
-Manifiesto con ruta original, tamaño y hash; no reutilizar reservas ni PIDs.
+```sh
+git show 51332f2d9408b41e2e64175bde35cfcd6d7866e3:docs/files/00-README.md
+git ls-tree -r --name-only 51332f2d9408b41e2e64175bde35cfcd6d7866e3 -- docs/archive docs/audits
+```
 
-## Resultados fechados y anexos preservados
+Sustituí la ruta después de `:` para recuperar otro archivo. Para enlaces y
+anchors históricos, consultá el árbol de **ese commit**, no el sucesor operativo.
+Los comentarios de código y manifiestos de fuentes que citan planes retirados
+son procedencia, no lecturas ejecutables; conservan su contexto original.
 
-- [Evaluaciones técnicas](../evaluations/): escáner, catálogo y flujos, con método
-  y limitaciones de cada ensayo. El [contraste del 20/10](../evaluations/scanner-baseline-contrast-2026-10-20.md)
-  acompaña al baseline histórico; ninguno certifica precisión general.
-- [Resultados del lanzamiento](../plans/lanzamiento-2026-10-07/RESULTADOS/):
-  implementaciones, revisiones, aceptaciones y protocolos. Los entregables humanos
-  todavía vigentes no quedan invalidados por su ubicación en esta carpeta.
-- [Auditoría documental](../audits/documentation-review-2026-10-20.md) e inventario
-  previo a la limpieza. Es un snapshot, no un contador vivo de archivos.
+## Evidencia protegida
 
-Los anexos/copias/hashes y fallos se conservan sin deduplicar en sitio. En copias
-de fuentes, los enlaces relativos reflejan el contexto original; no reparar su
-contenido cambiando los bytes de evidencia. Algunos informes apuntan a helpers
-privados temporales ya ausentes: conservar esa limitación, sin fabricar su reemplazo.
+- [Evaluaciones](../evaluations/) y [resultados de lanzamiento](../plans/lanzamiento-2026-10-07/RESULTADOS/):
+  incluyen protocolos humanos, corpus/fotos, parches sin aplicar y anexos con
+  hashes. No equivalen a tareas abiertas ni se purgan por antigüedad.
+- `scripts/inf03-smoke.mjs`, `scripts/inf03-review-offline.mjs` y
+  `scripts/infra/inf02-review-smoke.mjs` consumen rutas de resultados. Retirarlas
+  requeriría cambios ejecutables fuera de esta limpieza.
+- [Proxy QA anterior y corrección](security-2026-10-20/README.md): conservar el
+  snapshot y su manifiesto permite distinguir los bytes vulnerables del helper
+  mantenido. No ejecutar el snapshot.
+- [Respaldo de la migración anterior](../audits/context-migration-2026-10-27.md):
+  procedimiento de rollback externo único; no comprobado de nuevo en esta tarea.
 
-## Corrección posterior de seguridad
-
-[Proxy de QA y snapshot original](security-2026-10-20/README.md): después de la
-limpieza, CodeQL detectó SSRF en un helper histórico. Se preservaron sus bytes
-anteriores con hash y se sustituyó su entrada ejecutable por el helper mantenido
-corregido. Los recibos históricos conservan la referencia al snapshot anterior;
-esta excepción está explícita y no implica alterar otras evidencias.
+Las copias de fuentes y reportes de evidencia conservan bytes y enlaces de su
+contexto original. Entre sus limitaciones conocidas hay helpers temporales ya
+ausentes y enlaces históricos a los planes retirados (por ejemplo MKT-01-copy).
+Recuperarlos desde Git, sin fabricar helpers, reescribir recibos ni modificar
+hashes para aparentar reproducibilidad. Los archivos no versionados y symlinks
+locales autorreferenciales quedan intactos; no seguirlos recursivamente.

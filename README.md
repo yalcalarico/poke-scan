@@ -127,13 +127,10 @@ convenciones de código.
 - **Las rutas inexistentes devuelven HTTP 200** renderizando la 404, por el
   streaming de Next 16. Ver `frontend/docs/routes.md`.
 
-## Planes históricos de trabajo
+## Pendientes e historia
 
-| | |
-|---|---|
-| [`docs/plans/01-frontend-product.md`](docs/plans/01-frontend-product.md) | Integraciones de producto, robustez del scanner y sincronización de docs |
-| [`docs/plans/02-backend-production.md`](docs/plans/02-backend-production.md) | Cotizaciones, lock de jobs y lo que falta para producción |
-
-Los dos planes están archivados en sus rutas originales para conservar enlaces
-y decisiones. El [estado actual](docs/estado-actual.md) enlaza los pendientes
-vigentes; no ejecutar los checklists históricos como una nueva orden.
+Los pendientes se consultan en el [backlog ODD](odd/backlog.md); las guías de
+[rutas](frontend/docs/routes.md), [escáner](frontend/docs/scanner.md) y
+[jobs](backend/docs/jobs.md) describen la implementación vigente. Los planes
+sustituidos se recuperan desde Git según la [guía de archivo](docs/archive/README.md);
+sus checklists no son una nueva orden.
