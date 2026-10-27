@@ -5,6 +5,13 @@ contexto del proyecto y retira la orquestación de Codex/OpenCode y sus adaptado
 HerdR por decisión humana explícita. No cambia producto, dependencias ni servicios.
 Seguimiento: [feature ODD](../../odd/tasks/gentle-context-migration.md).
 
+> Registro inicial de respaldo/rollback, conservado por su procedimiento único.
+> Las acciones previstas y límites de abajo son del corte inicial, no pendientes
+> actuales. El cierre posterior está en `5be3478` (misma ruta en Git) y quedó
+> reconciliado en la feature. No se inspecciona configuración externa ni se
+> acredita su estado actual con este documento. Los fallos de CI de integración
+> del cierre histórico no se declaran aprobados.
+
 ## Respaldo y recuperación
 
 - Base local: `7597e7fd6e52edc4fb9865b3c52f7e24924d63cc`.
