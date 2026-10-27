@@ -13,7 +13,7 @@ causa demostrada. No confundir originales directos con recortes exportados.
 
 Los recibos del 6/10 citados abajo son antecedentes de esos hitos, no una nueva
 validación actual ni permisos para ejecutar todos los pendientes. La [historia
-completa anterior](../archive/orchestration-2026-10-20/README.md) conserva cada checkpoint.
+completa anterior se recupera desde Git](../archive/README.md).
 No se cierran corpus, calibración ni dispositivos con esta limpieza.
 
 El reconocimiento actual es **DINOv2 solo**, ranking por coseno y respuesta
@@ -237,6 +237,6 @@ no constituyen mejoras ya demostradas. Cada bloque requiere su propio GO.
 ## Historia de ejecución
 
 Los bloques autorizados y registros previos (2–6/10), incluidos OCR/ORB retirados,
-están en el [snapshot íntegro](../archive/orchestration-2026-10-20/scanner-improvements.md.txt).
+se [recuperan desde Git](../archive/README.md).
 Sus conteos, commits, «siguientes pasos» y decisiones con fecha son historia;
 este roadmap y el [estado actual](../estado-actual.md) ordenan el trabajo abierto.

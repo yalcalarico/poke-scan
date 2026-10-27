@@ -45,8 +45,8 @@ desarrollo no autoriza activar operación real.
 Los ensayos de Linux/ARM64 y dependencias cacheadas no acreditan full build frío
 desde cero, ABI del equipo final, B2/off-host, pérdida eléctrica ni uptime.
 No copiar claves, helpers privados ni recursos efímeros del Mac. El monitor local
-loopback no equivale a monitor externo. Las versiones anteriores del prompt están
-[archivadas completas](../archive/orchestration-2026-10-20/README.md).
+loopback no equivale a monitor externo. Las versiones anteriores del prompt se
+[recuperan desde Git](../archive/README.md).
 
 ## Prompt para usar cuando exista el equipo
 
@@ -61,7 +61,7 @@ Datos disponibles al retomar (completar lo conocido; no pegar secretos):
 - Dominio y cuenta Cloudflare: [disponibles / pendientes].
 - Presupuesto, cuenta B2 y medios de custodia fuera del equipo: [disponibles / pendientes]. El destino B2 y el custodio (dueño) ya fueron elegidos.
 
-Leé primero AGENTS.md, docs/orquestacion-codex.md, docs/estado-actual.md y el registro/checklist/decisiones de docs/plans/lanzamiento-2026-10-07/. Los checkpoints anteriores están archivados y no son órdenes vigentes. Reutilizá INF-01-entorno.md, INF-02-runtime-review.md, LOTE-OPERACION-validacion.md, INF-03-local-review.md e INF-04-operacion.md en RESULTADOS/. Verificá las rutas y scripts vigentes; no des por existentes helpers temporales ni uses PIDs de recibos antiguos sin comprobarlos. Los hechos y permisos del momento mandan sobre este prompt.
+Leé primero AGENTS.md, docs/agent-workflow.md, docs/estado-actual.md y el registro/checklist/decisiones de docs/plans/lanzamiento-2026-10-07/. Los checkpoints anteriores están archivados y no son órdenes vigentes. Reutilizá INF-01-entorno.md, INF-02-runtime-review.md, LOTE-OPERACION-validacion.md, INF-03-local-review.md e INF-04-operacion.md en RESULTADOS/. Verificá las rutas y scripts vigentes; no des por existentes helpers temporales ni uses PIDs de recibos antiguos sin comprobarlos. Los hechos y permisos del momento mandan sobre este prompt.
 
 1. **Diagnóstico del equipo.** Inspeccioná sólo el equipo identificado y autorizado; no confundas la Mac de desarrollo con la mini PC. Comprobá CPU/arquitectura, RAM, disco, sistema/libc, runtime nativo y conectividad. Sin acceso, solicitá únicamente los datos imprescindibles. No instales, formatees ni publiques en esta etapa. Entregá compatibilidad probable, carencias y plan de validación; los tamaños históricos son hipótesis, no mínimos demostrados. Antes de continuar preguntame por la etapa 2.
 

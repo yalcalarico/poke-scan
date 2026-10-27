@@ -27,7 +27,7 @@ roles, prompts, menús de revisión ni selección de modelos del harness en el r
 | Documento ODD de feature | Specs, tareas, evidencia y bloqueos de esa feature |
 | Guías técnicas | Contratos e instrucciones operativas verificables |
 | Engram | Decisiones/descubrimientos con alcance, fecha y rutas de respaldo |
-| Archivo y reportes | Evidencia fechada; nunca permisos o estado vivo |
+| Git y evidencia protegida | Historia recuperable y ensayos fechados; nunca permisos o estado vivo |
 
 No copiar bitácoras enteras a Engram ni importar todos los Markdown. Una memoria
 no sustituye contratos o tareas versionadas. La copia ODD de recuperación debe
@@ -47,6 +47,7 @@ ni instalar shadcn sobre el sistema actual. Las reglas del proyecto prevalecen.
 Las skills compartidas de uso general se conservan; no se borran por estar
 instaladas también para otro cliente.
 
-La política Codex anterior se conserva en el historial Git y su ruta funciona
-como [entrada compatible](orquestacion-codex.md). Detalles del respaldo externo,
-rollback y límites de validación: [entrega de migración](audits/context-migration-2026-10-27.md).
+El prompt Codex anterior y las bitácoras redundantes se recuperan desde
+[Git](archive/README.md); no se mantienen como mecanismos paralelos. Detalles del
+respaldo externo, rollback y límites históricos: [migración](audits/context-migration-2026-10-27.md).
+Esta guía no autoriza volver a inspeccionar o modificar configuraciones externas.

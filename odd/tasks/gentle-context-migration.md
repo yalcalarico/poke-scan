@@ -1,6 +1,6 @@
 # Migración de contexto a Gentle Shell / ODD / Engram
-Objetivo: consolidar instrucciones y continuidad sin perder conocimiento ni intervenir servicios. Rama: `chore/gentle-context-migration`; base: `7597e7fd6e52edc4fb9865b3c52f7e24924d63cc`.
-Entrega: `auto-chain`, `feature-branch-chain`, sin push/PR. Verificación: enlaces, hashes y comparación estructural de configuración; sin suites de producto para documentación.
+Objetivo: consolidar instrucciones y continuidad sin perder conocimiento ni intervenir servicios. Estado: **finalizada según el cierre histórico `5be3478`**, reconciliado desde Git; no valida configuración externa actual.
+Rama histórica: `chore/gentle-context-migration`; base: `7597e7fd6e52edc4fb9865b3c52f7e24924d63cc`. Publicación y verificación posteriores constan en ese cierre; sus permisos no se trasladan a trabajos nuevos.
 
 ## Specs
 
@@ -13,10 +13,10 @@ Entrega: `auto-chain`, `feature-branch-chain`, sin push/PR. Verificación: enlac
 ## Tasks
 
 - T1 [S1-S4] inline — done — respaldo externo 18/18 SHA-256 verificados y 2.254 hashes de preservación; commit: `7587266`.
-- T2 [S1,S4,S5] inline — done — siete documentos con enlaces válidos y 18 invariantes comprobados; AGENTS 16.630 → 6.705 bytes; commit: pendiente.
-- T3 [S1,S4,S5] inline — done — backlog conciliado (38 IDs/18 abiertos), cuerpos de registros preservados, enlaces de 11 documentos y tres memorias estables; commit: pendiente.
-- T4 [S2-S4] inline — in_progress — desactivar orquestación global y adaptadores HerdR preservando funciones ajenas; commit: pendiente.
-- T5 [S1-S5] inline — pending — comprobar preservación, reducción de contexto, rollback y revisión proporcional; commit: pendiente.
+- T2 [S1,S4,S5] inline — done — instrucciones y compatibilidad entregadas; commits: `bbbf247`, `4c21eeb`.
+- T3 [S1,S4,S5] inline — done — backlog y contexto selectivo entregados; commit: `daec3f4`.
+- T4 [S2-S4] inline — done (histórico) — retiro externo y preservación registrados en `4c21eeb`, verificación posterior en `6649067`; no inspeccionados de nuevo en esta limpieza.
+- T5 [S1-S5] inline — done (histórico) — cierre de preservación/revisión y límites registrado en `6649067`/`5be3478`; CI de integración fallida separada del cierre documental, no aprobada.
 
 ## Log
 
@@ -144,3 +144,20 @@ Rutas: las cuatro enumeradas en S2. No se autoriza recorrer otros repositorios n
 - Cadena sobre esta rama: primera unidad `7597e7f..7587266` (208 líneas, respaldo/seguimiento); siguiente unidad es contexto local; después continuidad de producto y, por separado, retiro global. El diff de 16.919 líneas contra `origin/master` incluye trabajo previo de `features-varias` y no pertenece a esta migración.
 - RDD está on. ASSESS de la primera unidad no pudo evaluar por archivos nuevos todavía sin declarar: `nativeRisk=unassessable`, sin revisión aprobada ni recibo. No se reintentó el mismo candidato ni se redujo el gate; se informa como comprobación no disponible.
 - T3: 38 IDs originales y 18 abiertos únicos comprobados; cuerpos previos de registro/checklist preservados; 11 documentos sin destinos Markdown ausentes. Memorias 3–5 guardan decisiones de flujo, fuentes y autoridad del backlog. No se implementó ningún pendiente de producto.
+
+
+### L7 — Reconciliación documental desde historia local
+
+La base de esta limpieza (`51332f2`) conservaba T4 activa y T5 pendiente. El cierre
+posterior existe en `5be3478` (rama local de migración, no ancestro de esa base):
+registra T1–T8 terminadas y T9 descartada tras separar CI general del alcance.
+Se contrastaron las tareas y la entrega histórica, sin abrir archivos externos,
+memorias, sesiones ni secretos ni repetir pruebas de otros clientes.
+
+Recuperación: `git show 5be3478:odd/tasks/gentle-context-migration.md` y
+`git show 5be3478:docs/audits/context-migration-2026-10-27.md`. Contienen los pedidos,
+verificaciones, publicación y fallos posteriores completos; no duplicar aquí su
+bitácora. Runs `40531859410` y `40532392594` quedaron failure; no se convierten en
+pass ni se reparan dentro de esta limpieza. Estado remoto y runtime actuales no
+comprobados. Los permisos de publicación/retiro externo de esa feature expiraron
+con ese alcance; el pedido actual prohíbe publicación e inspección externa.

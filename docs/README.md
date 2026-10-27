@@ -1,45 +1,34 @@
 # Documentación de PokéScan
 
-La documentación operativa describe el código actual. Los planes archivados y
-recibos fechados explican decisiones y evidencias; no son órdenes para repetir
-trabajo ni estados vivos de procesos.
+Para arrancar: [README del proyecto](../README.md). Para trabajar:
+[AGENTS](../AGENTS.md), [estado del producto](estado-actual.md) y
+[backlog ODD](../odd/backlog.md). Los recibos fechados no prueban runtime actual.
 
-## Empezar y desarrollar
+## Guías por necesidad
 
-| Necesidad | Guía |
+| Necesidad | Fuente |
 |---|---|
-| Instrucciones del proyecto | [AGENTS](../AGENTS.md) |
-| Hitos y pendientes vigentes | [Estado actual](estado-actual.md) |
-| Método de trabajo | [Gentle Shell y recuperación selectiva](agent-workflow.md), [continuidad ODD](../odd/README.md) |
-| Diseño del sistema | [Arquitectura](architecture.md), [decisiones](decisions.md) |
-| Catálogo, precios, límites y alternativas | [Fuentes](data-sources.md), [providers](../backend/docs/providers.md) |
-| API y persistencia | [API](../backend/docs/api.md), [base de datos](../backend/docs/database.md), [módulos](../backend/docs/modules.md) |
-| Cronjobs, cola y operación de precios | [Jobs](../backend/docs/jobs.md), [precios](../backend/docs/pricing.md) |
-| Frontend | [Rutas](../frontend/docs/routes.md), [componentes](../frontend/docs/components.md), [construcción](../frontend/docs/build-guide.md), [diseño](../frontend/docs/design-system.md) |
-| Sesión y reconocimiento | [Cliente/sesión](../frontend/docs/api-client.md), [escáner DINOv2](../frontend/docs/scanner.md) |
-| Gráficas | [Historial de fuente única](../frontend/docs/comparison.md), [portafolio](../frontend/docs/portfolio.md) |
-| Verificación | [Backend](../backend/docs/testing.md), [frontend](../frontend/docs/testing.md) |
-| Trampas conocidas | [Backend](../backend/docs/gotchas.md), [frontend](../frontend/docs/gotchas.md) |
+| Arquitectura y restricciones | [Arquitectura](architecture.md), [decisiones](decisions.md), [seguridad](security.md) |
+| Catálogo y proveedores | [Fuentes](data-sources.md), [proveedores backend](../backend/docs/providers.md) |
+| Contratos y persistencia | [API](../backend/docs/api.md), [base de datos](../backend/docs/database.md), [módulos](../backend/docs/modules.md) |
+| Precios y operación de jobs | [TCGCSV](../backend/docs/pricing.md), [jobs](../backend/docs/jobs.md), [métricas privadas](../backend/docs/metrics.md) |
+| Frontend y diseño | [Rutas](../frontend/docs/routes.md), [componentes](../frontend/docs/components.md), [construcción](../frontend/docs/build-guide.md), [design system](../frontend/docs/design-system.md) |
+| Sesión y reconocimiento | [Cliente API](../frontend/docs/api-client.md), [escáner DINOv2](../frontend/docs/scanner.md) |
+| Gráficas y colecciones | [Historial de fuente única](../frontend/docs/comparison.md), [portafolio](../frontend/docs/portfolio.md) |
+| Pruebas y trampas | [Testing backend](../backend/docs/testing.md), [frontend](../frontend/docs/testing.md), [gotchas backend](../backend/docs/gotchas.md), [frontend](../frontend/docs/gotchas.md) |
 
-## Operación y evaluación pendientes
+## Operación y continuidad
 
-Entrada conciliada: [backlog ODD](../odd/backlog.md). Los registros anteriores
-preservan IDs y evidencia; no se mantienen como listas paralelas.
+- [Red local/HTTPS](local-network.md), [mini PC + Tunnel](infra/PROMPT-mini-pc-cloudflare.md),
+  [Resend](infra/resend-recovery.md), [backups/restore/custodia](../infra/inf03/README.md).
+  Cuentas, publicación y equipo real mantienen permisos y gates propios.
+- [Evaluación beta](beta/README.md): instrumento y protocolos, no participantes ni
+  resultados inventados.
+- [ODD](../odd/README.md) y [Gentle Shell / Engram](agent-workflow.md): una autoridad
+  de tareas por feature; no mantener backlogs en los informes.
+- [Historia y evidencia protegida](archive/README.md): recuperación desde Git,
+  límites de reproducibilidad y consumidores que impiden purgar anexos.
 
-- [TCGCSV: cobertura y optimización — implementación parcial validada; pendientes registrados](plans/tcgcsv-cobertura-optimizacion-2026-10-21.md).
-- [TCGCSV: recuperación de grupos — causas corregidas, reintentos sujetos a reservas](evaluations/tcgcsv-groups-recovery-2026-10-22.md).
-- [Mini PC + Cloudflare Tunnel: prompt para el final](infra/PROMPT-mini-pc-cloudflare.md).
-- [Red local/HTTPS para dispositivos](local-network.md).
-- [Resend: preparación y activación futura](infra/resend-recovery.md).
-- [Backups, restore y custodia](../infra/inf03/README.md).
-- [Herramienta HTML de evaluación beta](beta/README.md).
-- [Roadmap abierto del escáner](plans/scanner-improvements.md).
-- [Registro de tareas](plans/lanzamiento-2026-10-07/REGISTRO-TAREAS.md),
-  [checklist](plans/lanzamiento-2026-10-07/STATUS-CHECKLIST.md) y
-  [decisiones entre áreas](plans/lanzamiento-2026-10-07/10-decisiones-y-contratos.md).
-
-## Historia y evidencias
-
-[Archivo documental](archive/README.md) separa planes sustituidos, snapshots de
-coordinación y resultados fechados. Los anexos mantienen sus bytes, rutas y
-hashes. Consultar la limitación/fecha de cada ensayo antes de usarlo como evidencia.
+Los roadmaps y los 18 IDs abiertos de lanzamiento se consultan desde el backlog,
+no se suman entre sí ni autorizan implementaciones automáticamente. La separación
+frontend/backend conserva contratos y procedimientos propios de cada capa.

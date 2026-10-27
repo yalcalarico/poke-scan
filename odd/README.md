@@ -1,24 +1,20 @@
-# Trabajo ODD de PokéScan
+# Continuidad ODD de PokéScan
 
-Gentle Shell aporta el proceso ODD; esta carpeta guarda sólo continuidad del
-proyecto. No contiene un segundo orquestador ni un catálogo de roles.
+El [backlog](backlog.md) es la entrada única de pendientes; cada feature autorizada
+guarda specs, tareas y evidencia propias. Los planes e informes anteriores son
+fuentes de aceptación/historia, no otras listas para actualizar. No implementarlos
+sin pedido humano.
 
-## Features
-
-| Documento | Alcance |
+| Feature | Estado y alcance |
 |---|---|
-| [Migración de contexto](tasks/gentle-context-migration.md) | Cambio autorizado del contexto local y configuración externa |
+| [Consolidación documental](tasks/documentation-consolidation.md) | Finalizada; limpieza reversible, sin producto, servicios ni configuración externa |
+| [Migración de contexto](tasks/gentle-context-migration.md) | Finalizada según cierre histórico recuperado desde Git; no acredita configuración externa actual |
 
-## Reanudar sin cargar la historia
+Para retomar, leer la feature pertinente, contrastarla con Git y recuperar sólo
+las decisiones necesarias de Engram cuando el pedido permita consultar memoria.
+El todo visible deriva de esa feature; Engram complementa, no reemplaza la
+autoridad versionada. No importar bitácoras enteras ni tratar permisos pasados
+como autorizaciones actuales.
 
-Leer el [estado del producto](../docs/estado-actual.md), identificar la feature y
-reconciliar su archivo con la copia de recuperación en Engram. Recuperar sólo
-specs/tareas pertinentes; el todo visible deriva del documento de feature.
-Los pendientes de producto no son autorizaciones para empezar a implementarlos.
-
-El [backlog conciliado](backlog.md) reúne los pendientes y sus entradas sin
-implementar producto. Los registros anteriores preservan cierres/evidencias como
-snapshots, no son listas paralelas para actualizar. No sumar registros de alcances
-diferentes ni reabrir IDs por mover documentación.
-
-[Flujo de contexto](../docs/agent-workflow.md) · [guías técnicas](../docs/README.md).
+[Estado del producto](../docs/estado-actual.md) · [guías](../docs/README.md) ·
+[Gentle Shell / Engram](../docs/agent-workflow.md).

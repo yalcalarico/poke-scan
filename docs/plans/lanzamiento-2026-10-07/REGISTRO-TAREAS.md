@@ -8,7 +8,7 @@ Registro por ID del lanzamiento. Limpieza del 20/10/2026: se conservan los cierr
 y sus evidencias, sin sumar IDs por documentación, precios, V2 o capturas.
 Los números dentro de cada entrega son recibos fechados, no el conteo actual de tests.
 [Estado actual](../../estado-actual.md) · [cantidades/checklist](STATUS-CHECKLIST.md) ·
-[historia anterior completa](../../archive/orchestration-2026-10-20/README.md).
+[historia anterior en Git](../../archive/README.md).
 
 | ID | Plan responsable | Prioridad | Estado | Dependencias/entradas |
 |---|---|---|---|---|

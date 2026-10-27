@@ -1,8 +1,9 @@
 # Backlog conciliado de PokéScan
 
-Corte documental: 27/10/2026. Es el índice de pendientes para ODD, **no una orden
-para implementarlos**. Cada feature nueva se define desde el pedido humano antes
-de trabajar. No se inventan specs ni se vuelven a abrir entregas por esta migración.
+Autoridad de pendientes para ODD, **no una orden para implementarlos**. Los
+estados de producto proceden del corte 27/10/2026 y de los contrastes estáticos
+indicados abajo; no acreditan runtime actual. Cada feature nueva se define desde
+el pedido humano. No se inventan specs ni se reabren entregas por documentación.
 
 ## Lanzamiento: 18 IDs abiertos, 20 cerrados
 
@@ -58,6 +59,19 @@ Fuentes: [registro de revisión móvil](../docs/evaluations/revision-usuario-202
   dueño custodio age, retención 30 días y supresiones antes de reabrir tráfico.
   La disponibilidad de cuentas/equipo y publicación mantienen sus gates propios.
 
+## Rescate de planes sustituidos
+
+Contraste estático al consolidar los nueve planes históricos; no habilita tareas
+ni certifica runtime. Corpus, calibración, ediciones, consentimiento de memoria
+visual y dispositivos ya están en el roadmap del escáner; operación real y
+licencias mantienen los gates anteriores.
+
+| Requisito abierto o condicionado | Evidencia actual y próxima entrada |
+|---|---|
+| Foco del escáner sobre foto | `action-bar.tsx`, `camera-controls.tsx` y `camera-view.tsx` todavía usan `outline-on-media-text`. Reconciliar con `--focus-ring-on-media` al autorizar la deuda visual; no asumir que siguen siendo sólo cuatro indicadores. |
+| Cobertura E2E por navegador | El smoke HTTP `scripts/verify-app.mjs` no acredita login por UI ni la matriz completa de auth/ownership/DOM. Reconciliar cobertura existente y casos faltantes antes de planificar automatización; no confundir los E2E de API con navegador. |
+| `share_target` y endpoint bulk: alcances diferidos | `frontend/public/manifest.json` no declara `share_target`; `collection-detail.tsx` mantiene acciones secuenciales con tope 60. Requieren decisión de producto propia, no son bugs reabiertos por retirar los planes. |
+
 ## Autoridad y cambios futuros
 
 Este índice reemplaza el mantenimiento paralelo de cantidades/checklists. Los
@@ -66,5 +80,6 @@ Al autorizar una feature, crear/reconciliar su documento ODD con specs literales
 enlazarlo aquí y actualizar sólo sus filas. El todo visible deriva de esa feature.
 Engram recibe decisiones y copia de recuperación, no permisos históricos ni logs.
 
-La feature actualmente autorizada es la [migración de contexto](tasks/gentle-context-migration.md).
-Los pendientes de producto anteriores no se ejecutan dentro de esa migración.
+La [migración de contexto](tasks/gentle-context-migration.md) está finalizada según
+su cierre histórico reconciliado desde Git. La [consolidación documental](tasks/documentation-consolidation.md)
+no ejecuta pendientes de producto ni autoriza tocar configuración externa.

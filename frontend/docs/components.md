@@ -14,9 +14,9 @@ anti-patrones) y para *cómo se trabaja acá* está
 [`build-guide.md`](build-guide.md).
 
 **No hay dos versiones de la app.** Esto inventaría la que se ve: `components/` es
-la carpeta de componentes del frontend y estos son los que existen. El historial
-de la app anterior está en [`redesign-2026.md`](redesign-2026.md) (el plan) y en
-§14 de [`design-system.md`](design-system.md) (qué convenciones se conservaron).
+la carpeta de componentes del frontend y estos son los que existen. Las
+convenciones vigentes están en [`design-system.md`](design-system.md); el
+[archivo documental](../../docs/archive/README.md) permite recuperar el plan anterior.
 
 Salvo que se diga lo contrario, un componente **sin** `'use client'` se puede
 renderizar en un Server Component. Convención de nombres: un componente por
@@ -1415,5 +1415,5 @@ La implementación usa CSS y animaciones nativas sin nuevas dependencias.
   [`routes.md`](routes.md).
 - **Los bugs que costaron tiempo**: [`gotchas.md`](gotchas.md).
 - **Cómo se trabaja acá, en general**: [`build-guide.md`](build-guide.md).
-- **La historia de por qué la app es como es** (incluido el rediseño y el flip):
-  [`redesign-2026.md`](redesign-2026.md).
+- **Decisiones de diseño** (incluido el rediseño y el flip):
+  [`decisions.md`](../../docs/decisions.md).
