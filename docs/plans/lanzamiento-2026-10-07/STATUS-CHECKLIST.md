@@ -1,5 +1,9 @@
 # Estado por plan
 
+> **Snapshot del lanzamiento.** Los 38 IDs y sus cierres se preservan; la
+> continuidad se consolidó en el [backlog ODD](../../../odd/backlog.md).
+> No mantener un segundo contador ni iniciar tareas por este checklist.
+
 Revisión documental 20/10/2026. **20/38 IDs completos, 18 pendientes**, según el
 [registro](REGISTRO-TAREAS.md): 16 completos localmente y cuatro documentales
 (UX-04, RES-04, MKT-01 y MKT-02). Parciales y condicionados cuentan como pendientes.

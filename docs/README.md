@@ -10,7 +10,7 @@ trabajo ni estados vivos de procesos.
 |---|---|
 | Instrucciones del proyecto | [AGENTS](../AGENTS.md) |
 | Hitos y pendientes vigentes | [Estado actual](estado-actual.md) |
-| Método de trabajo | [Orquestación](orquestacion-codex.md) |
+| Método de trabajo | [Gentle Shell y recuperación selectiva](agent-workflow.md), [continuidad ODD](../odd/README.md) |
 | Diseño del sistema | [Arquitectura](architecture.md), [decisiones](decisions.md) |
 | Catálogo, precios, límites y alternativas | [Fuentes](data-sources.md), [providers](../backend/docs/providers.md) |
 | API y persistencia | [API](../backend/docs/api.md), [base de datos](../backend/docs/database.md), [módulos](../backend/docs/modules.md) |
@@ -22,6 +22,9 @@ trabajo ni estados vivos de procesos.
 | Trampas conocidas | [Backend](../backend/docs/gotchas.md), [frontend](../frontend/docs/gotchas.md) |
 
 ## Operación y evaluación pendientes
+
+Entrada conciliada: [backlog ODD](../odd/backlog.md). Los registros anteriores
+preservan IDs y evidencia; no se mantienen como listas paralelas.
 
 - [TCGCSV: cobertura y optimización — implementación parcial validada; pendientes registrados](plans/tcgcsv-cobertura-optimizacion-2026-10-21.md).
 - [TCGCSV: recuperación de grupos — causas corregidas, reintentos sujetos a reservas](evaluations/tcgcsv-groups-recovery-2026-10-22.md).

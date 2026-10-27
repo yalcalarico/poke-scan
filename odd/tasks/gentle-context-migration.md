@@ -12,10 +12,10 @@ Entrega: `auto-chain`, `feature-branch-chain`, sin push/PR. Verificación: enlac
 
 ## Tasks
 
-- T1 [S1-S4] inline — done — respaldo externo 18/18 SHA-256 verificados y 2.254 hashes de preservación; commit: pendiente.
-- T2 [S1,S4,S5] inline — in_progress — instrucciones mínimas y recuperación documental selectiva; commit: pendiente.
-- T3 [S1,S4,S5] inline — pending — continuidad ODD del backlog y memorias estables con procedencia; commit: pendiente.
-- T4 [S2-S4] inline — pending — desactivar orquestación global y adaptadores HerdR preservando funciones ajenas; commit: pendiente.
+- T1 [S1-S4] inline — done — respaldo externo 18/18 SHA-256 verificados y 2.254 hashes de preservación; commit: `7587266`.
+- T2 [S1,S4,S5] inline — done — siete documentos con enlaces válidos y 18 invariantes comprobados; AGENTS 16.630 → 6.705 bytes; commit: pendiente.
+- T3 [S1,S4,S5] inline — done — backlog conciliado (38 IDs/18 abiertos), cuerpos de registros preservados, enlaces de 11 documentos y tres memorias estables; commit: pendiente.
+- T4 [S2-S4] inline — in_progress — desactivar orquestación global y adaptadores HerdR preservando funciones ajenas; commit: pendiente.
 - T5 [S1-S5] inline — pending — comprobar preservación, reducción de contexto, rollback y revisión proporcional; commit: pendiente.
 
 ## Log
@@ -136,3 +136,11 @@ Rutas: las cuatro enumeradas en S2. No se autoriza recorrer otros repositorios n
 - Documentación/configuración: no hay RED de producto significativo. Se comprobarán contratos de configuración antes/después sin ejecutar hooks ni clientes contra sesiones reales.
 - Riesgo: ítems 3 y 5 (instrucciones/configuración global compartidas); verificación independiente requerida para esa unidad, además de checks estructurales. El runtime nuevo no se presume verificado por parsear JSON.
 - Pronóstico: 700–1.000 líneas documentales/configuración, con recursos generados aparte; cadena elegida antes de commits. Los backups externos no se publican.
+
+### L6 — Respaldo, instrucciones y límites de las unidades
+
+- T1: 18/18 copias externas verificadas (417.722 bytes); 2.254 hashes de preservación. Detalle y rollback en `docs/audits/context-migration-2026-10-27.md`.
+- T2: enlaces de siete documentos y 18 marcadores de invariantes aprobados; `git diff --check` verde. AGENTS bajó 59,7 % en bytes, no se atribuye ese porcentaje a tokens.
+- Cadena sobre esta rama: primera unidad `7597e7f..7587266` (208 líneas, respaldo/seguimiento); siguiente unidad es contexto local; después continuidad de producto y, por separado, retiro global. El diff de 16.919 líneas contra `origin/master` incluye trabajo previo de `features-varias` y no pertenece a esta migración.
+- RDD está on. ASSESS de la primera unidad no pudo evaluar por archivos nuevos todavía sin declarar: `nativeRisk=unassessable`, sin revisión aprobada ni recibo. No se reintentó el mismo candidato ni se redujo el gate; se informa como comprobación no disponible.
+- T3: 38 IDs originales y 18 abiertos únicos comprobados; cuerpos previos de registro/checklist preservados; 11 documentos sin destinos Markdown ausentes. Memorias 3–5 guardan decisiones de flujo, fuentes y autoridad del backlog. No se implementó ningún pendiente de producto.

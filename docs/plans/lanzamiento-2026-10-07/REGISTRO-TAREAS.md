@@ -1,5 +1,9 @@
 # Registro de tareas
 
+> **Snapshot de lanzamiento; cantidades conciliadas el 27/10/2026.** Conserva IDs,
+> cierres y evidencias. Los pendientes se continúan desde el [backlog ODD](../../../odd/backlog.md);
+> no agregar nuevas bitácoras ni mantener otro contador aquí.
+
 Registro por ID del lanzamiento. Limpieza del 20/10/2026: se conservan los cierres
 y sus evidencias, sin sumar IDs por documentación, precios, V2 o capturas.
 Los números dentro de cada entrega son recibos fechados, no el conteo actual de tests.
