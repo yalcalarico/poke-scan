@@ -4,6 +4,7 @@ import { useCurrency } from '@/hooks/use-currency';
 import { cn } from '@/lib/cn';
 import { formatCardNumber } from '@/lib/format';
 import type { RecognizedCard, PriceDto } from '@/types/api';
+import { shownPriceReference } from '@/lib/scanner/price-reference';
 
 import { CardThumb } from './card-thumb';
 import { AnimatedNumber, Burst } from '@/components/visual-preview/effects';
@@ -19,7 +20,7 @@ function isUsable(price: PriceDto | null | undefined): price is UsablePrice {
 
 /** `price` es UNA fila elegida por el backend; el resumen de la barra usa la misma. */
 export function referencePrice(candidate: RecognizedCard): number | null {
-  const best = (candidate.prices ?? []).find(isUsable) ?? candidate.price;
+  const best = shownPriceReference(candidate);
   if (!isUsable(best)) return null;
   return best.market ?? best.mid ?? best.low ?? best.high;
 }

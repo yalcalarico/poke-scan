@@ -27,9 +27,8 @@ import { useCardVariants } from '@/hooks/use-card-variants';
 import { ApiError } from '@/lib/api/api-client';
 import { createCollection, deleteItem, listCollections, updateItem, addItem } from '@/lib/api/collections';
 import { formatRelativeTime, pluralize } from '@/lib/format';
-import { CONDITION_OPTIONS, conditionLabel, variantLabel } from '@/lib/variants';
+import { variantLabel } from '@/lib/variants';
 import type {
-  CardCondition,
   CardVariant,
   CollectionDto,
   CollectionItemDto,
@@ -37,11 +36,6 @@ import type {
 
 const MAX_QUANTITY = 999;
 const MAX_NOTES = 500;
-
-const CONDITION_SELECT_OPTIONS = CONDITION_OPTIONS.map((option) => ({
-  value: option.value,
-  label: option.label,
-}));
 
 function messageOf(error: unknown, fallback: string): string {
   return error instanceof ApiError ? error.message : fallback;
@@ -98,7 +92,7 @@ export interface ItemSheetProps {
  */
 export function ItemSheet({ item, open, onClose, onUpdated, onDeleted }: ItemSheetProps) {
   const toast = useToast();
-  const { options: variantOptions, loading: loadingVariants } = useCardVariants(item?.card.id, open, item?.variant);
+  const { options: variantOptions, prices, loading: loadingVariants } = useCardVariants(item?.card.id, open, item?.variant);
   const confirmRef = useRef<HTMLDivElement>(null);
   const confirmTitleId = useId();
 
@@ -106,7 +100,6 @@ export function ItemSheet({ item, open, onClose, onUpdated, onDeleted }: ItemShe
   const [isForTrade, setIsForTrade] = useState(item?.isForTrade ?? false);
   const [notes, setNotes] = useState(item?.notes ?? '');
   const [variant, setVariant] = useState<CardVariant>(item?.variant ?? 'normal');
-  const [condition, setCondition] = useState<CardCondition>(item?.condition ?? 'NM');
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -124,7 +117,6 @@ export function ItemSheet({ item, open, onClose, onUpdated, onDeleted }: ItemShe
     setIsForTrade(item.isForTrade);
     setNotes(item.notes ?? '');
     setVariant(item.variant);
-    setCondition(item.condition);
     setConfirmingDelete(false);
     setError(null);
   }
@@ -143,6 +135,13 @@ export function ItemSheet({ item, open, onClose, onUpdated, onDeleted }: ItemShe
   if (open !== wasOpen) {
     setWasOpen(open);
     if (!open) setConfirmingDelete(false);
+    if (open && item) {
+      setQuantity(item.quantity);
+      setIsForTrade(item.isForTrade);
+      setNotes(item.notes ?? '');
+      setVariant(item.variant);
+      setError(null);
+    }
   }
 
   // El foco va al bloque de confirmación: si se queda en el botón que ya no
@@ -161,7 +160,7 @@ export function ItemSheet({ item, open, onClose, onUpdated, onDeleted }: ItemShe
         isForTrade,
         notes: notes.trim() === '' ? null : notes.trim(),
         variant,
-        condition,
+        condition: 'NM',
       });
       toast.success('Carta actualizada');
       onUpdated?.(updated);
@@ -171,7 +170,7 @@ export function ItemSheet({ item, open, onClose, onUpdated, onDeleted }: ItemShe
     } finally {
       setIsSaving(false);
     }
-  }, [condition, isForTrade, item, notes, onClose, onUpdated, quantity, toast, variant]);
+  }, [isForTrade, item, notes, onClose, onUpdated, quantity, toast, variant]);
 
   const handleDelete = useCallback(async () => {
     if (!item) return;
@@ -192,10 +191,9 @@ export function ItemSheet({ item, open, onClose, onUpdated, onDeleted }: ItemShe
 
   if (!item) return null;
 
-  const reference = item.price;
+  const reference = prices.find((price) => price.variant === variant) ?? (variant === item.variant ? item.price : null);
   const marketPrice = reference?.market ?? null;
-  const variantPriceMatches = variant === item.variant;
-  const total = !variantPriceMatches || marketPrice === null ? null : marketPrice * quantity;
+  const total = marketPrice === null ? null : marketPrice * quantity;
 
   const subtitle = `${item.card.set?.name ?? item.card.setId} · agregada ${formatRelativeTime(item.addedAt)}`;
 
@@ -282,18 +280,15 @@ export function ItemSheet({ item, open, onClose, onUpdated, onDeleted }: ItemShe
           <Link href={`/carta/${encodeURIComponent(item.card.id)}`} className="flex min-h-11 items-center rounded-control px-3 text-label text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--focus-ring)]">Ver detalle de la carta</Link>
         </div>
         <ItemForm
-          marketPrice={variantPriceMatches ? marketPrice : null}
-          reference={variantPriceMatches ? reference : null}
+          marketPrice={marketPrice}
+          reference={reference}
           variantOptions={variantOptions}
           loadingVariants={loadingVariants}
-          variantPriceMatches={variantPriceMatches}
           total={total}
           quantity={quantity}
           onQuantityChange={setQuantity}
           variant={variant}
           onVariantChange={setVariant}
-          condition={condition}
-          onConditionChange={setCondition}
           isForTrade={isForTrade}
           onForTradeChange={setIsForTrade}
           notes={notes}
@@ -313,15 +308,12 @@ interface ItemFormProps {
   reference: CollectionItemDto['price'];
   variantOptions: { value: CardVariant; label: string }[];
   loadingVariants: boolean;
-  variantPriceMatches: boolean;
   /** Mercado × cantidad, en USD. */
   total: number | null;
   quantity: number;
   onQuantityChange: (value: number) => void;
   variant: CardVariant;
   onVariantChange: (value: CardVariant) => void;
-  condition: CardCondition;
-  onConditionChange: (value: CardCondition) => void;
   isForTrade: boolean;
   onForTradeChange: (value: boolean) => void;
   notes: string;
@@ -335,14 +327,11 @@ function ItemForm({
   reference,
   variantOptions,
   loadingVariants,
-  variantPriceMatches,
   total,
   quantity,
   onQuantityChange,
   variant,
   onVariantChange,
-  condition,
-  onConditionChange,
   isForTrade,
   onForTradeChange,
   notes,
@@ -352,7 +341,6 @@ function ItemForm({
 }: ItemFormProps) {
   const quantityField = useFieldA11y({ id: 'item-quantity', hint: `Máximo ${MAX_QUANTITY}` });
   const variantField = useFieldA11y({ id: 'item-variant' });
-  const conditionField = useFieldA11y({ id: 'item-condition' });
   const notesField = useFieldA11y({ id: 'item-notes', hint: `${MAX_NOTES} caracteres como máximo` });
 
   return (
@@ -377,9 +365,8 @@ function ItemForm({
         />
       </StatGrid>
       <div className="flex flex-col gap-1 text-caption text-secondary" aria-live="polite">
-        {variantPriceMatches && marketPrice === null ? <p className="text-warning">Sin referencia de precio para esta variante.</p> : null}
-        {variantPriceMatches ? reference ? <PriceReferenceDetails reference={reference} showConversion /> : null : <p className="text-warning">Guardá el cambio de variante para ver su referencia de precio.</p>}
-        <p>Condición: {conditionLabel(condition)} · la condición no ajusta este valor.</p>
+        {marketPrice === null ? <p className="text-warning">{loadingVariants ? 'Consultando el precio de esta variante…' : 'Sin referencia de precio para esta variante.'}</p> : null}
+        {reference ? <PriceReferenceDetails reference={reference} showConversion /> : null}
       </div>
 
       <div className="flex flex-col gap-4">
@@ -429,17 +416,6 @@ function ItemForm({
             invalid={variantField.invalid}
           />
         </Field>}
-
-        <Field {...conditionField} label="Condición">
-          <Select
-            id={conditionField.id}
-            options={CONDITION_SELECT_OPTIONS}
-            value={condition}
-            onChange={onConditionChange}
-            disabled={disabled}
-            invalid={conditionField.invalid}
-          />
-        </Field>
 
         <div className="rounded-control border border-line bg-surface-2 px-3 py-2">
           <Switch
@@ -526,7 +502,6 @@ export function AddToCollectionSheet({
 
   const [selectedVariant, setVariant] = useState<CardVariant | null>(null);
   const variant = variantOptions.some((option) => option.value === selectedVariant) && selectedVariant ? selectedVariant : preferredVariant ?? 'normal';
-  const [condition, setCondition] = useState<CardCondition>('NM');
   const [quantity, setQuantity] = useState(1);
   const [isForTrade, setIsForTrade] = useState(false);
 
@@ -543,7 +518,6 @@ export function AddToCollectionSheet({
     setWasOpen(open);
     if (open) {
       setVariant(null);
-      setCondition('NM');
       setQuantity(1);
       setIsForTrade(defaultForTrade);
       setSubmitError(null);
@@ -616,7 +590,7 @@ export function AddToCollectionSheet({
       const created = await addItem(collectionId, {
         cardId,
         variant,
-        condition,
+        condition: 'NM',
         quantity,
         // El checkbox se dibujaba y se guardaba en el estado, pero no viajaba en
         // el payload: el backend no tenía el campo y lo descartaba. Marcar y
@@ -643,7 +617,6 @@ export function AddToCollectionSheet({
     cardId,
     loadingVariants,
     collectionId,
-    condition,
     isForTrade,
     onAdded,
     onClose,
@@ -656,12 +629,11 @@ export function AddToCollectionSheet({
   const quantityField = useFieldA11y({ id: 'add-quantity', hint: `Máximo ${MAX_QUANTITY}` });
   const collectionField = useFieldA11y({ id: 'add-collection' });
   const variantField = useFieldA11y({ id: 'add-variant' });
-  const conditionField = useFieldA11y({ id: 'add-condition' });
   const newNameField = useFieldA11y({ id: 'new-collection-name' });
 
   const helpText = `Se van a sumar ${quantity} ${pluralize(quantity, 'copia', 'copias')} de ${
     cardName ?? 'esta carta'
-  } con variante ${variantLabel(variant)} y condición ${conditionLabel(condition)}. Si la carta ya está en esa colección con la misma variante y condición, se suma la cantidad en lugar de duplicarla.`;
+  } con variante ${variantLabel(variant)}. Si ya está en esa colección, se suma la cantidad en lugar de duplicarla.`;
 
   return (
     <Sheet
@@ -783,15 +755,6 @@ export function AddToCollectionSheet({
                 invalid={variantField.invalid}
               />
             </Field>}
-            <Field {...conditionField} label="Condición">
-              <Select
-                id={conditionField.id}
-                options={CONDITION_SELECT_OPTIONS}
-                value={condition}
-                onChange={setCondition}
-                invalid={conditionField.invalid}
-              />
-            </Field>
           </div>
 
           <Field {...quantityField} label="Cantidad">

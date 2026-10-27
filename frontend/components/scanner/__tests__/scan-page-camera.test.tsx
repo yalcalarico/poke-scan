@@ -7,8 +7,9 @@ import type { IdlePanelProps } from '../idle-panel';
 import type { VisualIdentifyResponseDto } from '@/types/api';
 import type { DiagnosticSession } from '@/lib/scanner/diagnostic-session';
 const mocks = vi.hoisted(() => {
-  return { recognize: vi.fn(), toast: vi.fn(), report: vi.fn() };
+  return { recognize: vi.fn(), toast: vi.fn(), report: vi.fn(), playCoinSound: vi.fn(), unlockCoinSound: vi.fn() };
 });
+vi.mock('@/lib/scanner/coin-sound', () => ({ playCoinSound: mocks.playCoinSound, unlockCoinSound: mocks.unlockCoinSound }));
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn() }) }));
 vi.mock('@/hooks/use-mobile-camera', () => ({ useMobileCamera: () => true }));
 vi.mock('@/hooks/use-auth', () => ({ useAuth: () => ({ user: { id: 'test' }, isAuthenticated: true, isLoading: false }) }));
@@ -21,12 +22,15 @@ vi.mock('@/components/ui', async (original) => ({ ...await original<typeof impor
 vi.mock('@/components/scanner', async (original) => ({
   ...await original<typeof import('@/components/scanner')>(),
   IdlePanel: ({ onScan, sessionCount }: IdlePanelProps) => <><button onClick={onScan}>Escanear carta</button><p>Pendientes: {sessionCount}</p></>,
-  CameraView: ({ autoVisual, onCapture, detected, onClose, diagnosticStatus }: CameraViewProps) => <div>
+  CameraView: ({ autoVisual, onCapture, detected, onClose, diagnosticStatus, sessionCount, liveResult }: CameraViewProps) => <div>
     <button onClick={onClose}>Cerrar cámara</button>
     {diagnosticStatus ? <button onClick={diagnosticStatus.onOpen}>Ver opciones de diagnóstico</button> : null}
     <p>{autoVisual ? 'Cámara automática' : 'Cámara manual'}</p>
     <button onClick={() => onCapture({ blob: new Blob(['x']), dataUrl: 'data:image/jpeg;base64,YQ==', width: 630, height: 880 }, 'auto')}>Carta estable</button>
+    <button onClick={() => onCapture({ blob: new Blob(['x']), dataUrl: 'data:image/jpeg;base64,YQ==', width: 630, height: 880 }, 'manual')}>Captura manual</button>
+    <p>Sesión: {sessionCount}</p>
     {detected ? <p>{detected.candidate.card.id} · {detected.candidate.price?.market}</p> : null}
+    {liveResult ? <p role="status">{liveResult}</p> : null}
   </div>,
   ScanResults: ({ open }: { open: boolean }) => open ? <div>Elegir candidato</div> : null,
   OrganizeSheet: ({ entries, onReview }: OrganizeSheetProps) => <>{entries.map((entry) => <button key={entry.runId} onClick={() => onReview?.(entry.runId)}>Revisar lectura {entry.runId}</button>)}</>,
@@ -38,6 +42,7 @@ it('la cámara principal reconoce automáticamente y conserva carta/precio sin p
   mocks.recognize.mockResolvedValue({ card: { id: 'me55-59', name: 'Toxtricity', setId: 'me55', number: '59', imageSmall: '/card.png', imageLarge: '/card.png' }, score: 0.636, rawScore: 0.636, price: { market: 1.5 } });
   render(<ScanPage />);
   fireEvent.click(await screen.findByRole('button', { name: 'Escanear carta' }));
+  expect(mocks.unlockCoinSound).toHaveBeenCalledTimes(1);
   expect(screen.getByText('Cámara automática')).toBeInTheDocument();
   fireEvent.click(screen.getByRole('button', { name: 'Carta estable' }));
   await screen.findByText('me55-59 · 1.5');
@@ -57,6 +62,65 @@ it('la cámara principal reconoce automáticamente y conserva carta/precio sin p
   fireEvent.click(screen.getByRole('button', { name: 'Revisar lectura 1' }));
   expect(screen.getByAltText('Tu captura de la carta')).toHaveAttribute('src', 'data:image/jpeg;base64,YQ==');
   expect(screen.getByAltText('Referencia de Toxtricity')).toBeInTheDocument();
+});
+
+it('emite una sola moneda cuando el resultado con precio cero queda visible, incluso si llegó tarde', async () => {
+  sessionStorage.clear();
+  mocks.playCoinSound.mockClear();
+  let resolveRecognition: ((value: { card: { id: string; name: string; setId: string; number: string; imageSmall: string; imageLarge: string }; score: number; rawScore: number; price: { market: number } }) => void) | undefined;
+  mocks.recognize.mockImplementationOnce(() => new Promise((resolve) => { resolveRecognition = resolve; }));
+  const view = render(<ScanPage />);
+  fireEvent.click(await screen.findByRole('button', { name: 'Escanear carta' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Carta estable' }));
+  expect(mocks.playCoinSound).not.toHaveBeenCalled();
+  await waitFor(() => expect(resolveRecognition).toBeDefined());
+  await act(async () => resolveRecognition?.({
+    card: { id: 'zero-card', name: 'Carta cero', setId: 'test', number: '1', imageSmall: '', imageLarge: '' },
+    score: .9, rawScore: .9, price: { market: 0 },
+  }));
+  await screen.findByText(/zero-card/);
+  expect(mocks.playCoinSound).toHaveBeenCalledTimes(1);
+  view.rerender(<ScanPage />);
+  expect(mocks.playCoinSound).toHaveBeenCalledTimes(1);
+});
+
+it('no emite moneda para lecturas sin precio ni para errores', async () => {
+  sessionStorage.clear();
+  mocks.playCoinSound.mockClear();
+  mocks.recognize.mockResolvedValueOnce({ card: { id: 'no-price', name: 'Sin precio', setId: 'test', number: '1', imageSmall: '', imageLarge: '' }, score: .9, rawScore: .9, price: null, prices: [] });
+  const view = render(<ScanPage />);
+  fireEvent.click(await screen.findByRole('button', { name: 'Escanear carta' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Carta estable' }));
+  await screen.findByText(/no-price/);
+  expect(mocks.playCoinSound).not.toHaveBeenCalled();
+  view.unmount();
+
+  sessionStorage.clear();
+  mocks.recognize.mockRejectedValueOnce(new Error('Falló el servicio'));
+  render(<ScanPage />);
+  fireEvent.click(await screen.findByRole('button', { name: 'Escanear carta' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Carta estable' }));
+  await waitFor(() => expect(mocks.recognize).toHaveBeenCalled());
+  expect(await screen.findByText('Falló el servicio')).toBeInTheDocument();
+  expect(mocks.playCoinSound).not.toHaveBeenCalled();
+});
+
+it('mantiene y persiste más de 30 lecturas en la sesión', async () => {
+  sessionStorage.clear();
+  vi.clearAllMocks();
+  const card = { id: 'long-session-card', name: 'Carta larga', setId: 'test', number: '1', imageSmall: '/card.png', imageLarge: '/card.png' };
+  mocks.recognize.mockResolvedValue({ card, score: .9, rawScore: .9, price: null, prices: [] });
+  render(<ScanPage />);
+  fireEvent.click(await screen.findByRole('button', { name: 'Escanear carta' }));
+  for (let count = 1; count <= 35; count += 1) {
+    fireEvent.click(screen.getByRole('button', { name: 'Captura manual' }));
+    await waitFor(() => expect(screen.getByText(`Sesión: ${count}`)).toBeInTheDocument());
+  }
+  const stored = JSON.parse(sessionStorage.getItem('pcs.scanDraft') ?? '{}') as { entries?: Array<{ runId: number }> };
+  expect(stored.entries).toHaveLength(35);
+  expect(stored.entries?.[0]?.runId).toBe(1);
+  expect(stored.entries?.[34]?.runId).toBe(35);
+  expect(mocks.recognize).toHaveBeenCalledTimes(35);
 });
 
 it('espera la respuesta y los precios antes de permitir finalizar desde las opciones de cámara', async () => {

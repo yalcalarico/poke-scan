@@ -1,0 +1,1 @@
+{"passed":true,"source":"AppModule real, feed HTTP local y PostgreSQL de tests","morningRequests":0,"groupsInCommonBatch":2,"contentRequests":4,"totalRequests":8,"repeatedReadsRequestNothing":true,"api":[{"status":200,"market":1.25,"provider":"tcgcsv"},{"status":200,"market":2.25,"provider":"tcgcsv"}],"externalRequests":0}

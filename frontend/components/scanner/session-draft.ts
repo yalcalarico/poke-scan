@@ -1,6 +1,7 @@
 import { toCardDto, toPriceList } from '@/lib/api/schema';
 import type { CardCondition, CardVariant, RecognizedCard } from '@/types/api';
 import type { SessionEntry } from './types';
+import { shownPriceReference } from '@/lib/scanner/price-reference';
 
 export const SESSION_DRAFT_KEY = 'pcs.scanDraft';
 export const SESSION_DRAFT_VERSION = 1;
@@ -67,8 +68,10 @@ export function sanitizeSessionEntries(value: unknown): SessionEntry[] {
       score: raw.selectionSource !== 'manual' && typeof candidate.score === 'number' && Number.isFinite(candidate.score) ? candidate.score : 0,
       rawScore: raw.selectionSource !== 'manual' && typeof candidate.rawScore === 'number' && Number.isFinite(candidate.rawScore) ? candidate.rawScore : 0,
       price: null,
-      prices: toPriceList({ prices: candidate.prices }).filter((price) => price.cardId === parsedCard.id),
+      prices: toPriceList({ prices: candidate.prices ?? (candidate.price ? [candidate.price] : []) })
+        .filter((price) => price.cardId === parsedCard.id && price.provider === 'tcgcsv'),
     };
+    projected.price = projected.prices?.[0] ?? null;
     entries.push({ runId: raw.runId, candidate: projected, ...(raw.identityReviewed === true ? { identityReviewed: true } : {}), ...(raw.selectionSource === 'manual' || raw.selectionSource === 'visual' ? { selectionSource: raw.selectionSource } : {}) });
   }
   return entries;
@@ -78,7 +81,12 @@ export function createSessionDraft(entries: readonly SessionEntry[], sessionId =
   const safeEntries = sanitizeSessionEntries(entries);
   return { schemaVersion: 1, sessionId, entries: safeEntries, ownerUserId: null, selectedCollectionId: null, destinationConfirmed: false,
     allocations: safeEntries.map((entry) => ({ id: crypto.randomUUID(), runId: entry.runId, cardId: entry.candidate.card.id,
-      variant: null, variantReviewed: false, condition: null, conditionReviewed: false, quantity: 1, reviewed: entry.identityReviewed === true })), operations: [], retiredRunIds: [] };
+      variant: defaultVariant(entry), variantReviewed: Boolean(defaultVariant(entry)), condition: 'NM', conditionReviewed: true, quantity: 1, reviewed: true })), operations: [], retiredRunIds: [] };
+}
+
+function defaultVariant(entry: SessionEntry): CardVariant | null {
+  const reference = shownPriceReference(entry.candidate);
+  return reference?.cardId === entry.candidate.card.id && variants.includes(reference.variant) ? reference.variant : null;
 }
 
 function protectedDraft(entries: readonly SessionEntry[], reason: string): SessionDraft {
@@ -95,15 +103,26 @@ export function parseSessionDraft(value: unknown, legacyEntries: readonly Sessio
   if (!text(value.sessionId) || !Array.isArray(value.allocations) || !Array.isArray(value.operations)
     || ('entries' in value && (!Array.isArray(value.entries) || value.entries.length !== entries.length))) return invalid();
   const runs = new Map(entries.map((entry) => [entry.runId, entry.candidate.card.id]));
+  const entriesByRun = new Map(entries.map((entry) => [entry.runId, entry]));
+  const protectedAllocationIds = new Set(value.operations.flatMap((operation) => isObject(operation) && operation.status !== 'rejected' && operation.status !== 'confirmed' && Array.isArray(operation.allocationIds)
+    ? operation.allocationIds.filter((id): id is string => typeof id === 'string') : []));
+  const rejectedAllocationIds = new Set(value.operations.flatMap((operation) => isObject(operation) && operation.status === 'rejected' && Array.isArray(operation.allocationIds)
+    ? operation.allocationIds.filter((id): id is string => typeof id === 'string') : []));
   const allocations: DraftAllocation[] = [];
   for (const raw of value.allocations) {
     if (!isObject(raw) || !text(raw.id) || typeof raw.runId !== 'number' || !runs.has(raw.runId) || raw.cardId !== runs.get(raw.runId)
       || !quantity(raw.quantity) || allocations.some((allocation) => allocation.id === raw.id)
       || (raw.variant !== null && !variants.includes(raw.variant as CardVariant)) || (raw.condition !== null && !conditions.includes(raw.condition as CardCondition))
       || typeof raw.reviewed !== 'boolean' || typeof raw.variantReviewed !== 'boolean' || typeof raw.conditionReviewed !== 'boolean') return invalid();
+    const entry = entriesByRun.get(raw.runId);
+    const protectedOperation = protectedAllocationIds.has(raw.id);
+    const variant = protectedOperation ? raw.variant as CardVariant | null
+      : rejectedAllocationIds.has(raw.id) || raw.variant === null ? (entry ? defaultVariant(entry) : null) : raw.variant as CardVariant;
     allocations.push({ id: raw.id, runId: raw.runId, cardId: String(raw.cardId), quantity: raw.quantity,
-      variant: raw.variant as CardVariant | null, variantReviewed: raw.variantReviewed,
-      condition: raw.condition as CardCondition | null, conditionReviewed: raw.conditionReviewed, reviewed: raw.reviewed });
+      variant, variantReviewed: protectedOperation ? raw.variantReviewed : Boolean(variant),
+      condition: protectedOperation ? raw.condition as CardCondition | null : 'NM',
+      conditionReviewed: protectedOperation ? raw.conditionReviewed : true,
+      reviewed: protectedOperation ? raw.reviewed : true });
   }
   const operations: DraftOperation[] = [];
   const locked = new Set<string>();
@@ -119,8 +138,8 @@ export function parseSessionDraft(value: unknown, legacyEntries: readonly Sessio
     const status = raw.status as DraftOperation['status'];
     if (status !== 'confirmed') {
       const included = allocations.filter((allocation) => allocationIds.includes(allocation.id));
-      if (included.length !== allocationIds.length || included.some((allocation) => allocation.cardId !== p.cardId
-        || allocation.variant !== p.variant || allocation.condition !== p.condition) || included.reduce((sum, allocation) => sum + allocation.quantity, 0) !== p.quantity) return invalid();
+      if (included.length !== allocationIds.length || (status !== 'rejected' && (included.some((allocation) => allocation.cardId !== p.cardId
+        || allocation.variant !== p.variant || allocation.condition !== p.condition) || included.reduce((sum, allocation) => sum + allocation.quantity, 0) !== p.quantity))) return invalid();
       if (status !== 'rejected') {
         if (allocationIds.some((id) => locked.has(id))) return invalid();
         allocationIds.forEach((id) => locked.add(id));
@@ -172,11 +191,21 @@ export function syncDraftEntries(draft: SessionDraft, incoming: readonly Session
     const index = entries.findIndex((item) => item.runId === entry.runId);
     if (index < 0) entries.push(entry); else entries[index] = entry;
   }
+  const previousByRun = new Map<number, DraftAllocation[]>();
+  for (const allocation of draft.allocations) {
+    const previous = previousByRun.get(allocation.runId);
+    if (previous) previous.push(allocation); else previousByRun.set(allocation.runId, [allocation]);
+  }
   const allocations = entries.flatMap((entry) => {
-    const previous = draft.allocations.filter((allocation) => allocation.runId === entry.runId);
+    const previous = previousByRun.get(entry.runId) ?? [];
     if (!previous.length) return createSessionDraft([entry]).allocations;
-    return previous.map((allocation) => allocation.cardId === entry.candidate.card.id ? (entry.identityReviewed ? { ...allocation, reviewed: true } : allocation) : {
-      ...allocation, cardId: entry.candidate.card.id, variant: null, variantReviewed: false, condition: null, conditionReviewed: false, reviewed: entry.identityReviewed === true,
+    return previous.map((allocation) => {
+      if (protectedRuns.has(entry.runId)) return allocation;
+      if (allocation.cardId === entry.candidate.card.id) return {
+        ...allocation, variant: defaultVariant(entry), variantReviewed: Boolean(defaultVariant(entry)),
+        condition: 'NM' as const, conditionReviewed: true, reviewed: true,
+      };
+      return { ...allocation, cardId: entry.candidate.card.id, variant: defaultVariant(entry), variantReviewed: Boolean(defaultVariant(entry)), condition: 'NM' as const, conditionReviewed: true, reviewed: true };
     });
   });
   const removedRuns = draft.entries.filter((entry) => !entries.some((item) => item.runId === entry.runId)).map((entry) => entry.runId);
@@ -187,17 +216,39 @@ export function groupAllocations(allocations: readonly DraftAllocation[]): Draft
   const groups = new Map<string, DraftAllocation[]>();
   for (const allocation of allocations) {
     const key = `${allocation.cardId}\u0000${allocation.variant ?? ''}\u0000${allocation.condition ?? ''}`;
-    groups.set(key, [...(groups.get(key) ?? []), allocation]);
+    const group = groups.get(key);
+    if (group) group.push(allocation); else groups.set(key, [allocation]);
   }
   return [...groups.values()];
 }
 export function isAllocationReady(allocation: DraftAllocation): boolean {
-  return Boolean(allocation.variant && allocation.condition && allocation.variantReviewed && allocation.conditionReviewed && allocation.reviewed);
+  return Boolean(allocation.variant && allocation.condition === 'NM');
 }
 export function readyAllocationGroups(draft: SessionDraft): DraftAllocation[][] {
   const locked = lockedAllocationIds(draft);
   return groupAllocations(draft.allocations.filter((allocation) => isAllocationReady(allocation) && !locked.has(allocation.id)))
-    .filter((group) => group.reduce((sum, allocation) => sum + allocation.quantity, 0) <= MAX_DRAFT_QUANTITY);
+    .flatMap((group) => {
+      const chunks: DraftAllocation[][] = [];
+      let chunk: DraftAllocation[] = [];
+      let total = 0;
+      for (const allocation of group) {
+        if (allocation.quantity > MAX_DRAFT_QUANTITY) return [];
+        if (total + allocation.quantity > MAX_DRAFT_QUANTITY) {
+          chunks.push(chunk);
+          chunk = [];
+          total = 0;
+        }
+        chunk.push(allocation);
+        total += allocation.quantity;
+        if (total === MAX_DRAFT_QUANTITY) {
+          chunks.push(chunk);
+          chunk = [];
+          total = 0;
+        }
+      }
+      if (chunk.length) chunks.push(chunk);
+      return chunks;
+    });
 }
 
 /** Confirmación y retiro se escriben juntos; la cantidad devuelta por el ítem no es el delta. */

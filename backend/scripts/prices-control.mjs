@@ -12,7 +12,7 @@ export async function requestCycles(prisma) {
 }
 
 export async function readPriceStatus(prisma) {
-  const [controls, queues, coverage, discovery, pending, registry, daily, pauses, legacy, interactive, activity] = await Promise.all([
+  const [controls, queues, coverage, discovery, pending, registry, daily, pauses, legacy, interactive, activity, batches] = await Promise.all([
     prisma.$queryRaw`
       SELECT provider, "requestedGeneration" > "handledGeneration" AS "cyclePending", "lastHandledAt", "heartbeatAt",
         "schedulerEnabled", "workerConfiguredEnabled", "nextCycleAt",
@@ -67,9 +67,13 @@ export async function readPriceStatus(prisma) {
       LEFT JOIN LATERAL (SELECT MAX(p."fetchedAt") AS "lastQuoteAt", COUNT(*)::int AS observations
         FROM card_prices p JOIN cards card ON card.id = p."cardId"
         WHERE p.provider = d.provider AND card."setId" = d."setId" AND p.source = 'tcgplayer' AND p.currency = 'USD' AND p.market IS NOT NULL
-          AND p."fetchedAt" >= (d."syncDate"::timestamp AT TIME ZONE 'UTC')
-          AND p."fetchedAt" < ((d."syncDate" + 1)::timestamp AT TIME ZONE 'UTC')) prices ON TRUE
-      WHERE d.provider = 'tcgcsv' AND d."syncDate" = (NOW() AT TIME ZONE 'UTC')::date GROUP BY d.provider, d."setId", d."syncDate", d.status,
+          AND p."feedPublishedAt" = d."feedPublishedAt"
+          AND EXISTS (SELECT 1 FROM price_sync_card_days q WHERE q.provider = d.provider AND q."syncDate" = d."syncDate"
+            AND q."cardId" = p."cardId" AND q.status = 'quoted')) prices ON TRUE
+      WHERE d.provider = 'tcgcsv' AND d."syncDate" = COALESCE(
+        (SELECT MIN("syncDate") FROM tcgcsv_daily_batches WHERE status IN ('planning','pending','running')),
+        (SELECT MAX("syncDate") FROM tcgcsv_daily_batches), (NOW() AT TIME ZONE 'UTC')::date)
+      GROUP BY d.provider, d."setId", d."syncDate", d.status,
         d."expectedCards", d."nextAttemptAt", d."startedAt", d."finishedAt", d."lastError", d."feedPublishedAt", d."sourceCheckedAt", d."updatedAt", prices."lastQuoteAt", prices.observations
       ORDER BY d.provider, d."setId"`,
     prisma.$queryRaw`SELECT "providerId" AS provider, "blockedUntil" FROM provider_rate_limits WHERE "providerId" = 'tcgcsv' AND "blockedUntil" > NOW() ORDER BY "providerId"`,
@@ -78,10 +82,22 @@ export async function readPriceStatus(prisma) {
     prisma.$queryRaw`SELECT 'tcgcsv' AS provider, GREATEST(
         (SELECT MAX("sourceCheckedAt") FROM price_sync_set_days WHERE provider = 'tcgcsv'),
         (SELECT MAX("fetchedAt") FROM card_prices WHERE provider = 'tcgcsv' AND source = 'tcgplayer' AND currency = 'USD' AND market IS NOT NULL)
-      )`,
+      ) AS "lastActivityAt"`,
+    prisma.$queryRaw`SELECT b."syncDate", b.status, b."openedAt", b."finishedAt", b."feedPublishedAt", b."lastError",
+      COUNT(g."groupId")::int AS groups,
+      COUNT(*) FILTER (WHERE g.status = 'completed')::int AS completed,
+      COUNT(*) FILTER (WHERE g.status = 'failed')::int AS failed,
+      COUNT(*) FILTER (WHERE g.status = 'skipped')::int AS skipped,
+      COUNT(*) FILTER (WHERE g.status = 'pending')::int AS pending,
+      COUNT(*) FILTER (WHERE g.status = 'processing')::int AS processing,
+      COALESCE(jsonb_agg(jsonb_build_object('groupId', g."groupId", 'reason', g."lastError")) FILTER (WHERE g.status = 'failed'), '[]'::jsonb) AS failures
+      FROM tcgcsv_daily_batches b LEFT JOIN tcgcsv_batch_groups g ON g."syncDate" = b."syncDate"
+      WHERE b."syncDate" = COALESCE((SELECT MIN("syncDate") FROM tcgcsv_daily_batches WHERE status IN ('planning','pending','running')),
+        (SELECT MAX("syncDate") FROM tcgcsv_daily_batches))
+      GROUP BY b."syncDate", b.status, b."openedAt", b."finishedAt", b."feedPublishedAt", b."lastError"`,
   ]);
   return { evaluatedAt: new Date().toISOString(), controls, queues, coverage, discovery: discovery[0] ?? null, catalog: pending[0] ?? null,
-    registry, daily, pauses, legacy, interactive, activity, flags: {
+    registry, daily, pauses, legacy, interactive, activity, batch: batches[0] ?? null, flags: {
       tcgcsvScheduler: process.env.ENABLE_TCGCSV_INGESTION === 'true', worker: process.env.ENABLE_TCGCSV_INGESTION === 'true' } };
 }
 
@@ -93,12 +109,18 @@ export function formatStatus(status) {
     const worker = control.workerConfiguredEnabled ? 'worker configurado habilitado' : 'worker configurado apagado';
     lines.push(`${control.provider}: ${scheduler}; ${worker}; ciclo ${control.cyclePending ? 'pendiente' : 'sin señal pendiente'}`);
     const counts = status.queues.filter((row) => row.provider === control.provider).map((row) => `${row.status === 'waiting' ? 'en espera' : row.status}: ${row.jobs}`).join(', ');
-    lines.push(`  Sets: ${counts || 'sin jobs'}`);
+    lines.push(`  Grupos en cola global (incluye demanda próxima): ${counts || 'sin jobs'}`);
     const coverage = status.coverage.find((row) => row.provider === control.provider);
     lines.push(`  Cartas con cotización: ${coverage?.quotedCards ?? 0}; observaciones con precio: ${coverage?.observations ?? 0}`);
     if (control.lastError) lines.push(`  ${control.lastError}`);
   }
   if (status.flags) lines.push(`Programación: TCGCSV ${status.flags.tcgcsvScheduler ? 'habilitada' : 'apagada'}; worker ${status.flags.worker ? 'habilitado' : 'apagado'}`);
+  lines.push('Tanda común: 18:00 Argentina (21:00 UTC); continúa hasta completar o fallar todos sus grupos, sin corte a medianoche.');
+  if (status.batch) {
+    const b = status.batch;
+    lines.push(`Tanda ${b.syncDate.toISOString().slice(0, 10)}: ${b.status}; actualizados ${b.completed}, fallidos ${b.failed}, exceptuados ${b.skipped}, pendientes ${b.pending}, en proceso ${b.processing} / ${b.groups}; publicación ${b.feedPublishedAt?.toISOString() ?? 'sin fijar'}`);
+    for (const failure of b.failures ?? []) lines.push(`  Grupo ${failure.groupId}: ${failure.reason}`);
+  }
   if (status.registry) lines.push(`Registro diario habilitado: ${status.registry.length} sets / ${status.registry.reduce((n, row) => n + row.targetCards, 0)} cartas`);
   for (const run of status.daily ?? []) lines.push(`  ${run.provider} ${run.setId} (${run.syncDate.toISOString().slice(0, 10)} UTC): ${run.status}; cotizadas ${run.quoted}, sin cotización ${run.no_quote}, unmapped ${run.unmapped}, unsupported ${run.unsupported}, sin build ${run.no_new_feed}, pendientes ${run.pending}, en proceso ${run.processing}, fallidas ${run.failed} / ${run.expectedCards}; observaciones ${run.observations}; última cotización ${run.lastQuoteAt?.toISOString?.() ?? 'ninguna'}; intentos ${run.attempts}; inicio ${run.startedAt?.toISOString?.() ?? 'sin iniciar'}; fin ${run.finishedAt?.toISOString?.() ?? 'sin finalizar'}; próximo intento ${run.nextAttemptAt?.toISOString?.() ?? 'sin espera'}; build ${run.feedPublishedAt?.toISOString?.() ?? 'sin build'}${run.lastError ? `; ${run.lastError}` : ''}`);
   for (const pause of status.pauses ?? []) lines.push(`Pausa ${pause.provider}: hasta ${pause.blockedUntil.toISOString()}`);

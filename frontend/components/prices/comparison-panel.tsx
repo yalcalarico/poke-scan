@@ -6,6 +6,7 @@ import { useAsync } from '@/hooks/use-async';
 import { getCardComparison, getCollectionComparison } from '@/lib/api/comparison';
 import { formatObservedDay, formatReferenceTime } from '@/lib/prices/format';
 import { VARIANT_OPTIONS, variantLabel } from '@/lib/variants';
+import { chartDateRange } from '@/lib/prices/chart-window';
 import type { CardVariant, ComparisonProvider } from '@/types/api';
 import { ComparisonChart } from './comparison-chart';
 
@@ -55,7 +56,7 @@ function CardComparisonResult({ cardId, variant, days }: { cardId: string; varia
     {result.status === 'loading' ? <div role="status" aria-label="Cargando historial"><Skeleton variant="block" /></div> : null}
     {result.status === 'error' ? <div role="alert" className="rounded-control bg-warning-soft p-3"><p className="text-body text-primary">{comparisonError(result.error)}</p><Button className="mt-2" variant="secondary" onClick={result.reload}>Reintentar</Button></div> : null}
     {result.status === 'ready' && data ? <>
-      {series.length ? <ComparisonChart label={`Precios de ${variant} durante ${days} días, expresados en dólares`} series={series.map((item) => ({ provider: item.provider, points: item.points.map((point) => ({ date: point.date, value: point.market })) }))} /> : <p className="text-body text-secondary">Todavía no hay observaciones de precios para esta variante.</p>}
+      {series.length ? <ComparisonChart dateRange={chartDateRange(data.windowDays, data.evaluatedAt)} label={`Precios de ${variant} durante ${days} días, expresados en dólares`} series={series.map((item) => ({ provider: item.provider, points: item.points.map((point) => ({ date: point.date, value: point.market })) }))} /> : <p className="text-body text-secondary">Todavía no hay observaciones de precios para esta variante.</p>}
       <details className="text-caption text-secondary"><summary className="flex min-h-11 cursor-pointer items-center rounded-control focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--focus-ring)]">Ver observaciones diarias</summary><ul>{series.flatMap((item) => item.points.map((point) => <li key={`${item.provider}-${point.date}`} className="flex flex-wrap justify-between gap-x-3 border-t border-line-subtle py-2"><span>{names[item.provider]} · {observed(point.date)}</span><span>{moneyUsd(point.market)} · TCGplayer USD · {freshnessNames[point.freshness]}</span></li>))}</ul></details>
       <div className="grid gap-3 sm:grid-cols-2">
         {(['tcgcsv'] as const).map((provider) => {
@@ -65,14 +66,13 @@ function CardComparisonResult({ cardId, variant, days }: { cardId: string; varia
             <h3 className="text-label text-primary">{names[provider]}</h3>
             <p className="mt-1 text-h3 tabular-nums text-positive">{moneyUsd(current?.market ?? null)}</p>
             <p className="text-caption text-secondary">TCGplayer · USD</p>
-            {current ? <p className="mt-2 text-caption text-secondary">Recibido {formatReferenceTime(current.fetchedAt)} · feed {formatReferenceTime(current.feedPublishedAt)}</p> : <p className="mt-2 text-caption text-tertiary">Sin precio conocido para esta variante.</p>}
-            {current ? <p className="text-caption text-tertiary">Publicación del feed: {current.freshness === 'fresh' ? 'actual' : current.freshness === 'stale' ? 'anterior' : 'desconocida'}</p> : null}
+            {current ? <details className="text-caption text-secondary"><summary className="flex min-h-11 cursor-pointer items-center rounded-control focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--focus-ring)]">Ver detalles de la fuente</summary><p>Recibido {formatReferenceTime(current.fetchedAt)} · feed {formatReferenceTime(current.feedPublishedAt)}</p><p>Publicación del feed: {current.freshness === 'fresh' ? 'actual' : current.freshness === 'stale' ? 'anterior' : 'desconocida'}</p><p>La recepción y la publicación son distintas; la fecha real de cotización no está disponible.</p></details> : <p className="mt-2 text-caption text-tertiary">Sin precio conocido para esta variante.</p>}
             {provider === 'tcgcsv' && data.tcgcsv.state !== 'ready' ? <p className="mt-1 text-caption text-warning">{statusLabel(data.tcgcsv.state)}</p> : null}
             {provider === 'tcgcsv' && data.tcgcsv.state === 'ready' && current?.market === null ? <p className="mt-1 text-caption text-warning">No hay precio conocido para esta variante.</p> : null}
           </div>;
         })}
       </div>
-      <p className="text-caption text-tertiary">La fecha de recepción y la fecha publicada del feed son distintas; TCGCSV no informa la fecha real de la cotización.</p><Button variant="ghost" className="self-start" onClick={result.reload}>Actualizar historial</Button>
+      <Button variant="ghost" className="self-start" onClick={result.reload}>Actualizar historial</Button>
     </> : null}
   </>;
 }
@@ -104,13 +104,12 @@ function CollectionComparisonResult({ collectionId, days }: { collectionId: stri
     {result.status === 'loading' ? <div role="status" aria-label="Cargando historial de comparación"><Skeleton variant="block" /></div> : null}
     {result.status === 'error' ? <div role="alert" className="rounded-control bg-warning-soft p-3"><p className="text-body text-primary">{comparisonError(result.error)}</p><Button className="mt-2" variant="secondary" onClick={result.reload}>Reintentar</Button></div> : null}
     {result.status === 'ready' && data ? <>
-      {series.length ? <ComparisonChart label={`Valor de la colección en USD durante ${days} días`} series={series.map((item) => ({ provider: item.provider, points: item.points.map((point) => ({ date: point.date, value: point.valueUsd, compositionChanged: point.compositionChanged })) }))} /> : <p className="text-body text-secondary">Todavía no hay cortes de valor para este período.</p>}
+      {series.length ? <ComparisonChart dateRange={chartDateRange(data.windowDays, data.evaluatedAt)} label={`Valor de la colección en USD durante ${days} días`} series={series.map((item) => ({ provider: item.provider, points: item.points.map((point) => ({ date: point.date, value: point.valueUsd, compositionChanged: point.compositionChanged })) }))} /> : <p className="text-body text-secondary">Todavía no hay cortes de valor para este período.</p>}
       <details className="text-caption text-secondary"><summary className="flex min-h-11 cursor-pointer items-center rounded-control focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--focus-ring)]">Ver cortes diarios y cobertura</summary><ul>{series.flatMap((item) => item.points.map((point) => <li key={`${item.provider}-${point.date}`} className="border-t border-line-subtle py-2"><div className="flex flex-wrap justify-between gap-x-3"><span>{names[item.provider]} · {observed(point.date)}</span><span>{moneyUsd(point.valueUsd)} · USD</span></div><p className="mt-1">Cobertura {point.pricedCopies}/{point.totalCopies} copias · {point.unpricedCopies} sin precio · {point.freshCopies} con feed reciente · {point.staleCopies} con feed anterior · {point.unknownFreshnessCopies} sin fecha del feed{point.compositionChanged ? ' · cambió la composición' : ''}{point.provisional ? ' · provisional' : ''}</p></li>))}</ul></details>
       <div className="grid gap-3 sm:grid-cols-2">{series.map((item) => <div key={item.provider} className="rounded-control bg-surface-2 p-3">
         <h3 className="text-label text-primary">{names[item.provider]}</h3><p className="mt-1 text-h3 tabular-nums text-positive">{moneyUsd(item.current.valueUsd)}</p>
         <p className="text-caption text-secondary">{item.current.pricedCopies} de {item.current.totalCopies} copias con precio · {item.current.unpricedCopies} sin precio</p>
-        <p className="mt-1 text-caption text-tertiary">Evaluado {formatReferenceTime(item.current.evaluatedAt)} · corte {observed(item.current.cutAt)}{item.current.provisional ? ' · valor provisional de hoy' : ''}</p>
-        <p className="text-caption text-tertiary">{item.current.freshCopies} con feed reciente · {item.current.staleCopies} con feed anterior · {item.current.unknownFreshnessCopies} sin fecha del feed · feed {formatReferenceTime(item.current.feedPublishedAt)}</p>
+        <details className="text-caption text-tertiary"><summary className="flex min-h-11 cursor-pointer items-center rounded-control focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--focus-ring)]">Ver detalles del valor</summary><p>Evaluado {formatReferenceTime(item.current.evaluatedAt)} · corte {observed(item.current.cutAt)}{item.current.provisional ? ' · valor provisional de hoy' : ''}</p><p>{item.current.freshCopies} con feed reciente · {item.current.staleCopies} con feed anterior · {item.current.unknownFreshnessCopies} sin fecha del feed · feed {formatReferenceTime(item.current.feedPublishedAt)}</p></details>
       </div>)}</div>
       {series.some((item) => item.points.some((point) => point.compositionChanged)) ? <div className="rounded-control bg-info-soft p-3"><p className="text-label text-primary">Cambios de composición</p><ul className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-caption text-secondary">{series.flatMap((item) => item.points.filter((point) => point.compositionChanged).map((point) => <li key={`${item.provider}-${point.date}`}>{names[item.provider]} · {observed(point.date)}</li>))}</ul></div> : null}
       <p className="text-caption text-tertiary">Estas gráficas mantienen USD aunque elijas pesos para el resto de la app.</p><Button variant="ghost" className="self-start" onClick={result.reload}>Actualizar historial</Button>

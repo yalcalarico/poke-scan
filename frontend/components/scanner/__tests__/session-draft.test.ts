@@ -11,11 +11,12 @@ const scans: SessionEntry[] = [
 describe('draft versionado del escáner', () => {
   it('conserva el array ya parseado del DTO real de precios en múltiples sanitizaciones', () => {
     const apiResponse = { card: scans[0]!.candidate.card, prices: [
-      { cardId: 'card-a', variant: 'normal', market: 10, currency: 'USD', source: 'tcgplayer', fetchedAt: '2026-10-07T12:00:00Z' },
-      { cardId: 'card-a', variant: 'holofoil', market: 100, currency: 'USD', source: 'tcgplayer', fetchedAt: '2026-10-07T12:00:00Z' },
-      { cardId: 'card-a', variant: 'reverseHolofoil', market: 5, currency: 'USD', source: 'tcgplayer', fetchedAt: '2026-10-07T12:00:00Z' },
-      { cardId: 'card-a', variant: 'firstEditionNormal', market: 0 },
-      { cardId: 'card-a', variant: 'unlimited', market: null },
+      { cardId: 'card-a', variant: 'normal', market: 10, currency: 'USD', provider: 'tcgcsv', source: 'tcgplayer', fetchedAt: '2026-10-07T12:00:00Z' },
+      { cardId: 'card-a', variant: 'holofoil', market: 100, currency: 'USD', provider: 'tcgcsv', source: 'tcgplayer', fetchedAt: '2026-10-07T12:00:00Z' },
+      { cardId: 'card-a', variant: 'reverseHolofoil', market: 5, currency: 'USD', provider: 'tcgcsv', source: 'tcgplayer', fetchedAt: '2026-10-07T12:00:00Z' },
+      { cardId: 'card-a', variant: 'firstEditionNormal', market: 0, provider: 'tcgcsv' },
+      { cardId: 'card-a', variant: 'unlimited', market: null, provider: 'tcgcsv' },
+      { cardId: 'card-a', variant: 'normal', market: 9999, provider: 'tcgdex', source: 'tcgplayer', currency: 'USD', fetchedAt: '2026-10-07T12:00:00Z' },
       { cardId: 'card-ajena', variant: 'normal', market: 9999 },
       { cardId: 'card-a', variant: 'variante-corrupta', market: 9999 },
     ] };
@@ -30,13 +31,22 @@ describe('draft versionado del escáner', () => {
       expect(entries[0]!.candidate.prices?.every((price) => price.cardId === 'card-a')).toBe(true);
     }
     const draft = createSessionDraft(entries, 'precios-reales');
+    expect(draft.allocations[0]).toMatchObject({ variant: 'normal', condition: 'NM', reviewed: true });
     expect(parseSessionDraft(JSON.parse(JSON.stringify(draft)) as unknown, [])?.entries[0]?.candidate.prices).toEqual(entries[0]!.candidate.prices);
   });
 
-  it('migra entradas legacy sin inventar atributos ni revisión', () => {
+  it('migra entradas legacy con condición NM e identidad aceptada automáticamente', () => {
     const draft = parseSessionDraft([{ runId: 1 }, { runId: 2 }], scans);
     expect(draft?.allocations).toHaveLength(2);
-    expect(draft?.allocations.every((item) => item.variant === null && item.condition === null && !item.reviewed)).toBe(true);
+    expect(draft?.allocations.every((item) => item.variant === null && item.condition === 'NM' && item.reviewed)).toBe(true);
+  });
+
+  it('divide grupos mayores a 999 en partes sin perder asignaciones', () => {
+    const draft = createSessionDraft(scans, 'large');
+    draft.allocations = draft.allocations.map((item, index) => ({ ...item, variant: 'normal', condition: 'NM', quantity: index ? 501 : 999 }));
+    const groups = readyAllocationGroups(draft);
+    expect(groups.map((group) => group.reduce((sum, item) => sum + item.quantity, 0))).toEqual([999, 501]);
+    expect(groups.flat().map((item) => item.id).sort()).toEqual(draft.allocations.map((item) => item.id).sort());
   });
 
   it('agrupa solo por carta, variante y condición', () => {

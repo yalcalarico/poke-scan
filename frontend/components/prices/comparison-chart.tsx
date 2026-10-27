@@ -1,6 +1,7 @@
 'use client';
 
 import type { ComparisonProvider } from '@/types/api';
+import type { ChartDateRange } from '@/lib/prices/chart-window';
 
 export interface ComparisonChartPoint { date: string; value: number | null; compositionChanged?: boolean; }
 export interface ComparisonChartSeries { provider: ComparisonProvider; points: ComparisonChartPoint[]; }
@@ -12,11 +13,12 @@ const day = (date: string) => Date.parse(`${date}T00:00:00Z`);
 const usd = (value: number) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'USD' }).format(value);
 
 /** SVG liviano: la escala X usa días UTC y los cortes nunca interpolan huecos. */
-export function ComparisonChart({ series, label = 'Comparación diaria de precios en USD' }: { series: ComparisonChartSeries[]; label?: string }) {
+export function ComparisonChart({ series, label = 'Comparación diaria de precios en USD', dateRange }: { series: ComparisonChartSeries[]; label?: string; dateRange?: ChartDateRange }) {
   const dates = series.flatMap((s) => s.points.map((p) => day(p.date)).filter(Number.isFinite));
   const values = series.flatMap((s) => s.points.flatMap((p) => p.value !== null && Number.isFinite(p.value) ? [p.value] : []));
   if (dates.length === 0 || values.length === 0) return <p className="rounded-control bg-surface-2 p-4 text-body text-secondary">Todavía no hay observaciones para graficar.</p>;
-  const minX = Math.min(...dates), maxX = Math.max(...dates);
+  const minX = dateRange ? day(dateRange.start) : Math.min(...dates);
+  const maxX = dateRange ? day(dateRange.end) : Math.max(...dates);
   const lowest = Math.min(...values), highest = Math.max(...values);
   const padding = Math.max((highest - lowest) * 0.15, highest * 0.02, 0.01);
   const minY = Math.max(0, lowest - padding), maxY = highest + padding;
@@ -48,7 +50,7 @@ export function ComparisonChart({ series, label = 'Comparación diaria de precio
         }
         return <g key={s.provider} fill="none" stroke={COLORS[s.provider]} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
           {runs.filter((run) => run.length > 1).map((run, index) => <polyline key={`${s.provider}-${index}`} points={run.map((p) => `${x(day(p.date))},${y(p.value as number)}`).join(' ')} strokeDasharray={s.provider === 'tcgcsv' ? '6 4' : undefined} />)}
-          {ordered.filter((point) => point.value !== null && Number.isFinite(point.value)).map((point) => <circle key={`${s.provider}-point-${point.date}`} cx={x(day(point.date))} cy={y(point.value as number)} r="3.5" fill={COLORS[s.provider]} stroke="var(--surface)"><title>{LABELS[s.provider]} · {dateLabel(day(point.date))} · {usd(point.value as number)}</title></circle>)}
+          {ordered.filter((point) => point.value !== null && Number.isFinite(point.value)).map((point) => <circle key={`${s.provider}-point-${point.date}`} cx={x(day(point.date))} cy={y(point.value as number)} r="3.5" fill={COLORS[s.provider]} stroke="var(--surface)"><title>{`${LABELS[s.provider]} · ${dateLabel(day(point.date))} · ${usd(point.value as number)}`}</title></circle>)}
           {s.points.filter((point) => point.compositionChanged && point.value !== null).map((point) => <rect key={`${s.provider}-composition-${point.date}`} x={x(day(point.date)) - 4} y={y(point.value as number) - 4} width="8" height="8" fill="var(--surface)" stroke={COLORS[s.provider]} strokeWidth="2" />)}
         </g>;
       })}

@@ -31,7 +31,7 @@ function CollectionSummary({ stats }: { stats: PublicShareStatsDto }) {
       </StatGrid>
       <ValuationMetadata valuation={valuation} />
       <p className="text-caption text-tertiary">
-        Referencias internacionales en USD por variante, sin ajuste por condición. No son precios de venta.
+        Referencias internacionales en USD por variante. No son precios de venta.
       </p>
     </div>
   );

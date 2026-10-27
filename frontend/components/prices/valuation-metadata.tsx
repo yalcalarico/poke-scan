@@ -21,6 +21,9 @@ export function ValuationMetadata({ valuation, emptyMessage = 'Todavía no hay c
         : `${coverage.pricedCopies} de ${coverage.totalCopies} copias con precio.`;
   return <div className={cn('flex flex-col gap-1 text-caption text-secondary', className)} role={announceChanges ? 'status' : undefined}>
     <p>{coverageText}</p>
+    <details>
+      <summary className="flex min-h-11 cursor-pointer items-center rounded-control focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--focus-ring)]">Ver detalles del valor</summary>
+      <div className="flex flex-col gap-1">
     {valuation.evaluatedAt ? <p>Evaluado el {formatReferenceTime(valuation.evaluatedAt)}</p> : <p>Evaluación: antigüedad no disponible</p>}
     {recency ? <>
       <p>Al evaluar{valuation.evaluatedAt ? ` el ${formatReferenceTime(valuation.evaluatedAt)}` : ''}: {recency.freshCopies} {pluralize(recency.freshCopies, 'copia', 'copias')} con consulta reciente, {recency.staleCopies} con consulta anterior u otra API y {recency.unknownFreshnessCopies} sin antigüedad disponible.</p>
@@ -28,5 +31,7 @@ export function ValuationMetadata({ valuation, emptyMessage = 'Todavía no hay c
       {recency.oldestFetchedAt && recency.newestFetchedAt ? <p>Consultas incluidas entre {formatReferenceTime(recency.oldestFetchedAt)} y {formatReferenceTime(recency.newestFetchedAt)}.</p> : null}
       {recency.upstreamFreshness === 'unknown' ? <p>Fecha de actualización de la fuente no disponible.</p> : recency.upstreamFreshness === 'mixed' ? <p>Las referencias no comparten la misma antigüedad de fuente; alguna puede no tener fecha disponible.</p> : recency.upstreamFreshness === 'stale' ? <p>Hay referencias con fecha de fuente anterior.</p> : <p>La fuente informa fechas recientes al evaluar.</p>}
     </> : <p>Antigüedad de las referencias no registrada.</p>}
+      </div>
+    </details>
   </div>;
 }

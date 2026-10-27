@@ -1,12 +1,12 @@
 'use client';
 
-import { isRunProtected, readMaxSessionRunId, sessionRecoveryNotice } from '@/components/scanner/session-storage';
+import { readMaxSessionRunId, sessionRecoveryNotice } from '@/components/scanner/session-storage';
 
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { ScreenContainer } from '@/components/layout/screen-container';
 import { ScreenHeader } from '@/components/layout/screen-header';
-import { CameraView, IdlePanel, MAX_SESSION_ENTRIES, OrganizeSheet, PHASE_DETAIL, PHASE_HEADLINE,
+import { CameraView, IdlePanel, OrganizeSheet, PHASE_DETAIL, PHASE_HEADLINE,
   ScanPreview, appendSessionEntry, cameraNoticeCopy, clearSession, formatCount,
   isCameraStage, readSession, writeSession, type CameraNoticeKind, type CaptureSource,
   type ScanPhase, type ScanStage, type SessionEntry } from '@/components/scanner';
@@ -28,6 +28,8 @@ import { CaptureQualityNotice } from '@/components/scanner/capture-quality-notic
 import { VisualScanResult } from '@/components/scanner/visual-result';
 import { DiagnosticPanel } from '@/components/scanner/diagnostic-panel';
 import { addDiagnosticReading, appendDiagnosticEvent, beginDiagnosticOperation, confirmDiagnosticIdentity, diagnosticRankForIdentity, endDiagnosticOperation, failDiagnosticRecognition, receiveDiagnosticPrediction, recordDiagnosticPreparationFailure, selectDiagnosticAlternative, type DiagnosticSession } from '@/lib/scanner/diagnostic-session';
+import { playCoinSound, unlockCoinSound } from '@/lib/scanner/coin-sound';
+import { shownPriceReference, shownPriceValue } from '@/lib/scanner/price-reference';
 
 const AUTO_IDENTIFY_INTERVAL_MS = 2500;
 interface BrowserEnv { supported: boolean; secure: boolean }
@@ -149,15 +151,18 @@ export default function ScanPage() {
   const cameraAvailable = mobileCamera && !!env?.supported && !!env?.secure;
   const detected = session.at(-1) ?? null;
   const showCamera = mobileCamera && isCameraStage(stage) && captureMode === 'camera';
+  const soundedRunIdsRef = useRef(new Set<number>());
+  useEffect(() => {
+    if (!showCamera || !detected || captureReview?.runId !== detected.runId || soundedRunIdsRef.current.has(detected.runId)) return;
+    const reference = shownPriceReference(detected.candidate);
+    if (!reference || shownPriceValue(reference) === null) return;
+    soundedRunIdsRef.current.add(detected.runId);
+    playCoinSound();
+  }, [captureReview?.runId, detected, showCamera]);
   const goManualSearch = useCallback(() => router.push('/buscar'), [router]);
 
   // La cámara ya entrega el recorte del marco. Solo la galería detecta y orienta.
   const runRecognition = useCallback(async (load: () => Promise<{ image: string; quality?: CaptureQuality }>, from: 'camera' | 'gallery') => {
-    if (session.length >= MAX_SESSION_ENTRIES) {
-      setErrorMessage('Llegaste a 30 lecturas. Organizá el lote antes de sumar otra.');
-      setStage(from === 'camera' ? 'camera' : 'idle');
-      return;
-    }
     if (isAuthLoading) return;
     if (!isAuthenticated) { router.push('/login?next=escanear'); return; }
     const runId = ++runIdRef.current;
@@ -201,7 +206,7 @@ export default function ScanPage() {
       if (runIdRef.current !== runId || controller.signal.aborted) return;
       if (!candidate) throw new Error('No encontramos una carta. Probá sin reflejos y con la carta llenando el marco.');
       reviewsRef.current.set(runId, review);
-      if (reviewsRef.current.size > MAX_SESSION_ENTRIES) {
+      if (reviewsRef.current.size > 30) {
         const oldest = reviewsRef.current.keys().next().value;
         if (oldest !== undefined) reviewsRef.current.delete(oldest);
       }
@@ -231,7 +236,7 @@ export default function ScanPage() {
         if (diagnosticRef.current === trackedDiagnostic) publishDiagnostic();
       }
     }
-  }, [isAuthLoading, isAuthenticated, router, session.length, publishDiagnostic]);
+  }, [isAuthLoading, isAuthenticated, router, publishDiagnostic]);
 
   const handleCapture = useCallback((capture: ScannedCapture, source: CaptureSource) => {
     const now = Date.now();
@@ -269,6 +274,7 @@ export default function ScanPage() {
     if (isAuthLoading) return;
     if (!isAuthenticated) { router.push('/login?next=escanear'); return; }
     if (!cameraAvailable) return;
+    void unlockCoinSound();
     setCameraNotice(null);
     setErrorMessage(null);
     setCaptureMode('camera');
@@ -278,16 +284,6 @@ export default function ScanPage() {
     setCameraNotice({ kind, detail: detail ?? null });
     setStage('idle');
   }, []);
-
-  const discardLast = useCallback(() => {
-    const last = session.at(-1);
-    if (last && isRunProtected(last.runId)) { toast.info('Esta lectura tiene un intento protegido. Verificalo desde Organizar.'); return; }
-    if (last) logDiagnostic(last.runId, 'reading_discarded', { previousCardId: last.candidate.card.id, source: 'user' });
-    setSession((current) => current.slice(0, -1));
-    setCaptureReview(null);
-    setReviewOpen(false);
-    toast.info('Descartamos la última lectura.');
-  }, [session, toast, logDiagnostic]);
 
   const handleSaved = useCallback((runIds: number[]) => {
     const saved = new Set(runIds);
@@ -401,7 +397,6 @@ export default function ScanPage() {
             <Button variant="secondary" onClick={() => setReviewOpen(true)}>Revisar última foto</Button> : null}
           {session.length > 0 ? <div className="flex flex-col gap-1">
             <p className="text-caption text-tertiary">{formatCount(session.length)} {session.length === 1 ? 'lectura pendiente' : 'lecturas pendientes'} de guardar en una colección.</p>
-            {session.length >= MAX_SESSION_ENTRIES ? <p className="text-caption text-tertiary">Esta sesión conserva hasta {formatCount(MAX_SESSION_ENTRIES)} cartas. Organizá estas antes de seguir escaneando.</p> : null}
             <Button variant="ghost" onClick={handleDiscardAll} fullWidth>Descartar la sesión</Button>
           </div> : null}
         </> : null}
@@ -421,21 +416,16 @@ export default function ScanPage() {
           </div>
         </> : null}
         {persistenceNotice ? <Alert tone="warning" title="Revisá el borrador de esta pestaña">{persistenceNotice}</Alert> : null}
-        {session.length >= MAX_SESSION_ENTRIES ? <Alert tone="warning" title="Llegaste a 30 lecturas">
-          <p>Organizá estas lecturas antes de sumar otra al lote.</p>
-          <Button onClick={() => openOrganize('idle')}>Organizar lecturas</Button>
-        </Alert> : null}
         {captureMode === 'gallery' && stage !== 'processing' ? <CaptureQualityNotice quality={captureReview?.quality} /> : null}
         {reviewActions}
       </ScreenContainer>
     </> : null}
     {showCamera ? <CameraView autoVisual reviewOpen={reviewOpen || exitPending} onReview={captureReview?.runId === detected?.runId ? () => setReviewOpen(true) : undefined}
       diagnosticStatus={diagnosticView ? { label: `${diagnosticView.finalized ? 'Diagnóstico cerrado' : diagnosticView.pendingOperations ? `Diagnóstico · ${diagnosticView.pendingOperations} tarea(s) pendiente(s)` : diagnosticView.suspended ? 'Diagnóstico pausado por límite' : 'Diagnóstico activo'} · ${diagnosticView.readings.length} lecturas · Ver opciones`, onOpen: () => setStage('idle') } : null}
-      autoCapturePaused={reviewOpen || matchPending || exitPending || session.length >= MAX_SESSION_ENTRIES} reviewActions={reviewActions} liveResult={errorMessage} busy={stage === 'processing'} detected={detected}
+      autoCapturePaused={reviewOpen || matchPending || exitPending} reviewActions={reviewActions} liveResult={errorMessage} busy={stage === 'processing'} detected={detected}
       headline={headline} detail={PHASE_DETAIL[phase]} progress={progress} previewUrl={previewUrl}
       sessionCount={session.length} onCapture={handleCapture} onError={handleCameraError}
       onClose={() => { if (session.length > 0) setExitPending(true); else { abortRef.current?.abort(); runIdRef.current += 1; setStage('idle'); } }}
-      onPickFromGallery={() => { if (isAuthLoading) return; if (!isAuthenticated) { router.push('/login?next=escanear'); return; } fileInputRef.current?.click(); }} onDiscard={discardLast}
       onOrganize={() => openOrganize('camera')} /> : null}
     {(() => {
       const review = organizeReview ?? captureReview;
@@ -462,7 +452,9 @@ export default function ScanPage() {
           confirmDiagnosticIdentity(d, reading.id, { id: card.id, name: card.name, setId: card.setId, setName: card.set?.name ?? null, number: card.number }, 'manual');
           publishDiagnostic();
         }
-        setSession((current) => current.map((entry) => entry.runId === runId ? { ...entry, identityReviewed: true, selectionSource: 'manual', candidate: { ...entry.candidate, card, score: 0, rawScore: 0, prices: [], price: null } } : entry));
+        void getCardPrices(card.id, AbortSignal.timeout(5000)).then((response) => response.prices).catch(() => []).then((prices) => {
+          setSession((current) => current.map((entry) => entry.runId === runId ? { ...entry, identityReviewed: true, selectionSource: 'manual', candidate: { ...entry.candidate, card, score: 0, rawScore: 0, prices, price: prices[0] ?? null } } : entry));
+        });
         setManualReviewRunId(null);
       }}
       onReview={(runId) => {

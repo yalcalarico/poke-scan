@@ -12,26 +12,46 @@ import { TcgcsvClient } from './tcgcsv.client.js';
 import { buildIsNew, discoverSetMappings, parseGroups, type TcgcsvLocalSet, type TcgcsvSetMapping } from './tcgcsv.discovery.js';
 import { ProviderRateLimitError } from '../../common/errors/provider-rate-limit.error.js';
 import { PriceSyncRegistryService } from '../price-sync-registry.service.js';
+import { TcgcsvBatchCoordinator, type ActiveTcgcsvBatch } from './tcgcsv-batch.coordinator.js';
 
 interface GroupJob { groupId: number; lockedBy: string | null; publishedBuild: Date | null; downloadStartedAt: Date | null; availableAt: Date; status: string; syncDate: Date | null }
 interface DiscoveryState { groupsBuild: Date | null; groupsJson: unknown }
 interface EnabledSet { setId: string }
 interface RatePause { blockedUntil: Date | null }
 
+function failureReason(error: unknown): string {
+  if (error instanceof ProviderRateLimitError) return 'Pausa HTTP 429 solicitada por TCGCSV';
+  if (!(error instanceof Error)) return 'Error sin diagnóstico de transporte';
+  if (['AbortError', 'TimeoutError'].includes(error.name)) return 'Tiempo de espera HTTP agotado';
+  if (error instanceof SyntaxError) return 'Respuesta JSON inválida';
+  const cause = error.cause;
+  const code = cause && typeof cause === 'object' && 'code' in cause ? cause.code
+    : 'code' in error ? error.code : null;
+  if (typeof code === 'string' && /^[A-Z0-9_]{2,40}$/.test(code)) return `Fallo de conexión o persistencia (${code})`;
+  if (/^(Lease TCGCSV|Grupo sin registro|Mapeo TCGCSV|Lote TCGCSV|Build TCGCSV|TCGCSV cambió|TCGCSV respondió HTTP|La tanda ya)/.test(error.message)) return error.message.slice(0, 180);
+  return error instanceof TypeError ? 'Conexión HTTP interrumpida' : 'Error de validación o ejecución';
+}
+
 @Injectable()
 export class TcgcsvService implements OnModuleInit {
   private readonly logger = new Logger(TcgcsvService.name);
   private busy = false;
+  private readonly batches: TcgcsvBatchCoordinator;
   constructor(private readonly prisma: PrismaService, private readonly client: TcgcsvClient,
     private readonly snapshots: CollectionComparisonService,
     @Optional() @Inject(COMPARISON_CLOCK) private readonly clock: ComparisonClock = () => new Date(),
-    @Optional() private readonly registry?: PriceSyncRegistryService) {}
+    @Optional() private readonly registry?: PriceSyncRegistryService) {
+    this.batches = new TcgcsvBatchCoordinator(prisma, clock);
+  }
 
   enabled(): boolean { return process.env.ENABLE_TCGCSV_INGESTION === 'true'; }
 
+  /** Las 18 ARG abren una tanda; no son un límite para terminar la que ya está abierta. */
+  dailyWindowOpen(): boolean { return this.clock().getUTCHours() >= 21; }
+
   async onModuleInit(): Promise<void> {
     await this.discover();
-    if (this.clock().getUTCHours() >= 21) await this.planDaily(false);
+    await this.planDaily(false);
   }
 
   /** Objetivos TCGCSV del día: catálogo de identidades global, contenido sólo habilitado. */
@@ -59,19 +79,31 @@ export class TcgcsvService implements OnModuleInit {
     return this.planDaily(false);
   }
 
-  private async planDaily(explicit: boolean, now = this.clock()): Promise<number> {
+  private async planDaily(_explicit: boolean, now = this.clock()): Promise<number> {
     if (!this.enabled()) return 0;
+    const planning = await this.prisma.$queryRaw<{ syncDate: Date }[]>`
+      SELECT "syncDate" FROM tcgcsv_daily_batches WHERE status = 'planning' ORDER BY "syncDate" LIMIT 1`;
+    if (!this.dailyWindowOpen() && !planning.length) return 0;
     await this.registry?.ensureCuratedSeed();
     await this.registry?.reconcileCollectionSets();
     await this.registry?.reconcileValidatedSets();
-    const day = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+    const day = planning[0]?.syncDate ?? new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+    // Una apertura durable fija el alcance aunque todos los objetivos ya existan o se deshabiliten luego.
+    const [batch] = await this.prisma.$queryRaw<{ setIds: string[]; status: string }[]>`
+      INSERT INTO tcgcsv_daily_batches ("syncDate", "openedAt", "setIds")
+      SELECT ${day}::date, ${now}, COALESCE(ARRAY_AGG("setId" ORDER BY priority, "setId"), ARRAY[]::text[])
+      FROM price_sync_sets WHERE enabled
+      ON CONFLICT ("syncDate") DO UPDATE SET "syncDate" = EXCLUDED."syncDate" RETURNING "setIds", status
+    `;
+    if (!batch || ['completed','failed'].includes(batch.status)) return 0;
+    if (!batch.setIds.length) { await this.batches.seal(day); return 0; }
     const [sets, pause] = await Promise.all([
-      this.prisma.$queryRaw<EnabledSet[]>`SELECT "setId" FROM price_sync_sets WHERE enabled = TRUE ORDER BY priority, "setId"`,
+      this.prisma.$queryRaw<EnabledSet[]>`SELECT "setId" FROM price_sync_sets WHERE enabled = TRUE AND "setId" = ANY(${batch.setIds}::text[]) ORDER BY priority, "setId"`,
       this.prisma.$queryRaw<RatePause[]>`SELECT "blockedUntil" FROM provider_rate_limits WHERE "providerId" = 'tcgcsv'`,
     ]);
-    if (!sets.length) return 0;
+    if (!sets.length) { await this.batches.seal(day); return 0; }
     const setIds = sets.map(({ setId }) => setId);
-    const [dayRows, mappingRows, cardRows, cardDays, carryover] = await Promise.all([
+    const [dayRows, mappingRows, cardRows, cardDays] = await Promise.all([
       this.prisma.$queryRaw<{ setId: string; status: string; nextAttemptAt: Date | null }[]>(Prisma.sql`
         SELECT "setId", status, "nextAttemptAt" FROM price_sync_set_days
         WHERE provider = 'tcgcsv' AND "syncDate" = ${day}::date AND "setId" = ANY(${setIds}::text[])
@@ -85,14 +117,8 @@ export class TcgcsvService implements OnModuleInit {
         WHERE provider = 'tcgcsv' AND "syncDate" = ${day}::date AND status = 'pending'::"PriceSyncCardDayStatus"
           AND "setId" = ANY(${setIds}::text[]) GROUP BY "setId"
       `),
-      this.prisma.$queryRaw<{ setId: string }[]>(Prisma.sql`
-        SELECT DISTINCT x."setId" FROM tcgcsv_group_jobs j
-        JOIN tcgcsv_set_mappings x ON x."externalId" = j."groupId"::text
-        WHERE j.origin = 'daily'::"PriceSyncQueueOrigin" AND j."syncDate" < ${day}::date
-          AND j.status IN ('pending', 'failed') AND x."setId" = ANY(${setIds}::text[])
-      `),
     ]);
-    const carryoverSets = new Set(carryover.map((row) => row.setId));
+    const groupScope = new Map<number, string[]>();
     const dailyTargets: Array<{ setId: string; groupId: number | null; expectedCards: number; pendingCards: number }> = [];
     for (const { setId } of sets) {
       const previous = dayRows.find((row) => row.setId === setId);
@@ -104,9 +130,7 @@ export class TcgcsvService implements OnModuleInit {
         && compatibleGroupSets(groupIds[0], [setId, ...mappingRows.filter((row) => row.externalId === String(groupIds[0])).map((row) => row.setId)])
         && !mappingRows.some((sibling) => sibling.externalId === String(groupIds[0])
           && mappingRows.some((other) => other.setId === sibling.setId && other.externalId !== sibling.externalId)) ? groupIds[0] : null;
-      // Sólo lo que ya estaba pendiente cruza medianoche; el catálogo nuevo espera el horario diario.
-      if (!previous && !explicit && !carryoverSets.has(setId)
-        && now.getTime() < Date.UTC(day.getUTCFullYear(), day.getUTCMonth(), day.getUTCDate(), 21)) continue;
+      if (groupId !== null) groupScope.set(groupId, [...(groupScope.get(groupId) ?? []), setId]);
       if (previous && !['pending', 'running', 'waiting_feed', 'waiting_cooldown'].includes(previous.status) && !(previous.status === 'blocked_mapping' && groupId !== null)) continue;
       if (previous?.nextAttemptAt && previous.nextAttemptAt > now) continue;
       const expectedCards = cardRows.filter((row) => row.setId === setId).length;
@@ -114,7 +138,8 @@ export class TcgcsvService implements OnModuleInit {
         ? expectedCards : previous ? cardDays.find((row) => row.setId === setId)?.pending ?? 0 : expectedCards;
       dailyTargets.push({ setId, groupId, expectedCards, pendingCards });
     }
-    if (!dailyTargets.length) return 0;
+    await this.batches.register(day, groupScope);
+    if (!dailyTargets.length) { await this.batches.seal(day); return 0; }
     let enqueued = 0;
     await this.prisma.$transaction(async (tx) => {
       const setValues = dailyTargets.map((target) => Prisma.sql`('tcgcsv', ${target.setId}, ${day}::date,
@@ -155,6 +180,8 @@ export class TcgcsvService implements OnModuleInit {
           WHERE p.provider = 'tcgcsv' AND p.source = 'tcgplayer' AND p.currency = 'USD' AND p.market IS NOT NULL
             AND p."fetchedAt" >= (${day}::date::timestamp AT TIME ZONE 'UTC')
             AND p."fetchedAt" < ((${day}::date + 1)::timestamp AT TIME ZONE 'UTC')
+            AND p."feedPublishedAt" >= (${day}::date::timestamp AT TIME ZONE 'UTC') + INTERVAL '20 hours'
+            AND p."feedPublishedAt" < (${day}::date::timestamp AT TIME ZONE 'UTC') + INTERVAL '44 hours'
             AND c."setId" = ANY(${setIds}::text[]) GROUP BY p."cardId")
       UPDATE price_sync_card_days d SET status = 'quoted'::"PriceSyncCardDayStatus",
         "checkedAt" = q."checkedAt", "quoteCount" = q.count, "lastError" = NULL, "updatedAt" = NOW()
@@ -172,31 +199,10 @@ export class TcgcsvService implements OnModuleInit {
       const pendingSets = new Set(outstanding.map((row) => row.setId));
       const groupTargets = [...new Map(dailyTargets.filter((target) => target.groupId !== null && pendingSets.has(target.setId)).map((target) => [target.groupId, target])).values()];
       enqueued = groupTargets.length;
-      if (groupTargets.length) {
-        const groupValues = groupTargets.map((target) => Prisma.sql`(${target.groupId}, 'pending', COALESCE(${pause[0]?.blockedUntil ?? null}, NOW()),
-          'daily'::"PriceSyncQueueOrigin", ${day}::date, NOW())`);
-        await tx.$executeRaw(Prisma.sql`INSERT INTO tcgcsv_group_jobs ("groupId", status, "availableAt", origin, "syncDate", "updatedAt")
-          VALUES ${Prisma.join(groupValues)} ON CONFLICT ("groupId") DO UPDATE SET
-            origin = CASE WHEN tcgcsv_group_jobs.origin = 'interactive' THEN 'interactive'::"PriceSyncQueueOrigin" ELSE 'daily'::"PriceSyncQueueOrigin" END,
-            "syncDate" = CASE WHEN tcgcsv_group_jobs.status = 'processing' THEN tcgcsv_group_jobs."syncDate" ELSE EXCLUDED."syncDate" END,
-            status = CASE WHEN tcgcsv_group_jobs.status IN ('completed','failed') THEN 'pending' ELSE tcgcsv_group_jobs.status END,
-            "availableAt" = CASE WHEN tcgcsv_group_jobs.status IN ('completed','failed') AND tcgcsv_group_jobs."availableAt" <= NOW()
-              THEN GREATEST(NOW(), COALESCE(${pause[0]?.blockedUntil ?? null}, NOW()))
-              ELSE GREATEST(tcgcsv_group_jobs."availableAt", COALESCE(${pause[0]?.blockedUntil ?? null}, NOW())) END,
-            "updatedAt" = NOW()
-          WHERE tcgcsv_group_jobs.status IN ('pending','processing','completed','failed')`);
-      }
     });
-    // Los objetivos viejos pendientes se cierran sin inventar una observación del feed.
-    await this.prisma.$executeRaw`UPDATE price_sync_card_days SET status = 'no_new_feed'::"PriceSyncCardDayStatus", "updatedAt" = NOW()
-      WHERE provider = 'tcgcsv' AND "syncDate" < ${day}::date AND status = 'pending'::"PriceSyncCardDayStatus"
-        AND NOT EXISTS (SELECT 1 FROM card_prices p WHERE p."cardId" = price_sync_card_days."cardId" AND p.provider = 'tcgcsv'
-          AND p.source = 'tcgplayer' AND p.currency = 'USD' AND p.market IS NOT NULL
-          AND p."fetchedAt" >= (price_sync_card_days."syncDate"::timestamp AT TIME ZONE 'UTC')
-          AND p."fetchedAt" < ((price_sync_card_days."syncDate" + 1)::timestamp AT TIME ZONE 'UTC'))`;
-    await this.prisma.$executeRaw`UPDATE price_sync_set_days d SET status = 'no_new_feed'::"PriceSyncSetDayStatus",
-      "finishedAt" = NOW(), "updatedAt" = NOW() WHERE d.provider = 'tcgcsv' AND d."syncDate" < ${day}::date
-      AND d.status IN ('waiting_feed'::"PriceSyncSetDayStatus", 'waiting_cooldown'::"PriceSyncSetDayStatus")`;
+    await this.batches.seal(day);
+    const active = await this.batches.active();
+    if (active) await this.batches.activateJobs(active);
     return enqueued;
   }
 
@@ -294,7 +300,10 @@ export class TcgcsvService implements OnModuleInit {
     if (!this.enabled() || (await this.setsForGroup(groupId)).length === 0) return;
     await this.prisma.$executeRaw(Prisma.sql`
       INSERT INTO tcgcsv_group_jobs ("groupId", status, "availableAt", origin, "updatedAt") VALUES (${groupId}, 'pending', NOW(), 'interactive', NOW())
-      ON CONFLICT ("groupId") DO UPDATE SET origin = 'interactive', status = CASE WHEN tcgcsv_group_jobs.status IN ('completed','failed') THEN 'pending' ELSE tcgcsv_group_jobs.status END, "updatedAt" = NOW(),
+      ON CONFLICT ("groupId") DO UPDATE SET
+        origin = CASE WHEN tcgcsv_group_jobs.origin = 'daily'::"PriceSyncQueueOrigin" AND tcgcsv_group_jobs.status = 'pending'
+          THEN 'daily'::"PriceSyncQueueOrigin" ELSE 'interactive'::"PriceSyncQueueOrigin" END,
+        status = CASE WHEN tcgcsv_group_jobs.status IN ('completed','failed') THEN 'pending' ELSE tcgcsv_group_jobs.status END, "updatedAt" = NOW(),
         "availableAt" = GREATEST(tcgcsv_group_jobs."availableAt", COALESCE(tcgcsv_group_jobs."downloadStartedAt" + INTERVAL '24 hours', NOW()))
       WHERE tcgcsv_group_jobs.status <> 'processing' AND (${missingOnly} = false OR tcgcsv_group_jobs."publishedBuild" IS NULL)
     `);
@@ -327,7 +336,10 @@ export class TcgcsvService implements OnModuleInit {
       )
       INSERT INTO tcgcsv_group_jobs ("groupId", status, "availableAt", origin, "updatedAt")
       SELECT "groupId", 'pending', NOW(), 'interactive', NOW() FROM safe WHERE true
-      ON CONFLICT ("groupId") DO UPDATE SET origin = 'interactive', status = 'pending', "updatedAt" = NOW(),
+      ON CONFLICT ("groupId") DO UPDATE SET
+        origin = CASE WHEN tcgcsv_group_jobs.origin = 'daily'::"PriceSyncQueueOrigin" AND tcgcsv_group_jobs.status = 'pending'
+          THEN 'daily'::"PriceSyncQueueOrigin" ELSE 'interactive'::"PriceSyncQueueOrigin" END,
+        status = 'pending', "updatedAt" = NOW(),
         "availableAt" = GREATEST(tcgcsv_group_jobs."availableAt", COALESCE(tcgcsv_group_jobs."downloadStartedAt" + INTERVAL '24 hours', NOW()))
       WHERE tcgcsv_group_jobs.status IN ('completed', 'failed')
         OR (tcgcsv_group_jobs.status = 'pending' AND tcgcsv_group_jobs.origin <> 'interactive')
@@ -344,12 +356,38 @@ export class TcgcsvService implements OnModuleInit {
     finally { this.busy = false; }
   }
 
-  /** Entrada interna para el worker y el harness: no hay endpoint de ingesta. */
+  /** Sin grupo, consume sólo la tanda diaria. El grupo explícito es una unidad de ingesta para harnesses internos. */
   async runOne(groupId?: number): Promise<boolean> {
     if (!this.enabled()) return false;
+    if (groupId !== undefined) return this.consumeOne(groupId);
+    const owner = randomUUID();
+    if (!await this.batches.acquire(owner)) return false;
+    try { return await this.consumeOne(undefined, owner); }
+    finally { await this.batches.release(owner); }
+  }
+
+  private async consumeOne(groupId?: number, workerOwner?: string): Promise<boolean> {
+    let batch: ActiveTcgcsvBatch | null = null;
+    if (groupId === undefined) {
+      batch = await this.batches.active();
+      if (!batch || (batch.nextAttemptAt && batch.nextAttemptAt > this.clock())) return false;
+      if (!batch.feedPublishedAt) {
+        const opening = batch;
+        try {
+          const build = parseBuild(await this.request('last-updated.txt', 4096), this.clock());
+          batch = await this.batches.bind(batch, build);
+          if (!batch) return false;
+        } catch (error) {
+          if (error instanceof ProviderRateLimitError && error.providerId === 'tcgcsv') await this.persistProviderPause(error.retryAfterMs);
+          await this.batches.manifestFailed(opening, `No se pudo consultar la publicación: ${failureReason(error)}`);
+          return false;
+        }
+      }
+      await this.batches.activateJobs(batch);
+    }
     const [pause] = await this.prisma.$queryRaw<RatePause[]>`SELECT "blockedUntil" FROM provider_rate_limits WHERE "providerId" = 'tcgcsv'`;
     if (pause?.blockedUntil && pause.blockedUntil > this.clock()) return false;
-    const owner = randomUUID();
+    const owner = workerOwner ?? randomUUID();
     const pinnedMatches = Object.entries(TCGCSV_GROUPS).map(([setId, id]) => Prisma.sql`(s."setId" = ${setId} AND j."groupId" = ${id})`);
     const dailyGroupMatch = Prisma.sql`(EXISTS (SELECT 1 FROM tcgcsv_set_mappings x WHERE x.provider = 'tcgcsv'
       AND x."setId" = s."setId" AND x."externalId" = j."groupId"::text) OR (${Prisma.join(pinnedMatches, ' OR ')}))`;
@@ -363,7 +401,12 @@ export class TcgcsvService implements OnModuleInit {
       UPDATE tcgcsv_group_jobs SET status = 'processing', "lockedBy" = ${owner}, "leaseUntil" = NOW() + INTERVAL '2 minutes', "updatedAt" = NOW()
       WHERE "groupId" = (SELECT j."groupId" FROM tcgcsv_group_jobs j
         WHERE j.status = 'pending' AND j.origin IN ('daily'::"PriceSyncQueueOrigin", 'interactive'::"PriceSyncQueueOrigin")
-        AND (j.origin = 'interactive'::"PriceSyncQueueOrigin" OR (j."syncDate" = (NOW() AT TIME ZONE 'UTC')::date AND EXISTS (
+        AND (${groupId ?? 0} <> 0 OR NOT EXISTS (SELECT 1 FROM tcgcsv_group_jobs busy
+          WHERE busy.status = 'processing' AND busy."leaseUntil" > NOW()))
+        AND (${groupId ?? 0} <> 0 OR (j.origin = 'daily'::"PriceSyncQueueOrigin"
+          AND j."syncDate" = ${batch?.syncDate ?? null}::date AND EXISTS (SELECT 1 FROM tcgcsv_batch_groups g
+            WHERE g."syncDate" = j."syncDate" AND g."groupId" = j."groupId" AND g.status = 'pending')))
+        AND (j.origin = 'interactive'::"PriceSyncQueueOrigin" OR (j."syncDate" = COALESCE(${batch?.syncDate ?? null}::date, (NOW() AT TIME ZONE 'UTC')::date) AND EXISTS (
           SELECT 1 FROM price_sync_sets s JOIN price_sync_card_days d ON d."setId" = s."setId"
           WHERE s.enabled AND ${dailyGroupMatch} AND d.provider = 'tcgcsv' AND d."syncDate" = j."syncDate"
             AND d.status IN ('pending'::"PriceSyncCardDayStatus", 'processing'::"PriceSyncCardDayStatus")
@@ -383,16 +426,27 @@ export class TcgcsvService implements OnModuleInit {
     if (!job) return false;
     let resolvedSetIds: string[] = [];
     let madeHttpRequest = false;
+    let consumedFile = false;
     let failurePhase = 'group_identity';
     try {
+      if (batch) await this.batches.claim(batch.syncDate, job.groupId);
       resolvedSetIds = await this.setsForGroup(job.groupId);
       if (resolvedSetIds.length === 0) throw new Error('Grupo sin registro validado');
       const setIds = resolvedSetIds;
       failurePhase = 'manifest';
       const buildText = await this.request('last-updated.txt', 4096, () => { madeHttpRequest = true; });
       const build = parseBuild(buildText, this.clock());
+      if (batch?.feedPublishedAt && build.getTime() !== batch.feedPublishedAt.getTime()) {
+        await this.batches.failRemaining(batch.syncDate, 'La fuente cambió de publicación; no se mezcla otro feed dentro de la tanda');
+        return true;
+      }
       if (job.publishedBuild !== null && build <= job.publishedBuild) {
         if (build < job.publishedBuild) throw new Error('Build TCGCSV retrocedió');
+        if (batch) {
+          await this.batches.groupFailed(batch.syncDate, job.groupId, owner,
+            'La publicación ya existe pero no hay un resultado confirmado para este grupo en la tanda', true);
+          return true;
+        }
         await this.markNoNewFeed(job, owner, build, setIds);
         return true;
       }
@@ -416,8 +470,12 @@ export class TcgcsvService implements OnModuleInit {
           "nextAttemptAt" = GREATEST(NOW() + INTERVAL '1 hour', COALESCE((SELECT "downloadStartedAt" + INTERVAL '24 hours'
             FROM tcgcsv_group_jobs WHERE "groupId" = ${job.groupId}), NOW())), "updatedAt" = NOW()
           WHERE provider = 'tcgcsv' AND "setId" = ANY(${resolvedSetIds}::text[]) AND "syncDate" = ${job.syncDate ?? new Date(Date.UTC(this.clock().getUTCFullYear(), this.clock().getUTCMonth(), this.clock().getUTCDate()))}::date`;
+        if (batch) await this.prisma.$executeRaw`UPDATE tcgcsv_batch_groups SET status = 'pending',
+          "nextAttemptAt" = (SELECT "availableAt" FROM tcgcsv_group_jobs WHERE "groupId" = ${job.groupId})
+          WHERE "syncDate" = ${batch.syncDate}::date AND "groupId" = ${job.groupId} AND status = 'processing'`;
         return true;
       }
+      consumedFile = true;
       failurePhase = 'products';
       const productsText = await this.requestContent(job.groupId, owner, 'products', () => { madeHttpRequest = true; });
       const products = parseProducts(JSON.parse(productsText) as unknown, job.groupId);
@@ -434,6 +492,16 @@ export class TcgcsvService implements OnModuleInit {
           SELECT * FROM tcgcsv_group_jobs WHERE "groupId" = ${job.groupId} AND "lockedBy" = ${owner} AND "leaseUntil" > NOW() FOR UPDATE
         `;
         if (!locked || (locked.publishedBuild !== null && locked.publishedBuild >= build)) throw new Error('Lease TCGCSV vencido o build ya publicado');
+        if (batch) {
+          const [active] = await tx.$queryRaw<{ groupId: number }[]>`SELECT g."groupId" FROM tcgcsv_batch_groups g
+            JOIN tcgcsv_daily_batches b ON b."syncDate" = g."syncDate"
+            WHERE g."syncDate" = ${batch.syncDate}::date AND g."groupId" = ${job.groupId} AND g.status = 'processing'
+              AND b.status = 'running' AND b."feedPublishedAt" = ${build} FOR UPDATE OF g, b`;
+          if (!active) throw new Error('La tanda ya está cerrada o cambió de publicación');
+          const [worker] = await tx.$queryRaw<{ id: string }[]>`SELECT id FROM tcgcsv_discovery_state
+            WHERE id = 'global' AND "workerLockedBy" = ${owner} AND "workerLeaseUntil" > NOW() FOR UPDATE`;
+          if (!worker) throw new Error('Lease TCGCSV global vencido');
+        }
         const cards = await tx.$queryRaw<LocalTcgcsvCard[]>`
           SELECT c.id, c.name, c.number, c.language, c."setId", s."printedTotal", e."externalId"
           FROM cards c JOIN card_sets s ON s.id = c."setId"
@@ -451,7 +519,7 @@ export class TcgcsvService implements OnModuleInit {
         failurePhase = 'publication';
         const runId = randomUUID();
         const at = this.clock();
-        const outcomeDay = new Date(Date.UTC(at.getUTCFullYear(), at.getUTCMonth(), at.getUTCDate()));
+        const outcomeDay = batch?.syncDate ?? new Date(Date.UTC(at.getUTCFullYear(), at.getUTCMonth(), at.getUTCDate()));
         await tx.$executeRaw`
           INSERT INTO price_ingestion_runs (id, provider, "groupId", "feedPublishedAt", checksum, "publishedAt", "mappedCards", "unmappedCards", observations)
           VALUES (${runId}, 'tcgcsv', ${job.groupId}, ${build}, ${checksum}, ${at}, ${mapped.size}, ${cards.length - mapped.size}, ${observations.length})
@@ -509,10 +577,21 @@ export class TcgcsvService implements OnModuleInit {
           "feedPublishedAt" = ${build}, "sourceCheckedAt" = ${at}, "startedAt" = COALESCE("startedAt", ${at}),
           "finishedAt" = ${at}, "nextAttemptAt" = NULL, "lastError" = NULL, "updatedAt" = NOW()
           WHERE d.provider = 'tcgcsv' AND d."setId" = ANY(${setIds}::text[]) AND d."syncDate" = ${outcomeDay}::date`;
+        if (batch) await tx.$executeRaw`UPDATE tcgcsv_batch_groups SET status = 'completed', "finishedAt" = ${at},
+          "lastError" = NULL, "nextAttemptAt" = NULL WHERE "syncDate" = ${batch.syncDate}::date AND "groupId" = ${job.groupId}`;
       }, { timeout: 20000 });
+      if (batch) await this.batches.finish(batch.syncDate);
       try { await this.snapshots.capture(); }
       catch { this.logger.warn('El lote TCGCSV se publicó; quedó pendiente el corte de colecciones'); }
     } catch (error) {
+      if (batch) {
+        if (error instanceof ProviderRateLimitError && error.providerId === 'tcgcsv') await this.persistProviderPause(error.retryAfterMs);
+        await this.batches.groupFailed(batch.syncDate, job.groupId, owner,
+          `Falló el grupo TCGCSV (fase: ${failurePhase}): ${failureReason(error)}; ${consumedFile ? 'archivo consumido, se conserva la reserva de 24 horas' : 'sin descargar contenido'}`,
+          consumedFile || failurePhase !== 'manifest');
+        this.logger.warn(`El grupo TCGCSV ${job.groupId} registra su fallo en la tanda y conserva el precio previo`);
+        return true;
+      }
       if (error instanceof ProviderRateLimitError && error.providerId === 'tcgcsv') {
         const until = await this.persistProviderPause(error.retryAfterMs);
         await this.finish(job.groupId, owner, 'pending', error.retryAfterMs);
@@ -622,9 +701,10 @@ export class TcgcsvService implements OnModuleInit {
   }
 
   private async requestContent(groupId: number, owner: string, file: 'products' | 'prices', onHttpAttempt?: () => void): Promise<string> {
+    const startedAt = this.clock();
     const reserved = await this.prisma.$executeRaw`
-      UPDATE tcgcsv_group_jobs SET "downloadStartedAt" = GREATEST("downloadStartedAt", NOW()),
-        "availableAt" = GREATEST("availableAt", NOW() + INTERVAL '24 hours 2 minutes')
+      UPDATE tcgcsv_group_jobs SET "downloadStartedAt" = GREATEST("downloadStartedAt", NOW(), ${startedAt}),
+        "availableAt" = GREATEST("availableAt", NOW() + INTERVAL '24 hours 2 minutes', ${startedAt} + INTERVAL '24 hours 2 minutes')
       WHERE "groupId" = ${groupId} AND "lockedBy" = ${owner} AND "leaseUntil" > NOW()
     `;
     if (reserved !== 1) throw new Error('Lease de descarga vencido');
@@ -632,9 +712,10 @@ export class TcgcsvService implements OnModuleInit {
     finally {
       // El margen previo cubre timeout/espera si el proceso muere antes del finally.
       // El presupuesto termina después de leer el cuerpo, también si falla o vence el lease.
+      const finishedAt = this.clock();
       await this.prisma.$executeRaw`
-        UPDATE tcgcsv_group_jobs SET "downloadStartedAt" = GREATEST("downloadStartedAt", NOW()),
-          "availableAt" = GREATEST("availableAt", NOW() + INTERVAL '24 hours') WHERE "groupId" = ${groupId}
+        UPDATE tcgcsv_group_jobs SET "downloadStartedAt" = GREATEST("downloadStartedAt", NOW(), ${finishedAt}),
+          "availableAt" = GREATEST("availableAt", NOW() + INTERVAL '24 hours', ${finishedAt} + INTERVAL '24 hours') WHERE "groupId" = ${groupId}
       `;
     }
   }

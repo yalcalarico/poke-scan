@@ -28,10 +28,8 @@ import { frameToneFor, type SessionEntry } from './types';
  * 2,5 s entre capturas automáticas.
  *
  * Es el freno de `docs/redesign-2026.md` §7 punto 4 y la defensa de fondo del
- * rate limit: cada captura termina en un `identifyVisual`, y ese POST puede
- * terminar pegándole a pokemontcg.io (1.000/día, 30/min). Con el modo continuo
- * sin este tope, una carta quieta en el cuadro generaría un request cada
- * ~1 s mientras el reconocimiento visual de la vuelta.
+ * cadencia: cada captura automática inicia una lectura visual. Sin este freno,
+ * el modo continuo volvería a enviar la misma escena apenas termina cada POST.
  *
  * A esto se le suma el `busy` de la pantalla: mientras hay un escaneo en vuelo
  * el obturador está apagado, así que nunca hay dos `identify` en paralelo. El
@@ -63,8 +61,6 @@ export interface CameraViewProps {
   onCapture: (capture: ScannedCapture, source: CaptureSource) => void;
   onError: (kind: CameraError, detail?: string) => void;
   onClose: () => void;
-  onPickFromGallery: () => void;
-  onDiscard: () => void;
   onOrganize: () => void;
   reviewActions?: ReactNode;
   autoCapturePaused?: boolean;
@@ -106,6 +102,29 @@ function blobToDataUrl(blob: Blob): Promise<string> {
     reader.onerror = () => reject(new Error('No se pudo leer la foto capturada.'));
     reader.readAsDataURL(blob);
   });
+}
+
+function readAutoSample(
+  video: HTMLVideoElement,
+  frameRect: BoxRect,
+  canvas: HTMLCanvasElement,
+  context: CanvasRenderingContext2D,
+): ImageData | null {
+  const box = video.getBoundingClientRect();
+  const sample = {
+    x: frameRect.x - frameRect.width * 0.1,
+    y: frameRect.y - frameRect.height * 0.1,
+    width: frameRect.width * 1.2,
+    height: frameRect.height * 1.2,
+  };
+  const crop = mapFrameToSourcePixels(sample,
+    { width: box.width, height: box.height },
+    { width: video.videoWidth, height: video.videoHeight });
+  if (!crop) return null;
+  canvas.width = 240;
+  canvas.height = Math.round(240 * crop.height / crop.width);
+  context.drawImage(video, crop.x, crop.y, crop.width, crop.height, 0, 0, canvas.width, canvas.height);
+  return context.getImageData(0, 0, canvas.width, canvas.height);
 }
 
 /**
@@ -155,8 +174,6 @@ export function CameraView({
   onCapture,
   onError,
   onClose,
-  onPickFromGallery,
-  onDiscard,
   onOrganize,
   reviewActions,
   autoCapturePaused = false,
@@ -180,6 +197,7 @@ export function CameraView({
   const [continuous, setContinuous] = useState(false);
   const [visualReady, setVisualReady] = useState(false);
   const visualGateRef = useRef(new AutoVisualGate());
+  const captureBlockedRef = useRef(busy || autoCapturePaused);
   const [torchOn, setTorchOn] = useState(false);
   const [capabilities, setCapabilities] = useState<CameraCapabilities>(NO_CAMERA_CAPABILITIES);
   /**
@@ -192,6 +210,10 @@ export function CameraView({
   useEffect(() => {
     handlersRef.current = { onCapture, onError, onClose };
   });
+
+  useEffect(() => {
+    captureBlockedRef.current = busy || autoCapturePaused;
+  }, [autoCapturePaused, busy]);
 
   useEffect(() => {
     const stage = stageRef.current;
@@ -331,6 +353,16 @@ export function CameraView({
       if (source === 'manual') haptic(HAPTIC.shutter);
 
       try {
+        if (source === 'manual' && autoVisual && frameRect && video.readyState >= 2) {
+          try {
+            const sampleCanvas = document.createElement('canvas');
+            const sampleContext = sampleCanvas.getContext('2d', { willReadFrequently: true });
+            const sample = sampleContext ? readAutoSample(video, frameRect, sampleCanvas, sampleContext) : null;
+            if (sample && hasAlignedCard(sample)) visualGateRef.current.markCaptured(frameSignature(sample), performance.now());
+          } catch {
+            // Un fallo al preparar la firma no bloquea la captura manual.
+          }
+        }
         // Solo el rectángulo del marco guía: el resto de la imagen es fondo, y
         // para el reconocimiento visual es ruido que degrada la lectura del nombre. Se usa el
         // MISMO rectángulo que se dibuja en pantalla, así guía y recorte no
@@ -355,7 +387,7 @@ export function CameraView({
         setIsCapturing(false);
       }
     },
-    [frameRect],
+    [autoVisual, frameRect],
   );
 
   // El temporizador del modo continuo lee `grab` por ref: si lo tuviera en las
@@ -380,23 +412,10 @@ export function CameraView({
     const timer = setInterval(() => {
       const video = videoRef.current;
       if (!video || video.readyState < 2 || grabbingRef.current) return;
-      const box = video.getBoundingClientRect();
-      const sample = {
-        x: frameRect.x - frameRect.width * 0.1,
-        y: frameRect.y - frameRect.height * 0.1,
-        width: frameRect.width * 1.2,
-        height: frameRect.height * 1.2,
-      };
-      const crop = mapFrameToSourcePixels(sample,
-        { width: box.width, height: box.height },
-        { width: video.videoWidth, height: video.videoHeight });
-      if (!crop) return;
-      canvas.width = 240;
-      canvas.height = Math.round(240 * crop.height / crop.width);
       try {
-        context.drawImage(video, crop.x, crop.y, crop.width, crop.height, 0, 0, canvas.width, canvas.height);
-        const image = context.getImageData(0, 0, canvas.width, canvas.height);
-        const state = visualGateRef.current.observe(frameSignature(image), hasAlignedCard(image), busy || autoCapturePaused, performance.now());
+        const image = readAutoSample(video, frameRect, canvas, context);
+        if (!image) return;
+        const state = visualGateRef.current.observe(frameSignature(image), hasAlignedCard(image), captureBlockedRef.current, performance.now());
         setVisualReady(state.ready);
         if (state.capture) void grabRef.current('auto');
       } catch {
@@ -405,7 +424,7 @@ export function CameraView({
       }
     }, 350);
     return () => clearInterval(timer);
-  }, [autoVisual, autoCapturePaused, busy, frameRect, isLive]);
+  }, [autoVisual, frameRect, isLive]);
 
   const handleToggleContinuous = useCallback(() => {
     setContinuous((current) => !current);
@@ -546,8 +565,6 @@ export function CameraView({
         sessionCount={sessionCount}
         canCapture={!captureDisabled}
         isCapturing={isCapturing}
-        onPickFromGallery={onPickFromGallery}
-        onDiscard={onDiscard}
         onCapture={() => void grab('manual')}
         onOrganize={onOrganize}
         status={status}

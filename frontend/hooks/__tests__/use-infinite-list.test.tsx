@@ -118,6 +118,26 @@ describe('useInfiniteList: el signal llega al fetcher y cancela la corrida anter
 });
 
 describe('useInfiniteList: la respuesta vieja nunca pisa a la nueva', () => {
+  it('aplica una edición confirmada de inmediato y descarta la página anterior aunque llegue tarde', async () => {
+    const { calls, fetchPage } = createFetcher({ abortable: false });
+    const { result } = renderHook(() => useInfiniteList(fetchPage, 24));
+    await waitFor(() => expect(calls).toHaveLength(1));
+    act(() => calls[0]!.resolve(page(['normal'])));
+    await waitFor(() => expect(result.current.items).toEqual(['normal']));
+    act(() => result.current.loadMore());
+    await waitFor(() => expect(calls).toHaveLength(2));
+    act(() => result.current.updateItems((items) => items.map(() => 'reverse holofoil')));
+    expect(result.current.items).toEqual(['reverse holofoil']);
+    await act(async () => calls[1]!.resolve(page(['normal viejo'], 2)));
+    expect(result.current.items).toEqual(['reverse holofoil']);
+    act(() => result.current.reload());
+    await waitFor(() => expect(calls).toHaveLength(3));
+    expect(result.current.items).toEqual(['reverse holofoil']);
+    act(() => calls[2]!.resolve(page(['reverse holofoil'])));
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+    expect(result.current.items).toEqual(['reverse holofoil']);
+  });
+
   it('descarta la respuesta de una corrida vieja aunque el transporte no se pueda abortar', async () => {
     const { calls, fetchPage } = createFetcher({ abortable: false });
     const { result } = renderHook(() => useInfiniteList(fetchPage, 24));

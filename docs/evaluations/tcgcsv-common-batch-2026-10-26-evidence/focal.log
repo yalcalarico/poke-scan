@@ -1,0 +1,21 @@
+The plugin "vite-tsconfig-paths" is detected. Vite now supports tsconfig paths resolution natively via the resolve.tsconfigPaths option. You can remove the plugin and set resolve.tsconfigPaths: true in your Vite config instead.
+
+ RUN  v4.1.11 /Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/backend
+
+[setup] specs contra "pokemon_cards_test" — puerto 3001 libre
+[Nest] 79725  - 10/26/2026, 11:06:12 AM    WARN [TcgcsvService] El grupo TCGCSV 24722 conserva el último lote publicado
+[Nest] 79725  - 10/26/2026, 11:06:13 AM    WARN [TcgcsvService] El grupo TCGCSV 24722 conserva el último lote publicado
+[Nest] 79725  - 10/26/2026, 11:06:13 AM    WARN [TcgcsvService] El grupo TCGCSV 24722 conserva el último lote publicado
+[Nest] 79725  - 10/26/2026, 11:06:14 AM    WARN [TcgcsvService] El grupo TCGCSV 24722 conserva el último lote publicado
+[Nest] 79725  - 10/26/2026, 11:06:14 AM    WARN [TcgcsvService] El grupo TCGCSV 24722 conserva el último lote publicado
+[Nest] 79725  - 10/26/2026, 11:06:15 AM    WARN [TcgcsvService] El grupo TCGCSV 24722 conserva el último lote publicado
+[Nest] 79725  - 10/26/2026, 11:06:16 AM    WARN [TcgcsvService] El lote TCGCSV se publicó; quedó pendiente el corte de colecciones
+[Nest] 79725  - 10/26/2026, 11:06:18 AM    WARN [TcgcsvService] El grupo TCGCSV 24722 conserva el último lote publicado
+[Nest] 79928  - 10/26/2026, 11:06:22 AM    WARN [TcgcsvService] El grupo TCGCSV 990000001 conserva el último lote publicado
+[Nest] 79961  - 10/26/2026, 11:06:24 AM    WARN [ScheduledJobsService] Ciclo tcgcsv pendiente; se conserva la señal
+
+ Test Files  4 passed (4)
+      Tests  33 passed (33)
+   Start at  11:06:08
+   Duration  15.53s (transform 156ms, setup 0ms, import 1.35s, tests 13.79s, environment 0ms)
+

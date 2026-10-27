@@ -22,7 +22,7 @@ export function DraftCardSearch({ runId, onConfirm, onCancel }: {
     : Promise.resolve(null), [submitted]);
 
   return <div className="flex flex-col gap-4">
-    <p className="text-body text-secondary">Reemplazar lectura {runId}. La cantidad y las partes se conservan; revisá de nuevo variante y condición.</p>
+    <p className="text-body text-secondary">Reemplazar la propuesta de la lectura {runId}. La cantidad se conserva; asignamos NM y la variante que respalda su referencia de precio.</p>
     <form onSubmit={(event) => { event.preventDefault(); setSelected(null); setSubmitted(query.trim()); }} className="flex flex-col gap-3">
       <Field id="scan-correction-query" label="Buscar carta"><Input id="scan-correction-query" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Nombre de la carta" /></Field>
       <Button type="submit" disabled={!query.trim()}>Buscar en el catálogo</Button>

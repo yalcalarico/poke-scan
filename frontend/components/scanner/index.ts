@@ -70,7 +70,6 @@ export {
 export {
   appendSessionEntry,
   clearSession,
-  MAX_SESSION_ENTRIES,
   normalizeSession,
   readSession,
   writeSession,

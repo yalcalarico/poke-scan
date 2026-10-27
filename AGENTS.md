@@ -62,6 +62,13 @@ handler público. El catálogo se consulta en PostgreSQL (sync manual/semanal).
 - Las lecturas sólo encolan grupos locales; nunca descargan desde un handler.
   El ciclo diario recorre `price_sync_sets` a las 21:00 UTC, con reanudación cada
   15 minutos, API y `ENABLE_TCGCSV_INGESTION=true`.
+- Desde el 26/10, una tanda común a las 18:00 Argentina (21:00 UTC) coordina todo
+  el alcance. Las 18 abren el lote; no hay corte a medianoche UTC. Continúa con
+  fecha y publicación fijas hasta que cada grupo quede completado o fallido;
+  consultas y señales no crean descargas aisladas fuera del lote. La siguiente
+  tanda vuelve a incluir todo el alcance habilitado, con reservas de 24 h y
+  consumidor serial protegido entre procesos. Una PC suspendida no ejecuta jobs.
+  Ver la política de transición y cierre en precios.
 - TCGCSV valida `last-updated.txt`/build y conserva una descarga por archivo cada
   24 h; mantener identidad segura, ejecución serial y pausas 429/Retry-After.
   No tiene los antiguos topes globales de 40 sets/500 requests.

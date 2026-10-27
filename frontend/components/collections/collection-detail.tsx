@@ -37,7 +37,7 @@ import {
 } from '@/lib/api/collections';
 import { cn } from '@/lib/cn';
 import { formatDate, pluralize } from '@/lib/format';
-import { conditionShort, variantLabel } from '@/lib/variants';
+import { variantLabel } from '@/lib/variants';
 import type { CollectionDto, CollectionItemDto } from '@/types/api';
 
 import { CollectionPriceRefresh } from './collection-price-refresh';
@@ -699,6 +699,7 @@ function CollectionItems({
     hasMore,
     loadMore,
     reload,
+    updateItems,
     sentinelRef,
   } = useInfiniteList<CollectionItemDto>(
     // La lista pasa el AbortSignal hasta fetch: al cambiar colección, filtros o
@@ -901,6 +902,20 @@ function CollectionItems({
     onItemsChanged();
   }, [onItemsChanged, reload]);
 
+  const handleItemUpdated = useCallback((updated: CollectionItemDto) => {
+    updateItems((current) => current.flatMap((item) => {
+      if (item.id !== updated.id) return [item];
+      if ((forTradeOnly && !updated.isForTrade) || (scope === 'duplicates' && updated.quantity < 2)) return [];
+      return [updated];
+    }));
+    handleItemChanged();
+  }, [forTradeOnly, handleItemChanged, scope, updateItems]);
+
+  const handleItemDeleted = useCallback((id: string) => {
+    updateItems((current) => current.filter((item) => item.id !== id));
+    handleItemChanged();
+  }, [handleItemChanged, updateItems]);
+
   /*
    * Troceo de **render** sobre los items que ya están en memoria.
    *
@@ -952,7 +967,7 @@ function CollectionItems({
         // variante y la condición porque en una colección la misma carta puede
         // aparecer dos veces (holofoil y normal), y "Charizard" a secas no
         // distinguiría una de otra.
-        selectionLabel: `${variantLabel(item.variant)} ${conditionShort(item.condition)}, elegida`,
+        selectionLabel: `${variantLabel(item.variant)}, elegida`,
         /*
           Tocar la carta abre el `ItemSheet` de ese ítem. Antes era un
           `IconButton` de engranaje en el `action`: obligaba a apuntar a un
@@ -1219,8 +1234,8 @@ function CollectionItems({
         item={items.find((item) => item.id === selectedItem?.id) ?? selectedItem}
         open={isItemSheetOpen}
         onClose={onCloseItem}
-        onUpdated={handleItemChanged}
-        onDeleted={handleItemChanged}
+        onUpdated={handleItemUpdated}
+        onDeleted={handleItemDeleted}
       />
     </div>
   );

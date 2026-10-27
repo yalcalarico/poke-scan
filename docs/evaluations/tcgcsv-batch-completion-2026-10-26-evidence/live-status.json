@@ -1,0 +1,70 @@
+{
+  "checkedAt": "2026-10-27T01:46:23.462Z",
+  "passed": true,
+  "batchDate": "2026-10-26T00:00:00.000Z",
+  "status": "failed",
+  "finishedAt": "2026-10-27T01:42:26.210Z",
+  "targetPublication": "2026-10-26T20:05:56.000Z",
+  "sets": 175,
+  "groups": {
+    "skipped": 3,
+    "failed": 4,
+    "completed": 166
+  },
+  "pendingGroups": 0,
+  "processingGroups": 0,
+  "failures": [
+    {
+      "groupId": 1397,
+      "setIds": [
+        "ecard2"
+      ],
+      "lastError": "No se pudo validar o publicar el lote TCGCSV (fase: products)"
+    },
+    {
+      "groupId": 1411,
+      "setIds": [
+        "ex15"
+      ],
+      "lastError": "Descarga interrumpida en esta tanda; se conserva la reserva de 24 horas"
+    },
+    {
+      "groupId": 1416,
+      "setIds": [
+        "ex5"
+      ],
+      "lastError": "No se pudo validar o publicar el lote TCGCSV (fase: prices)"
+    },
+    {
+      "groupId": 1430,
+      "setIds": [
+        "dp1"
+      ],
+      "lastError": "No se pudo validar o publicar el lote TCGCSV (fase: prices)"
+    }
+  ],
+  "nextBatchEnabledSets": 175,
+  "originalScopeStillEnabled": 175,
+  "prices": {
+    "observations": 27089,
+    "cards": 15927,
+    "first": "2026-10-26T21:00:06.100Z",
+    "last": "2026-10-27T01:42:26.165Z"
+  },
+  "unsafeReservations": 0,
+  "reservations": {
+    "latestAvailableAt": "2026-10-28T01:44:25.693Z",
+    "waitingAfterNextOpening": 170
+  },
+  "gin": 5,
+  "health": [
+    {
+      "url": "http://127.0.0.1:3001/api/health",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:3000/inicio",
+      "status": 200
+    }
+  ]
+}

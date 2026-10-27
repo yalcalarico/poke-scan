@@ -80,7 +80,7 @@ export class TcgcsvClient {
         outcome = 'not-modified';
         return cached.content;
       }
-      if (response.status !== 200) throw new Error('TCGCSV no respondió correctamente');
+      if (response.status !== 200) throw new Error(`TCGCSV respondió HTTP ${response.status}`);
       const length = response.headers.get('content-length');
       if (length !== null && (!/^\d+$/.test(length) || Number(length) > maxBytes)) throw new Error('Archivo TCGCSV demasiado grande');
       if (!response.body) throw new Error('Archivo TCGCSV vacío');

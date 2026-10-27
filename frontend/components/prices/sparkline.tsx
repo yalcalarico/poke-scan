@@ -1,4 +1,5 @@
 import { cn } from '@/lib/cn';
+import type { ChartDateRange } from '@/lib/prices/chart-window';
 
 /**
  * Alto y ancho del `viewBox`. No son píxeles de pantalla: el SVG escala con
@@ -38,6 +39,7 @@ export interface SparklineProps {
    * consumidor (`PriceHistory`), porque solo él sabe la ventana y el tono.
    */
   label: string;
+  dateRange?: ChartDateRange;
   className?: string;
 }
 
@@ -93,7 +95,7 @@ export interface SparklineProps {
  * pegada al borde: una línea horizontal en el tope del `viewBox` se lee como
  * "se cortó el gráfico" y no como "no se movió".
  */
-export function Sparkline({ points, label, className }: SparklineProps) {
+export function Sparkline({ points, label, dateRange, className }: SparklineProps) {
   if (points.length < 2) return null;
 
   let min = points[0]!.value;
@@ -106,8 +108,8 @@ export function Sparkline({ points, label, className }: SparklineProps) {
   const span = max - min;
   const usableHeight = VIEW_HEIGHT - PADDING_Y * 2;
   const times = points.map((point) => Date.parse(point.date));
-  const start = times[0]!;
-  const end = times.at(-1)!;
+  const start = dateRange ? Date.parse(`${dateRange.start}T00:00:00Z`) : times[0]!;
+  const end = dateRange ? Date.parse(`${dateRange.end}T00:00:00Z`) : times.at(-1)!;
 
   const coords = points.map((point, index) => {
     const x = end === start ? VIEW_WIDTH / 2 : (times[index]! - start) / (end - start) * VIEW_WIDTH;

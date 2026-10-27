@@ -21,9 +21,8 @@ vi.mock('next/image', () => ({
  * dejaría estos tests fallando cada vez que cambie el bootstrap de sesión.
  */
 vi.mock('@/components/cards/money', () => ({
-  Money: () => <span data-testid="money" />,
+  Money: ({ usd }: { usd: number | null }) => <span data-testid="money">{usd ?? '—'}</span>,
 }));
-vi.mock('@/components/prices/price-evidence', () => ({ ValuationEvidence: () => <span>Valuación de prueba</span> }));
 
 function collection(overrides: Partial<CollectionDto> = {}): CollectionDto {
   return {
@@ -118,5 +117,45 @@ describe('CollectionCard: el mosaico de portada', () => {
 
     const main = screen.getByRole('link', { name: 'Holo Base' });
     expect(main).toHaveAttribute('href', '/colecciones/col-1');
+  });
+});
+
+describe('CollectionCard: valuación compacta', () => {
+  const valuation = (amount: number | null, pricedCopies: number, totalCopies: number) => ({
+    amount,
+    currency: 'USD' as const,
+    evaluatedAt: '2026-10-25T10:00:00.000Z',
+    coverage: { totalCopies, pricedCopies, unpricedCopies: totalCopies - pricedCopies, coverageRatio: totalCopies === 0 ? null : pricedCopies / totalCopies },
+    recency: null,
+  });
+
+  it('muestra el total cero y ningún detalle técnico para una colección vacía', () => {
+    render(<CollectionCard collection={collection({ itemCount: 0, uniqueCount: 0, duplicateCount: 0, valuation: valuation(0, 0, 0) })} />);
+
+    expect(screen.getByTestId('money')).toHaveTextContent('0');
+    expect(screen.getByText('Colección vacía')).toBeInTheDocument();
+    expect(screen.queryByText(/Evaluado|consulta|subtotal|sin cartas con precio/i)).not.toBeInTheDocument();
+  });
+
+  it('explica brevemente que el monto es parcial', () => {
+    render(<CollectionCard collection={collection({ valuation: valuation(12, 2, 3) })} />);
+
+    expect(screen.getByTestId('money')).toHaveTextContent('12');
+    expect(screen.getByText('Subtotal de cartas con precio')).toBeInTheDocument();
+  });
+
+  it('conserva un precio real de cero como monto conocido', () => {
+    render(<CollectionCard collection={collection({ valuation: valuation(0, 1, 1) })} />);
+
+    expect(screen.getByTestId('money')).toHaveTextContent('0');
+    expect(screen.queryByText('Sin cartas con precio')).not.toBeInTheDocument();
+    expect(screen.queryByText('Subtotal de cartas con precio')).not.toBeInTheDocument();
+  });
+
+  it('no convierte un monto desconocido en cero y avisa si ninguna copia tiene precio', () => {
+    render(<CollectionCard collection={collection({ valuation: valuation(null, 0, 2) })} />);
+
+    expect(screen.getByTestId('money')).toHaveTextContent('—');
+    expect(screen.getByText('Sin cartas con precio')).toBeInTheDocument();
   });
 });

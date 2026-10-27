@@ -44,7 +44,7 @@ describe('PublicCollectionView', () => {
     expect(screen.getByText(/680 de 700 copias con precio/)).toBeInTheDocument();
     expect(screen.getByText(/hasta 500 grupos visibles/i)).toBeInTheDocument();
     expect(screen.getByText(/Valor parcial/)).toBeInTheDocument();
-    expect(screen.getByText(/sin ajuste por condición. No son precios de venta/)).toBeInTheDocument();
+    expect(screen.getByText(/Referencias internacionales en USD por variante. No son precios de venta/)).toBeInTheDocument();
   });
 
   it('presenta valor desconocido cuando hay grupos sin precio y cero solo para scope vacío', () => {

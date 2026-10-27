@@ -85,7 +85,7 @@ export interface UpdateItemPayload {
 }
 
 export async function listCollections(): Promise<CollectionDto[]> {
-  const raw = await apiFetch<unknown>('/collections');
+  const raw = await apiFetch<unknown>('/collections', { cache: 'no-store' });
   if (!Array.isArray(raw)) throw new ApiError(502, 'No pudimos leer tus colecciones');
   return raw.map((entry) => requireParsed(toCollectionDto(entry)));
 }
@@ -96,11 +96,11 @@ function requireParsed<T>(result: T | null): T {
 }
 
 export async function getPortfolio(signal?: AbortSignal): Promise<PortfolioDto> {
-  return requireParsed(toPortfolioDto(await apiFetch<unknown>('/portfolio', { signal })));
+  return requireParsed(toPortfolioDto(await apiFetch<unknown>('/portfolio', { signal, cache: 'no-store' })));
 }
 
 export async function getCollection(id: string): Promise<CollectionDto> {
-  return requireParsed(toCollectionDto(await apiFetch<unknown>(`/collections/${encodeURIComponent(id)}`)));
+  return requireParsed(toCollectionDto(await apiFetch<unknown>(`/collections/${encodeURIComponent(id)}`, { cache: 'no-store' })));
 }
 
 export async function createCollection(payload: CreateCollectionPayload): Promise<CollectionDto> {
@@ -139,7 +139,7 @@ export async function listItems(
 ): Promise<Paginated<CollectionItemDto>> {
   const result = await apiFetch<Paginated<CollectionItemDto>>(
     `/collections/${encodeURIComponent(collectionId)}/items${buildQueryString(params)}`,
-    { signal },
+    { signal, cache: 'no-store' },
   );
   result.data.forEach(validateItemPrice);
   return result;
@@ -175,7 +175,7 @@ export async function getDuplicates(collectionId: string): Promise<CollectionIte
 
 export async function getStats(collectionId: string): Promise<CollectionStatsResponse> {
   return requireParsed(toCollectionStatsDto(await apiFetch<unknown>(
-    `/collections/${encodeURIComponent(collectionId)}/stats`,
+    `/collections/${encodeURIComponent(collectionId)}/stats`, { cache: 'no-store' },
   )));
 }
 

@@ -1,0 +1,802 @@
+{
+  "checkedAt": "2026-10-27T01:18:00.359Z",
+  "batch": {
+    "syncDate": "2026-10-26T00:00:00.000Z",
+    "openedAt": "2026-10-26T21:00:00.041Z",
+    "sets": 175
+  },
+  "http": [
+    {
+      "file": "manifest",
+      "status": 200,
+      "outcome": "downloaded",
+      "requests": 279,
+      "min_ms": 124,
+      "max_ms": 5877,
+      "avg_ms": 292
+    },
+    {
+      "file": "manifest",
+      "status": null,
+      "outcome": "failed",
+      "requests": 3,
+      "min_ms": 60052,
+      "max_ms": 451344,
+      "avg_ms": 290860
+    },
+    {
+      "file": "prices",
+      "status": 200,
+      "outcome": "downloaded",
+      "requests": 133,
+      "min_ms": 126,
+      "max_ms": 329,
+      "avg_ms": 138
+    },
+    {
+      "file": "prices",
+      "status": null,
+      "outcome": "failed",
+      "requests": 2,
+      "min_ms": 467792,
+      "max_ms": 517749,
+      "avg_ms": 492771
+    },
+    {
+      "file": "products",
+      "status": 200,
+      "outcome": "downloaded",
+      "requests": 2,
+      "min_ms": 195,
+      "max_ms": 199,
+      "avg_ms": 197
+    },
+    {
+      "file": "products",
+      "status": 304,
+      "outcome": "not-modified",
+      "requests": 133,
+      "min_ms": 129,
+      "max_ms": 327,
+      "avg_ms": 144
+    },
+    {
+      "file": "products",
+      "status": null,
+      "outcome": "failed",
+      "requests": 1,
+      "min_ms": 868377,
+      "max_ms": 868377,
+      "avg_ms": 868377
+    }
+  ],
+  "errors": [
+    {
+      "groupId": 1397,
+      "file": "products",
+      "status": null,
+      "outcome": "failed",
+      "requestedAt": "2026-10-26T21:04:25.539Z",
+      "durationMs": 868377,
+      "receivedBytes": 0
+    },
+    {
+      "groupId": null,
+      "file": "manifest",
+      "status": null,
+      "outcome": "failed",
+      "requestedAt": "2026-10-26T21:19:05.049Z",
+      "durationMs": 361183,
+      "receivedBytes": 0
+    },
+    {
+      "groupId": 1416,
+      "file": "prices",
+      "status": null,
+      "outcome": "failed",
+      "requestedAt": "2026-10-26T22:13:05.719Z",
+      "durationMs": 467792,
+      "receivedBytes": 0
+    },
+    {
+      "groupId": null,
+      "file": "manifest",
+      "status": null,
+      "outcome": "failed",
+      "requestedAt": "2026-10-26T22:21:05.106Z",
+      "durationMs": 451344,
+      "receivedBytes": 0
+    },
+    {
+      "groupId": 1430,
+      "file": "prices",
+      "status": null,
+      "outcome": "failed",
+      "requestedAt": "2026-10-26T22:29:15.684Z",
+      "durationMs": 517749,
+      "receivedBytes": 0
+    },
+    {
+      "groupId": null,
+      "file": "manifest",
+      "status": null,
+      "outcome": "failed",
+      "requestedAt": "2026-10-26T23:17:55.039Z",
+      "durationMs": 60052,
+      "receivedBytes": 0
+    }
+  ],
+  "unresolved": [
+    {
+      "groupId": 1397,
+      "status": "pending",
+      "availableAt": "2026-10-27T21:06:25.520Z",
+      "downloadStartedAt": "2026-10-26T21:04:26.126Z",
+      "publishedBuild": "2026-10-24T20:05:44.000Z",
+      "lastError": "No se pudo validar o publicar el lote TCGCSV (fase: products)"
+    },
+    {
+      "groupId": 1400,
+      "status": "pending",
+      "availableAt": "2026-10-26T22:29:16.275Z",
+      "downloadStartedAt": "2026-10-25T13:02:45.346Z",
+      "publishedBuild": "2026-10-24T20:05:44.000Z",
+      "lastError": "No se pudo validar o publicar el lote TCGCSV (fase: manifest)"
+    },
+    {
+      "groupId": 1411,
+      "status": "pending",
+      "availableAt": "2026-10-27T21:27:54.762Z",
+      "downloadStartedAt": "2026-10-26T21:25:54.948Z",
+      "publishedBuild": "2026-10-24T20:05:44.000Z",
+      "lastError": null
+    },
+    {
+      "groupId": 1416,
+      "status": "pending",
+      "availableAt": "2026-10-27T21:59:11.115Z",
+      "downloadStartedAt": "2026-10-26T21:57:11.910Z",
+      "publishedBuild": "2026-10-24T20:05:44.000Z",
+      "lastError": "No se pudo validar o publicar el lote TCGCSV (fase: prices)"
+    },
+    {
+      "groupId": 1421,
+      "status": "pending",
+      "availableAt": "2026-10-26T23:21:05.776Z",
+      "downloadStartedAt": "2026-10-25T13:19:15.924Z",
+      "publishedBuild": "2026-10-24T20:05:44.000Z",
+      "lastError": "No se pudo validar o publicar el lote TCGCSV (fase: manifest)"
+    },
+    {
+      "groupId": 1430,
+      "status": "pending",
+      "availableAt": "2026-10-27T22:31:15.669Z",
+      "downloadStartedAt": "2026-10-26T22:29:16.189Z",
+      "publishedBuild": "2026-10-24T20:05:44.000Z",
+      "lastError": "No se pudo validar o publicar el lote TCGCSV (fase: prices)"
+    },
+    {
+      "groupId": 1861,
+      "status": "failed",
+      "availableAt": "2026-10-27T00:17:55.594Z",
+      "downloadStartedAt": "2026-10-25T14:17:15.981Z",
+      "publishedBuild": "2026-10-24T20:05:44.000Z",
+      "lastError": "No se pudo validar o publicar el lote TCGCSV (fase: manifest)"
+    },
+    {
+      "groupId": 2782,
+      "status": "pending",
+      "availableAt": "2026-10-26T21:00:00.222Z",
+      "downloadStartedAt": "2026-10-25T14:19:30.944Z",
+      "publishedBuild": "2026-10-24T20:05:44.000Z",
+      "lastError": null
+    },
+    {
+      "groupId": 2807,
+      "status": "pending",
+      "availableAt": "2026-10-26T21:00:00.222Z",
+      "downloadStartedAt": "2026-10-25T14:19:35.698Z",
+      "publishedBuild": "2026-10-24T20:05:44.000Z",
+      "lastError": null
+    },
+    {
+      "groupId": 2848,
+      "status": "pending",
+      "availableAt": "2026-10-26T21:00:00.222Z",
+      "downloadStartedAt": "2026-10-25T14:19:40.874Z",
+      "publishedBuild": "2026-10-24T20:05:44.000Z",
+      "lastError": null
+    },
+    {
+      "groupId": 2867,
+      "status": "pending",
+      "availableAt": "2026-10-26T21:00:00.222Z",
+      "downloadStartedAt": "2026-10-25T14:19:45.851Z",
+      "publishedBuild": "2026-10-24T20:05:44.000Z",
+      "lastError": null
+    },
+    {
+      "groupId": 2906,
+      "status": "pending",
+      "availableAt": "2026-10-26T21:00:00.222Z",
+      "downloadStartedAt": "2026-10-25T14:19:50.774Z",
+      "publishedBuild": "2026-10-24T20:05:44.000Z",
+      "lastError": null
+    },
+    {
+      "groupId": 2931,
+      "status": "pending",
+      "availableAt": "2026-10-26T21:00:00.222Z",
+      "downloadStartedAt": "2026-10-25T14:19:55.867Z",
+      "publishedBuild": "2026-10-24T20:05:44.000Z",
+      "lastError": null
+    },
+    {
+      "groupId": 2948,
+      "status": "pending",
+      "availableAt": "2026-10-26T21:00:00.222Z",
+      "downloadStartedAt": "2026-10-25T14:20:01.008Z",
+      "publishedBuild": "2026-10-24T20:05:44.000Z",
+      "lastError": null
+    },
+    {
+      "groupId": 3020,
+      "status": "pending",
+      "availableAt": "2026-10-26T21:00:00.222Z",
+      "downloadStartedAt": "2026-10-25T14:20:05.645Z",
+      "publishedBuild": "2026-10-24T20:05:44.000Z",
+      "lastError": null
+    },
+    {
+      "groupId": 3040,
+      "status": "pending",
+      "availableAt": "2026-10-26T21:00:00.222Z",
+      "downloadStartedAt": "2026-10-25T14:20:10.979Z",
+      "publishedBuild": "2026-10-24T20:05:44.000Z",
+      "lastError": null
+    },
+    {
+      "groupId": 3064,
+      "status": "pending",
+      "availableAt": "2026-10-26T21:00:00.222Z",
+      "downloadStartedAt": "2026-10-25T14:20:15.832Z",
+      "publishedBuild": "2026-10-24T20:05:44.000Z",
+      "lastError": null
+    },
+    {
+      "groupId": 3068,
+      "status": "pending",
+      "availableAt": "2026-10-26T21:00:00.222Z",
+      "downloadStartedAt": "2026-10-25T14:20:21.077Z",
+      "publishedBuild": "2026-10-24T20:05:44.000Z",
+      "lastError": null
+    },
+    {
+      "groupId": 3087,
+      "status": "pending",
+      "availableAt": "2026-10-26T21:00:00.222Z",
+      "downloadStartedAt": "2026-10-25T14:20:25.792Z",
+      "publishedBuild": "2026-10-24T20:05:44.000Z",
+      "lastError": null
+    },
+    {
+      "groupId": 3118,
+      "status": "pending",
+      "availableAt": "2026-10-26T21:00:00.222Z",
+      "downloadStartedAt": "2026-10-25T14:20:31.027Z",
+      "publishedBuild": "2026-10-24T20:05:44.000Z",
+      "lastError": null
+    },
+    {
+      "groupId": 3150,
+      "status": "pending",
+      "availableAt": "2026-10-26T21:00:00.222Z",
+      "downloadStartedAt": "2026-10-25T14:20:35.762Z",
+      "publishedBuild": "2026-10-24T20:05:44.000Z",
+      "lastError": null
+    },
+    {
+      "groupId": 3170,
+      "status": "pending",
+      "availableAt": "2026-10-26T21:00:00.222Z",
+      "downloadStartedAt": "2026-10-25T14:20:41.074Z",
+      "publishedBuild": "2026-10-24T20:05:44.000Z",
+      "lastError": null
+    },
+    {
+      "groupId": 3172,
+      "status": "pending",
+      "availableAt": "2026-10-26T21:00:00.222Z",
+      "downloadStartedAt": "2026-10-25T14:20:45.725Z",
+      "publishedBuild": "2026-10-24T20:05:44.000Z",
+      "lastError": null
+    },
+    {
+      "groupId": 17674,
+      "status": "pending",
+      "availableAt": "2026-10-26T21:00:00.222Z",
+      "downloadStartedAt": "2026-10-25T14:20:50.974Z",
+      "publishedBuild": "2026-10-24T20:05:44.000Z",
+      "lastError": null
+    },
+    {
+      "groupId": 17688,
+      "status": "pending",
+      "availableAt": "2026-10-26T21:00:00.222Z",
+      "downloadStartedAt": "2026-10-25T14:20:55.730Z",
+      "publishedBuild": "2026-10-24T20:05:44.000Z",
+      "lastError": null
+    },
+    {
+      "groupId": 17689,
+      "status": "pending",
+      "availableAt": "2026-10-26T21:00:00.222Z",
+      "downloadStartedAt": "2026-10-25T14:21:01.159Z",
+      "publishedBuild": "2026-10-24T20:05:44.000Z",
+      "lastError": null
+    },
+    {
+      "groupId": 22872,
+      "status": "pending",
+      "availableAt": "2026-10-26T21:00:00.222Z",
+      "downloadStartedAt": "2026-10-25T14:21:05.757Z",
+      "publishedBuild": "2026-10-24T20:05:44.000Z",
+      "lastError": null
+    },
+    {
+      "groupId": 22873,
+      "status": "pending",
+      "availableAt": "2026-10-26T21:00:00.222Z",
+      "downloadStartedAt": "2026-10-25T14:21:10.877Z",
+      "publishedBuild": "2026-10-24T20:05:44.000Z",
+      "lastError": null
+    },
+    {
+      "groupId": 23120,
+      "status": "pending",
+      "availableAt": "2026-10-26T21:00:00.222Z",
+      "downloadStartedAt": "2026-10-25T14:21:15.787Z",
+      "publishedBuild": "2026-10-24T20:05:44.000Z",
+      "lastError": null
+    },
+    {
+      "groupId": 23228,
+      "status": "pending",
+      "availableAt": "2026-10-26T21:00:00.222Z",
+      "downloadStartedAt": "2026-10-25T14:21:20.847Z",
+      "publishedBuild": "2026-10-24T20:05:44.000Z",
+      "lastError": null
+    },
+    {
+      "groupId": 23286,
+      "status": "pending",
+      "availableAt": "2026-10-26T21:00:00.222Z",
+      "downloadStartedAt": "2026-10-25T14:21:25.847Z",
+      "publishedBuild": "2026-10-24T20:05:44.000Z",
+      "lastError": null
+    },
+    {
+      "groupId": 23353,
+      "status": "pending",
+      "availableAt": "2026-10-26T21:00:00.222Z",
+      "downloadStartedAt": "2026-10-25T14:21:30.558Z",
+      "publishedBuild": "2026-10-24T20:05:44.000Z",
+      "lastError": null
+    },
+    {
+      "groupId": 23381,
+      "status": "pending",
+      "availableAt": "2026-10-26T21:00:00.222Z",
+      "downloadStartedAt": "2026-10-25T14:21:35.848Z",
+      "publishedBuild": "2026-10-24T20:05:44.000Z",
+      "lastError": null
+    },
+    {
+      "groupId": 23473,
+      "status": "pending",
+      "availableAt": "2026-10-26T21:00:00.222Z",
+      "downloadStartedAt": "2026-10-25T14:21:40.580Z",
+      "publishedBuild": "2026-10-24T20:05:44.000Z",
+      "lastError": null
+    },
+    {
+      "groupId": 23529,
+      "status": "pending",
+      "availableAt": "2026-10-26T21:00:00.222Z",
+      "downloadStartedAt": "2026-10-25T14:21:45.793Z",
+      "publishedBuild": "2026-10-24T20:05:44.000Z",
+      "lastError": null
+    },
+    {
+      "groupId": 23537,
+      "status": "pending",
+      "availableAt": "2026-10-26T21:00:00.222Z",
+      "downloadStartedAt": "2026-10-25T14:21:50.845Z",
+      "publishedBuild": "2026-10-24T20:05:44.000Z",
+      "lastError": null
+    },
+    {
+      "groupId": 23651,
+      "status": "pending",
+      "availableAt": "2026-10-26T21:00:00.222Z",
+      "downloadStartedAt": "2026-10-25T14:21:55.757Z",
+      "publishedBuild": "2026-10-24T20:05:44.000Z",
+      "lastError": null
+    },
+    {
+      "groupId": 24326,
+      "status": "pending",
+      "availableAt": "2026-10-26T21:00:00.222Z",
+      "downloadStartedAt": "2026-10-25T14:22:00.847Z",
+      "publishedBuild": "2026-10-24T20:05:44.000Z",
+      "lastError": null
+    }
+  ],
+  "imports": [
+    {
+      "feedPublishedAt": "2026-10-26T20:05:56.000Z",
+      "groups": 132,
+      "observations": 19946
+    }
+  ],
+  "counts": {
+    "cards": 20670,
+    "sets": 176,
+    "users": 22,
+    "collections": 20,
+    "items": 66,
+    "copies": 69,
+    "observations": 190672,
+    "gin": 5
+  },
+  "powerEvents": [
+    {
+      "time": "2026-10-26 18:04:23 -0300",
+      "event": "Sleep"
+    },
+    {
+      "time": "2026-10-26 18:04:25 -0300",
+      "event": "Wake"
+    },
+    {
+      "time": "2026-10-26 18:18:53 -0300",
+      "event": "DarkWake"
+    },
+    {
+      "time": "2026-10-26 18:19:03 -0300",
+      "event": "Sleep"
+    },
+    {
+      "time": "2026-10-26 18:19:05 -0300",
+      "event": "Wake"
+    },
+    {
+      "time": "2026-10-26 18:25:06 -0300",
+      "event": "DarkWake"
+    },
+    {
+      "time": "2026-10-26 18:25:37 -0300",
+      "event": "Sleep"
+    },
+    {
+      "time": "2026-10-26 18:25:38 -0300",
+      "event": "Wake"
+    },
+    {
+      "time": "2026-10-26 18:41:04 -0300",
+      "event": "DarkWake"
+    },
+    {
+      "time": "2026-10-26 18:41:15 -0300",
+      "event": "Sleep"
+    },
+    {
+      "time": "2026-10-26 18:41:16 -0300",
+      "event": "Wake"
+    },
+    {
+      "time": "2026-10-26 18:56:42 -0300",
+      "event": "DarkWake"
+    },
+    {
+      "time": "2026-10-26 18:56:53 -0300",
+      "event": "Sleep"
+    },
+    {
+      "time": "2026-10-26 18:56:54 -0300",
+      "event": "Wake"
+    },
+    {
+      "time": "2026-10-26 19:12:49 -0300",
+      "event": "DarkWake"
+    },
+    {
+      "time": "2026-10-26 19:13:04 -0300",
+      "event": "Sleep"
+    },
+    {
+      "time": "2026-10-26 19:13:05 -0300",
+      "event": "Wake"
+    },
+    {
+      "time": "2026-10-26 19:20:53 -0300",
+      "event": "DarkWake"
+    },
+    {
+      "time": "2026-10-26 19:21:03 -0300",
+      "event": "Sleep"
+    },
+    {
+      "time": "2026-10-26 19:21:05 -0300",
+      "event": "Wake"
+    },
+    {
+      "time": "2026-10-26 19:28:36 -0300",
+      "event": "DarkWake"
+    },
+    {
+      "time": "2026-10-26 19:29:14 -0300",
+      "event": "Sleep"
+    },
+    {
+      "time": "2026-10-26 19:29:15 -0300",
+      "event": "Wake"
+    },
+    {
+      "time": "2026-10-26 19:37:53 -0300",
+      "event": "DarkWake"
+    },
+    {
+      "time": "2026-10-26 19:38:15 -0300",
+      "event": "Sleep"
+    },
+    {
+      "time": "2026-10-26 19:38:16 -0300",
+      "event": "Wake"
+    },
+    {
+      "time": "2026-10-26 19:50:05 -0300",
+      "event": "DarkWake"
+    },
+    {
+      "time": "2026-10-26 19:50:58 -0300",
+      "event": "Sleep"
+    },
+    {
+      "time": "2026-10-26 19:50:59 -0300",
+      "event": "Wake"
+    },
+    {
+      "time": "2026-10-26 19:56:19 -0300",
+      "event": "DarkWake"
+    },
+    {
+      "time": "2026-10-26 19:56:32 -0300",
+      "event": "Sleep"
+    },
+    {
+      "time": "2026-10-26 19:56:33 -0300",
+      "event": "Wake"
+    },
+    {
+      "time": "2026-10-26 20:11:39 -0300",
+      "event": "DarkWake"
+    },
+    {
+      "time": "2026-10-26 20:11:49 -0300",
+      "event": "Sleep"
+    },
+    {
+      "time": "2026-10-26 20:11:51 -0300",
+      "event": "Wake"
+    },
+    {
+      "time": "2026-10-26 20:15:23 -0300",
+      "event": "DarkWake"
+    },
+    {
+      "time": "2026-10-26 20:15:34 -0300",
+      "event": "Sleep"
+    },
+    {
+      "time": "2026-10-26 20:15:36 -0300",
+      "event": "Wake"
+    },
+    {
+      "time": "2026-10-26 20:16:00 -0300",
+      "event": "DarkWake"
+    },
+    {
+      "time": "2026-10-26 20:16:10 -0300",
+      "event": "Sleep"
+    },
+    {
+      "time": "2026-10-26 20:16:12 -0300",
+      "event": "Wake"
+    },
+    {
+      "time": "2026-10-26 20:17:41 -0300",
+      "event": "DarkWake"
+    },
+    {
+      "time": "2026-10-26 20:17:53 -0300",
+      "event": "Sleep"
+    },
+    {
+      "time": "2026-10-26 20:17:55 -0300",
+      "event": "Wake"
+    },
+    {
+      "time": "2026-10-26 20:18:55 -0300",
+      "event": "DarkWake"
+    },
+    {
+      "time": "2026-10-26 20:19:05 -0300",
+      "event": "Sleep"
+    },
+    {
+      "time": "2026-10-26 20:19:06 -0300",
+      "event": "Wake"
+    },
+    {
+      "time": "2026-10-26 20:34:34 -0300",
+      "event": "DarkWake"
+    },
+    {
+      "time": "2026-10-26 20:35:09 -0300",
+      "event": "Sleep"
+    },
+    {
+      "time": "2026-10-26 20:35:11 -0300",
+      "event": "Wake"
+    },
+    {
+      "time": "2026-10-26 20:35:14 -0300",
+      "event": "DarkWake"
+    },
+    {
+      "time": "2026-10-26 20:35:24 -0300",
+      "event": "Sleep"
+    },
+    {
+      "time": "2026-10-26 20:35:26 -0300",
+      "event": "Wake"
+    },
+    {
+      "time": "2026-10-26 20:38:19 -0300",
+      "event": "DarkWake"
+    },
+    {
+      "time": "2026-10-26 20:38:29 -0300",
+      "event": "Sleep"
+    },
+    {
+      "time": "2026-10-26 20:38:30 -0300",
+      "event": "Wake"
+    },
+    {
+      "time": "2026-10-26 20:38:35 -0300",
+      "event": "DarkWake"
+    },
+    {
+      "time": "2026-10-26 20:38:45 -0300",
+      "event": "Sleep"
+    },
+    {
+      "time": "2026-10-26 20:38:46 -0300",
+      "event": "Wake"
+    },
+    {
+      "time": "2026-10-26 20:39:11 -0300",
+      "event": "DarkWake"
+    },
+    {
+      "time": "2026-10-26 20:39:17 -0300",
+      "event": "Sleep"
+    },
+    {
+      "time": "2026-10-26 20:39:18 -0300",
+      "event": "Wake"
+    },
+    {
+      "time": "2026-10-26 20:40:19 -0300",
+      "event": "DarkWake"
+    },
+    {
+      "time": "2026-10-26 20:40:25 -0300",
+      "event": "Sleep"
+    },
+    {
+      "time": "2026-10-26 20:40:26 -0300",
+      "event": "Wake"
+    },
+    {
+      "time": "2026-10-26 20:42:24 -0300",
+      "event": "DarkWake"
+    },
+    {
+      "time": "2026-10-26 20:42:30 -0300",
+      "event": "Sleep"
+    },
+    {
+      "time": "2026-10-26 20:42:31 -0300",
+      "event": "Wake"
+    },
+    {
+      "time": "2026-10-26 20:51:09 -0300",
+      "event": "DarkWake"
+    },
+    {
+      "time": "2026-10-26 20:51:15 -0300",
+      "event": "Sleep"
+    },
+    {
+      "time": "2026-10-26 20:51:17 -0300",
+      "event": "Wake"
+    },
+    {
+      "time": "2026-10-26 21:08:47 -0300",
+      "event": "DarkWake"
+    },
+    {
+      "time": "2026-10-26 21:08:49 -0300",
+      "event": "Sleep"
+    },
+    {
+      "time": "2026-10-26 21:08:52 -0300",
+      "event": "Wake"
+    },
+    {
+      "time": "2026-10-26 21:10:50 -0300",
+      "event": "DarkWake"
+    },
+    {
+      "time": "2026-10-26 21:10:56 -0300",
+      "event": "Sleep"
+    },
+    {
+      "time": "2026-10-26 21:10:57 -0300",
+      "event": "Wake"
+    },
+    {
+      "time": "2026-10-26 21:26:32 -0300",
+      "event": "DarkWake"
+    },
+    {
+      "time": "2026-10-26 21:26:34 -0300",
+      "event": "Sleep"
+    },
+    {
+      "time": "2026-10-26 21:26:37 -0300",
+      "event": "Wake"
+    },
+    {
+      "time": "2026-10-26 21:27:53 -0300",
+      "event": "DarkWake"
+    },
+    {
+      "time": "2026-10-26 21:27:59 -0300",
+      "event": "Sleep"
+    },
+    {
+      "time": "2026-10-26 21:28:00 -0300",
+      "event": "Wake"
+    },
+    {
+      "time": "2026-10-26 21:45:25 -0300",
+      "event": "DarkWake"
+    },
+    {
+      "time": "2026-10-26 21:45:27 -0300",
+      "event": "Sleep"
+    },
+    {
+      "time": "2026-10-26 21:45:30 -0300",
+      "event": "Wake"
+    },
+    {
+      "time": "2026-10-26 21:47:03 -0300",
+      "event": "Wake"
+    }
+  ]
+}

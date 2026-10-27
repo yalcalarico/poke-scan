@@ -1,6 +1,6 @@
 # Estado actual de PokéScan
 
-Revisión documental: **21/10/2026**. Entrada única para continuar el proyecto.
+Revisión documental: **26/10/2026**. Entrada única para continuar el proyecto.
 Este archivo resume entregas aceptadas; no verifica procesos vivos, ejecución de
 cronjobs ni estado de servicios por el mero paso del tiempo.
 
@@ -18,6 +18,9 @@ sin copiar la bitácora en los seis registros.
 
 | Área | Resultado aceptado | Límites y evidencia |
 |---|---|---|
+| Variantes, NM y refresco de colección | Frontend usa precio de la variante elegida, no pide condición y aplica la edición confirmada a la lista | [Resultado y parche pendiente](evaluations/revision-usuario-2026-10-25/RESULTADO-06-variantes-nm-refresco.md): candidato aislado con check salida 0 y flujo HTTP aprobados. Backend NM y conversión histórica **sin aplicar**, por restricción de no reiniciar durante jobs. El servidor principal se encontró luego apagado y no se arrancó. |
+| Textos y períodos — seguimiento móvil/web | Portafolio, cabecera e ítems pliegan metadata técnica; el eje temporal cubre la ventana elegida aunque haya poco historial | [Resultado actualizado](evaluations/revision-usuario-2026-10-25/RESULTADO-05-textos-y-periodos.md): comprobación Safari escritorio. Gate global del 26/10 aprobado con 1.301 pruebas, incluidas 634 frontend, y ambos builds; ver [cierre vigente](evaluations/tcgcsv-batch-completion-2026-10-26.md). Web/API dejadas activas. |
+| Revisión de uso móvil | REV-01/03/04/05/06 implementadas por GPT-6 Luna: indicador N, textos compactos, cámara/sonido, sesión sin tope de 30 y guardado automático | [Estado y reportes](evaluations/revision-usuario-2026-10-25/TAREAS.md), [QA integral](evaluations/revision-usuario-2026-10-25/RESULTADO-04.md): check salida 0, flujo aislado 1002 copias con replay idempotente y pendientes conservados. REV-02/07 siguen sin corrección por falta de reproducción Safari físico; cámara/audio físicos también pendientes. |
 | Cuenta | Recuperación, sesiones y consumidor FE-04; eliminación autoservicio BE-05 y restore local | [CUENTA](plans/lanzamiento-2026-10-07/RESULTADOS/LOTE-CUENTA-validacion.md), [baja local](plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-eliminacion-validacion.md). Correo/custodia/operación externos separados. |
 | Redis | Recuperación tras arranque sin Redis y corte sostenido, mismo PID de API | [Gate BE-07](plans/lanzamiento-2026-10-07/RESULTADOS/LOTE-REDIS-revalidacion-global.md). El socket hang up histórico sigue sin causa/fix demostrados. |
 | QA local | Login 500 reparado con migraciones existentes y QA de flujos reales; adquisición y preview locales aceptados | [QA](plans/lanzamiento-2026-10-07/RESULTADOS/LOCAL-APP-QA-validacion.md), [adquisición](plans/lanzamiento-2026-10-07/RESULTADOS/LOTE-ADQUISICION-cierre.md). No acredita producción ni dispositivos físicos. |
@@ -44,6 +47,17 @@ remota corresponde a los checks del nuevo commit en GitHub.
 
 ## Decisiones humanas y trabajo pendiente
 
+- **TCGCSV — tanda común con cierre completo:** las 18 ARG abren el alcance
+  diario completo; el consumo serial continúa después de medianoche UTC hasta
+  resultados terminales, respetando reservas de 24 h. El lote del 26/10 cerró
+  a las 22:42 ARG: 166 grupos completos, 4 fallidos, 3 exceptuados por autorización,
+  cero pendientes/en proceso; 27.089 observaciones del feed del 26. Los 175 sets
+  siguen habilitados para el 27/10, incluidos fallidos y excepciones de transición.
+  La recuperación nocturna puede demorar descargas de mañana hasta las 22:45 ARG
+  por las reservas. Gate global de 1.301 pruebas y flujo HTTP aislado verdes;
+  24 migraciones aplicadas, datos e índices preservados, web/API activas con 200.
+  La Mac debe permanecer despierta y con tapa abierta para ejecutar el lote local.
+  [Entrega, evidencia y límites](evaluations/tcgcsv-batch-completion-2026-10-26.md).
 - **TCGCSV — cobertura y descargas diarias:** el 25/10 se verificaron productos
   de Rumble y SVE y se incorporaron equivalencias
   exactas para sus 32 cartas; Futsal sigue sin asociación. Los errores de transporte

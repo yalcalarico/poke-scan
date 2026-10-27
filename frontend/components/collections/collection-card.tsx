@@ -3,7 +3,6 @@ import Link from 'next/link';
 import { ChevronRight, Grid3x3, Layers } from 'lucide-react';
 
 import { Money } from '@/components/cards/money';
-import { ValuationEvidence } from '@/components/prices/price-evidence';
 import { Badge, Surface } from '@/components/ui';
 import { cn } from '@/lib/cn';
 import { pluralize } from '@/lib/format';
@@ -92,14 +91,18 @@ export function CollectionCard({ collection, cover, className }: CollectionCardP
               className="h-4 w-4 shrink-0 text-tertiary"
             />
           </div>
+          {collection.valuation && collection.valuation.coverage.unpricedCopies > 0 ? (
+            <p className="text-caption text-secondary">
+              {collection.valuation.coverage.pricedCopies > 0 ? 'Subtotal de cartas con precio' : 'Sin cartas con precio'}
+            </p>
+          ) : null}
         </div>
-        <div className="px-4 pb-3"><ValuationEvidence valuation={collection.valuation} /></div>
         {hasCover ? <div className="flex h-40 items-center justify-center gap-2 bg-surface-2 p-3">
           {images.map((image, index) => <div key={`${image.imageSmall}-${index}`} className="relative h-full min-w-0 flex-1">
             <Image src={image.imageSmall} alt="" fill sizes="(max-width: 639px) 22vw, 10vw" className="object-contain" />
           </div>)}
         </div> : <div className="flex min-h-32 flex-col items-center justify-center gap-2 bg-brand-soft p-4 text-brand">
-          <Layers aria-hidden="true" className="size-8" /><p className="text-caption text-secondary">Tus cartas van a aparecer acá</p>
+          <Layers aria-hidden="true" className="size-8" /><p className="text-caption text-secondary">Colección vacía</p>
         </div>}
       </Link>
 

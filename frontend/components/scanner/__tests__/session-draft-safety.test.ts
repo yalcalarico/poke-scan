@@ -19,13 +19,13 @@ function prepared() {
 }
 
 describe('consistencia del snapshot FE-01', () => {
-  it('fixture UX-01: 20 lecturas, 23 copias, 21 listas; éxito15/error3/incierto3/incompleto2', () => {
+  it('fixture de sesión larga: confirma y retira incrementos sin perder pendientes', () => {
     const { original, draft: initial } = uxTwentyDraft();
     let draft = initial;
     expect(original).toHaveLength(20);
     expect(draft.allocations.reduce((sum, allocation) => sum + allocation.quantity, 0)).toBe(23);
     const groups = readyAllocationGroups(draft);
-    expect(groups.flat().reduce((sum, allocation) => sum + allocation.quantity, 0)).toBe(21);
+    expect(groups.flat().reduce((sum, allocation) => sum + allocation.quantity, 0)).toBe(22);
     for (const group of groups) {
       const first = group[0]!;
       const operation: DraftOperation = { id: crypto.randomUUID(), userId: 'user-1', collectionId: 'collection-1', allocationIds: group.map((allocation) => allocation.id),
@@ -34,8 +34,8 @@ describe('consistencia del snapshot FE-01', () => {
       draft = settleDraftOperation(draft, operation.id, first.cardId === 'B' && first.variant === 'reverseHolofoil' ? 'rejected' : first.cardId === 'F' ? 'uncertain' : 'confirmed');
     }
     const copies = (status: DraftOperation['status']) => draft.operations.filter((operation) => operation.status === status).reduce((sum, operation) => sum + operation.payload.quantity, 0);
-    expect(copies('confirmed')).toBe(15); expect(copies('rejected')).toBe(3); expect(copies('uncertain')).toBe(3);
-    expect(draft.allocations.reduce((sum, allocation) => sum + allocation.quantity, 0)).toBe(8);
+    expect(copies('confirmed')).toBe(16); expect(copies('rejected')).toBe(3); expect(copies('uncertain')).toBe(3);
+    expect(draft.allocations.reduce((sum, allocation) => sum + allocation.quantity, 0)).toBe(7);
     expect(readyAllocationGroups(draft).flat().reduce((sum, allocation) => sum + allocation.quantity, 0)).toBe(3);
     expect(draft.allocations.filter((allocation) => allocation.runId === 7).map((allocation) => allocation.quantity)).toEqual([1]);
     expect(draft.entries.some((entry) => entry.runId === 7)).toBe(true);
@@ -44,7 +44,10 @@ describe('consistencia del snapshot FE-01', () => {
     sessionStorage.setItem('pcs.scanSession', JSON.stringify(original));
     const restored = readSessionDraft(original)!;
     expect(restored.recoveryBlocked).toBeUndefined();
-    expect(restored).toEqual(draft);
+    expect(restored.entries).toEqual(draft.entries);
+    expect(restored.operations).toEqual(draft.operations);
+    expect(restored.allocations.reduce((sum, allocation) => sum + allocation.quantity, 0)).toBe(7);
+    expect(readyAllocationGroups(restored)).toEqual([]);
     expect(readSession()).toEqual(draft.entries);
     expect(writeSession(original)).toBe(true);
     expect(readSession()).toEqual(draft.entries);
@@ -85,6 +88,19 @@ describe('consistencia del snapshot FE-01', () => {
     expect(readyAllocationGroups(restored)).toEqual([]);
   });
 
+  it('normaliza un intento rechazado antiguo al precio automático sin revivir el payload rechazado', () => {
+    const item = scan(3);
+    item.candidate.prices = [{ cardId: 'card-3', variant: 'holofoil', market: 12, currency: 'USD', source: 'tcgplayer', provider: 'tcgcsv', fetchedAt: '2026-10-01T00:00:00Z', low: null, mid: null, high: null }];
+    const draft = createSessionDraft([item]);
+    const allocation = draft.allocations[0]!;
+    const rejected: DraftOperation = { id: crypto.randomUUID(), userId: 'user-1', collectionId: 'collection-1', allocationIds: [allocation.id],
+      payload: { cardId: 'card-3', variant: 'normal', condition: 'LP', quantity: 1 }, status: 'rejected' };
+    const restored = parseSessionDraft({ ...draft, allocations: [{ ...allocation, variant: 'normal', condition: 'LP' }], operations: [rejected] }, draft.entries)!;
+    expect(restored.recoveryBlocked).toBeUndefined();
+    expect(restored.allocations[0]).toMatchObject({ variant: 'holofoil', condition: 'NM' });
+    expect(readyAllocationGroups(restored)[0]?.[0]).toMatchObject({ variant: 'holofoil', condition: 'NM' });
+  });
+
   it('corrección/retirada y otra cuenta no cambian partes inciertas ni su payload', () => {
     const draft = prepared();
     const operation = operationFor(draft);
@@ -95,24 +111,26 @@ describe('consistencia del snapshot FE-01', () => {
     expect(syncDraftEntries(draft, []).allocations).toEqual(draft.allocations);
   });
 
-  it('una captura nueva no hereda atributos del mismo cardId; grupo sobre999 queda pendiente', () => {
+  it('una captura nueva no hereda variante del mismo cardId; un grupo sobre999 se divide', () => {
     const draft = prepared();
     const next = syncDraftEntries(draft, [...draft.entries, scan(8, 'card-7')]);
-    expect(next.allocations[1]).toMatchObject({ reviewed: false, variant: null, condition: null });
+    expect(next.allocations[1]).toMatchObject({ reviewed: true, variant: null, condition: 'NM' });
     next.allocations = next.allocations.map((allocation) => ({ ...allocation, reviewed: true, variant: 'normal', variantReviewed: true, condition: 'NM', conditionReviewed: true, quantity: 600 }));
-    expect(readyAllocationGroups(next)).toEqual([]);
+    expect(readyAllocationGroups(next).map((group) => group.reduce((sum, allocation) => sum + allocation.quantity, 0))).toEqual([600, 600]);
     expect(next.allocations.reduce((sum, allocation) => sum + allocation.quantity, 0)).toBe(1200);
   });
 
   it('retiro parcial y confirmación final no reutilizan el runId después de recargar', () => {
     const draft = prepared();
     const first = { ...draft.allocations[0]!, quantity: 2 };
-    const second = { ...first, id: crypto.randomUUID(), quantity: 1, condition: 'LP' as const };
+    const second = { ...first, id: crypto.randomUUID(), quantity: 1 };
     draft.allocations = [first, second];
-    draft.operations = [operationFor(draft)];
+    draft.operations = [{ id: crypto.randomUUID(), userId: 'user-1', collectionId: 'collection-1', allocationIds: [first.id],
+      payload: { cardId: first.cardId, variant: 'normal', condition: 'NM', quantity: 2 }, status: 'saving' }];
     const partial = settleDraftOperation(draft, draft.operations[0]!.id, 'confirmed');
     expect(partial.entries.map((entry) => entry.runId)).toEqual([7]);
-    partial.operations.push(operationFor(partial));
+    partial.operations.push({ id: crypto.randomUUID(), userId: 'user-1', collectionId: 'collection-1', allocationIds: [second.id],
+      payload: { cardId: second.cardId, variant: 'normal', condition: 'NM', quantity: 1 }, status: 'saving' });
     const complete = settleDraftOperation(partial, partial.operations[1]!.id, 'confirmed');
     writeSessionDraft(complete);
     expect(readSession()).toEqual([]);
@@ -120,10 +138,10 @@ describe('consistencia del snapshot FE-01', () => {
     expect(syncDraftEntries(complete, draft.entries).allocations).toEqual([]);
   });
 
-  it('una confirmación visual solo revisa identidad y no hereda acabado ni condición', () => {
+  it('una corrección visual acepta identidad y asigna solo NM; variante sigue respaldada por precio', () => {
     const draft = createSessionDraft([scan(1)]);
     const corrected = syncDraftEntries(draft, [{ ...scan(1, 'corrected'), identityReviewed: true, selectionSource: 'visual' }]);
-    expect(corrected.allocations[0]).toMatchObject({ cardId: 'corrected', reviewed: true, variant: null, variantReviewed: false, condition: null, conditionReviewed: false });
+    expect(corrected.allocations[0]).toMatchObject({ cardId: 'corrected', reviewed: true, variant: null, variantReviewed: false, condition: 'NM', conditionReviewed: true });
     expect(readyAllocationGroups(corrected)).toEqual([]);
   });
 

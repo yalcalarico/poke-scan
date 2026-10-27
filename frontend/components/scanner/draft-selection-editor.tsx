@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Button, Checkbox, Field, Input, Select } from '@/components/ui';
-import { CONDITION_OPTIONS, VARIANT_OPTIONS } from '@/lib/variants';
+import { VARIANT_OPTIONS } from '@/lib/variants';
 import type { CardCondition, CardVariant } from '@/types/api';
 import type { DraftAllocation } from './session-draft';
 
@@ -20,7 +20,6 @@ export function DraftSelectionEditor({ allocations, onApply, onCancel }: {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [quantities, setQuantities] = useState<Record<string, string>>({});
   const [variant, setVariant] = useState<CardVariant | null>(null);
-  const [condition, setCondition] = useState<CardCondition | null>(null);
   const amount = (allocation: DraftAllocation) => quantities[allocation.id] ?? String(allocation.quantity);
   const valid = allocations.filter((allocation) => selected.has(allocation.id)).every((allocation) => /^\d+$/.test(amount(allocation)) && Number(amount(allocation)) >= 1 && Number(amount(allocation)) <= allocation.quantity);
 
@@ -39,9 +38,8 @@ export function DraftSelectionEditor({ allocations, onApply, onCancel }: {
       </Field> : null}
     </div>)}
     <Field id="selection-variant" label="Variante de la selección"><Select id="selection-variant" value={variant ?? ''} placeholder="Elegí una variante" options={VARIANT_OPTIONS} onChange={(value) => setVariant(value as CardVariant)} /></Field>
-    <Field id="selection-condition" label="Condición de la selección"><Select id="selection-condition" value={condition ?? ''} placeholder="Elegí una condición" options={CONDITION_OPTIONS} onChange={(value) => setCondition(value as CardCondition)} /></Field>
-    <Button disabled={!selected.size || !variant || !condition || !valid} onClick={() => {
-      if (variant && condition && valid) onApply(allocations.filter((allocation) => selected.has(allocation.id)).map((allocation) => ({ id: allocation.id, quantity: Number(amount(allocation)) })), variant, condition);
+    <Button disabled={!selected.size || !variant || !valid} onClick={() => {
+      if (variant && valid) onApply(allocations.filter((allocation) => selected.has(allocation.id)).map((allocation) => ({ id: allocation.id, quantity: Number(amount(allocation)) })), variant, 'NM');
     }}>Aplicar selección</Button>
     <Button variant="secondary" onClick={onCancel}>Volver al lote</Button>
   </div>;

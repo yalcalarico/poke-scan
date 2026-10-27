@@ -1,8 +1,5 @@
 'use client';
 
-import { Images, Trash2 } from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
-
 import { Button } from '@/components/ui';
 import { cn } from '@/lib/cn';
 
@@ -26,69 +23,14 @@ export interface ActionBarProps {
   sessionCount: number;
   canCapture: boolean;
   isCapturing: boolean;
-  onPickFromGallery: () => void;
-  onDiscard: () => void;
   onCapture: () => void;
   onOrganize: () => void;
-  /** Se anuncia a lectores de pantalla y se ve bajo la barra. */
+  /** Estado de cámara anunciado a lectores de pantalla. */
   status: string;
 }
 
 /**
- * 44 px: es la pantalla de una mano con la cámara abierta (§0.5).
- *
- * ## El foco acá no usa `--focus-ring`
- *
- * Es la única excepción de la app al patrón de `Button`/`Chip`, y no por
- * gusto. `--focus-ring` es el rojo de marca: sobre el velo `--on-media` —que es
- * negro al 72 % sobre una foto— mide 1,9:1 en claro y 2,6:1 en dark, y los dos
- * están muy por debajo de los 3:1 de SC 1.4.11. El token correcto acá es
- * `--on-media-text` a color pleno: blanco contra ese mismo velo da más de 9:1 en
- * los dos temas, y el control es redondo, así que el contraste contra el fondo
- * es lo único que hay que defender.
- *
- * `outline` y no `ring` por lo de siempre: el UA lo fuerza a `none` en high
- * contrast, que es donde más hace falta. Y `outline-offset-2` **no mueve nada**:
- * el `outline` se dibuja afuera de la caja y no participa del layout, así que
- * los 4 px de aire no empujan la fila del obturador ni la barra contra el borde
- * inferior. Ver el comentario de `pb-[calc(...)]` más abajo.
- */
-const MEDIA_ICON_BUTTON = [
-  'flex h-11 w-11 items-center justify-center rounded-full',
-  'bg-on-media text-on-media-text shadow-lg backdrop-blur-md',
-  'transition-colors duration-fast ease-standard hover:bg-on-media-text/20',
-  'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-on-media-text',
-  'disabled:pointer-events-none disabled:opacity-40',
-];
-
-function MediaIconButton({
-  icon: Icon,
-  label,
-  onClick,
-  disabled,
-}: {
-  icon: LucideIcon;
-  label: string;
-  onClick: () => void;
-  disabled?: boolean;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      aria-label={label}
-      title={label}
-      className={cn(MEDIA_ICON_BUTTON)}
-    >
-      <Icon aria-hidden="true" focusable="false" strokeWidth={1.75} className="h-5 w-5" />
-    </button>
-  );
-}
-
-/**
- * La barra de acciones del scanner: galería, descartar, obturador y
- * `Organizar (N)`.
+ * La barra prioriza la captura y el paso siguiente en una única fila.
  *
  * El obturador mide 80 px y lleva `border-on-media-text` en vez de
  * `border-inverse`: `inverse` es blanco en claro y **negro en dark**, así que
@@ -104,8 +46,6 @@ export function ActionBar({
   sessionCount,
   canCapture,
   isCapturing,
-  onPickFromGallery,
-  onDiscard,
   onCapture,
   onOrganize,
   status,
@@ -113,25 +53,8 @@ export function ActionBar({
   return (
     <div className="shrink-0 bg-on-media px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3 text-on-media-text">
       {/*
-        La barra del reconocimiento visual va ACÁ y no en un modal porque la cámara sigue viva
-        mientras corre: tapar la pantalla para decir "leyendo" le quita al
-        usuario el control de la foto, que es justo lo que puede corregir
-        mientras espera.
-
-        ─── El `pb` y los 4 px del `outline` ───
-
-        Ese padding de abajo no es decorativo: es el clearance del foco. El
-        `Organizar (N)` es el control más bajo de la barra, y su `outline` de
-        2 px con `offset-2` se dibuja 4 px **por fuera** de la caja. Con los 12 px
-        de `pb` más `env(safe-area-inset-bottom)` (34 px en un iPhone con
-        indicador) el borde externo del outline queda a 46 px del borde de la
-        pantalla: no se recorta ni contra la barra ni contra el indicador de
-        inicio. El `pt-3` del otro lado hace lo mismo por arriba de la fila del
-        obturador.
-
-        Y nada de esto **desplaza** la barra: el `outline` no es parte del layout,
-        a diferencia del `ring`, que era un `box-shadow` y tampoco — pero que al
-        ser 2 px sin offset tampoco daba el aire que hace legible el indicador.
+        La barra de progreso acompaña el video para no tapar el marco. El
+        espacio inferior conserva el área segura y el aire para el foco visible.
       */}
       {progress !== null ? (
         <div className="mb-3 flex flex-col gap-1.5" role="status" aria-live="polite">
@@ -164,13 +87,7 @@ export function ActionBar({
         </div>
       ) : null}
 
-      <div className="flex items-center justify-between gap-3">
-        <MediaIconButton
-          icon={Images}
-          label="Elegir una foto de la carta"
-          onClick={onPickFromGallery}
-        />
-
+      <div className="flex items-center justify-center gap-4">
         <button
           type="button"
           onClick={onCapture}
@@ -180,29 +97,13 @@ export function ActionBar({
             'flex h-20 w-20 shrink-0 items-center justify-center rounded-full border-4 border-on-media-text',
             'bg-on-media-text/20 shadow-lg backdrop-blur-md',
             'transition-transform duration-instant ease-standard active:scale-90',
-            // Mismo token que `MEDIA_ICON_BUTTON` y por el mismo motivo: el rojo
-            // de `--focus-ring` no llega a 3:1 sobre la foto. El obturador mide
-            // 80 px y vive en el centro de una fila de 358 px de ancho, así que
-            // los 4 px del outline caen de sobra dentro de la barra; el
-            // `overflow` que sí lo recortaría es el del `stage` de la
-            // `CameraView`, y el obturador no está adentro de él.
+            // El contorno blanco conserva contraste sobre la foto en ambos temas.
             'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-on-media-text',
             'disabled:pointer-events-none disabled:opacity-40',
           )}
         >
           <span aria-hidden="true" className="h-7 w-7 rounded-full bg-on-media-text" />
         </button>
-
-        <MediaIconButton
-          icon={Trash2}
-          label="Descartar la última lectura"
-          onClick={onDiscard}
-          disabled={sessionCount === 0}
-        />
-      </div>
-
-      <div className="mt-3 flex items-center gap-3">
-        <p className="min-w-0 flex-1 truncate text-caption text-on-media-text">{status}</p>
 
         <Button
           variant="inverse"
@@ -214,6 +115,7 @@ export function ActionBar({
           Continuar ({formatCount(sessionCount)})
         </Button>
       </div>
+      <p className="sr-only" role="status" aria-live="polite">{status}</p>
     </div>
   );
 }

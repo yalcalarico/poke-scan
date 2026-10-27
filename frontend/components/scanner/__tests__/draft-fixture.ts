@@ -22,14 +22,14 @@ export function uxTwentyDraft(): { original: SessionEntry[]; draft: SessionDraft
     const run = allocation.runId;
     const ready = { ...allocation, variant: 'normal' as const, variantReviewed: true, condition: 'NM' as const, conditionReviewed: true, reviewed: true };
     if (run === 17) return [];
-    if (run === 3 || run === 4) return [{ ...ready, variant: 'holofoil' as const, condition: run === 4 ? 'LP' as const : 'NM' as const }];
-    if (run === 5 || run === 6) return [{ ...ready, variant: 'reverseHolofoil' as const, condition: 'MP' as const }];
+    if (run === 3 || run === 4) return [{ ...ready, variant: 'holofoil' as const }];
+    if (run === 5 || run === 6) return [{ ...ready, variant: 'reverseHolofoil' as const }];
     if (run === 7) return [
-      { ...ready, variant: 'reverseHolofoil' as const, condition: 'MP' as const },
-      { ...ready, id: crypto.randomUUID(), variant: 'normal' as const, condition: 'LP' as const, quantity: 2 },
+      { ...ready, variant: 'reverseHolofoil' as const },
+      { ...ready, id: crypto.randomUUID(), variant: 'normal' as const, quantity: 2 },
     ];
-    if (run >= 11 && run <= 13) return [{ ...ready, condition: 'HP' as const }];
-    if (run === 14) return [{ ...ready, condition: null, conditionReviewed: false }];
+    if (run >= 11 && run <= 13) return [{ ...ready }];
+    if (run === 14) return [{ ...ready }];
     if (run === 15) return [{ ...ready, variant: null, variantReviewed: false }];
     return [{ ...ready, quantity: run === 20 ? 3 : 1 }];
   });

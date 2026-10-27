@@ -17,7 +17,7 @@ it('mantiene los controles dentro del viewport visible y restaura el scroll al c
   const noop = () => {};
   const { unmount } = render(<CameraView busy={false} detected={null} headline="" detail="" progress={null}
     previewUrl={null} sessionCount={0} onCapture={noop} onError={noop} onClose={noop}
-    onPickFromGallery={noop} onDiscard={noop} onOrganize={noop} />);
+    onOrganize={noop} />);
   const camera = screen.getByLabelText('Vista de la cámara').parentElement?.parentElement;
   expect(camera).toHaveStyle({ height: '600px', width: '390px', top: '20px' });
   act(() => { viewport.height = 480; viewport.offsetTop = 0; viewport.dispatchEvent(new Event('resize')); });

@@ -2,7 +2,7 @@
 
 import { useCurrency } from '@/hooks/use-currency';
 import { PriceReferenceDetails } from '@/components/prices/price-evidence';
-import { conditionLabel, variantLabel } from '@/lib/variants';
+import { variantLabel } from '@/lib/variants';
 import type { CollectionItemDto } from '@/types/api';
 
 export function CollectionItemDetails({ item }: { item: CollectionItemDto }) {
@@ -11,7 +11,6 @@ export function CollectionItemDetails({ item }: { item: CollectionItemDto }) {
   const market = reference?.market ?? null;
   return <div className="flex w-full flex-col gap-1 text-caption text-secondary">
     <p>#{item.card.number} · {variantLabel(item.variant)}</p>
-    <p>{conditionLabel(item.condition)}</p>
     <div className="flex flex-wrap justify-between gap-1 border-t border-line pt-2 tabular-nums">
       <span>Cantidad: {item.quantity}</span>
       <span>Por copia: {market === null ? '—' : formatMoney(market)}</span>
@@ -20,6 +19,5 @@ export function CollectionItemDetails({ item }: { item: CollectionItemDto }) {
     {item.isForTrade ? <p className="text-brand">Para intercambio</p> : null}
     {market === null ? <p className="text-warning">Sin referencia de precio para esta variante.</p> : null}
     {reference ? <PriceReferenceDetails reference={reference} showConversion /> : null}
-    <p>La condición {conditionLabel(item.condition)} no ajusta este valor.</p>
   </div>;
 }

@@ -1,0 +1,59 @@
+{
+  "checkedAt": "2026-10-26T14:50:45.367Z",
+  "passed": true,
+  "http": {
+    "api": 200,
+    "web": 200
+  },
+  "runtimePane": "w2:p7",
+  "dataAndInventoryCountsPreserved": true,
+  "catalogCards": 20670,
+  "catalogSets": 176,
+  "ginIndexesPreserved": 5,
+  "observationsPreserved": 170726,
+  "enabledSets": 175,
+  "signal": [
+    "tcgcsv"
+  ],
+  "cyclePending": true,
+  "schedulerEnabled": true,
+  "workerConfiguredEnabled": true,
+  "heartbeatAt": "2026-10-26T14:50:45.002Z",
+  "batchNotOpenedBefore18": true,
+  "importedToday": [
+    {
+      "groupId": 1407,
+      "feedPublishedAt": "2026-10-25T20:05:50.000Z",
+      "publishedAt": "2026-10-26T13:10:56.454Z",
+      "observations": 61
+    },
+    {
+      "groupId": 1409,
+      "feedPublishedAt": "2026-10-25T20:05:50.000Z",
+      "publishedAt": "2026-10-26T13:11:06.177Z",
+      "observations": 186
+    },
+    {
+      "groupId": 1450,
+      "feedPublishedAt": "2026-10-25T20:05:50.000Z",
+      "publishedAt": "2026-10-26T13:24:36.378Z",
+      "observations": 29
+    }
+  ],
+  "excepted": [
+    {
+      "setId": "pop8",
+      "status": "completed"
+    },
+    {
+      "setId": "bwp",
+      "status": "partial"
+    },
+    {
+      "setId": "bw11",
+      "status": "partial"
+    }
+  ],
+  "scheduledUtc": "2026-10-26T21:00:00.000Z",
+  "scheduledArgentina": "18:00"
+}

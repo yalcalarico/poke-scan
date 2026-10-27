@@ -54,10 +54,38 @@ leases persistentes, una descarga del mismo archivo cada 24 h y pausas
   El planificador incorpora semilla curada, demanda de colecciones y todos los sets
   con asociación validada (prioridad 200 para las altas nuevas). No reactiva bajas
   manuales ni cambia prioridades ya registradas.
-- Precios a las **21:00 UTC**, reanudación cada 15 min y consumidor cada cinco
-  segundos. Descubrimiento de identidades cada diez minutos.
+- Tanda común a las **21:00 UTC (18:00 Argentina)**. Su alcance se persiste al
+  abrirse en `tcgcsv_daily_batches`, independiente de objetivos previos o bajas
+  posteriores; una demanda nueva espera la tanda siguiente. El consumidor serial
+  continúa el lote activo después de medianoche con su fecha y publicación fijas.
+  No hay cierre horario que deje grupos pendientes: cada uno termina `completed`,
+  `failed` o exceptuado con motivo. El lote cierra cuando todos tienen resultado;
+  si alguna parte falla, su estado global es `failed` con éxitos y fallos separados.
+- `tcgcsv_batch_groups` registra resultados por tanda; `tcgcsv_group_jobs` conserva
+  presupuesto y lease globales por grupo. Un lease durable de consumidor en
+  `tcgcsv_discovery_state` impide descargas paralelas entre procesos. La publicación
+  confirma ambos leases y guarda precio y resultado en la misma transacción.
+- Reanudación cada 15 min y consumidor cada cinco segundos; descubrimiento cada
+  diez minutos. Antes de abrir una tanda no se descargan grupos aislados por una
+  lectura o señal. Una tanda abierta sí continúa tras un reinicio o despertar;
+  no se promete ejecución mientras la PC esté suspendida.
+- Los errores anteriores al contenido admiten hasta tres intentos acotados; si
+  ya se consumió un archivo, el grupo falla y conserva las 24 h. La tanda siguiente
+  vuelve a incluir todo el alcance habilitado, también los éxitos y fallos previos.
+  Si la publicación objetivo fue reemplazada, o llegan las siguientes 18 sin
+  terminar, lo restante falla explícitamente; no se mezcla otro feed ni se pisa
+  una tanda activa con la siguiente.
 - `pnpm run prices:sync` solicita sólo TCGCSV; `prices:status` muestra su estado;
-  `prices:sets` administra alcance. No forzar descargas reseteando reservas.
+  `prices:sets` administra alcance. La señal durable para una nueva tanda espera las 18 ARG; no fuerza
+  una descarga inmediata ni resetea reservas.
+- Transición autorizada el **26/10**: la tanda de hoy exceptúa los tres grupos
+  con importaciones genuinas de esta mañana (`bw11`, `bwp`, `pop8`). Conservan
+  sus objetivos terminales y reservas; a partir del 27/10 entran en el lote nuevo.
+
+La reserva toma el máximo entre el reloj de PostgreSQL, el de la API al finalizar
+el archivo y la reserva previa. Esto evita adelantar las 24 h tras una suspensión
+que desalineó temporalmente el reloj de Docker. La telemetría permite reparar
+reservas anteriores de forma conservadora, sin repetir una descarga.
 - `ENABLE_COLLECTION_COMPARISON_CRON=true` conserva el corte diario de valor;
   `ENABLE_PORTFOLIO_SNAPSHOTS_CRON=false` permite deshabilitar el corte diario
   de portafolio. El nombre legacy del flag no vuelve a habilitar dos fuentes.
@@ -78,6 +106,13 @@ del archivo). No conocemos la hora de cotización upstream. En precios y valuaci
 `freshness` describe antigüedad de la consulta; el historial atribuido comunica
 explícitamente antigüedad del **feed**. Son fechas distintas y se nombran como tales.
 Los días sin datos permanecen como huecos y no se reconstruyen con precios actuales.
+
+TCGCSV publica alrededor de las 20:00 UTC (17:00 Argentina). No documenta un
+desfase fijo T-1: antes de esa hora puede seguir disponible el feed del día
+anterior. La tanda automática espera una publicación del día de su objetivo
+antes de descargar contenido. La fecha de importación no cambia la fecha del
+feed ni acredita la hora de cada venta. Ver [sitio](https://tcgcsv.com/),
+[reglas de uso](https://tcgcsv.com/docs) y [procedencia](https://tcgcsv.com/faq).
 
 El portafolio usa snapshots de `collection_comparison_snapshots` filtrados a
 TCGCSV. No une la nueva serie con `portfolio_snapshots` anteriores sin proveedor.

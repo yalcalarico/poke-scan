@@ -59,7 +59,7 @@ export class ScheduledJobsService implements OnModuleInit {
         UPDATE price_sync_controls SET "heartbeatAt" = NOW(), "schedulerEnabled" = ${enabled}, "workerConfiguredEnabled" = ${enabled}
         WHERE provider = 'tcgcsv'
       `;
-      if (!enabled) return;
+      if (!enabled || !this.tcgcsv.dailyWindowOpen()) return;
       const [claim] = await this.prisma.$queryRaw<{ requestedGeneration: number }[]>`
         UPDATE price_sync_controls SET "lockedBy" = ${owner}, "leaseUntil" = NOW() + INTERVAL '2 minutes'
         WHERE provider = 'tcgcsv' AND "requestedGeneration" > "handledGeneration" AND "nextCycleAt" <= NOW()

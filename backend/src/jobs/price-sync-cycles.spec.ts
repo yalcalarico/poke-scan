@@ -17,10 +17,10 @@ describe('Ciclos TCGCSV: señal durable y consumidor único', () => {
   let originals: Control[] = [];
   const discover = vi.fn(async () => true);
   const signalDaily = vi.fn(async () => 0);
-  const build = (enabled = true): ScheduledJobsService => new ScheduledJobsService(
+  const build = (enabled = true, windowOpen = true): ScheduledJobsService => new ScheduledJobsService(
     new ConfigService({ ENABLE_CATALOG_SYNC_CRON: 'false', ENABLE_RETENTION_CRON: 'false' }),
     {} as CatalogSyncService, {} as CardPricesRetentionService, prisma as PrismaService,
-    { enabled: () => enabled, discover, signalDaily } as unknown as TcgcsvService,
+    { enabled: () => enabled, dailyWindowOpen: () => windowOpen, discover, signalDaily } as unknown as TcgcsvService,
   );
 
   beforeAll(async () => { originals = await prisma.$queryRaw<Control[]>`SELECT * FROM price_sync_controls ORDER BY provider`; });
@@ -59,6 +59,17 @@ describe('Ciclos TCGCSV: señal durable y consumidor único', () => {
     expect(signalDaily).not.toHaveBeenCalled();
     expect(await control()).toMatchObject({ handledGeneration: 0, schedulerEnabled: false, workerConfiguredEnabled: false });
     expect((await control()).heartbeatAt).not.toBeNull();
+  });
+
+  it('una señal matinal espera la tanda de las 18 ARG sin hacer HTTP ni consumir la generación', async () => {
+    await build(true, false).pollPriceCycles();
+    expect(discover).not.toHaveBeenCalled();
+    expect(signalDaily).not.toHaveBeenCalled();
+    expect(await control()).toMatchObject({ requestedGeneration: 1, handledGeneration: 0, lockedBy: null });
+    expect((await control()).heartbeatAt).not.toBeNull();
+    await build(true, true).pollPriceCycles();
+    expect(discover).toHaveBeenCalledExactlyOnceWith(true);
+    expect(await control()).toMatchObject({ handledGeneration: 1 });
   });
 
   it('un lease activo impide duplicación y un lease vencido permite recuperar el pedido', async () => {

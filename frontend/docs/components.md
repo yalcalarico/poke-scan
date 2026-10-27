@@ -1,5 +1,12 @@
 # Inventario de componentes
 
+**Política NM, 26/10/2026:** altas y ediciones ya no piden condición y envían NM.
+Se retiraron sus labels en ubicación, compartidos y CSV, y el selector avanzado
+del escáner. Los tipos y payloads históricos se conservan para replay seguro.
+La normalización de registros anteriores y la regla del servidor están probadas
+pero pendientes de aplicación por la restricción de no reiniciar durante jobs;
+ver [estado exacto y parche](../../docs/evaluations/revision-usuario-2026-10-25/RESULTADO-06-variantes-nm-refresco.md).
+
 Primitivas en `components/ui/` y componentes de dominio alrededor. Este documento es el
 índice de **qué existe, qué hace y por qué está hecho así**. Para *cómo se
 construye* el sistema está [`design-system.md`](design-system.md) (tokens, reglas,
@@ -54,7 +61,7 @@ símbolo están citados, la afirmación es verificable con un grep.
 
 ### Precio y valuación (FE-03)
 
-`components/prices/price-evidence.tsx` comparte la lectura de procedencia por referencia y la cobertura/antigüedad por agregado. Los agregados usan `valuation.amount` y cobertura por copias; una respuesta legacy sin `valuation` se anuncia como no disponible. `PriceReferenceDetails` muestra mercado, API, moneda original, consulta, evaluación y fecha upstream en líneas separadas, sin calcular frescura con el reloj del navegador. `PriceHistory` conserva la variante nullable del envelope y permite desplegar la metadata de cada observación. `PortfolioOverview` usa la valuación del snapshot para la gráfica y la lista, y el cambio en ARS informa que la conversión usa la cotización vigente.
+`components/prices/price-evidence.tsx` comparte la lectura de procedencia por referencia y la cobertura/antigüedad por agregado. Los agregados usan `valuation.amount` y cobertura por copias; una respuesta legacy sin `valuation` se anuncia como no disponible. `CollectionCard` conserva el monto y muestra solo un aviso breve si el valor suma parcialmente o ninguna copia tiene precio. Desde el 26/10, resúmenes, portafolio, fichas e ítems también dejan los timestamps y los detalles de API/fuente en desplegables cerrados por defecto. `PriceReferenceDetails` permite consultar mercado, API, moneda original, consulta, evaluación y fecha upstream sin calcular frescura con el reloj del navegador. `PriceHistory` conserva la variante nullable del envelope y permite desplegar la metadata de cada observación. `PortfolioOverview` usa la valuación del snapshot para la gráfica y la lista, y el cambio en ARS informa que la conversión usa la cotización vigente.
 
 `components/prices/comparison-panel.tsx` agrega la comparación local TCGdex/TCGCSV en la ficha, el detalle de colección y el portafolio. `ComparisonChart` usa dos series etiquetadas, fechas UTC y cortes ante huecos; el detalle de observaciones expone valores, cobertura y composición a lectores de pantalla. Ver [`comparison.md`](comparison.md) para la semántica y los endpoints.
 
@@ -1047,7 +1054,7 @@ La página `/escanear` mantiene la sesión y ejecuta DINOv2. `CameraView` conser
 
 `DetectedCardBar` y `PriceChip` muestran la carta elegida y sus precios sin consultar APIs. `IdlePanel` ofrece cámara solo en teléfonos. `OrganizeSheet` guarda las entradas en la colección elegida; la primera predicción se suma por defecto y no hay un selector de candidatos.
 
-`image-input.ts` decodifica archivos; `lib/scanner/visual-photo.ts` prepara el recorte de galería. La cámara ya captura la guía y no vuelve a rotarla. `copy.ts` contiene mensajes y fases. `types.ts` y `session-storage.ts` definen/persisten la sesión, hasta 30 entradas. Ver [scanner.md](scanner.md) para cancelación, tiempos, geometría y actualización del índice.
+`image-input.ts` decodifica archivos; `lib/scanner/visual-photo.ts` prepara el recorte de galería. La cámara ya captura la guía y no vuelve a rotarla. `copy.ts` contiene mensajes y fases. `types.ts` y `session-storage.ts` definen/persisten una sesión sin máximo funcional de entradas. Ver [scanner.md](scanner.md) para cache de recortes, recuperación, cancelación, tiempos, geometría y actualización del índice.
 
 ## 2.5 `collections/`
 
@@ -1200,13 +1207,17 @@ Lo no obvio:
   comunican sin ocultar el precio actual; `variant: null` informa que la mejor
   referencia puede cambiar de variante por día.
 - `ValuationMetadata` es server-safe y comparte cobertura/recencia con el resumen
-  público sin sesión ni preferencia de moneda. `PriceReferenceDetails` muestra
-  consulta, evaluación y fecha upstream separadas. `lib/prices/format.ts` conserva
+  público sin sesión ni preferencia de moneda. La cobertura queda visible; las
+  fechas se consultan bajo «Ver detalles del valor». `PriceReferenceDetails` deja
+  consulta, evaluación y fecha upstream dentro de «Ver referencia del precio»,
+  cerrado por defecto. `lib/prices/format.ts` conserva
   hora, milisegundos y UTC del instante cacheado; los días observados se formatean
   como días UTC, sin corrimiento por el huso del browser.
 - Los agregados consumen `valuation.amount`; ausencia legacy sigue desconocida.
-  El item muestra unitario y subtotal de su variante exacta, y deja de mostrar la
-  referencia anterior mientras se edita esa variante. Condición no ajusta el monto.
+  El item muestra unitario y subtotal de la variante seleccionada usando las
+  cotizaciones locales consultadas por `useCardVariants`; cambiar de variante no
+  exige guardar para ver su precio ni sustituye una cotización ausente por otra.
+  Al guardar, la respuesta confirmada actualiza la lista y se revalidan sus totales.
 
 ## 2.8 `settings/` — `/ajustes`
 

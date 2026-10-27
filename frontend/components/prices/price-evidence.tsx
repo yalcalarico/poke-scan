@@ -24,13 +24,16 @@ export function PriceReferenceDetails({ reference, showConversion = false }: { r
     : 'Fecha de actualización de la fuente no disponible';
 
   return (
-    <div className="flex flex-col gap-0.5 text-caption text-secondary">
+    <details className="text-caption text-secondary">
+      <summary className="flex min-h-11 cursor-pointer items-center rounded-control focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--focus-ring)]">Ver referencia del precio</summary>
+      <div className="flex flex-col gap-0.5">
       <p>Mercado: {reference.source} · API: {provider} · Moneda original: {reference.currency}</p>
       <p>{formatReferenceTime(reference.fetchedAt) === '—' ? 'Consulta: fecha no disponible' : `Consultado el ${formatReferenceTime(reference.fetchedAt)}`} · {freshnessLabel(reference.freshness)}</p>
       {reference.evaluatedAt ? <p>Evaluado el {formatReferenceTime(reference.evaluatedAt)}</p> : <p>Evaluación: antigüedad no disponible</p>}
       <p>{upstream}</p>
       {showConversion ? <LocalConversion /> : null}
-    </div>
+      </div>
+    </details>
   );
 }
 
@@ -42,12 +45,9 @@ function LocalConversion() {
 
 /** Cobertura por copias y antigüedad agregada; los estados faltantes nunca se completan por inferencia. */
 export function ValuationEvidence({ valuation, emptyMessage = 'Todavía no hay cartas en esta colección.', className, announceChanges = false }: { valuation: ValueAggregateDto | undefined; emptyMessage?: string; className?: string; announceChanges?: boolean }) {
-  const { currency, activeRate, fetchedAt, isStale: rateIsStale } = useCurrency();
+  const { currency } = useCurrency();
   return <div className={cn('flex flex-col gap-1 text-caption text-secondary', className)}>
     <ValuationMetadata valuation={valuation} emptyMessage={emptyMessage} announceChanges={announceChanges} />
-    {valuation ? <>
-      <p>{currency === 'ARS' ? 'Referencia internacional convertida al cambio actual' : 'Referencia internacional en USD'} · la condición no ajusta este valor.</p>
-      {currency === 'ARS' ? <p>{activeRate ? `1 USD = ${formatPrice(activeRate.rate, 'ARS')} (${activeRate.rateType})${fetchedAt ? ` · cotización del ${formatReferenceTime(fetchedAt)}` : ''}${rateIsStale ? ' · cotización cambiaria anterior' : ''}` : 'Cotización cambiaria actual no disponible'}</p> : null}
-    </> : null}
+    {valuation && currency === 'ARS' ? <details><summary className="flex min-h-11 cursor-pointer items-center rounded-control focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--focus-ring)]">Ver conversión a pesos</summary><LocalConversion /></details> : null}
   </div>;
 }

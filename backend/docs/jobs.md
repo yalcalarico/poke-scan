@@ -20,12 +20,24 @@ concilia asociaciones almacenadas sin red. Ver la sección de cobertura en
 usa selección local por ownership y variante, sin consultas externas ni N+1.
 `prices:sync` solicita sólo TCGCSV. Ver [precios](pricing.md) y [providers](providers.md).
 
-Desde el 22/10, los jobs diarios pendientes/fallidos de ayer se retoman con
-objetivos de hoy aunque todavía no sean las 21 UTC. El resumidor conserva las
-24 h del archivo y el backoff; no inicia el ciclo adelantado de sets nuevos ni
-reconstruye observaciones de días anteriores. `prices:diagnose` permite distinguir
-la espera de una validación fallida usando sólo datos locales. Ver
-[recuperación de grupos](../../docs/evaluations/tcgcsv-groups-recovery-2026-10-22.md).
+Desde el 26/10, por pedido del usuario, todos los grupos del alcance diario
+entran en una tanda común a las **21:00 UTC (18:00 Argentina)**. La planificación
+persiste el alcance antes de habilitar el consumo automático; las lecturas no
+adelantan grupos ni cambian la prioridad diaria por una interactiva. Las señales
+manuales esperan las 18 para abrir un lote nuevo. El usuario corrigió después el
+cierre: **no hay corte a medianoche UTC**. `tcgcsv_daily_batches` fija alcance,
+publicación y estado; `tcgcsv_batch_groups` conserva el resultado de cada grupo.
+El lote abierto continúa tras medianoche/reinicio hasta resultados terminales,
+sin convertir pendientes en una aparente ejecución terminada. Fallar después de
+consumir contenido conserva las 24 h y deja fallo explícito para la siguiente
+tanda; antes de contenido se admiten reintentos acotados. Un cambio de feed o la
+llegada de las siguientes 18 cierra lo no completado como fallo explícito.
+Un lease global de consumidor conserva el recorrido serial entre procesos.
+Una PC suspendida no ejecuta jobs y puede interrumpir conexiones; debe permanecer
+despierta y con la tapa abierta para operar localmente. No se inventan observaciones.
+`prices:diagnose` distingue la espera de una validación fallida con datos locales.
+Ver [política](pricing.md#ciclo-diario-y-operación) y
+[cierre y validación](../../docs/evaluations/tcgcsv-batch-completion-2026-10-26.md).
 
 
 > Los servicios de sync, cómo el sync de cartas es **reanudable**, el **mapeo
