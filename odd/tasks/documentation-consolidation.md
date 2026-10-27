@@ -22,7 +22,7 @@ Rama: `docs/documentation-review-slices`; respaldo íntegro: `backup/documentati
 
 - T4 [S6-S7] inline — done — 16 unidades reconstruidas, 48 rutas originales cubiertas una vez; contenido final idéntico al respaldo salvo continuidad ODD. Commits: `0fa991f` a `7fec85d`.
 - T5 [S3,S5-S7,S9] native review — done — unidades 1, 3–15, 17 y 18 aprobadas/reconocidas (16); 2 sin revisión por rechazo de consentimiento y 16 sin revisión por decisión humana explícita. Equivalencia final y diff check verdes; cierre pasivo bajo evaluación proporcional, sin otra ronda de revisión por defecto.
-- T6 [S6,S8] delivery — in_progress — push y PR contra master autorizados, sin issue ni esperar CI; resultado de entrega en el PR y continuidad Engram, sin afirmar publicación antes de observarla.
+- T6 [S6,S8] delivery — done — push observado y PR [#16](https://github.com/yalcalarico/poke-scan/pull/16) creado contra master; sin issue, espera de CI ni merge. Evidencia de publicación: job-1, exit 0; commits de cierre `4124ae4` y seguimiento de entrega.
 
 ## Log
 
