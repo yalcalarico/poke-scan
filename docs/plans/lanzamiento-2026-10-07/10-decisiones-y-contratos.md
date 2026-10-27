@@ -4,8 +4,8 @@ Revisión documental del 20/10/2026. Se mantienen decisiones, contratos y criter
 de aceptación. Los párrafos de contexto/propuestas y resoluciones con fecha
 explican la secuencia; no son tareas nuevas. Las resoluciones implementadas y
 el [estado actual](../../estado-actual.md) prevalecen sobre esos antecedentes.
-Las cabeceras repetidas y la versión anterior íntegra quedan en
-[archivo](../../archive/orchestration-2026-10-20/README.md).
+Las cabeceras repetidas y la versión anterior íntegra se
+[recuperan desde Git](../../archive/README.md).
 
 ## DEC-01 — Inventario y guardado ambiguo
 

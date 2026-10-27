@@ -43,5 +43,5 @@ custodio y retención ya fueron elegidos; no volver a preguntarlos.
 
 Pro/pagos y publicación requieren sus decisiones/gates propios. El próximo
 trabajo lo determina el pedido humano vigente y sus entradas; los pasos de las
-rondas del 7–15/10 no son reservas actuales. La bitácora detallada anterior queda
-[archivada completa](../../archive/orchestration-2026-10-20/README.md).
+rondas del 7–15/10 no son reservas actuales. La bitácora detallada anterior se
+[recupera desde Git](../../archive/README.md).
