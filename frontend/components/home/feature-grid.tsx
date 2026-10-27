@@ -1,4 +1,4 @@
-import { PreviewLink as Link } from '@/components/visual-preview/preview-link';
+import Link from 'next/link';
 import { Layers, ScanLine, Search } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 

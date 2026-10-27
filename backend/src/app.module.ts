@@ -30,9 +30,9 @@ import { MetricsModule } from './modules/metrics/metrics.module.js';
      * esta línea no había ningún cron: los decorators se registraban y no se
      * ejecutaban nunca.
      *
-     * Los tres jobs que hay (sync semanal de catálogo, backfill diario de
-     * precios, retención mensual) se apagan con `ENABLE_CATALOG_SYNC_CRON`,
-     * `ENABLE_PRICE_BACKFILL_CRON` y `ENABLE_RETENTION_CRON`. Ver
+     * Catálogo semanal, ingesta TCGCSV y retención mensual se controlan con
+     * `ENABLE_CATALOG_SYNC_CRON`, `ENABLE_TCGCSV_INGESTION` y
+     * `ENABLE_RETENTION_CRON`. Ver
      * `jobs.md` §"Los crons".
      */
     ScheduleModule.forRoot(),

@@ -6,7 +6,7 @@ import { Button } from '@/components/ui';
 import { useChunkedList } from '@/components/set-progress/use-chunked-list';
 import { PriceReferenceDetails } from '@/components/prices/price-evidence';
 import { formatPrice, pluralize } from '@/lib/format';
-import { conditionShort, variantShort } from '@/lib/variants';
+import { variantShort } from '@/lib/variants';
 import type { PublicSharedCollection } from '@/lib/api/share';
 
 /**
@@ -72,11 +72,10 @@ export function PublicCardGrid({ items, label }: PublicCardGridProps) {
     card: item.card,
     action: (
       <div className="flex flex-col gap-1 text-caption text-secondary">
-        <span>{variantShort(item.variant)} · {conditionShort(item.condition)} · {item.quantity} {pluralize(item.quantity, 'copia', 'copias')}</span>
+        <span>{variantShort(item.variant)} · {item.quantity} {pluralize(item.quantity, 'copia', 'copias')}</span>
         {item.price ? (
           <div>
             <p>{item.price.market === null ? 'Sin referencia de precio para esta variante' : `Referencia internacional: USD ${formatPrice(item.price.market, 'USD')} por copia`}</p>
-            <p>Condición {conditionShort(item.condition)} · no ajusta este valor.</p>
             <PriceReferenceDetails reference={item.price} showConversion={false} />
           </div>
         ) : (

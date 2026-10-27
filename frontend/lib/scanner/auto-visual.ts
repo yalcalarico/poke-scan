@@ -22,7 +22,11 @@ export function frameSignature(image: ImageData): number[] {
       signature.push(image.data[i]! * 0.299 + image.data[i + 1]! * 0.587 + image.data[i + 2]! * 0.114);
     }
   }
-  return signature;
+  // El autoenfoque y la exposición automática pueden cambiar todo el brillo
+  // aunque la carta no se haya movido. Centramos la luminancia para medir forma
+  // y movimiento, sin relajar los umbrales frente a cambios de encuadre.
+  const mean = signature.reduce((sum, value) => sum + value, 0) / signature.length;
+  return signature.map((value) => value - mean);
 }
 
 function difference(a: number[], b: number[]): number {
@@ -36,6 +40,14 @@ export class AutoVisualGate {
   private stableSince = 0;
   private absentSince: number | null = null;
   private lastCapture = -Infinity;
+
+  markCaptured(signature: number[], now: number): void {
+    this.previous = signature;
+    this.captured = signature;
+    this.stableSince = now;
+    this.absentSince = null;
+    this.lastCapture = now;
+  }
 
   observe(signature: number[], aligned: boolean, busy: boolean, now: number): { ready: boolean; capture: boolean } {
     if (!aligned) {
@@ -51,8 +63,7 @@ export class AutoVisualGate {
     const repeated = this.captured !== null && difference(signature, this.captured) < 14;
     const capture = ready && !busy && !repeated && now - this.lastCapture >= 2500;
     if (capture) {
-      this.captured = signature;
-      this.lastCapture = now;
+      this.markCaptured(signature, now);
     }
     return { ready, capture };
   }

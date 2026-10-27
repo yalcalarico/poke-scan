@@ -1,0 +1,20 @@
+{
+  "command": "pnpm run check",
+  "exitCode": 0,
+  "passed": true,
+  "tests": {
+    "backend": 555,
+    "api": 6,
+    "frontend": 634,
+    "backendScripts": 25,
+    "monitor": 15,
+    "backups": 54,
+    "custody": 7,
+    "qa": 5,
+    "total": 1301
+  },
+  "lint": "passed",
+  "typecheck": "passed",
+  "builds": "passed",
+  "log": "check-release.log"
+}

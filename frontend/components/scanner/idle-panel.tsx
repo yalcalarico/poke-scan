@@ -1,10 +1,9 @@
 'use client';
 
-import { Camera, CircleAlert, ImageUp, Search } from 'lucide-react';
+import { CircleAlert, ImageUp, Search } from 'lucide-react';
 
 import { Button, Surface } from '@/components/ui';
 import { Pokeball } from '@/components/visual-preview/effects';
-import { useVisualPreview } from '@/components/visual-preview/visual-preview';
 
 export interface IdlePanelProps {
   visualCamera?: boolean;
@@ -40,7 +39,6 @@ export function IdlePanel({
   onManualSearch,
   onOrganize,
 }: IdlePanelProps) {
-  const visual = useVisualPreview();
   return (
     <Surface className="flex flex-col items-center gap-4 rounded-panel px-6 py-8 text-center">
       {sessionCount > 0 ? <div role="status" className="flex w-full flex-col gap-3 rounded-panel border border-warning-border bg-warning-soft p-4">
@@ -52,8 +50,8 @@ export function IdlePanel({
           Organizar la sesión ({sessionCount})
         </Button>
       </div> : null}
-      <div data-v2-scan-idle={visual ? '' : undefined} className="flex h-20 w-20 items-center justify-center rounded-full bg-brand-soft text-brand">
-        {visual ? <Pokeball className="scale-150" /> : showCamera ? <Camera aria-hidden="true" focusable="false" strokeWidth={1.75} className="h-10 w-10" /> : <ImageUp aria-hidden="true" focusable="false" strokeWidth={1.75} className="h-10 w-10" />}
+      <div data-v2-scan-idle="" className="flex h-20 w-20 items-center justify-center rounded-full bg-brand-soft text-brand">
+        <Pokeball className="scale-150" />
       </div>
 
       <div className="flex max-w-sm flex-col gap-1">

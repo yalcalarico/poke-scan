@@ -2,7 +2,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import {
-  MAX_SESSION_ENTRIES,
   appendSessionEntry,
   clearSession,
   normalizeSession,
@@ -42,21 +41,21 @@ beforeEach(() => {
 });
 
 describe('normalizeSession', () => {
-  it('deja igual una sesión que ya está en el tope', () => {
-    const entries = seed(MAX_SESSION_ENTRIES);
-    expect(normalizeSession(entries)).toHaveLength(MAX_SESSION_ENTRIES);
+  it('conserva el lote completo', () => {
+    const entries = seed(100);
+    expect(normalizeSession(entries)).toHaveLength(100);
   });
 
-  it('conserva todas las lecturas anteriores cuando un almacenamiento viejo excede el tope', () => {
-    const normalized = normalizeSession(seed(MAX_SESSION_ENTRIES + 10));
+  it('conserva todas las lecturas anteriores', () => {
+    const normalized = normalizeSession(seed(100));
 
-    expect(normalized).toHaveLength(MAX_SESSION_ENTRIES + 10);
+    expect(normalized).toHaveLength(100);
     // Lo último es lo que el usuario está por procesar.
-    expect(normalized[normalized.length - 1].runId).toBe(MAX_SESSION_ENTRIES + 10);
+    expect(normalized[normalized.length - 1].runId).toBe(100);
   });
 
   it('no muta el array que recibe', () => {
-    const entries = seed(MAX_SESSION_ENTRIES + 5);
+    const entries = seed(35);
     const before = entries.length;
 
     normalizeSession(entries);
@@ -66,23 +65,19 @@ describe('normalizeSession', () => {
 });
 
 describe('appendSessionEntry', () => {
-  /*
-   * Este es el bug que estos tests cubren: el recorte al tope vivía solo en
-   * `writeSession`, así que el estado de React de `/escanear` seguía creciendo
-   * durante la sesión. La UI anunciaba "Guardamos hasta 30 cartas" mientras la
-   * grilla mostraba 47, y al recargar desaparecían las 17 primeras sin aviso.
-   */
-  it('el estado en memoria respeta el mismo tope que lo que se persiste', () => {
+  it('agrega lecturas más allá de 30 en memoria sin reemplazar anteriores', () => {
     let session: { runId: number; candidate: RecognizedCard }[] = [];
-    for (let i = 0; i < MAX_SESSION_ENTRIES + 12; i += 1) {
+    for (let i = 0; i < 100; i += 1) {
       session = appendSessionEntry(session, { runId: i + 1, candidate: candidate(i + 1) });
     }
 
-    expect(session).toHaveLength(MAX_SESSION_ENTRIES);
+    expect(session).toHaveLength(100);
+    expect(session[0]?.runId).toBe(1);
+    expect(session.at(-1)?.runId).toBe(100);
   });
 
-  it('el estado en memoria y lo persistido no pueden divergir', () => {
-    const overflow = MAX_SESSION_ENTRIES + 12;
+  it('persiste y restaura 100 lecturas', () => {
+    const overflow = 100;
     let memory: { runId: number; candidate: RecognizedCard }[] = [];
     for (let i = 0; i < overflow; i += 1) {
       memory = appendSessionEntry(memory, { runId: i + 1, candidate: candidate(i + 1) });
@@ -129,11 +124,10 @@ describe('readSession', () => {
     expect(readSession()).toEqual([]);
   });
 
-  it('restaura un legado que excede el tope sin descartar lecturas', () => {
-    // Escrita por una versión anterior del tope, o editada desde el devtools.
-    window.sessionStorage.setItem('pcs.scanSession', JSON.stringify(seed(MAX_SESSION_ENTRIES + 5)));
+  it('restaura un borrador largo completo', () => {
+    window.sessionStorage.setItem('pcs.scanSession', JSON.stringify(seed(100)));
 
-    expect(readSession()).toHaveLength(MAX_SESSION_ENTRIES + 5);
+    expect(readSession()).toHaveLength(100);
   });
 });
 
@@ -141,9 +135,9 @@ describe('writeSession', () => {
   it('migra precios legacy y los conserva en el snapshot canónico después de cinco reloads', () => {
     const scan = seed(1)[0]!;
     scan.candidate.prices = [
-      { cardId: 'base1-1', variant: 'normal', low: null, mid: null, high: null, market: 10, currency: 'USD', provider: 'tcgdex', source: 'tcgplayer', fetchedAt: '2026-10-07T12:00:00Z' },
-      { cardId: 'base1-1', variant: 'holofoil', low: null, mid: null, high: null, market: 0, currency: 'USD', provider: 'tcgdex', source: 'tcgplayer', fetchedAt: '2026-10-07T12:00:00Z' },
-      { cardId: 'base1-1', variant: 'reverseHolofoil', low: null, mid: null, high: null, market: null, currency: 'USD', provider: 'tcgdex', source: 'tcgplayer', fetchedAt: '2026-10-07T12:00:00Z' },
+      { cardId: 'base1-1', variant: 'normal', low: null, mid: null, high: null, market: 10, currency: 'USD', provider: 'tcgcsv', source: 'tcgplayer', fetchedAt: '2026-10-07T12:00:00Z' },
+      { cardId: 'base1-1', variant: 'holofoil', low: null, mid: null, high: null, market: 0, currency: 'USD', provider: 'tcgcsv', source: 'tcgplayer', fetchedAt: '2026-10-07T12:00:00Z' },
+      { cardId: 'base1-1', variant: 'reverseHolofoil', low: null, mid: null, high: null, market: null, currency: 'USD', provider: 'tcgcsv', source: 'tcgplayer', fetchedAt: '2026-10-07T12:00:00Z' },
     ];
     sessionStorage.setItem('pcs.scanSession', JSON.stringify([scan]));
     for (let round = 0; round < 5; round++) {
@@ -168,7 +162,7 @@ describe('writeSession', () => {
   });
 
   it('no trunca lecturas previas al persistir', () => {
-    writeSession(seed(MAX_SESSION_ENTRIES + 9));
-    expect(readSession()).toHaveLength(MAX_SESSION_ENTRIES + 9);
+    writeSession(seed(100));
+    expect(readSession()).toHaveLength(100);
   });
 });

@@ -748,7 +748,7 @@ un `≈`.
 
 Si el precio tiene más de 24 h (`MAX_AGE_MS`), `getPricesForCard` devuelve el
 último precio conocido y encola el refresh en background; la respuesta pública
-no espera a tcgdex ni se saltea el rate limit. Si no hay precio conocido, la
+no descarga feeds ni se saltea las reservas del grupo. Si no hay precio conocido, la
 lista `prices` puede venir vacía mientras se procesa la cola, sin error. Ver
 [pricing.md](pricing.md).
 
@@ -781,7 +781,7 @@ eso `change` sigue siendo USD sin ambigüedad.
 ```ts
 interface PriceHistoryDto {
   cardId: string;
-  provider: 'pokemontcg.io' | 'tcgdex' | 'scrydex' | null; // null = fila legacy
+  provider: 'tcgcsv' | 'pokemontcg.io' | 'tcgdex' | 'scrydex' | null; // null = fila legacy
   source: string;          // tcgplayer: el mercado del que salió la serie
   variant: string | null;  // null = serie "mejor disponible por día"
   currency: 'USD';             // la conversión a ARS la hace el cliente

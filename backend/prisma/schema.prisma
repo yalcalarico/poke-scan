@@ -460,6 +460,36 @@ model Friendship {
 
 
 // El presupuesto permanece aunque el proceso muera durante la descarga.
+model TcgcsvDailyBatch {
+  syncDate DateTime @id @db.Date
+  openedAt DateTime @default(now())
+  setIds String[]
+  status String @default("planning")
+  feedPublishedAt DateTime?
+  feedAttempts Int @default(0)
+  nextAttemptAt DateTime?
+  finishedAt DateTime?
+  lastError String?
+  groups TcgcsvBatchGroup[]
+  @@map("tcgcsv_daily_batches")
+}
+
+model TcgcsvBatchGroup {
+  syncDate DateTime @db.Date
+  groupId Int
+  setIds String[]
+  status String @default("pending")
+  attempts Int @default(0)
+  nextAttemptAt DateTime?
+  startedAt DateTime?
+  finishedAt DateTime?
+  lastError String?
+  batch TcgcsvDailyBatch @relation(fields: [syncDate], references: [syncDate], onDelete: Cascade)
+  @@id([syncDate, groupId])
+  @@index([syncDate, status, nextAttemptAt])
+  @@map("tcgcsv_batch_groups")
+}
+
 model TcgcsvGroupJob {
   groupId Int @id
   status String @default("pending")
@@ -539,6 +569,8 @@ model PriceSyncCardDay {
 // Descubrimiento y cuotas compartidos entre procesos; no son corridas de precios.
 model TcgcsvDiscoveryState {
   id String @id
+  workerLockedBy String?
+  workerLeaseUntil DateTime?
   nextCheckAt DateTime @default(now())
   lockedBy String?
   leaseUntil DateTime?

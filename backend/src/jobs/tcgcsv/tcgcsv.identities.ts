@@ -1,5 +1,7 @@
 // Equivalencias revisadas contra el catálogo de grupos; cada producto aún debe validar su identidad.
 export const REVIEWED_SETS: Readonly<Record<string, { name: string; groupId: number; groupName: string; supplemental?: boolean; bareNumber?: boolean }>> = {
+  ru1: { name: 'Pokémon Rumble', groupId: 1433, groupName: 'Rumble', bareNumber: true },
+  sve: { name: 'Scarlet & Violet Energies', groupId: 24382, groupName: 'SVE: Scarlet & Violet Energies', bareNumber: true },
   dpp: { name: 'DP Black Star Promos', groupId: 1421, groupName: 'Diamond and Pearl Promos', bareNumber: true },
   basep: { name: 'Wizards Black Star Promos', groupId: 1418, groupName: 'WoTC Promo', bareNumber: true },
   np: { name: 'Nintendo Black Star Promos', groupId: 1423, groupName: 'Nintendo Promos', bareNumber: true },

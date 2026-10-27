@@ -13,12 +13,15 @@ para interpretar fixtures y registros anteriores, sin mostrarlos en la app activ
 La ficha fija la variante y ofrece períodos 7, 30, 90 y 365 días. El historial
 compacto recibe proveedor y variante del precio visible. La gráfica usa días
 UTC, muestra todos los puntos, corta precios nulos y días ausentes, mantiene
-cero conocido y explica escala ajustada. Las observaciones diarias se pueden
+cero conocido y explica escala ajustada. El eje X abarca todo el período elegido,
+anclado al día UTC de evaluación de la respuesta; no estira los pocos días de
+historial para llenar ventanas de 7, 30, 90 o 365 días. El portafolio usa la misma
+regla. El eje Y sigue el rango de importes observados. Las observaciones diarias se pueden
 consultar como texto. El período ocupa una fila completa y las etiquetas entran
 en el detalle de escritorio y a 390 px.
 
-El historial muestra recepción (`fetchedAt`) y publicación del archivo
-(`feedPublishedAt`) por separado. Su recencia se etiqueta como publicación del
+El historial deja recepción (`fetchedAt`) y publicación del archivo
+(`feedPublishedAt`) dentro de detalles cerrados por defecto. Su recencia se etiqueta como publicación del
 feed; no equivale a la fecha upstream de la cotización, desconocida. La metadata
 de consulta en ficha/valuación describe recepción local y lo dice explícitamente.
 

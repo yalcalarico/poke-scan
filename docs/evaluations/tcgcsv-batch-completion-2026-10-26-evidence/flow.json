@@ -1,0 +1,33 @@
+{
+  "passed": true,
+  "source": "AppModule real, feed HTTP local y PostgreSQL de tests",
+  "morningRequests": 0,
+  "groupsInCommonBatch": 3,
+  "completedGroups": 2,
+  "failedGroups": 1,
+  "pendingGroups": 0,
+  "resumedAfterMidnight": true,
+  "originalBatchDatePreserved": true,
+  "failedQuotePreserved": true,
+  "failure": "Falló el grupo TCGCSV (fase: prices): TCGCSV respondió HTTP 503; archivo consumido, se conserva la reserva de 24 horas",
+  "totalRequests": 12,
+  "repeatedReadsRequestNothing": true,
+  "api": [
+    {
+      "status": 200,
+      "market": 1.25,
+      "provider": "tcgcsv"
+    },
+    {
+      "status": 200,
+      "market": 3.5,
+      "provider": "tcgcsv"
+    },
+    {
+      "status": 200,
+      "market": 3.25,
+      "provider": "tcgcsv"
+    }
+  ],
+  "externalRequests": 0
+}

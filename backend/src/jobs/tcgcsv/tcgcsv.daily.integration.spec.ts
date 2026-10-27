@@ -16,7 +16,7 @@ const GROUP_DISABLED = 990_000_002;
 const GROUP_BOUNDARY = 990_000_003;
 const PRODUCT = 990_100_001;
 const BUILD = new Date('2026-10-18T20:05:44.000Z');
-const NEXT_BUILD = new Date(Date.now() - 60 * 60 * 1000);
+const NEXT_BUILD = new Date(new Date().setUTCHours(20, 0, 0, 0));
 const CARD_ENABLED = `${ENABLED_SET}-001`;
 const CARD_DISABLED = `${DISABLED_SET}-001`;
 const CARD_UNMAPPED = `${UNMAPPED_SET}-001`;
@@ -26,7 +26,8 @@ describe('TCGCSV: planificación diaria acotada (PostgreSQL real)', () => {
   const prisma = new PrismaClient();
   const client = new TcgcsvClient();
   const snapshots = { capture: async () => undefined };
-  const service = new TcgcsvService(prisma as PrismaService, client, snapshots as unknown as CollectionComparisonService);
+  const service = new TcgcsvService(prisma as PrismaService, client, snapshots as unknown as CollectionComparisonService,
+    () => { const at = new Date(); at.setUTCHours(21, 0, 0, 0); return at; });
   const originalFlag = process.env.ENABLE_TCGCSV_INGESTION;
   let originalRate: { providerId: string; lastCalledAt: Date; blockedUntil: Date | null; updatedAt: Date } | null = null;
   let originalCounters: { requestCount: number; requestWindowStartedAt: Date } | null = null;
@@ -34,8 +35,14 @@ describe('TCGCSV: planificación diaria acotada (PostgreSQL real)', () => {
     mappedCards: number; unmappedCards: number; observations: number }> = [];
   let originalJobs: Array<{ groupId: number; status: string; availableAt: Date; lockedBy: string | null; leaseUntil: Date | null;
     downloadStartedAt: Date | null; publishedBuild: Date | null; lastError: string | null; updatedAt: Date; origin: 'legacy' | 'daily' | 'interactive'; syncDate: Date | null }> = [];
+  const batchDay = new Date(new Date().toISOString().slice(0, 10));
+  let originalBatch: Awaited<ReturnType<typeof prisma.tcgcsvDailyBatch.findUnique>>;
+  let originalBatchGroups: Awaited<ReturnType<typeof prisma.tcgcsvBatchGroup.findMany>> = [];
 
   beforeAll(async () => {
+    originalBatch = await prisma.tcgcsvDailyBatch.findUnique({ where: { syncDate: batchDay } });
+    originalBatchGroups = await prisma.tcgcsvBatchGroup.findMany({ where: { syncDate: batchDay } });
+    await prisma.tcgcsvDailyBatch.deleteMany({ where: { syncDate: batchDay } });
     originalJobs = await prisma.tcgcsvGroupJob.findMany({ where: { groupId: { in: [GROUP_ENABLED, GROUP_DISABLED, GROUP_BOUNDARY] } } });
     originalRate = await prisma.providerRateLimit.findUnique({ where: { providerId: 'tcgcsv' } });
     [originalCounters] = await prisma.$queryRaw<typeof originalCounters[]>`SELECT "requestCount", "requestWindowStartedAt" FROM tcgcsv_discovery_state WHERE id = 'global'`;
@@ -64,6 +71,9 @@ describe('TCGCSV: planificación diaria acotada (PostgreSQL real)', () => {
   });
 
   afterAll(async () => {
+    await prisma.tcgcsvDailyBatch.deleteMany({ where: { syncDate: batchDay } });
+    if (originalBatch) await prisma.tcgcsvDailyBatch.create({ data: originalBatch });
+    if (originalBatchGroups.length) await prisma.tcgcsvBatchGroup.createMany({ data: originalBatchGroups });
     await prisma.$executeRaw`DELETE FROM tcgcsv_group_jobs WHERE "groupId" IN (${GROUP_ENABLED}, ${GROUP_DISABLED}, ${GROUP_BOUNDARY})`;
     await prisma.$executeRaw`DELETE FROM card_set_external_ids WHERE provider = 'tcgcsv' AND "setId" IN (${ENABLED_SET}, ${DISABLED_SET}, ${UNMAPPED_SET}, ${BOUNDARY_SET})`;
     await prisma.$executeRaw`DELETE FROM price_ingestion_runs WHERE provider = 'tcgcsv' AND "groupId" = ${GROUP_ENABLED}`;
@@ -145,8 +155,8 @@ describe('TCGCSV: planificación diaria acotada (PostgreSQL real)', () => {
   it('pausa compartida impide reclamar o hacer HTTP en otros grupos', async () => {
     await prisma.tcgcsvGroupJob.update({ where: { groupId: GROUP_ENABLED }, data: { status: 'pending', availableAt: new Date(0), origin: 'interactive' } });
     await prisma.providerRateLimit.upsert({ where: { providerId: 'tcgcsv' },
-      create: { providerId: 'tcgcsv', lastCalledAt: new Date(0), blockedUntil: new Date(Date.now() + 60_000) },
-      update: { lastCalledAt: new Date(0), blockedUntil: new Date(Date.now() + 60_000) },
+      create: { providerId: 'tcgcsv', lastCalledAt: new Date(0), blockedUntil: new Date(new Date().setUTCHours(21, 1, 0, 0)) },
+      update: { lastCalledAt: new Date(0), blockedUntil: new Date(new Date().setUTCHours(21, 1, 0, 0)) },
     });
     vi.mocked(client.fetchFeed).mockClear();
     expect(await service.runOne(GROUP_ENABLED)).toBe(false);

@@ -7,11 +7,11 @@ Política activa desde **20/10/2026**: TCGCSV es la única fuente de precios.
 | `CARD_DATA_PROVIDER` | `PokemonTcgIoProvider` | Catálogo y sets espejados en PostgreSQL |
 | `PRICE_PROVIDER` | `TcgcsvPriceProvider` | Política TCGCSV / TCGplayer / USD de todas las lecturas y valuaciones |
 
-`TcgcsvPriceProvider` declara identidad, mercado y moneda. Los métodos de consulta
-por carta del contrato histórico rechazan su uso: la descarga pertenece
-exclusivamente a `TcgcsvService` y su cola por grupo, nunca al handler de una carta.
-`SyncPricesService` deriva los refrescos a esa cola y lee las filas confirmadas.
-No reestampa observaciones ni usa proveedores alternativos como fallback.
+`TcgcsvPriceProvider` declara únicamente identidad, mercado y moneda. La descarga
+pertenece a `TcgcsvService` y su cola por grupo, nunca al handler de una carta.
+`SyncPricesService` solicita grupos y lee filas confirmadas, sin fallback ni
+reestampado. `PokemonTcgIoProvider` sólo espeja páginas de sets y cartas; el
+parser de su feed antiguo de precios fue retirado.
 
 ## Identidades seguras
 
@@ -33,7 +33,7 @@ Ver [precios](pricing.md), [jobs](jobs.md) y [fuentes](../../docs/data-sources.m
 
 ## Procedencia histórica
 
-Las observaciones previas de TCGdex/legacy y sus adaptadores de investigación
-se conservan para historia y regresión. El mapper, worker y ciclo TCGdex no se
-registran en `JobsModule`; el seed tampoco consulta TCGdex. Sus IDs no se
-reasignan a TCGCSV ni sus precios se atribuyen a la fuente nueva.
+Las observaciones previas de TCGdex/legacy se conservan para historia y regresión.
+El proveedor, mapper, worker por carta, backfill y ciclo diario TCGdex fueron
+retirados del código el 24/10. Sus tablas y migraciones históricas se conservan;
+no alimentan precios ni totales activos.

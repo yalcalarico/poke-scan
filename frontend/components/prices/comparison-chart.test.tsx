@@ -3,6 +3,16 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { ComparisonChart } from './comparison-chart';
 
 describe('ComparisonChart', () => {
+  it('usa toda la ventana elegida sin estirar el poco historial disponible', () => {
+    const series = [{ provider: 'tcgcsv' as const, points: [{ date: '2026-10-25', value: 5 }, { date: '2026-10-26', value: 5 }] }];
+    const week = renderToStaticMarkup(<ComparisonChart series={series} dateRange={{ start: '2026-10-20', end: '2026-10-26' }} />);
+    const month = renderToStaticMarkup(<ComparisonChart series={series} dateRange={{ start: '2026-09-27', end: '2026-10-26' }} />);
+    const firstX = (html: string) => Number(html.match(/<circle[^>]*cx="([^"]+)"/)![1]);
+    expect(firstX(month)).toBeGreaterThan(firstX(week));
+    expect(month).toContain('2026-09-27');
+    expect((month.match(/<circle/g) ?? []).length).toBe(2);
+    expect((week.match(/<circle/g) ?? []).length).toBe(2);
+  });
   it('mantiene cero, corta null y fechas ausentes, y dibuja un punto aislado', () => {
     const html = renderToStaticMarkup(<ComparisonChart series={[
       { provider: 'tcgdex', points: [{ date: '2026-10-10', value: 0 }, { date: '2026-10-11', value: null }, { date: '2026-10-12', value: 2 }, { date: '2026-10-14', value: 3 }] },

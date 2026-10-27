@@ -30,8 +30,8 @@ describe('PublicCardGrid', () => {
     render(<PublicCardGrid label="Cartas compartidas" items={[item('normal', 'NM', 1, 0), item('holofoil', 'LP', 3, null)]} />);
 
     expect(screen.getAllByRole('listitem')).toHaveLength(2);
-    expect(screen.getByText('Normal · NM · 1 copia')).toBeInTheDocument();
-    expect(screen.getByText('Holo · LP · 3 copias')).toBeInTheDocument();
+    expect(screen.getByText('Normal · 1 copia')).toBeInTheDocument();
+    expect(screen.getByText('Holo · 3 copias')).toBeInTheDocument();
     expect(screen.getByText(/Referencia internacional: USD \$0\.00 por copia/)).toBeInTheDocument();
     expect(screen.getAllByText(/Mercado: mercado · API: Proveedor/)).toHaveLength(2);
     expect(screen.getByText(/Sin referencia de precio para esta variante/)).toBeInTheDocument();
@@ -42,8 +42,8 @@ describe('PublicCardGrid', () => {
     try {
       render(<PublicCardGrid label="Grupos repetidos" items={[item('normal', 'NM', 1, 10), item('normal', 'NM', 2, 10)]} />);
       expect(screen.getAllByRole('listitem')).toHaveLength(2);
-      expect(screen.getByText('Normal · NM · 1 copia')).toBeInTheDocument();
-      expect(screen.getByText('Normal · NM · 2 copias')).toBeInTheDocument();
+      expect(screen.getByText('Normal · 1 copia')).toBeInTheDocument();
+      expect(screen.getByText('Normal · 2 copias')).toBeInTheDocument();
       expect(consoleError).not.toHaveBeenCalled();
     } finally {
       consoleError.mockRestore();

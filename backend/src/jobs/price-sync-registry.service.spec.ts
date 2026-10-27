@@ -1,4 +1,4 @@
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { NotFoundException } from '@nestjs/common';
 import { PrismaClient, type PriceSyncSet } from '@prisma/client';
 import type { PrismaService } from '../prisma/prisma.service.js';
 import {
@@ -72,7 +72,7 @@ describe('Registro diario de sets: persistencia real', () => {
       inserted: 11,
       missingSetIds: [],
     });
-    const first = await service.list();
+    const first = await prisma.priceSyncSet.findMany();
     expect(first.map(({ setId }) => setId).sort()).toEqual(
       CURATED_PRICE_SYNC_SETS.map(({ setId }) => setId).sort(),
     );
@@ -90,10 +90,6 @@ describe('Registro diario de sets: persistencia real', () => {
     ).toMatchObject({ enabled: false, priority: 19, origin: 'curated' });
   });
 
-  it('una lista vacía no significa todo el catálogo', async () => {
-    expect(await service.list()).toEqual([]);
-  });
-
   it('reconcilia sets usados por lote y no reactiva una baja manual', async () => {
     await prisma.collectionItem.create({
       data: { collectionId, cardId: CARD },
@@ -102,7 +98,7 @@ describe('Registro diario de sets: persistencia real', () => {
     expect(
       await prisma.priceSyncSet.findUnique({ where: { setId: SET } }),
     ).toMatchObject({ enabled: true, origin: 'collection', priority: 100 });
-    await service.disable(SET);
+    await prisma.priceSyncSet.update({ where: { setId: SET }, data: { enabled: false } });
     await service.reconcileCollectionSets();
     await service.enableForCollection(SET);
     expect(
@@ -110,32 +106,16 @@ describe('Registro diario de sets: persistencia real', () => {
     ).toMatchObject({ enabled: false, origin: 'collection' });
   });
 
-  it('sólo una acción manual cambia explícitamente prioridad y habilitación', async () => {
+  it('un alta de colección respeta la prioridad y baja operativa existentes', async () => {
     await service.ensureCuratedSeed();
-    await service.disable('me55');
+    await prisma.priceSyncSet.update({ where: { setId: 'me55' }, data: { enabled: false, priority: 12 } });
     await service.enableForCollection('me55');
-    expect(
-      await prisma.priceSyncSet.findUnique({ where: { setId: 'me55' } }),
-    ).toMatchObject({ enabled: false, priority: 1, origin: 'curated' });
-    await service.enableManually('me55', 12);
-    await service.enableManually('me55');
-    expect(
-      await prisma.priceSyncSet.findUnique({ where: { setId: 'me55' } }),
-    ).toMatchObject({ enabled: true, priority: 12, origin: 'curated' });
-    await service.disable(SET);
-    await service.disable(SET);
-    expect(await prisma.priceSyncSet.count({ where: { setId: SET } })).toBe(1);
+    expect(await prisma.priceSyncSet.findUnique({ where: { setId: 'me55' } }))
+      .toMatchObject({ enabled: false, priority: 12, origin: 'curated' });
   });
 
-  it('rechaza sets ausentes y prioridades inválidas sin crear filas', async () => {
-    await expect(
-      service.enableManually('missing-registry-set'),
-    ).rejects.toBeInstanceOf(NotFoundException);
-    for (const priority of [0, -1, 1.5, Number.NaN, 2 ** 32]) {
-      await expect(
-        service.enableManually(SET, priority),
-      ).rejects.toBeInstanceOf(BadRequestException);
-    }
+  it('un alta de colección rechaza sets ausentes sin crear filas', async () => {
+    await expect(service.enableForCollection('missing-registry-set')).rejects.toBeInstanceOf(NotFoundException);
     expect(await prisma.priceSyncSet.count()).toBe(0);
   });
 

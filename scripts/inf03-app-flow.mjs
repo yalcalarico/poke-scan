@@ -101,7 +101,7 @@ export async function runAppFlow({ runId, destination, projectDir, fixture, regi
   const databaseUrl = `postgresql://${destination.user}:${encodeURIComponent(destination.password)}@${destination.container}:5432/${destination.db}`;
   await writeFile(envFile, Object.entries({ NODE_ENV:'production',PORT:'3001',DATABASE_URL:databaseUrl,
     REDIS_URL:'redis://inf03-app-redis:6379',JWT_SECRET:secret,JWT_REFRESH_SECRET:randomBytes(48).toString('base64url'),
-    SCANNER_VISUAL_ENABLED:'0',PRICE_QUEUE_ENABLED:'false',ENABLE_CATALOG_SYNC_CRON:'false',ENABLE_PRICE_BACKFILL_CRON:'false',ENABLE_RETENTION_CRON:'false',
+    SCANNER_VISUAL_ENABLED:'0',ENABLE_TCGCSV_INGESTION:'false',PRICE_QUEUE_ENABLED:'false',ENABLE_CATALOG_SYNC_CRON:'false',ENABLE_PRICE_BACKFILL_CRON:'false',ENABLE_RETENTION_CRON:'false',
     FRONTEND_URL:`https://localhost:${port}`,CORS_ORIGINS:`https://localhost:${port}` }).map(([key,value])=>`${key}=${value}`).join('\n')+'\n',{mode:0o600,flag:'wx'});
   const owned = [];
   const ingress=`${runId}-app-ingress`;

@@ -722,7 +722,7 @@ export class CollectionsService {
    */
   async enqueueMissingPrices(userId: string, collectionId: string): Promise<number> {
     await this.assertOwned(userId, collectionId);
-    return this.priceRefresh?.enqueue(userId, collectionId, true) ?? 0;
+    return this.priceRefresh?.enqueue(userId, collectionId) ?? 0;
   }
 
   async updateItem(

@@ -2,9 +2,7 @@ import { ConfigService } from '@nestjs/config';
 
 import { CatalogSyncService } from './catalog-sync.service.js';
 import { CardPricesRetentionService } from './card-prices-retention.service.js';
-import { PriceBackfillService } from './price-backfill.service.js';
 import { ScheduledJobsService } from './scheduled-jobs.service.js';
-import type { PriceSyncDailyService } from './price-sync-daily.service.js';
 
 type Env = Record<string, string | undefined>;
 
@@ -14,8 +12,7 @@ type Env = Record<string, string | undefined>;
  *
  * 1. **Los kill switches funcionan.** Un cron que no se puede apagar desde un
  *    despliegue es un cron que termina apagado tarde o temprano.
- * 2. **El backfill no pide precios.** Solo encola: es lo que garantiza que el
- *    ritmo global se respete.
+ * 2. **TCGCSV requiere habilitación explícita.** No hay otro ciclo de precios.
  * 3. **Un fallo de mantenimiento no tumba el proceso.** Un `@Cron` que lanza
  *    puede cancelar los timers siguientes según la versión.
  */
@@ -24,9 +21,7 @@ describe('ScheduledJobsService', () => {
     env: Env,
     stubs: {
       catalogSync?: Partial<CatalogSyncService>;
-      backfill?: Partial<PriceBackfillService>;
       retention?: Partial<CardPricesRetentionService>;
-      daily?: Partial<PriceSyncDailyService>;
     } = {},
   ): ScheduledJobsService => {
     const config = {
@@ -37,35 +32,32 @@ describe('ScheduledJobsService', () => {
       start: vi.fn().mockResolvedValue({ started: true, jobId: 'job-1' }),
       ...stubs.catalogSync,
     } as unknown as CatalogSyncService;
-    const backfill = {
-      enqueueStale: vi.fn().mockResolvedValue({ enqueued: 0, pending: 0 }),
-      ...stubs.backfill,
-    } as unknown as PriceBackfillService;
     const retention = {
       run: vi.fn().mockResolvedValue({ consolidated: 0, pruned: 0, dryRun: false }),
       ...stubs.retention,
     } as unknown as CardPricesRetentionService;
-    const daily = { planToday: vi.fn().mockResolvedValue(7), ...stubs.daily } as unknown as PriceSyncDailyService;
 
     // Se construye con `new` y no con el `TestingModule` porque los crons leen
     // los flags **en el constructor**: hace falta que el entorno esté listo
     // antes de que exista el service, y `createTestingModule().get()` es
     // async justamente por el `compile()`.
-    return new ScheduledJobsService(config, catalogSync, backfill, retention, undefined, undefined, undefined, daily);
+    return new ScheduledJobsService(config, catalogSync, retention,
+      {} as import('../prisma/index.js').PrismaService,
+      { enabled: () => env.ENABLE_TCGCSV_INGESTION === 'true' } as import('./tcgcsv/tcgcsv.service.js').TcgcsvService);
   };
 
-  it('sin flags, los tres jobs están prendidos', () => {
+  it('sin flags, catálogo y retención están prendidos y TCGCSV requiere habilitación explícita', () => {
     const service = build({});
 
-    expect(service.describeSchedule()).toHaveLength(3);
+    expect(service.describeSchedule()).toHaveLength(2);
   });
 
   it('cada flag apaga su job y solo el suyo', () => {
     const sinCatalogo = build({ ENABLE_CATALOG_SYNC_CRON: 'false' });
     expect(sinCatalogo.describeSchedule().join()).not.toContain('catálogo');
 
-    const sinBackfill = build({ ENABLE_PRICE_BACKFILL_CRON: 'false' });
-    expect(sinBackfill.describeSchedule().join()).not.toContain('backfill');
+    const conPrecios = build({ ENABLE_TCGCSV_INGESTION: 'true' });
+    expect(conPrecios.describeSchedule().join()).toContain('TCGCSV');
 
     const sinRetencion = build({ ENABLE_RETENTION_CRON: '0' });
     expect(sinRetencion.describeSchedule().join()).not.toContain('retención');
@@ -74,7 +66,7 @@ describe('ScheduledJobsService', () => {
   it('los tres apagados no dejan ningún job', () => {
     const service = build({
       ENABLE_CATALOG_SYNC_CRON: 'false',
-      ENABLE_PRICE_BACKFILL_CRON: 'no',
+      ENABLE_TCGCSV_INGESTION: 'false',
       ENABLE_RETENTION_CRON: 'false',
     });
 
@@ -116,30 +108,6 @@ describe('ScheduledJobsService', () => {
     expect(catalogSync.start).toHaveBeenCalledWith(false);
   });
 
-  it('la compatibilidad horaria delega sólo al planificador registrado', async () => {
-    const backfill = {
-      enqueueStale: vi.fn().mockResolvedValue({ enqueued: 7, pending: 20000 }),
-    };
-    const daily = { planToday: vi.fn().mockResolvedValue(7) };
-    const service = build({}, { backfill, daily });
-
-    await service.backfillPricesHourly();
-
-    expect(daily.planToday).toHaveBeenCalledWith(false);
-    expect(backfill.enqueueStale).not.toHaveBeenCalled();
-  });
-
-  it('un fallo del planificador no sube: lo loguea y sigue', async () => {
-    const daily = { planToday: vi.fn().mockRejectedValue(new Error('la DB se cayó')) };
-    const service = build({}, { daily });
-
-    await expect(service.backfillPricesHourly()).resolves.toBeUndefined();
-    // Y el siguiente cron puede volver a intentarlo, porque el estado interno
-    // del timer no quedó envenenado.
-    await expect(service.backfillPricesHourly()).resolves.toBeUndefined();
-    expect(daily.planToday).toHaveBeenCalledTimes(2);
-  });
-
   it('un fallo de la retención tampoco sube', async () => {
     const retention = { run: vi.fn().mockRejectedValue(new Error('nope')) };
     const service = build({}, { retention });
@@ -161,12 +129,4 @@ describe('ScheduledJobsService', () => {
     expect(retention.run).toHaveBeenCalledWith();
   });
 
-  it('el catálogo queda semanal y TCGdex usa una sola planificación diaria UTC', async () => {
-    const fs = await import('node:fs');
-    const source = fs.readFileSync(new URL('./scheduled-jobs.service.ts', import.meta.url), 'utf8');
-    const dailySource = fs.readFileSync(new URL('./price-sync-daily.service.ts', import.meta.url), 'utf8');
-    expect(source).toContain("@Cron('7 4 * * 1')");
-    expect(dailySource).toContain("@Cron('15 3 * * *', { timeZone: 'UTC' })");
-    expect(source).not.toContain("@Cron('13 * * * *')");
-  });
 });

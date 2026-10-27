@@ -11,7 +11,7 @@ import { ApiError } from '@/lib/api/api-client';
 import { getCardLocation, listItems, updateItem } from '@/lib/api/collections';
 import { toCardLocation } from '@/lib/api/schema';
 import { pluralize } from '@/lib/format';
-import { conditionShort, variantLabel } from '@/lib/variants';
+import { variantLabel } from '@/lib/variants';
 import type { CardLocationDto, CollectionItemDto } from '@/types/api';
 
 export interface CardActionsProps {
@@ -264,7 +264,7 @@ export function CardActions({ cardId, cardName }: CardActionsProps) {
         <StatRow
           icon={FolderPlus}
           title="Administrar"
-          description={`${variantLabel(row.variant)} · ${conditionShort(row.condition)}`}
+          description={variantLabel(row.variant)}
           value={`${row.quantity} ${pluralize(row.quantity, 'copia', 'copias')}`}
           onClick={() => void handleOpenManage()}
         />

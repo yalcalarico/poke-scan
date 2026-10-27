@@ -1,5 +1,5 @@
-import { Suspense, type ReactNode } from 'react';
-import { VisualPreviewProvider } from '@/components/visual-preview/visual-preview';
+import type { ReactNode } from 'react';
+import { AppVisualsProvider } from '@/components/visual-preview/visual-preview';
 
 import { BottomNav } from '@/components/layout/bottom-nav';
 import { OfflineToast } from '@/components/layout/offline-toast';
@@ -22,9 +22,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   </>;
   return (
     <div className="flex min-h-dvh flex-col bg-canvas font-sans text-primary">
-      <Suspense fallback={content}>
-        <VisualPreviewProvider>{content}</VisualPreviewProvider>
-      </Suspense>
+      <AppVisualsProvider>{content}</AppVisualsProvider>
     </div>
   );
 }

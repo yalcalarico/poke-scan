@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { PreviewLink as Link } from '@/components/visual-preview/preview-link';
+import Link from 'next/link';
 import { ChartNoAxesCombined, Wallet } from 'lucide-react';
 import { useState } from 'react';
 import { Money, ShowOrDash } from '@/components/cards/money';
@@ -13,6 +13,7 @@ import { useAsync } from '@/hooks/use-async';
 import { getPortfolio } from '@/lib/api/collections';
 import { formatObservedDay } from '@/lib/prices/format';
 import { VARIANT_OPTIONS } from '@/lib/variants';
+import { chartDateRange } from '@/lib/prices/chart-window';
 
 const WINDOWS = [{ value: '7', label: '7 días' }, { value: '30', label: '30 días' }, { value: '365', label: '1 año' }] as const;
 
@@ -23,9 +24,8 @@ export function PortfolioOverview({ refreshKey = 0 }: { refreshKey?: number }) {
   const [windowDays, setWindowDays] = useState<'7' | '30' | '365'>('30');
   if (status === 'loading') return <div role="status" aria-label="Cargando el portafolio" aria-busy="true"><Skeleton variant="block" /></div>;
   if (status === 'error' || !data) return <ErrorState title="No pudimos cargar el portafolio" message={error ?? undefined} onRetry={reload} />;
-  const cutoff = new Date();
-  cutoff.setUTCDate(cutoff.getUTCDate() - Number(windowDays) + 1);
-  const observations = data.history.filter((point) => point.date >= cutoff.toISOString().slice(0, 10));
+  const dateRange = chartDateRange(Number(windowDays), data.valuation?.evaluatedAt ?? new Date().toISOString());
+  const observations = data.history.filter((point) => point.date >= dateRange.start && point.date <= dateRange.end);
   const points = observations.flatMap((point) => point.valuation?.amount == null ? [] : [{ date: point.date, value: point.valuation.amount }]);
   const first = points[0];
   const last = points.at(-1);
@@ -42,12 +42,12 @@ export function PortfolioOverview({ refreshKey = 0 }: { refreshKey?: number }) {
       <h3 className="text-body-strong text-primary">Valor observado de tus colecciones</h3>
       <SegmentedControl label="Período del portafolio" value={windowDays} options={WINDOWS} onChange={setWindowDays} />
       {delta !== null ? <p className="text-body-strong text-primary">Cambio de valor: {delta > 0 ? '+' : delta < 0 ? '−' : ''}<Money usd={Math.abs(delta)} /></p> : null}
-      {points.length > 1 ? <Sparkline points={points} label={`Valor observado de tus colecciones: ${points.length} observaciones entre ${first?.date} y ${last?.date}; de USD ${first?.value.toFixed(2)} a USD ${last?.value.toFixed(2)}`} className="text-brand [&_svg]:h-40" />
+      {points.length > 1 ? <Sparkline points={points} dateRange={dateRange} label={`Valor observado de tus colecciones: ${points.length} observaciones entre ${first?.date} y ${last?.date}; de USD ${first?.value.toFixed(2)} a USD ${last?.value.toFixed(2)}`} className="text-brand [&_svg]:h-40" />
         : <div className="flex min-h-32 items-center gap-3 rounded-control bg-brand-soft p-4">
           <ChartNoAxesCombined aria-hidden="true" className="size-8 shrink-0 text-brand" />
           <p className="text-body text-secondary">{first ? 'Falta otra valoración en este período. Volvé otro día para ver la gráfica.' : 'La gráfica aparecerá cuando haya valoraciones con precios disponibles.'}</p>
         </div>}
-      {points.length > 1 && first && last ? <p className="flex justify-between gap-3 text-caption text-tertiary"><span>{formatObservedDay(first.date)}</span><span>{formatObservedDay(last.date)}</span></p> : null}
+      {points.length > 1 ? <p className="flex justify-between gap-3 text-caption text-tertiary"><span>{formatObservedDay(dateRange.start)}</span><span>{formatObservedDay(dateRange.end)}</span></p> : null}
       <p className="text-caption text-tertiary">Puede cambiar por tus cartas, cantidades y referencias de precio; no representa ganancia. {currencyIsArs ? 'Historial en USD convertido al cambio actual; no representa valores históricos en pesos.' : ''}</p>
       <details className="text-caption text-secondary">
         <summary className="flex min-h-11 cursor-pointer items-center rounded-control focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--focus-ring)]">Ver valoraciones registradas ({observations.length})</summary>

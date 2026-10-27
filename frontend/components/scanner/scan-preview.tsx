@@ -2,7 +2,6 @@
 
 import { cn } from '@/lib/cn';
 import { ScannerEffect } from '@/components/visual-preview/effects';
-import { useVisualPreview } from '@/components/visual-preview/visual-preview';
 
 export interface ScanPreviewProps {
   /** `data:` de la captura de la cámara o `blob:` del archivo elegido. */
@@ -20,7 +19,6 @@ export interface ScanPreviewProps {
  * puede tocar, y no salen del dispositivo.
  */
 export function ScanPreview({ url, className, onMedia = false }: ScanPreviewProps) {
-  const visual = useVisualPreview();
   if (!url) return null;
 
   const image = (
@@ -35,5 +33,5 @@ export function ScanPreview({ url, className, onMedia = false }: ScanPreviewProp
       )}
     />
   );
-  return visual ? <div className="relative inline-flex shrink-0 overflow-hidden rounded-control">{image}<ScannerEffect /></div> : image;
+  return <div className="relative inline-flex shrink-0 overflow-hidden rounded-control">{image}<ScannerEffect /></div>;
 }

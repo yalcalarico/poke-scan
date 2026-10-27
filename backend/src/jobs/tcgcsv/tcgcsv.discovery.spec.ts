@@ -3,6 +3,23 @@ import { buildIsNew, discoverSetMappings, parseGroups, type TcgcsvGroup, type Tc
 
 const local: TcgcsvLocalSet = { id: 'sv4', name: 'Paradox Rift', series: 'Scarlet & Violet', englishOnly: true };
 const group: TcgcsvGroup = { groupId: 23286, name: 'SV04: Paradox Rift', isSupplemental: false };
+
+it('reconoce Rumble y energías SVE revisadas sin incorporar Futsal ni otros grupos', () => {
+  const sets = [
+    { id: 'ru1', name: 'Pokémon Rumble', series: 'Other', englishOnly: true },
+    { id: 'sve', name: 'Scarlet & Violet Energies', series: 'Scarlet & Violet', englishOnly: true },
+    { id: 'fut20', name: 'Pokémon Futsal Collection', series: 'Other', englishOnly: true },
+  ];
+  const groups = [
+    { groupId: 1433, name: 'Rumble', isSupplemental: false },
+    { groupId: 24382, name: 'SVE: Scarlet & Violet Energies', isSupplemental: false },
+  ];
+  const report = discoverSetMappings(sets, groups);
+  expect(report.mappings).toEqual([{ setId: 'ru1', groupId: 1433 }, { setId: 'sve', groupId: 24382 }]);
+  expect(report.missing.map(({ setId }) => setId)).toEqual(['fut20']);
+  expect(discoverSetMappings(sets, groups.map(g => ({ ...g, isSupplemental: true }))).mappings).toHaveLength(0);
+  expect(discoverSetMappings(sets.map(s => ({ ...s, englishOnly: false })), groups).mappings).toHaveLength(0);
+});
 describe('TCGCSV: descubrimiento conserva identidades', () => {
   it('normaliza prefijos explícitos, ampersand y títulos base revisados', () => {
     expect(discoverSetMappings([local], [group]).mappings).toEqual([{ setId: 'sv4', groupId: 23286 }]);

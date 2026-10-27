@@ -1,5 +1,5 @@
 import { listItems } from '@/lib/api/collections';
-import { conditionLabel, variantLabel } from '@/lib/variants';
+import { variantLabel } from '@/lib/variants';
 import type { CollectionItemDto } from '@/types/api';
 
 function csvCell(value: string | number | null): string {
@@ -11,11 +11,11 @@ function csvCell(value: string | number | null): string {
 
 export function collectionCsv(items: readonly CollectionItemDto[]): string {
   const rows: (string | number | null)[][] = [
-    ['ID', 'Carta', 'Set', 'Número', 'Variante', 'Condición', 'Cantidad', 'Precio unitario USD', 'Total USD', 'Para intercambio', 'Notas'],
+    ['ID', 'Carta', 'Set', 'Número', 'Variante', 'Cantidad', 'Precio unitario USD', 'Total USD', 'Para intercambio', 'Notas'],
     ...items.map((item) => {
       const market = item.price?.market ?? null;
       return [item.card.id, item.card.name, item.card.set?.name ?? '', item.card.number,
-        variantLabel(item.variant), conditionLabel(item.condition), item.quantity,
+        variantLabel(item.variant), item.quantity,
         market, market === null ? null : market * item.quantity, item.isForTrade ? 'Sí' : 'No', item.notes];
     }),
   ];

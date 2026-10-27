@@ -1,10 +1,11 @@
 // @vitest-environment jsdom
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import type { PriceDto, ValueAggregateDto } from '@/types/api';
 import { PriceReferenceDetails, ValuationEvidence } from '../price-evidence';
+import { CollectionSummary } from '@/components/collections/collection-summary';
 
-vi.mock('@/hooks/use-currency', () => ({ useCurrency: () => ({ currency: 'USD', activeRate: null, isStale: false }) }));
+vi.mock('@/hooks/use-currency', () => ({ useCurrency: () => ({ currency: 'USD', activeRate: null, isStale: false, formatMoney: (value: number) => `USD ${value.toFixed(2)}` }) }));
 
 const coverage = (totalCopies: number, pricedCopies: number) => ({ totalCopies, pricedCopies, unpricedCopies: totalCopies - pricedCopies, coverageRatio: totalCopies === 0 ? null : pricedCopies / totalCopies });
 const recency = { freshness: 'fresh' as const, freshCopies: 2, staleCopies: 0, unknownFreshnessCopies: 0, upstreamFreshness: 'unknown' as const, oldestFetchedAt: '2026-10-08T10:00:00.000Z', newestFetchedAt: '2026-10-08T10:00:00.000Z' };
@@ -45,6 +46,34 @@ it('conserva la hora exacta de evaluación cacheada sin usar el reloj del browse
   render(<ValuationEvidence valuation={valuation(24, 4, 3)} />);
   expect(screen.getAllByText(/10:01:00\.000 UTC/).length).toBeGreaterThan(0);
   expect(screen.getByText(/Consultas incluidas entre/)).toHaveTextContent('10:00:00.000 UTC');
+});
+
+it('muestra cobertura breve y deja la auditoría cerrada hasta que se pida', () => {
+  render(<ValuationEvidence valuation={valuation(24, 4, 3)} />);
+  expect(screen.getByText('Valor parcial · 3 de 4 copias con precio.')).toBeVisible();
+  const timestamp = screen.getByText(/^Evaluado el/);
+  expect(timestamp).not.toBeVisible();
+  expect(screen.getByText(/Consultas incluidas entre/)).not.toBeVisible();
+  expect(screen.queryByText(/la condición no ajusta/)).not.toBeInTheDocument();
+  fireEvent.click(screen.getByText('Ver detalles del valor'));
+  expect(timestamp).toBeVisible();
+});
+
+it('no expone API ni timestamps del precio al abrir una carta', () => {
+  render(<PriceReferenceDetails reference={{ provider: 'tcgcsv', source: 'tcgplayer', currency: 'USD', fetchedAt: '2026-10-26T15:10:08.025Z' }} />);
+  const provenance = screen.getByText(/Mercado: tcgplayer/);
+  expect(provenance).not.toBeVisible();
+  expect(screen.getByText(/Consultado el/)).not.toBeVisible();
+  fireEvent.click(screen.getByText('Ver referencia del precio'));
+  expect(provenance).toBeVisible();
+});
+
+it('la cabecera de colección deja sólo valor y cobertura visibles por defecto', () => {
+  render(<CollectionSummary name="Mi colección" subtitle="30 cartas" valuation={valuation(5.62, 30, 20)} />);
+  expect(screen.getByText('USD 5.62')).toBeVisible();
+  expect(screen.getByText('Valor parcial · 20 de 30 copias con precio.')).toBeVisible();
+  expect(screen.getByText(/^Evaluado el/)).not.toBeVisible();
+  expect(screen.getByText(/^Al evaluar/)).not.toBeVisible();
 });
 
 it('una fecha legacy imposible no se normaliza a una consulta de otro día', () => {

@@ -2,7 +2,7 @@ import Image from 'next/image';
 
 import { Alert, Button, Surface } from '@/components/ui';
 import { formatDate, formatPrice } from '@/lib/format';
-import { conditionLabel, variantLabel } from '@/lib/variants';
+import { variantLabel } from '@/lib/variants';
 import type { SharePreviewItem } from './share-preview';
 
 export type SharePreviewState = 'loading' | 'error' | 'empty' | 'ready';
@@ -84,7 +84,7 @@ export function ShareLinkPreview({
                   .filter(Boolean).join(' · ')}
               </p>
               <p className="mt-1 text-caption text-secondary">
-                {variantLabel(item.variant)} · {conditionLabel(item.condition)} · {item.quantity} {item.quantity === 1 ? 'copia' : 'copias'}
+                {variantLabel(item.variant)} · {item.quantity} {item.quantity === 1 ? 'copia' : 'copias'}
               </p>
               {item.price && item.price.market !== null && Number.isFinite(item.price.market) ? (
                 <p className="mt-1 text-caption text-secondary">
@@ -103,7 +103,7 @@ export function ShareLinkPreview({
         <div className="grid gap-3 sm:grid-cols-2">
           <div>
             <p className="text-label text-primary">Se comparte</p>
-            <p className="mt-1 text-caption text-secondary">Carta y edición, variante, condición, cantidad y referencia USD disponible.</p>
+            <p className="mt-1 text-caption text-secondary">Carta y edición, variante, cantidad y referencia USD disponible.</p>
           </div>
           <div>
             <p className="text-label text-primary">No se comparte</p>

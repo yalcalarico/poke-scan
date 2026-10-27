@@ -62,7 +62,7 @@ En teléfonos, “Escanear carta” abre la cámara. El marco es rojo mientras b
 
 En escritorio y tablet no se ofrece cámara. “Subir una foto” usa el mismo reconocimiento visual. La búsqueda manual sigue disponible en todos los dispositivos.
 
-La primera predicción DINOv2 se suma como propuesta por revisar. En la cámara, el set de esa carta aparece arriba y la coincidencia queda en un recuadro tocable abajo. Al tocarlo se abre una comparativa del recorte enviado con la carta del catálogo y las ocho alternativas: elegí otra y confirmá para reemplazar esa lectura, sin duplicarla. La captura automática queda pausada durante la revisión. Los precios se consultan sólo para la opción confirmada, mediante el cliente y la caché existentes. Revisá nombre, set y número antes de organizar; no hay rechazo calibrado. La barra muestra miniatura, nombre, set, número y valor; si falta precio muestra “Sin precio” o un guion, sin inventarlo. “Organizar” requiere confirmar el destino, la variante, la condición y la carta propuesta antes de guardar. Sumar a la sesión no equivale a persistir en una colección.
+La primera predicción DINOv2 se acepta como propuesta y se puede corregir opcionalmente. En la cámara, el set de esa carta aparece arriba y la coincidencia queda en un recuadro tocable abajo. Al tocarlo se abre una comparativa del recorte enviado con la carta del catálogo y las ocho alternativas: elegí otra y confirmá para reemplazar esa lectura, sin duplicarla. La captura automática queda pausada durante la revisión. Los precios se consultan sólo para la opción confirmada, mediante el cliente y la caché existentes. Revisá nombre, set y número antes de organizar; no hay rechazo calibrado. La barra muestra miniatura, nombre, set, número y valor; si falta precio muestra “Sin precio” o un guion, sin inventarlo. Organizar requiere elegir una colección; asigna automáticamente condición NM y la variante de la misma referencia de precio que muestra la cámara. Si no hay variante local respaldada, esa lectura queda pendiente y las demás se pueden guardar. Sumar a la sesión no equivale a persistir en una colección.
 
 ## Cámara, recorte y orientación
 
@@ -70,7 +70,9 @@ La primera predicción DINOv2 se suma como propuesta por revisar. En la cámara,
 
 La cámara entrega una foto ya recortada al marco: no vuelve a detectar bordes ni girarla. Las fotos subidas pasan por `lib/scanner/visual-photo.ts` y `preprocess.ts`: detectan el contorno, amplían el margen y orientan el recorte si el rectángulo es apaisado. El detector exige continuidad en los lados del candidato para evitar confundir el dibujo interno con toda la carta. El recorte se limita a 1400 px por lado largo y se envía en color.
 
-`lib/scanner/auto-visual.ts` analiza una muestra local de 240 px cada 350 ms, incluyendo margen alrededor de la guía. Exige contorno vertical, tamaño y centrado compatibles y 900 ms de estabilidad. Los sondeos no usan red ni guardan fotos. No dispara durante una consulta; deja al menos 2,5 s entre capturas automáticas y evita repetir la misma carta hasta que se retire o cambie la imagen. Verde significa encuadre estable, no identidad confirmada.
+`lib/scanner/auto-visual.ts` analiza una muestra local de 240 px cada 350 ms, incluyendo margen alrededor de la guía. Exige contorno vertical, tamaño y centrado compatibles y 900 ms de estabilidad; centra la luminancia para que la exposición global no parezca movimiento. Los sondeos siguen activos durante una lectura o pausa para detectar que retiraron la carta, aunque no pueden disparar mientras están bloqueados. No usan red ni guardan fotos. Deja al menos 2,5 s entre capturas automáticas y evita repetir la misma carta inmóvil hasta que se retire o cambie la imagen. El obturador manual marca la escena para que esa misma carta no se vuelva a sumar automáticamente. Verde significa encuadre estable, no identidad confirmada.
+
+La barra inferior junta el obturador manual de respaldo con «Continuar». El estado operativo se anuncia a lectores de pantalla y el progreso se muestra mientras hay una consulta; «Subir una foto» sigue disponible antes de abrir la cámara. La lectura reconocida con un valor TCGCSV visible, incluido cero, reproduce un aviso breve de monedas. El audio se habilita desde el toque que abre la cámara y su disponibilidad no condiciona la captura.
 
 La cámara solo se ofrece a navegadores de teléfonos mediante `hooks/use-mobile-camera.ts`; reducir la ventana del escritorio no la habilita. Necesita `getUserMedia`, permiso y un contexto seguro (HTTPS, salvo localhost). En la red local, seguí `docs/local-network.md`.
 
@@ -82,7 +84,7 @@ La API ejecuta DINOv2 con el modelo ONNX local, compara el vector de consulta co
 
 `lib/scanner/camera-visual.ts` selecciona el candidato #1 DINOv2 y consulta `/cards/:id/prices` solo para ese ID. La falta o demora del precio no cambia la identidad. La consulta completa admite cancelación y tiene un límite de 35 s; los precios tienen un límite de 5 s. Los contadores de corrida impiden que una respuesta anterior reemplace una captura posterior.
 
-`components/scanner/visual-diagnostics.tsx` permite revisar candidatos y tiempos después de subir una foto, sin abrir un selector. La sesión usa `sessionStorage`, pausa nuevas capturas al llegar a 30 lecturas pendientes y se restaura después de hidratar. Un legado que excede ese límite se conserva completo para organizarlo sin perder lecturas. Cada captura conserva su `runId`; el draft de organización también se versiona como `pcs.scanDraft` y excluye fotos y recortes.
+La sesión usa `sessionStorage`, no limita la cantidad de lecturas y se restaura después de hidratar. Si el navegador rechaza la escritura por cuota, las lecturas siguen en memoria y la pantalla avisa que no se restaurarán al recargar; no se truncan. Cada captura conserva su `runId`; el draft de organización también se versiona como `pcs.scanDraft` y excluye fotos y recortes. Las imágenes de revisión sólo se conservan en memoria, en una caché separada acotada a 30 recortes.
 
 ## Modelo e índice
 
@@ -108,6 +110,54 @@ El service worker v4 elimina las cachés de las versiones anteriores. No hay mot
 
 ## Descarga voluntaria para revisar errores
 
+### Modo de prueba de una sesión
+
+El modo de prueba es voluntario y se activa antes de capturar. Permite indicar un
+set esperado como contexto del informe: no filtra candidatos ni modifica la
+búsqueda de DINOv2. Las lecturas restauradas del borrador quedan fuera; no se
+reconstruyen recortes ni predicciones que ya no están disponibles.
+
+Cada lectura registrada vincula el recorte exacto enviado, la respuesta original,
+las alternativas, la calidad disponible y los eventos de revisión con un UUID de
+diagnóstico y su `runId`. La respuesta original se conserva aunque cambie la carta.
+La búsqueda manual dentro de Organizar mantiene esa vinculación. Abrir la
+comparativa, seleccionar provisionalmente o cancelar una búsqueda no confirma una
+corrección: se registra la identidad elegida cuando la persona la confirma.
+
+El informe HTML descargable incluye los recortes, el ranking, la elección humana
+y la cronología, con los datos JSON incorporados. Se puede abrir sin conexión.
+Separa lecturas sin revisión, propuestas confirmadas, correcciones mediante una
+alternativa o búsqueda manual, descartes y fallos técnicos. La elección humana no
+es una validación independiente; coincidir con el set esperado tampoco demuestra
+un acierto. El informe no registra el texto de las búsquedas ni credenciales.
+
+El informe señala por separado si la propuesta inicial y la identidad confirmada
+pertenecen al set esperado. Si falta el set o no se configuró uno esperado, no
+clasifica la lectura como fuera del set. Una selección manual conserva el puesto
+que esa carta tenía en el ranking original, o indica que no estaba entre las
+alternativas. La falta de ranking o de confirmación se muestra como información
+no disponible, sin atribuirle una similitud nueva a la búsqueda manual.
+
+Todo el diagnóstico vive en memoria, separado de `pcs.scanDraft`: no se envía al
+servidor ni se guarda en almacenamiento del navegador. Guardar o descartar una
+lectura conserva su evidencia diagnóstica. Finalizar congela el informe; descargar
+no borra sus datos. Para iniciar otro hay que descartar explícitamente el anterior.
+Recargar, salir de la pantalla o cambiar de cuenta libera el diagnóstico: descargalo
+antes de salir.
+
+El límite es de 30 lecturas o 64 MiB de recortes codificados. Al alcanzarlo se
+suspende la incorporación de nuevas lecturas al diagnóstico con un aviso, sin
+bloquear el escáner. Las lecturas ya registradas siguen admitiendo eventos hasta
+finalizar. Las capturas posteriores quedan fuera del informe.
+
+Finalizar queda bloqueado mientras se prepara una captura, se espera el
+reconocimiento/precio o se confirma una alternativa con precios pendientes. Abrir
+las opciones desde la cámara no interrumpe la consulta. Las cancelaciones dejan
+la lectura en estado terminal y liberan el bloqueo; las preparaciones fallidas o
+canceladas antes de producir un recorte se contabilizan por separado.
+
+### Descarga individual existente
+
 Después de una consulta de cámara o galería aparece «¿No coincidió? Guardá el recorte». Podés descargar el recorte exacto enviado (PNG/JPEG/WebP, sin recodificar) y un JSON con el mismo nombre base, origen, fecha, candidatos, versión del índice, tiempos backend y error si lo hubo. El ID correcto queda vacío (`expectedCardId: null`) para etiquetarlo después; la predicción no se convierte en ground truth.
 
 La última captura se conserva sólo en memoria del navegador, fuera de la sesión restaurable. No se descarga automáticamente ni se guarda en el servidor, sessionStorage o localStorage. La siguiente captura la reemplaza; recargar o salir de la pantalla la pierde. Descartar la lectura/sesión también libera esa revisión. Si falló antes de preparar una imagen no hay recorte para bajar.
@@ -116,11 +166,11 @@ Abrir la revisión en cámara pausa la captura automática hasta cerrarla, para 
 
 Al cerrar la cámara, la pantalla de entrada muestra un aviso con signo de exclamación y el botón para organizar las cartas pendientes; el inicio también resalta la sesión pendiente. La carta reconocida y su precio quedan en la cámara. Las fotos de galería mantienen el acceso «Revisar última foto» para corregir la coincidencia.
 
-«Continuar» abre la revisión de escaneos: el selector superior exige elegir una colección vigente de la cuenta para confirmar el destino del lote. Cada lectura inicia con variante y condición sin elegir. «No sé todavía» conserva `null` y no habilita el guardado. Los grupos visibles tienen identidad carta + variante + condición; una captura nueva no hereda atributos de otra. Cada parte retiene su `runId` y se revisa individualmente. «Separar copias / aplicar a varias» abre una vista interna con selección explícita, cantidad a mover, variante y condición. Aplicar conserva la suma y permite partes distintas del mismo `runId`. «Separar una copia» conserva los atributos elegidos de esa parte y divide su cantidad en dos. Retirar una parte pide confirmación y conserva las otras partes de esa lectura.
+«Continuar» abre la organización de escaneos: el selector superior exige elegir una colección vigente de la cuenta como destino del lote. Cada captura suma una copia; lecturas con la misma carta y variante de referencia se agrupan con condición NM. La propuesta de identidad se acepta automáticamente y se puede corregir a mano. Una captura nueva no hereda la variante de otra lectura. Si no hay cotización ni variante acreditada por el catálogo local, la lectura queda pendiente; las demás siguen pudiéndose guardar. Retirar una lectura pide confirmación y conserva las otras.
 
-La cantidad acepta enteros 1–999 por parte. Un input vacío, decimal, negativo o superior al límite muestra error y bloquea el grupo; no envía silenciosamente la cantidad anterior. Un grupo completo sobre 999 queda pendiente, sin recorte ni varios POST automáticos. El footer separa copias listas/pendientes y cobertura de referencia. El precio se selecciona por carta y variante exactas, admite `market=0`, muestra ausencia sin fallback singular y no aplica ajustes por condición.
+El backend admite incrementos de 1–999 copias. Si un grupo supera 999, el cliente lo divide en varios POST seriales con claves idempotentes propias. Cada parte confirmada se retira del borrador; ante un resultado incierto se conserva el mismo UUID y payload para verificarlo antes de continuar con las partes siguientes. El footer separa incrementos listos, grupos pendientes y cobertura de referencia. El precio se selecciona por carta y variante exactas, admite `market=0`, muestra ausencia sin fallback singular y no aplica ajustes por condición.
 
-El snapshot canónico `pcs.scanDraft` usa `schemaVersion: 1`, `sessionId`, `entries[]`, `ownerUserId`, `selectedCollectionId`, `destinationConfirmed`, `allocations[]`, `operations[]` y `retiredRunIds[]`. Entradas y confirmación/retiro de partes se persisten juntos en una única escritura. Las entradas son una proyección validada del catálogo/precios; no incluyen fotos, crops, ranking ni campos extra. `identityReviewed` y `selectionSource` son metadata cliente de revisión: confirmar identidad no confirma variante/condición; una selección manual no tiene similitud DINOv2 medida. Sus campos numéricos de compatibilidad son cero y no se muestran como score.
+El snapshot canónico `pcs.scanDraft` usa `schemaVersion: 1`, `sessionId`, `entries[]`, `ownerUserId`, `selectedCollectionId`, `destinationConfirmed`, `allocations[]`, `operations[]` y `retiredRunIds[]`. Entradas y confirmación/retiro de partes se persisten juntos en una única escritura. Las entradas son una proyección validada del catálogo/precios; no incluyen fotos, crops, ranking ni campos extra. `identityReviewed` y `selectionSource` son metadata cliente de revisión; la identidad inicial se acepta automáticamente y la búsqueda manual no tiene similitud DINOv2 medida. Sus campos numéricos de compatibilidad son cero y no se muestran como score.
 
 Cada operación conserva UUID, cuenta, destino, payload exacto y IDs de partes. Se persiste antes del POST, que requiere destino vigente y atributos explícitos. Un rechazo conocido de la primera solicitud sin escritura permite editar o crear una intención nueva. Red/5xx/cuerpo inválido quedan inciertos; recargar durante `saving` restaura `uncertain`. «Verificar este intento» repite manualmente la misma clave/payload. Un 409 o replay 400/401/404 conserva incertidumbre; 410 bloquea el intento y nunca genera otra clave ni repone copias. Una respuesta confirma el delta original, no la cantidad actual del ítem. No hay POST al montar ni reintento automático. Cambiar de cuenta durante el lote frena sus siguientes solicitudes; intentos ajenos no se verifican desde otra cuenta.
 

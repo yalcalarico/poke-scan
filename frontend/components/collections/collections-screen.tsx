@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useMemo, useState } from 'react';
-import { PreviewLink as Link } from '@/components/visual-preview/preview-link';
+import Link from 'next/link';
 import { Check, Layers, Plus, Search } from 'lucide-react';
 
 import { ScreenContainer } from '@/components/layout/screen-container';

@@ -1,6 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Mantiene errores y diagnósticos en consola sin tapar la navegación móvil.
+  devIndicators: false,
   // El IPC nativo entre threads evita abrir el socket del pool de plugins.
   experimental: {
     turbopackPluginRuntimeStrategy: "workerThreads",

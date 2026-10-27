@@ -31,6 +31,8 @@ export interface UseInfiniteListResult<T> {
   loadMore: () => void;
   /** Vuelve a pedir desde la primera página. */
   reload: () => void;
+  /** Aplica una escritura confirmada sin esperar la revalidación de red. */
+  updateItems: (update: (items: T[]) => T[]) => void;
   /** Cambia la página actual desde afuera (deep link o botón atrás). */
   setPage: (page: number) => void;
   /**
@@ -211,6 +213,16 @@ export function useInfiniteList<T>(
     startAt(1);
   }, [startAt]);
 
+  const updateItems = useCallback((update: (items: T[]) => T[]) => {
+    // Una página pedida antes de guardar no puede deshacer la respuesta confirmada.
+    runIdRef.current += 1;
+    controllerRef.current?.abort();
+    setState((previous) => {
+      const items = update(previous.items);
+      return { ...previous, items, total: previous.total + items.length - previous.items.length, pending: false, loadingMore: false };
+    });
+  }, []);
+
   const sentinelRef = useCallback((element: HTMLElement | null) => {
     setSentinel(element);
   }, []);
@@ -239,6 +251,7 @@ export function useInfiniteList<T>(
     error: state.error,
     loadMore,
     reload,
+    updateItems,
     setPage: startAt,
     sentinelRef,
   };

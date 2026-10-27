@@ -8,14 +8,25 @@ test('sync observa por defecto con duración acotada; status sólo lee salvo --w
   assert.equal(parseOptions(['status', '--watch', '--seconds=15']).seconds, 15);
   for (const args of [['unknown'], ['sync', '--seconds=0'], ['sync', '--seconds=86401'], ['status', '--force']]) assert.throws(() => parseOptions(args));
 });
-test('status sólo ejecuta once lecturas agregadas y no contiene nombres de usuario o colecciones', async () => {
+test('status sólo ejecuta doce lecturas agregadas y no contiene nombres de usuario o colecciones', async () => {
   const queries = [];
   const prisma = { $queryRaw: async (parts) => { queries.push(parts.join('?')); return []; }, $executeRaw: () => { throw new Error('mutación inesperada'); } };
   const status = await readPriceStatus(prisma);
-  assert.equal(queries.length, 11);
+  assert.equal(queries.length, 12);
   assert.ok(queries.every((sql) => !/\b(insert|update|delete|truncate)\b/i.test(sql)));
   assert.ok(queries.every((sql) => !/\b(users|collections|collection_items)\b/i.test(sql)));
+  assert.ok(queries.every((sql) => !/tcgdex|price_refresh_jobs/i.test(sql)));
   assert.equal(status.discovery, null);
+  assert.equal(status.batch, null);
+});
+
+test('el resultado del lote no se confunde con demandas de la próxima tanda', () => {
+  const text = formatStatus({ evaluatedAt: '2026-10-27', controls: [], queues: [], coverage: [],
+    batch: { syncDate: new Date('2026-10-26'), status: 'failed', groups: 173, completed: 166, failed: 4,
+      skipped: 3, pending: 0, processing: 0, feedPublishedAt: new Date('2026-10-26T20:05:56Z'), failures: [{ groupId: 1397, reason: 'Descarga interrumpida; reserva conservada' }] } });
+  assert.match(text, /actualizados 166, fallidos 4, exceptuados 3, pendientes 0, en proceso 0 \/ 173/);
+  assert.match(text, /sin corte a medianoche/);
+  assert.match(text, /Grupo 1397: Descarga interrumpida/);
 });
 test('pedido manual sólo cambia la señal coalescida, conserva cuotas y leases', async () => {
   let sql;
@@ -30,10 +41,11 @@ test('pedido manual sólo cambia la señal coalescida, conserva cuotas y leases'
   assert.doesNotMatch(sql, /tcgcsv_group_jobs|downloadStartedAt|nextCheckAt|leaseUntil|DELETE|TRUNCATE/);
 });
 test('heartbeat viejo o worker configurado apagado nunca promete un worker activo', () => {
-  const status = { evaluatedAt: '2026-10-13', controls: [{ provider: 'tcgdex', heartbeatRecent: true, schedulerEnabled: true, workerConfiguredEnabled: false, cyclePending: true }, { provider: 'tcgcsv', heartbeatRecent: false, schedulerEnabled: true, workerConfiguredEnabled: true }], queues: [], coverage: [], catalog: null, discovery: null };
+  const status = { evaluatedAt: '2026-10-13', controls: [{ provider: 'tcgcsv', heartbeatRecent: false, schedulerEnabled: true, workerConfiguredEnabled: false, cyclePending: true }], queues: [], coverage: [], catalog: null, discovery: null };
   const text = formatStatus(status);
   assert.match(text, /worker configurado apagado/);
   assert.match(text, /sin heartbeat reciente del planificador/);
+  assert.match(text, /Tanda común: 18:00 Argentina \(21:00 UTC\)/);
   assert.doesNotMatch(text, /worker activo|precios actualizados/);
 });
 

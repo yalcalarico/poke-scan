@@ -11,6 +11,24 @@ const product = (extra: Record<string, unknown> = {}): Record<string, unknown> =
 const price = (extra: Record<string, unknown> = {}): Record<string, unknown> => ({ productId: 716451, subTypeName: 'Holofoil', lowPrice: 0, midPrice: null, highPrice: 12, marketPrice: null, ...extra });
 const card: LocalTcgcsvCard = { id: 'me55-18', name: 'Articuno', number: '18', language: 'en', setId: 'me55', printedTotal: 128 };
 
+it('Rumble y energías SVE conservan número, idioma e impresión aunque el feed omita el total', () => {
+  const rumble = { ...card, id: 'ru1-1', setId: 'ru1', name: 'Venusaur', number: '1', printedTotal: 16 };
+  const venusaur = { productId: 90320, groupId: 1433, name: 'Venusaur', number: '1', language: 'English' };
+  expect(matchProducts([rumble], [venusaur], { ru1: 1433 })).toEqual(new Map([[90320, 'ru1-1']]));
+  const grass = { ...card, id: 'sve-1', setId: 'sve', name: 'Basic Grass Energy', number: '1', printedTotal: 8 };
+  const laterGrass = { ...grass, id: 'sve-9', number: '9' };
+  const basic = { productId: 475425, groupId: 24382, name: 'Basic Grass Energy - 001', number: '001', language: 'English' };
+  const later = { ...basic, productId: 578864, name: 'Basic Grass Energy - 009', number: '009' };
+  const cosmos = { ...basic, productId: 517177, name: 'Basic Grass Energy (Cosmos Holo)' };
+  const cracked = { ...later, productId: 599740, name: 'Basic Grass Energy (Cracked Ice Holo)' };
+  const groups = { sve: 24382 };
+  expect(matchProducts([grass, laterGrass], [basic, later, cosmos, cracked], groups)).toEqual(new Map([[475425, 'sve-1'], [578864, 'sve-9']]));
+  expect(matchProducts([grass, laterGrass], [cosmos, cracked], groups).size).toBe(0);
+  expect(matchProducts([grass], [later], groups).size).toBe(0);
+  expect(matchProducts([{ ...grass, language: 'ja' }], [basic], groups).size).toBe(0);
+  expect(matchProducts([grass], [basic, { ...basic, productId: 999 }], groups).size).toBe(0);
+});
+
 describe('TCGCSV: identidad y validación del lote', () => {
   it('lee el build real con offset UTC sin colon y rechaza fechas normalizadas/futuras', () => {
     expect(parseBuild('2026-10-12T20:05:44+0000', new Date('2026-10-13T00:00:00Z')).toISOString()).toBe('2026-10-12T20:05:44.000Z');

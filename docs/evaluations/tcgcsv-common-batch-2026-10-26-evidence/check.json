@@ -1,0 +1,18 @@
+{
+  "date": "2026-10-26",
+  "command": "pnpm run check",
+  "exitCode": 0,
+  "runtimeStoppedBeforeTests": true,
+  "lint": true,
+  "typecheck": true,
+  "backendBuild": true,
+  "frontendBuild": true,
+  "tests": {
+    "backend": 546,
+    "api": 6,
+    "frontend": 625,
+    "scripts": 105,
+    "total": 1282
+  },
+  "log": "check-final.log"
+}

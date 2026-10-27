@@ -14,6 +14,8 @@ import { CollectionsController } from './collections.controller.js';
 import { SyncPricesService } from '../../jobs/sync-prices.service.js';
 import { PRICE_PROVIDER } from '../providers/card-provider.interface.js';
 import { PortfolioService } from './portfolio.service.js';
+import { CollectionComparisonService } from '../../jobs/collection-comparison.service.js';
+import { COMPARISON_POLICY } from '../../jobs/comparison.dto.js';
 import { CollectionsService } from './collections.service.js';
 import { AddItemDto } from './dto/add-item.dto.js';
 import { CreateCollectionDto } from './dto/create-collection.dto.js';
@@ -32,7 +34,7 @@ const TEST_EMAIL_B = 'user-b@test.local';
 const TEST_MARKET = new Prisma.Decimal('12.50');
 const DEFAULT_LIST_ITEMS = { page: 1, pageSize: 50 } as const;
 const PRICE_PROVIDER_STUB = {
-  id: 'tcgdex',
+  id: 'tcgcsv',
   defaultSource: 'tcgplayer',
   defaultCurrency: 'USD',
 };
@@ -56,6 +58,7 @@ describe('CollectionsService', () => {
       providers: [
         CollectionsService,
         PortfolioService,
+        CollectionComparisonService,
         { provide: PrismaService, useValue: prismaClient },
         { provide: PRICE_PROVIDER, useValue: PRICE_PROVIDER_STUB },
       ],
@@ -140,7 +143,7 @@ describe('CollectionsService', () => {
         mid: new Prisma.Decimal('2.00'),
         high: new Prisma.Decimal('30.00'),
         market: TEST_MARKET,
-        provider: 'tcgdex',
+        provider: 'tcgcsv',
         source: 'tcgplayer',
         currency: 'USD',
         fetchedAt: new Date('2024-01-01T00:00:00.000Z'),
@@ -153,7 +156,7 @@ describe('CollectionsService', () => {
         cardId: TEST_CARD_ID,
         variant: 'normal',
         market: new Prisma.Decimal('99.00'),
-        provider: 'tcgdex',
+        provider: 'tcgcsv',
         source: 'tcgplayer',
         currency: 'USD',
         fetchedAt: new Date('2024-06-01T00:00:00.000Z'),
@@ -165,7 +168,7 @@ describe('CollectionsService', () => {
         cardId: TEST_CARD_ID,
         variant: 'holofoil',
         market: new Prisma.Decimal('55.00'),
-        provider: 'tcgdex',
+        provider: 'tcgcsv',
         source: 'tcgplayer',
         currency: 'USD',
         fetchedAt: new Date('2024-06-01T00:00:00.000Z'),
@@ -203,7 +206,7 @@ describe('CollectionsService', () => {
         cardId: TEST_CARD_IN_UNKNOWN_SET_ID,
         variant: 'normal',
         market: new Prisma.Decimal('7.25'),
-        provider: 'tcgdex',
+        provider: 'tcgcsv',
         source: 'tcgplayer',
         currency: 'USD',
         fetchedAt: new Date('2024-06-01T00:00:00.000Z'),
@@ -1200,11 +1203,11 @@ describe('CollectionsService', () => {
         { variant: 'firstEditionNormal', market: 100, fetchedAt: new Date(now.getTime() - 1) },
         { variant: 'firstEditionNormal', market: null, fetchedAt: now },
       ];
-      await prismaClient.cardPrice.createMany({ data: prices.map((price) => ({ ...price, cardId: TEST_CARD_ID, mid: 500, provider: 'tcgdex', source: 'tcgplayer', currency: 'USD' })) });
+      await prismaClient.cardPrice.createMany({ data: prices.map((price) => ({ ...price, cardId: TEST_CARD_ID, mid: 500, provider: 'tcgcsv', source: 'tcgplayer', currency: 'USD' })) });
       await prismaClient.cardPrice.createMany({ data: [
         { cardId: TEST_CARD_ID, variant: 'normal', market: 999, provider: 'other', source: 'tcgplayer', currency: 'USD', fetchedAt: new Date(now.getTime() + 10) },
-        { cardId: TEST_CARD_ID, variant: 'normal', market: 888, provider: 'tcgdex', source: 'cardmarket', currency: 'USD', fetchedAt: new Date(now.getTime() + 10) },
-        { cardId: TEST_CARD_ID, variant: 'normal', market: 777, provider: 'tcgdex', source: 'tcgplayer', currency: 'EUR', fetchedAt: new Date(now.getTime() + 10) },
+        { cardId: TEST_CARD_ID, variant: 'normal', market: 888, provider: 'tcgcsv', source: 'cardmarket', currency: 'USD', fetchedAt: new Date(now.getTime() + 10) },
+        { cardId: TEST_CARD_ID, variant: 'normal', market: 777, provider: 'tcgcsv', source: 'tcgplayer', currency: 'EUR', fetchedAt: new Date(now.getTime() + 10) },
       ] });
       for (const [variant, quantity] of [['normal', 2], ['holofoil', 3], ['reverseHolofoil', 4], ['firstEditionHolofoil', 6], ['firstEditionNormal', 2]] as const) {
         await service.addItem(userA, collection.id, addItem(TEST_CARD_ID, { variant, quantity }));
@@ -1220,16 +1223,23 @@ describe('CollectionsService', () => {
       const items = await service.listItems(userA, collection.id, DEFAULT_LIST_ITEMS);
       expect(items.data.find((item) => item.variant === 'firstEditionNormal')?.price).toMatchObject({ market: null, mid: 500 });
       expect(items.data.find((item) => item.variant === 'firstEditionHolofoil')?.price).toMatchObject({ market: 0, freshness: 'fresh' });
-      const portfolio = new PortfolioService(prismaClient as unknown as PrismaService, PRICE_PROVIDER_STUB as PriceProvider);
-      await prismaClient.portfolioSnapshot.create({ data: { userId: userA, day: new Date('2026-10-07T00:00:00.000Z'), valueUsd: 10, totalCards: 4, unpricedCards: 2 } });
+      const portfolio = new PortfolioService(prismaClient as unknown as PrismaService, PRICE_PROVIDER_STUB as PriceProvider, undefined,
+        new CollectionComparisonService(prismaClient as unknown as PrismaService, PRICE_PROVIDER_STUB));
+      await prismaClient.portfolioSnapshot.create({ data: { userId: userA, day: new Date('2026-10-07T00:00:00.000Z'), valueUsd: 999, totalCards: 4, unpricedCards: 2 } });
+      await prismaClient.collectionComparisonSnapshot.create({ data: { collectionId: collection.id, provider: 'tcgcsv',
+        policy: COMPARISON_POLICY, day: new Date('2026-10-07T00:00:00Z'), valueUsd: 10, totalCopies: 4, pricedCopies: 2,
+        freshCopies: 2, staleCopies: 0, unknownFreshnessCopies: 0, compositionFingerprint: 'historical-test',
+        compositionChanged: false, scopeCount: 1, snapshotCut: 'historical-test', evaluatedAt: new Date('2026-10-07T12:00:00Z') } });
       const result = await portfolio.summary(userA);
       expect(result.valuation).toMatchObject(expected);
       expect(result.valueUsd).toBe(56);
-      expect(result.topCards.find((card) => card.variant === 'normal')?.reference).toMatchObject({ provider: 'tcgdex', source: 'tcgplayer', currency: 'USD', fetchedAt: new Date(now.getTime() - 86399999).toISOString(), freshness: 'fresh', evaluatedAt: now.toISOString() });
+      expect(result.topCards.find((card) => card.variant === 'normal')?.reference).toMatchObject({ provider: 'tcgcsv', source: 'tcgplayer', currency: 'USD', fetchedAt: new Date(now.getTime() - 86399999).toISOString(), freshness: 'fresh', evaluatedAt: now.toISOString() });
       expect(result.topCards.find((card) => card.variant === 'reverseHolofoil')?.reference.freshness).toBe('unknown');
       expect(result.history[0]?.valuation).toMatchObject({ amount: 10, evaluatedAt: null, recency: null, coverage: { totalCopies: 4, pricedCopies: 2, unpricedCopies: 2, coverageRatio: 0.5 } });
       await portfolio.summary(userA);
-      expect(await prismaClient.portfolioSnapshot.count({ where: { userId: userA, day: new Date('2026-10-08T00:00:00.000Z') } })).toBe(1);
+      expect(await prismaClient.portfolioSnapshot.count({ where: { userId: userA } })).toBe(1);
+      expect(await prismaClient.portfolioSnapshot.count({ where: { userId: userA, day: new Date('2026-10-08T00:00:00.000Z') } })).toBe(0);
+      expect(await prismaClient.collectionComparisonSnapshot.count({ where: { collectionId: collection.id, provider: 'tcgcsv', day: new Date('2026-10-08T00:00:00Z') } })).toBe(1);
     } finally { vi.useRealTimers(); }
   });
 
@@ -1354,6 +1364,7 @@ describe('CollectionsService · cover de portada (B9)', () => {
       providers: [
         CollectionsService,
         PortfolioService,
+        CollectionComparisonService,
         { provide: PrismaService, useValue: prismaClient },
         { provide: PRICE_PROVIDER, useValue: PRICE_PROVIDER_STUB },
       ],
@@ -1538,7 +1549,7 @@ describe('CollectionsService · precio por item (latestMarketPriceJoin)', () => 
         variant,
         mid: new Prisma.Decimal('3.00'),
         market: market === null ? null : new Prisma.Decimal(market),
-        provider: 'tcgdex',
+        provider: 'tcgcsv',
         source: 'tcgplayer',
         currency: 'USD',
         fetchedAt: new Date(fetchedAt),
@@ -1550,6 +1561,7 @@ describe('CollectionsService · precio por item (latestMarketPriceJoin)', () => 
       providers: [
         CollectionsService,
         PortfolioService,
+        CollectionComparisonService,
         { provide: PrismaService, useValue: prismaClient },
         { provide: PRICE_PROVIDER, useValue: PRICE_PROVIDER_STUB },
       ],
@@ -1686,6 +1698,7 @@ describe('CollectionsService · orden del listado y location de carta', () => {
       providers: [
         CollectionsService,
         PortfolioService,
+        CollectionComparisonService,
         { provide: PrismaService, useValue: prismaClient },
         { provide: PRICE_PROVIDER, useValue: PRICE_PROVIDER_STUB },
       ],
@@ -1753,7 +1766,7 @@ describe('CollectionsService · orden del listado y location de carta', () => {
           cardId,
           variant: 'normal',
           market: new Prisma.Decimal(market),
-          provider: 'tcgdex',
+          provider: 'tcgcsv',
           source: 'tcgplayer',
           currency: 'USD',
           fetchedAt: new Date('2024-06-01T00:00:00.000Z'),

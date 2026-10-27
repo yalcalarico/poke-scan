@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   Injectable,
   Logger,
   NotFoundException,
@@ -69,14 +68,6 @@ export class PriceSyncRegistryService {
     return { inserted: result.count, missingSetIds };
   }
 
-  async list(): Promise<
-    Awaited<ReturnType<PrismaService['priceSyncSet']['findMany']>>
-  > {
-    return this.prisma.priceSyncSet.findMany({
-      orderBy: [{ priority: 'asc' }, { setId: 'asc' }],
-    });
-  }
-
   /**
    * Repara señales perdidas e incorpora colecciones existentes en una sola
    * operación local; el conflicto conserva cualquier decisión operativa previa.
@@ -125,45 +116,6 @@ export class PriceSyncRegistryService {
       update: { lastDemandAt: new Date() },
     });
     if (result.enabled) await this.requestCycle();
-  }
-
-  /** Una acción manual explícita puede volver a habilitar el set. */
-  async enableManually(setId: string, priority?: number): Promise<void> {
-    const initialPriority = priority ?? 100;
-    if (
-      !Number.isSafeInteger(initialPriority) ||
-      initialPriority <= 0 ||
-      initialPriority > 2_147_483_647
-    ) {
-      throw new BadRequestException('La prioridad debe ser un entero positivo');
-    }
-    await this.assertSetExists(setId);
-
-    await this.prisma.priceSyncSet.upsert({
-      where: { setId },
-      create: {
-        setId,
-        origin: 'manual',
-        priority: initialPriority,
-        lastDemandAt: new Date(),
-      },
-      update: {
-        enabled: true,
-        lastDemandAt: new Date(),
-        ...(priority === undefined ? {} : { priority }),
-      },
-    });
-    await this.requestCycle();
-  }
-
-  /** La deshabilitación queda persistida aunque el set aparezca en una colección. */
-  async disable(setId: string): Promise<void> {
-    await this.assertSetExists(setId);
-    await this.prisma.priceSyncSet.upsert({
-      where: { setId },
-      create: { setId, origin: 'manual', enabled: false, priority: 100 },
-      update: { enabled: false },
-    });
   }
 
   private async requestCycle(): Promise<void> {

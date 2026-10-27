@@ -1,0 +1,191 @@
+--- a/backend/src/modules/collections/collections.service.ts
++++ b/backend/src/modules/collections/collections.service.ts
+@@ -564,7 +564,7 @@
+         (id, "collectionId", "cardId", variant, condition, quantity,
+          "isForTrade", notes, "addedAt", "updatedAt")
+       VALUES (${randomUUID()}, ${collectionId}, ${dto.cardId},
+-              ${dto.variant ?? 'normal'}, ${dto.condition ?? 'NM'}, ${dto.quantity ?? 1},
++              ${dto.variant ?? 'normal'}, ${'NM'}, ${dto.quantity ?? 1},
+               ${dto.isForTrade ?? false}, ${dto.notes ?? null}, NOW(), NOW())
+       ON CONFLICT ("collectionId", "cardId", variant, condition)
+       DO UPDATE SET quantity = collection_items.quantity + EXCLUDED.quantity,
+@@ -733,7 +733,7 @@
+     const existing = await this.findOwnedItem(userId, itemId);
+ 
+     const variant = dto.variant ?? existing.variant;
+-    const condition = dto.condition ?? existing.condition;
++    const condition = 'NM';
+ 
+     if (variant !== existing.variant || condition !== existing.condition) {
+       const conflict = await this.prisma.collectionItem.findFirst({
+@@ -748,7 +748,7 @@
+       });
+       if (conflict) {
+         throw new ConflictException(
+-          'Ya existe un item con esa misma variante y condición en la colección',
++          'Ya existe esta variante en la colección',
+         );
+       }
+     }
+@@ -758,7 +758,7 @@
+     if (dto.isForTrade !== undefined) data.isForTrade = dto.isForTrade;
+     if (dto.notes !== undefined) data.notes = dto.notes;
+     if (dto.variant !== undefined) data.variant = dto.variant;
+-    if (dto.condition !== undefined) data.condition = dto.condition;
++    data.condition = condition;
+ 
+     let item: ItemWithCard;
+     try {
+@@ -770,7 +770,7 @@
+     } catch (error) {
+       if (isUniqueViolation(error)) {
+         throw new ConflictException(
+-          'Ya existe un item con esa misma variante y condición en la colección',
++          'Ya existe esta variante en la colección',
+         );
+       }
+       throw error;
+--- a/backend/src/modules/collections/collections.service.spec.ts
++++ b/backend/src/modules/collections/collections.service.spec.ts
+@@ -1270,15 +1270,15 @@
+       service.updateItem(userA, normal.id, updateItemDto({ variant: 'holofoil' })),
+     ).rejects.toBeInstanceOf(ConflictException);
+ 
+-    // Choca por condición: mismo variant 'normal' pero condición 'LP' ya usada
++    // Un cliente anterior puede enviar LP; la escritura nueva acumula en NM.
+     await service.addItem(
+       userA,
+       collection.id,
+       addItem(TEST_CARD_ID, { condition: 'LP' }),
+     );
+-    await expect(
+-      service.updateItem(userA, normal.id, updateItemDto({ condition: 'LP' })),
+-    ).rejects.toBeInstanceOf(ConflictException);
++    const normalized = await service.updateItem(userA, normal.id, updateItemDto({ condition: 'LP' }));
++    expect(normalized.condition).toBe('NM');
++    expect(normalized.quantity).toBe(8);
+ 
+     // Mover a una combinación libre sí funciona
+     const moved = await service.updateItem(
+@@ -1287,13 +1287,13 @@
+       updateItemDto({ variant: 'reverseHolofoil' }),
+     );
+     expect(moved.variant).toBe('reverseHolofoil');
+-    expect(moved.quantity).toBe(7);
++    expect(moved.quantity).toBe(8);
+ 
+     const rows = await prismaClient.collectionItem.findMany({
+       where: { collectionId: collection.id },
+       orderBy: { variant: 'asc' },
+     });
+-    expect(rows).toHaveLength(3);
++    expect(rows).toHaveLength(2);
+   });
+ 
+   it('remove y removeItem borran en cascada', async () => {
+--- /dev/null
++++ b/backend/prisma/migrations/20261026020000_collection_nm_only/migration.sql
+@@ -0,0 +1,45 @@
++BEGIN;
++
++-- Sólo se normaliza inventario; las observaciones históricas de precios quedan intactas.
++LOCK TABLE collection_items IN SHARE ROW EXCLUSIVE MODE;
++
++CREATE TEMP TABLE nm_item_mapping ON COMMIT DROP AS
++SELECT id,
++       FIRST_VALUE(id) OVER (
++         PARTITION BY "collectionId", "cardId", variant
++         ORDER BY (condition = 'NM') DESC, "addedAt", id
++       ) AS "canonicalId"
++FROM collection_items;
++
++CREATE TEMP TABLE nm_item_totals ON COMMIT DROP AS
++SELECT m."canonicalId", SUM(i.quantity) AS quantity,
++       BOOL_OR(i."isForTrade") AS "isForTrade",
++       STRING_AGG(DISTINCT NULLIF(i.notes, ''), E'\n' ORDER BY NULLIF(i.notes, '')) AS notes,
++       MIN(i."addedAt") AS "addedAt", MAX(i."updatedAt") AS "updatedAt"
++FROM collection_items i JOIN nm_item_mapping m ON m.id = i.id
++GROUP BY m."canonicalId";
++
++-- Si los atributos no caben, se conserva todo y se exige resolver el conflicto.
++DO $$
++BEGIN
++  IF EXISTS (SELECT 1 FROM nm_item_totals WHERE quantity > 2147483647 OR LENGTH(notes) > 500) THEN
++    RAISE EXCEPTION 'Normalización NM pendiente: una unión excede los límites de cantidad o notas. No se modificó el inventario.';
++  END IF;
++END $$;
++
++-- El replay conserva su hash original y resuelve al ítem que acumula las copias.
++UPDATE collection_item_add_operations o
++SET "resultItemId" = m."canonicalId"
++FROM nm_item_mapping m
++WHERE o."resultItemId" = m.id AND m.id <> m."canonicalId";
++
++DELETE FROM collection_items i USING nm_item_mapping m
++WHERE i.id = m.id AND m.id <> m."canonicalId";
++
++UPDATE collection_items i
++SET condition = 'NM', quantity = t.quantity::integer,
++    "isForTrade" = t."isForTrade", notes = t.notes,
++    "addedAt" = t."addedAt", "updatedAt" = t."updatedAt"
++FROM nm_item_totals t WHERE i.id = t."canonicalId";
++
++COMMIT;
+--- /dev/null
++++ b/backend/scripts/nm-policy-migration-smoke.mjs
+@@ -0,0 +1,55 @@
++import assert from 'node:assert/strict';
++import { randomUUID } from 'node:crypto';
++import { spawnSync } from 'node:child_process';
++import { fileURLToPath } from 'node:url';
++import { PrismaClient } from '@prisma/client';
++
++const database = new URL(process.env.DATABASE_URL ?? '');
++assert.match(database.pathname, /_test$/);
++const cwd = fileURLToPath(new URL('../', import.meta.url));
++const prisma = new PrismaClient();
++const apply = () => spawnSync('pnpm', ['exec', 'prisma', 'db', 'execute', '--file', 'prisma/migrations/20261026020000_collection_nm_only/migration.sql', '--schema', 'prisma/schema.prisma'], { cwd, env: process.env, encoding: 'utf8' });
++const userIds = [];
++
++try {
++  const card = await prisma.card.findFirst({ select: { id: true } });
++  assert.ok(card, 'Falta catálogo local de pruebas');
++  for (const overflow of [false, true]) {
++    const user = await prisma.user.create({ data: { email: `${randomUUID()}@nm-qa.local`, username: `nmqa${randomUUID().replaceAll('-', '').slice(0, 12)}`, displayName: 'QA NM', passwordHash: 'qa-no-login' } });
++    userIds.push(user.id);
++    const collection = await prisma.collection.create({ data: { userId: user.id, name: 'Normalización NM QA' } });
++    const normal = await prisma.collectionItem.create({ data: { collectionId: collection.id, cardId: card.id, condition: 'NM', quantity: 2, notes: overflow ? 'a'.repeat(300) : 'nota NM', addedAt: new Date('2026-01-02') } });
++    const legacy = await prisma.collectionItem.create({ data: { collectionId: collection.id, cardId: card.id, condition: 'HP', quantity: 3, notes: overflow ? 'b'.repeat(300) : 'nota HP', isForTrade: true, addedAt: new Date('2026-01-01') } });
++    const key = randomUUID();
++    await prisma.collectionItemAddOperation.create({ data: { userId: user.id, key, payloadHash: 'legacy-hash-sin-cambiar', resultItemId: legacy.id, expiresAt: new Date(Date.now() + 86400000) } });
++    const prices = await prisma.cardPrice.count();
++    const migration = apply();
++    const rows = await prisma.collectionItem.findMany({ where: { collectionId: collection.id } });
++    const operation = await prisma.collectionItemAddOperation.findUniqueOrThrow({ where: { userId_key: { userId: user.id, key } } });
++    if (overflow) {
++      assert.notEqual(migration.status, 0, 'Debió rechazar notas que no caben');
++      assert.equal(rows.length, 2);
++      assert.equal(rows.find((row) => row.id === legacy.id)?.condition, 'HP');
++      assert.equal(operation.resultItemId, legacy.id);
++      console.log('Rollback por conflicto de notas: OK, sin pérdida de filas ni referencias');
++    } else {
++      assert.equal(migration.status, 0, migration.stderr);
++      assert.equal(rows.length, 1);
++      assert.equal(rows[0].id, normal.id);
++      assert.equal(rows[0].condition, 'NM');
++      assert.equal(rows[0].quantity, 5);
++      assert.equal(rows[0].isForTrade, true);
++      assert.ok(rows[0].notes.includes('nota NM') && rows[0].notes.includes('nota HP'));
++      assert.equal(rows[0].addedAt.toISOString().slice(0, 10), '2026-01-01');
++      assert.equal(operation.resultItemId, normal.id);
++      assert.equal(operation.payloadHash, 'legacy-hash-sin-cambiar');
++      console.log('NM + HP → NM, 2 + 3 = 5; notas, intercambio, fecha y replay: OK');
++    }
++    assert.equal(await prisma.cardPrice.count(), prices);
++    await prisma.user.delete({ where: { id: user.id } });
++    userIds.splice(userIds.indexOf(user.id), 1);
++  }
++} finally {
++  for (const id of userIds) await prisma.user.deleteMany({ where: { id } });
++  await prisma.$disconnect();
++}

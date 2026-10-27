@@ -1,6 +1,6 @@
 'use client';
 
-import { PreviewLink } from '@/components/visual-preview/preview-link';
+import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 import { AppMark } from '@/components/brand';
@@ -54,14 +54,14 @@ export function BottomNav() {
         a la derecha, que es la convención de un navbar de sitio.
       */}
       <div className="mx-auto flex h-16 max-w-lg items-stretch lg:h-14 lg:max-w-6xl lg:px-6">
-        <PreviewLink
+        <Link
           href="/inicio"
           aria-label="PokéScan, inicio de la app"
           className="hidden shrink-0 items-center gap-2 rounded-control focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--focus-ring)] lg:flex"
         >
           <AppMark size={32} />
           <span className="text-body-strong text-primary">PokéScan</span>
-        </PreviewLink>
+        </Link>
 
         <ul
           className={cn(
@@ -84,7 +84,7 @@ export function BottomNav() {
                   item.href === '/inicio' && 'lg:hidden',
                 )}
               >
-                <PreviewLink
+                <Link
                   href={item.href}
                   aria-label={item.label}
                   aria-current={isActive ? 'page' : undefined}
@@ -115,7 +115,7 @@ export function BottomNav() {
                       item.label
                     )}
                   </span>
-                </PreviewLink>
+                </Link>
               </li>
             );
           })}

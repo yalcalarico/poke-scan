@@ -2,17 +2,16 @@
 
 import { PreviewSheet as Sheet } from '@/components/visual-preview/preview-sheet';
 
-import { PreviewLink as Link } from '@/components/visual-preview/preview-link';
+import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Alert, Button, Field, Input, RetryButton, Select, Skeleton, useToast, buttonVariants } from '@/components/ui';
+import { Alert, Button, Field, RetryButton, Select, Skeleton, useToast, buttonVariants } from '@/components/ui';
 import { useAsync } from '@/hooks/use-async';
 import { useAuth } from '@/hooks/use-auth';
 import { ApiError } from '@/lib/api';
 import { addItem, listCollections } from '@/lib/api/collections';
-import { getCardPrices } from '@/lib/api/cards';
+import { shownPriceValue } from '@/lib/scanner/price-reference';
 import { formatCardNumber } from '@/lib/format';
-import { CONDITION_OPTIONS, VARIANT_OPTIONS } from '@/lib/variants';
-import type { CardCondition, CardVariant, CollectionDto, PriceDto, CardDto } from '@/types/api';
+import type { CollectionDto, CardDto } from '@/types/api';
 import { ShowOrDash } from '@/components/cards/money';
 import { CardThumb } from './card-thumb';
 import { formatCount } from './copy';
@@ -23,7 +22,6 @@ import {
   type DraftAllocation, type DraftOperation, type SessionDraft,
 } from './session-draft';
 import { DraftCardSearch } from './draft-card-search';
-import { DraftSelectionEditor } from './draft-selection-editor';
 
 const MAX_QUANTITY = 999;
 function messageOf(error: unknown): string {
@@ -38,10 +36,11 @@ export interface OrganizeSheetProps {
   onRemove: (runId: number) => void;
   onReview?: (runId: number) => void;
   onCorrect?: (runId: number, card: CardDto) => void;
+  onManualSearchOpen?: (runId: number) => void;
   manualReviewRunId?: number | null;
 }
 
-export function OrganizeSheet({ open, entries, onClose, onSaved, onRemove, onReview, onCorrect, manualReviewRunId }: OrganizeSheetProps) {
+export function OrganizeSheet({ open, entries, onClose, onSaved, onRemove, onReview, onCorrect, onManualSearchOpen, manualReviewRunId }: OrganizeSheetProps) {
   const toast = useToast();
   const { user } = useAuth();
   const userId = user?.id ?? '';
@@ -50,13 +49,10 @@ export function OrganizeSheet({ open, entries, onClose, onSaved, onRemove, onRev
   const restored = useRef(entries.length > 0);
   const [storageWarning, setStorageWarning] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [priceByCard, setPriceByCard] = useState<Record<string, PriceDto[]>>({});
   const inFlight = useRef(false);
   const batchInFlight = useRef(false);
   const currentUserRef = useRef(userId);
-  const [quantityInputs, setQuantityInputs] = useState<Record<string, string>>({});
   const [correctionRunId, setCorrectionRunId] = useState<number | null>(null);
-  const [selectionIds, setSelectionIds] = useState<string[] | null>(null);
   const [removeId, setRemoveId] = useState<string | null>(null);
   useEffect(() => { currentUserRef.current = userId; }, [userId]);
   const { status, data, error: loadError, reload } = useAsync<CollectionDto[]>((signal) => {
@@ -101,40 +97,22 @@ export function OrganizeSheet({ open, entries, onClose, onSaved, onRemove, onRev
     if (manualReviewRunId != null) queueMicrotask(() => setCorrectionRunId(manualReviewRunId));
   }, [manualReviewRunId]);
   const grouped = useMemo(() => groupAllocations(allocationList.filter((allocation) => entryByRun.has(allocation.runId))), [allocationList, entryByRun]);
-  const invalidQuantityIds = new Set(Object.entries(quantityInputs).filter(([, value]) => !/^\d+$/.test(value) || Number(value) < 1 || Number(value) > MAX_QUANTITY).map(([id]) => id));
-  const readyGroups = readyAllocationGroups(synchronized).filter((group) => group.every((allocation) => !invalidQuantityIds.has(allocation.id)));
+  const readyGroups = readyAllocationGroups(synchronized);
   const pendingCount = allocationList.reduce((sum, allocation) => sum + allocation.quantity, 0);
   const readyCopies = readyGroups.flat().reduce((sum, allocation) => sum + allocation.quantity, 0);
+  const pendingGroups = grouped.filter((group) => group.some((allocation) => !isAllocationReady(allocation) || lockedAllocationIds.has(allocation.id))).length;
   const referenceFor = (allocation: DraftAllocation) => {
-    const prices = priceByCard[allocation.cardId] ?? entryByRun.get(allocation.runId)?.candidate.prices ?? [];
+    const prices = entryByRun.get(allocation.runId)?.candidate.prices ?? [];
     return prices.find((price) => price.cardId === allocation.cardId && price.variant === allocation.variant
-      && price.market != null && Number.isFinite(price.market));
+      && shownPriceValue(price) != null);
+  };
+  const priceValueFor = (allocation: DraftAllocation) => {
+    const price = referenceFor(allocation);
+    return price ? shownPriceValue(price) : null;
   };
   const pricedCopies = allocationList.reduce((sum, allocation) => sum + (referenceFor(allocation) ? allocation.quantity : 0), 0);
   const currentDestinationId = draft.ownerUserId === userId ? draft.selectedCollectionId : null;
   const destinationValid = Boolean(currentDestinationId && collections.some((collection) => collection.id === currentDestinationId));
-
-  const patchAllocation = (id: string, values: Partial<DraftAllocation>) => {
-    const focusedId = document.activeElement?.id;
-    updateDraft((current) => ({ ...current,
-      operations: current.operations.filter((operation) => operation.status !== 'rejected' || !operation.allocationIds.includes(id)),
-      allocations: current.allocations.map((allocation) => allocation.id === id ? { ...allocation, ...values } : allocation),
-    }));
-    // Cambiar atributos puede mover la parte a otro grupo y remontar el control.
-    if (focusedId) queueMicrotask(() => document.getElementById(focusedId)?.focus());
-  };
-
-  const fetchPrices = async (cardId: string) => {
-    if (priceByCard[cardId]) return;
-    try {
-      const response = await getCardPrices(cardId, AbortSignal.timeout(5000));
-      setPriceByCard((current) => ({ ...current, [cardId]: response.prices }));
-    } catch {
-      // Un fallo de consulta no invalida la referencia previa ni la carta elegida.
-      const previous = entries.find((entry) => entry.candidate.card.id === cardId)?.candidate.prices ?? [];
-      setPriceByCard((current) => ({ ...current, [cardId]: previous }));
-    }
-  };
 
   const saveGroup = async (group: DraftAllocation[], replay?: DraftOperation) => {
     const currentDraft = syncDraftEntries(draftRef.current, entries);
@@ -144,7 +122,7 @@ export function OrganizeSheet({ open, entries, onClose, onSaved, onRemove, onRev
     const collectionId = replay?.collectionId ?? (currentDraft.destinationConfirmed && destinationId ? destinationId : null);
     if ((!first && !replay) || !collectionId || !userId || currentUserRef.current !== userId || inFlight.current || currentDraft.recoveryBlocked) return false;
     if (!replay && (!collections.some((collection) => collection.id === collectionId) || group.some((allocation) => getLockedIds(currentDraft).has(allocation.id)))) return false;
-    if (group.some((allocation) => !isAllocationReady(allocation) || invalidQuantityIds.has(allocation.id))) return false;
+    if (group.some((allocation) => !isAllocationReady(allocation))) return false;
     if (!replay && (!first?.variant || !first.condition)) return false;
     const payload = replay?.payload ?? {
       cardId: first!.cardId,
@@ -212,7 +190,7 @@ export function OrganizeSheet({ open, entries, onClose, onSaved, onRemove, onRev
     setIsSaving(true);
     for (const group of readyGroups) {
       if (currentUserRef.current !== userId) break;
-      await saveGroup(group);
+      if (!await saveGroup(group)) break;
     }
     batchInFlight.current = false;
     setIsSaving(false);
@@ -223,18 +201,18 @@ export function OrganizeSheet({ open, entries, onClose, onSaved, onRemove, onRev
     updateDraft((current) => ({ ...current, selectedCollectionId: id || null, ownerUserId: id ? userId : null, destinationConfirmed: Boolean(id) }));
   };
 
-  const totalKnown = allocationList.reduce((sum, allocation) => sum + (referenceFor(allocation)?.market ?? 0) * allocation.quantity, 0);
+  const totalKnown = allocationList.reduce((sum, allocation) => sum + (priceValueFor(allocation) ?? 0) * allocation.quantity, 0);
   const hasPrice = pricedCopies > 0;
 
-  return <Sheet open={open} onClose={onClose} size="full" title={correctionRunId !== null ? `Reemplazar lectura ${correctionRunId}` : selectionIds ? "Separar copias" : "Revisar escaneos"}
+  return <Sheet open={open} onClose={onClose} size="full" title={correctionRunId !== null ? `Reemplazar lectura ${correctionRunId}` : "Revisar escaneos"}
     subtitle={`${formatCount(entries.length)} ${entries.length === 1 ? 'lectura' : 'lecturas'} · ${formatCount(pendingCount)} copias · ${formatCount(grouped.length)} ${grouped.length === 1 ? 'grupo' : 'grupos'}`}
-    footer={correctionRunId === null && !selectionIds ? <div className="flex w-full flex-col gap-2">
+    footer={correctionRunId === null ? <div className="flex w-full flex-col gap-2">
       <p className="text-center text-body-strong text-primary">Valor conocido por variante: <ShowOrDash usd={hasPrice ? totalKnown : null} /></p>
-      <p className="text-caption text-secondary">{pricedCopies} de {pendingCount} copias con referencia. La condición no modifica el precio.</p>
+      <p className="text-caption text-secondary">{pricedCopies} de {pendingCount} copias con referencia.</p>
       <p className="text-caption text-secondary">Guardaremos {readyCopies} copias; {pendingCount - readyCopies} quedan pendientes.</p>
-      <p className="text-caption text-secondary">{readyGroups.length} {readyGroups.length === 1 ? 'grupo listo' : 'grupos listos'} · {grouped.length - readyGroups.length} por completar</p>
+      <p className="text-caption text-secondary">{readyGroups.length} {readyGroups.length === 1 ? 'incremento listo' : 'incrementos listos'} · {pendingGroups} {pendingGroups === 1 ? 'grupo pendiente' : 'grupos pendientes'}</p>
       <Button size="lg" onClick={() => void saveReady()} loading={isSaving} pendingLabel="Guardando…"
-      disabled={!readyGroups.length || !draft.destinationConfirmed || !destinationValid || isSaving || Boolean(draft.recoveryBlocked)}>Guardar listas ({readyGroups.length})</Button>
+      disabled={!readyGroups.length || !draft.destinationConfirmed || !destinationValid || isSaving || activeOperations.length > 0 || Boolean(draft.recoveryBlocked)}>Guardar listas ({readyGroups.length})</Button>
       <Button variant="ghost" size="lg" onClick={onClose} disabled={isSaving}>Seguir escaneando</Button>
     </div> : null}>
     {draft.recoveryBlocked ? <Alert tone="error" title="Borrador protegido">{draft.recoveryBlocked}</Alert> : null}
@@ -244,26 +222,11 @@ export function OrganizeSheet({ open, entries, onClose, onSaved, onRemove, onRev
       onCorrect?.(runId, card);
       setCorrectionRunId(null);
     }} /> : null}
-    {selectionIds ? <DraftSelectionEditor allocations={allocationList.filter((allocation) => selectionIds.includes(allocation.id))} onCancel={() => setSelectionIds(null)} onApply={(selection, variant, condition) => {
-      updateDraft((current) => ({ ...current,
-        operations: current.operations.filter((operation) => operation.status !== 'rejected' || !operation.allocationIds.some((id) => selection.some((item) => item.id === id))),
-        allocations: current.allocations.flatMap((allocation) => {
-          const moved = selection.find((item) => item.id === allocation.id);
-          if (!moved) return [allocation];
-          const changed = { ...allocation, quantity: moved.quantity, variant, variantReviewed: true, condition, conditionReviewed: true, reviewed: true };
-          return moved.quantity === allocation.quantity ? [changed] : [
-            { ...allocation, quantity: allocation.quantity - moved.quantity }, { ...changed, id: crypto.randomUUID() },
-          ];
-        }),
-      }));
-      setSelectionIds(null);
-      setQuantityInputs((current) => Object.fromEntries(Object.entries(current).filter(([id]) => !selection.some((item) => item.id === id))));
-    }} /> : null}
     {storageWarning ? <Alert tone="warning" title="El borrador dura mientras esta pantalla siga abierta">No pudimos guardarlo en esta pestaña. No se enviará una escritura sin conservar su clave.</Alert> : null}
     {status === 'loading' ? <div role="status" aria-label="Cargando colecciones"><Skeleton variant="block" /><Skeleton variant="block" /></div> : null}
     {status === 'error' ? <Alert tone="error" title="No pudimos cargar tus colecciones" action={<RetryButton onClick={reload} />}>{loadError ?? 'Revisá tu conexión y reintentá.'}</Alert> : null}
     {status === 'ready' && !collections.length ? <Alert tone="info" title="Creá una colección para guardar"><Link href="/colecciones" className={buttonVariants({ variant: 'secondary' })}>Ir a colecciones</Link></Alert> : null}
-    {correctionRunId === null && !selectionIds && status === 'ready' && collections.length ? <div className="flex flex-col gap-4">
+    {correctionRunId === null && status === 'ready' && collections.length ? <div className="flex flex-col gap-4">
       <Field id="scan-destination" label="Destino del lote">
         <Select id="scan-destination" options={collectionOptions} value={currentDestinationId ?? ''} onChange={chooseDestination}
           placeholder="Elegí una colección" disabled={isSaving || activeOperations.length > 0 || Boolean(draft.recoveryBlocked)} />
@@ -276,7 +239,7 @@ export function OrganizeSheet({ open, entries, onClose, onSaved, onRemove, onRev
       <ul className="grid items-start gap-4 md:grid-cols-2">{grouped.map((group) => <li key={group.map((allocation) => allocation.id).join('-')} className="flex flex-col gap-3">
         <div className="flex flex-col gap-2">
           <p className="text-body-strong text-primary">{entryByRun.get(group[0]?.runId ?? 0)?.candidate.card.name} · {group.reduce((sum, allocation) => sum + allocation.quantity, 0)} copias en este grupo</p>
-          <Button variant="secondary" disabled={isSaving || group.some((allocation) => lockedAllocationIds.has(allocation.id)) || Boolean(draft.recoveryBlocked)} onClick={() => setSelectionIds(group.map((allocation) => allocation.id))}>Separar copias / aplicar a varias</Button>
+          {group.reduce((sum, allocation) => sum + allocation.quantity, 0) > MAX_QUANTITY ? <p className="text-caption text-secondary">Se guardará en incrementos de hasta {MAX_QUANTITY} copias.</p> : null}
         </div>
         <ul className="flex flex-col gap-3">{group.map((allocation) => {
         const entry = entryByRun.get(allocation.runId);
@@ -287,37 +250,10 @@ export function OrganizeSheet({ open, entries, onClose, onSaved, onRemove, onRev
         return <li key={allocation.id} className="flex flex-col gap-3 rounded-panel bg-surface-2 p-4">
           <div className="flex gap-3"><button type="button" className="min-h-11 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--focus-ring)]" disabled={locked} onClick={() => onReview?.(allocation.runId)} aria-label={`Revisar carta ${card.name}`}><CardThumb card={card} width={88} /></button>
             <div className="min-w-0 flex-1"><p className="text-body-strong text-primary">{card.name}</p><p className="text-caption text-secondary">{card.set?.name ?? card.setId} · {formatCardNumber(card.number, card.set?.printedTotal ?? null)}</p>
-              <p className="text-caption text-warning">{allocation.reviewed ? entry.selectionSource === 'manual' ? 'Selección manual confirmada' : 'Carta revisada' : 'Propuesta por revisar'}</p>
-              {onCorrect ? <Button variant="secondary" onClick={() => setCorrectionRunId(allocation.runId)} disabled={locked}>Buscar carta a mano</Button> : null}
+              <p className="text-caption text-secondary">{entry.selectionSource === 'manual' ? 'Carta elegida a mano' : 'Propuesta aceptada · podés corregirla'}</p>
+              {onCorrect ? <Button variant="secondary" onClick={() => { onManualSearchOpen?.(allocation.runId); setCorrectionRunId(allocation.runId); }} disabled={locked}>Buscar carta a mano</Button> : null}
               {onReview ? <Button variant="ghost" onClick={() => onReview(allocation.runId)} disabled={locked}>Revisar carta</Button> : null}</div></div>
-          <Field id={`variant-${allocation.id}`} label="Variante"><Select id={`variant-${allocation.id}`} value={allocation.variant ?? (allocation.variantReviewed ? '__unknown' : '')} placeholder="Elegí una variante"
-            options={[{ value: '__unknown', label: 'No sé todavía' }, ...VARIANT_OPTIONS.map(({ value, label }) => ({ value, label }))]} disabled={locked} onChange={(value) => {
-              patchAllocation(allocation.id, { variant: (value === '__unknown' || !value ? null : value) as CardVariant | null, variantReviewed: Boolean(value) });
-              if (value && value !== '__unknown') void fetchPrices(allocation.cardId);
-            }} /></Field>
-          <Field id={`condition-${allocation.id}`} label="Condición"><Select id={`condition-${allocation.id}`} value={allocation.condition ?? (allocation.conditionReviewed ? '__unknown' : '')} placeholder="Elegí una condición"
-            options={[{ value: '__unknown', label: 'No sé todavía' }, ...CONDITION_OPTIONS.map(({ value, label }) => ({ value, label }))]} disabled={locked}
-            onChange={(value) => patchAllocation(allocation.id, { condition: (value === '__unknown' || !value ? null : value) as CardCondition | null, conditionReviewed: Boolean(value) })} /></Field>
-          <Field id={`quantity-${allocation.id}`} label="Copias de esta lectura" error={invalidQuantityIds.has(allocation.id) ? 'Ingresá un entero de 1 a 999. No modificamos la cantidad anterior.' : undefined}>
-            <Input id={`quantity-${allocation.id}`} type="number" min={1} max={MAX_QUANTITY} value={quantityInputs[allocation.id] ?? String(allocation.quantity)} disabled={locked}
-              onChange={(event) => {
-                const raw = event.target.value;
-                setQuantityInputs((current) => ({ ...current, [allocation.id]: raw }));
-                if (/^\d+$/.test(raw) && Number(raw) >= 1 && Number(raw) <= MAX_QUANTITY) patchAllocation(allocation.id, { quantity: Number(raw) });
-              }} />
-          </Field>
-          {allocation.quantity > 1 ? <p className="text-caption text-secondary">Incluye copias agregadas a mano. No son capturas nuevas.</p> : null}
-          {grouped.some((group) => group.some((item) => item.id === allocation.id) && group.reduce((sum, item) => sum + item.quantity, 0) > MAX_QUANTITY) ? <Alert tone="warning" title="El grupo supera 999 copias">Reducí el incremento o separá sus atributos antes de guardar. No recortamos cantidades.</Alert> : null}
-          <p className="text-caption text-secondary">{exactPrice ? <ShowOrDash usd={exactPrice.market} /> : allocation.variant ? 'Sin precio para esta variante' : 'Elegí variante para consultar su referencia'}</p>
-          {!allocation.reviewed ? <Button variant="secondary" onClick={() => patchAllocation(allocation.id, { reviewed: true })} disabled={locked}>Confirmar carta propuesta</Button> : null}
-          {allocation.quantity > 1 ? <Button variant="secondary" disabled={locked} onClick={() => {
-            setQuantityInputs((current) => Object.fromEntries(Object.entries(current).filter(([id]) => id !== allocation.id)));
-            updateDraft((current) => ({ ...current,
-            operations: current.operations.filter((operation) => operation.status !== 'rejected' || !operation.allocationIds.includes(allocation.id)),
-            allocations: allocationsFor(current).flatMap((item) => item.id !== allocation.id ? [item] : [
-              { ...item, id: crypto.randomUUID(), quantity: item.quantity - 1 }, { ...item, quantity: 1 },
-            ]) }));
-          }}>Separar una copia</Button> : null}
+          <p className="text-caption text-secondary">{exactPrice ? <ShowOrDash usd={shownPriceValue(exactPrice)} /> : allocation.variant ? 'Sin precio para esta variante' : 'Sin variante respaldada: esta lectura queda pendiente.'}</p>
           <Button variant="ghost" onClick={() => setRemoveId(allocation.id)} disabled={locked}>Sacar {allocation.quantity} {allocation.quantity === 1 ? 'copia' : 'copias'} de esta parte</Button>
           {removeId === allocation.id ? <Alert tone="warning" title="¿Sacar esta parte del lote?">
             <p>Se retiran {allocation.quantity} copias de la lectura {allocation.runId}; las otras partes se conservan.</p>

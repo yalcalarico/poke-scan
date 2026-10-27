@@ -2,14 +2,13 @@ import type { SessionEntry } from './types';
 import { createSessionDraft, readSessionDraft, sanitizeSessionEntries, syncDraftEntries, writeSessionDraft } from './session-draft';
 
 const SESSION_KEY = 'pcs.scanSession';
-export const MAX_SESSION_ENTRIES = 30;
 
 /** Al llegar al límite se organiza el lote; ninguna lectura anterior se descarta. */
 export function normalizeSession<T>(entries: readonly T[]): T[] {
   return [...entries];
 }
 export function appendSessionEntry<T>(current: readonly T[], entry: T): T[] {
-  return current.length >= MAX_SESSION_ENTRIES ? [...current] : [...current, entry];
+  return [...current, entry];
 }
 
 function readLegacy(): SessionEntry[] {

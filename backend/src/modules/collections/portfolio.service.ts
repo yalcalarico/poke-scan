@@ -28,24 +28,6 @@ export class PortfolioService {
   @Cron('45 23 * * *', { timeZone: 'UTC' })
   async captureDaily(): Promise<void> {
     if (process.env.ENABLE_PORTFOLIO_SNAPSHOTS_CRON === 'false') return;
-    if (this.prices.id === 'tcgcsv') {
-      await this.comparisonSnapshots?.capture();
-      return;
-    }
-    const day = new Date().toISOString().slice(0, 10);
-    await this.prisma.$executeRaw(Prisma.sql`
-      INSERT INTO portfolio_snapshots ("userId", day, "valueUsd", "totalCards", "unpricedCards")
-      SELECT col."userId", ${day}::date,
-        CASE WHEN COALESCE(SUM(i.quantity), 0) > 0 AND COUNT(lp.market) = 0 THEN NULL
-          ELSE ROUND(COALESCE(SUM(i.quantity * lp.market), 0)::numeric, 2)::float8 END,
-        COALESCE(SUM(i.quantity), 0)::int,
-        COALESCE(SUM(i.quantity) FILTER (WHERE lp.market IS NULL), 0)::int
-      FROM collections col LEFT JOIN collection_items i ON i."collectionId" = col.id
-      ${latestMarketPriceJoin(this.prices)}
-      GROUP BY col."userId"
-      ON CONFLICT ("userId", day) DO UPDATE SET "valueUsd" = EXCLUDED."valueUsd",
-        "totalCards" = EXCLUDED."totalCards", "unpricedCards" = EXCLUDED."unpricedCards"
-    `);
     await this.comparisonSnapshots?.capture();
   }
 
@@ -82,27 +64,17 @@ export class PortfolioService {
     const valuation = valuationFromCounts({ totalCopies: total.totalCards, pricedCopies: total.pricedCopies, amount: total.valueUsd, evaluatedAt,
       freshCopies: total.freshCopies, staleCopies: total.staleCopies, unknownFreshnessCopies: Math.max(0, total.pricedCopies - total.freshCopies - total.staleCopies),
       oldestFetchedAt: total.oldestFetchedAt, newestFetchedAt: total.newestFetchedAt });
-    // Una observación por día UTC: consultar de nuevo actualiza el mismo punto.
-    // No reconstruimos el pasado con las cantidades que el usuario tiene hoy.
-    const day = new Date(`${evaluatedAt.toISOString().slice(0, 10)}T00:00:00Z`);
-    if (this.prices.id !== 'tcgcsv') await this.prisma.portfolioSnapshot.upsert({
-      where: { userId_day: { userId, day } },
-      create: { userId, day, valueUsd, totalCards: total.totalCards, unpricedCards: total.unpricedCards },
-      update: { valueUsd, totalCards: total.totalCards, unpricedCards: total.unpricedCards },
-    });
-    const history = this.prices.id === 'tcgcsv'
-      ? ((await this.comparisonSnapshots?.comparison(userId, null, 365))?.series.find((series) => series.provider === 'tcgcsv')?.points ?? [])
-        .map((point) => ({ day: new Date(`${point.date}T00:00:00Z`), valueUsd: point.valueUsd, totalCards: point.totalCopies, unpricedCards: point.unpricedCopies })).reverse()
-      : await this.prisma.portfolioSnapshot.findMany({ where: { userId }, orderBy: { day: 'desc' }, take: 365 });
+    const history = (await this.comparisonSnapshots?.comparison(userId, null, 365))
+      ?.series.find((series) => series.provider === this.prices.id)?.points ?? [];
     return { totalCards: total.totalCards, unpricedCards: total.unpricedCards, valueUsd, valuation, topCards: topCards.map((card) => ({
       cardId: card.cardId, name: card.name, imageSmall: card.imageSmall, setName: card.setName, number: card.number,
       variant: card.variant, quantity: card.quantity, marketUsd: card.marketUsd, valueUsd: card.valueUsd,
       reference: { provider: card.provider, source: card.source, currency: card.currency,
         fetchedAt: card.fetchedAt.toISOString(), ...priceMetadata(card.fetchedAt, card.provider, this.prices.id, evaluatedAt) },
-    })), history: history.reverse().map((point) => ({
-      date: point.day.toISOString().slice(0, 10), valueUsd: point.valueUsd,
-      totalCards: point.totalCards, unpricedCards: point.unpricedCards,
-      valuation: snapshotValuation(point.totalCards, point.unpricedCards, point.valueUsd),
+    })), history: history.map((point) => ({
+      date: point.date, valueUsd: point.valueUsd,
+      totalCards: point.totalCopies, unpricedCards: point.unpricedCopies,
+      valuation: snapshotValuation(point.totalCopies, point.unpricedCopies, point.valueUsd),
     })) };
   }
 }

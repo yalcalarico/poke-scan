@@ -3,9 +3,8 @@ import React from 'react';
 import { render, waitFor } from '@testing-library/react';
 import { afterEach, expect, it, vi } from 'vitest';
 import { MotionGrid } from './effects';
-import { VisualPreviewProvider } from './visual-preview';
+import { AppVisualsProvider } from './visual-preview';
 
-vi.mock('next/navigation', () => ({ usePathname: () => '/buscar-v2', useSearchParams: () => new URLSearchParams() }));
 afterEach(() => { vi.restoreAllMocks(); vi.unstubAllGlobals(); });
 
 it('conserva la geometría por carta entre remonte, skeleton y resultados reordenados', async () => {
@@ -19,9 +18,9 @@ it('conserva la geometría por carta entre remonte, skeleton y resultados reorde
   Object.defineProperty(HTMLElement.prototype, 'animate', { value: animate, configurable: true });
   vi.stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) => setTimeout(() => callback(performance.now()), 0));
   vi.stubGlobal('cancelAnimationFrame', (id: number) => clearTimeout(id));
-  const view = (run: number, cards: string[]) => <VisualPreviewProvider>
+  const view = (run: number, cards: string[]) => <AppVisualsProvider>
     <MotionGrid key={run}>{cards.map((id, index) => <div key={id} data-card-key={id} data-card-index={index}>{id}</div>)}</MotionGrid>
-  </VisualPreviewProvider>;
+  </AppVisualsProvider>;
   const { rerender, unmount } = render(view(1, order));
   expect(animate).not.toHaveBeenCalled();
   rerender(view(2, []));

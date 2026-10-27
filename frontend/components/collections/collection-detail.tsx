@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { PreviewLink as Link } from '@/components/visual-preview/preview-link';
+import Link from 'next/link';
 import { ArrowLeftRight, Layers, ListChecks, Search, Trash2 } from 'lucide-react';
 
 import { CardGrid, type CardGridEntry } from '@/components/cards/card-grid';
@@ -37,7 +37,7 @@ import {
 } from '@/lib/api/collections';
 import { cn } from '@/lib/cn';
 import { formatDate, pluralize } from '@/lib/format';
-import { conditionShort, variantLabel } from '@/lib/variants';
+import { variantLabel } from '@/lib/variants';
 import type { CollectionDto, CollectionItemDto } from '@/types/api';
 
 import { CollectionPriceRefresh } from './collection-price-refresh';
@@ -52,8 +52,6 @@ import { CollectionComparisonPanel } from '@/components/prices/comparison-panel'
 import { CollectionStats, CollectionSummary } from './collection-summary';
 import { ItemSheet } from './item-sheet';
 import { MotionGrid } from '@/components/visual-preview/effects';
-import { previewHref } from '@/components/visual-preview/preview-link';
-import { useVisualPreview } from '@/components/visual-preview/visual-preview';
 
 /**
  * El copy de la acción masiva, en un solo lugar.
@@ -201,7 +199,6 @@ export interface CollectionDetailScreenProps {
  */
 export function CollectionDetailScreen({ collectionId }: CollectionDetailScreenProps) {
   const router = useRouter();
-  const visual = useVisualPreview();
   const { isLoading: isAuthLoading, isAuthenticated } = useAuth();
 
   const [search, setSearch] = useState('');
@@ -345,7 +342,7 @@ export function CollectionDetailScreen({ collectionId }: CollectionDetailScreenP
             />
           )
         }
-        back={{ href: previewHref('/colecciones', visual), label: 'las colecciones' }}
+        back={{ href: '/colecciones', label: 'las colecciones' }}
         action={
           collection ? (
             <IconButton
@@ -540,7 +537,7 @@ export function CollectionDetailScreen({ collectionId }: CollectionDetailScreenP
         open={isDeleteOpen}
         onClose={() => setIsDeleteOpen(false)}
         collection={collection}
-        onDeleted={() => router.replace(previewHref('/colecciones', visual))}
+        onDeleted={() => router.replace('/colecciones')}
       /> : null}
 
       {collection ? (
@@ -702,6 +699,7 @@ function CollectionItems({
     hasMore,
     loadMore,
     reload,
+    updateItems,
     sentinelRef,
   } = useInfiniteList<CollectionItemDto>(
     // La lista pasa el AbortSignal hasta fetch: al cambiar colección, filtros o
@@ -904,6 +902,20 @@ function CollectionItems({
     onItemsChanged();
   }, [onItemsChanged, reload]);
 
+  const handleItemUpdated = useCallback((updated: CollectionItemDto) => {
+    updateItems((current) => current.flatMap((item) => {
+      if (item.id !== updated.id) return [item];
+      if ((forTradeOnly && !updated.isForTrade) || (scope === 'duplicates' && updated.quantity < 2)) return [];
+      return [updated];
+    }));
+    handleItemChanged();
+  }, [forTradeOnly, handleItemChanged, scope, updateItems]);
+
+  const handleItemDeleted = useCallback((id: string) => {
+    updateItems((current) => current.filter((item) => item.id !== id));
+    handleItemChanged();
+  }, [handleItemChanged, updateItems]);
+
   /*
    * Troceo de **render** sobre los items que ya están en memoria.
    *
@@ -955,7 +967,7 @@ function CollectionItems({
         // variante y la condición porque en una colección la misma carta puede
         // aparecer dos veces (holofoil y normal), y "Charizard" a secas no
         // distinguiría una de otra.
-        selectionLabel: `${variantLabel(item.variant)} ${conditionShort(item.condition)}, elegida`,
+        selectionLabel: `${variantLabel(item.variant)}, elegida`,
         /*
           Tocar la carta abre el `ItemSheet` de ese ítem. Antes era un
           `IconButton` de engranaje en el `action`: obligaba a apuntar a un
@@ -1222,8 +1234,8 @@ function CollectionItems({
         item={items.find((item) => item.id === selectedItem?.id) ?? selectedItem}
         open={isItemSheetOpen}
         onClose={onCloseItem}
-        onUpdated={handleItemChanged}
-        onDeleted={handleItemChanged}
+        onUpdated={handleItemUpdated}
+        onDeleted={handleItemDeleted}
       />
     </div>
   );

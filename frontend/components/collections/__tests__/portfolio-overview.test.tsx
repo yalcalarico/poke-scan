@@ -9,7 +9,7 @@ vi.mock('next/image', () => ({ default: () => null }));
 import { PortfolioOverview } from '../portfolio-overview';
 const today = new Date().toISOString().slice(0, 10);
 const recency = { freshness: 'unknown' as const, freshCopies: 0, staleCopies: 0, unknownFreshnessCopies: 0, upstreamFreshness: 'unknown' as const, oldestFetchedAt: null, newestFetchedAt: null };
-const empty: PortfolioDto = { valueUsd: null, totalCards: 2, unpricedCards: 2, topCards: [], valuation: { amount: null, currency: 'USD', evaluatedAt: '2026-10-08T10:00:00.000Z', coverage: { totalCopies: 2, pricedCopies: 0, unpricedCopies: 2, coverageRatio: 0 }, recency },
+const empty: PortfolioDto = { valueUsd: null, totalCards: 2, unpricedCards: 2, topCards: [], valuation: { amount: null, currency: 'USD', evaluatedAt: `${today}T10:00:00.000Z`, coverage: { totalCopies: 2, pricedCopies: 0, unpricedCopies: 2, coverageRatio: 0 }, recency },
   history: [{ date: today, valueUsd: null, totalCards: 2, unpricedCards: 2 }] };
 beforeEach(() => { vi.clearAllMocks(); mocks.currency = 'USD'; });
 
@@ -56,4 +56,20 @@ it('la observación histórica conserva su cobertura y aclara conversión ARS ac
   expect(screen.getByText('Antigüedad de las referencias no registrada.')).toBeInTheDocument();
   expect(screen.getByText(/Historial en USD convertido al cambio actual/)).toBeInTheDocument();
   expect(screen.getByText('Sin referencia de precio para estas 2 copias.')).toBeInTheDocument();
+});
+
+it('cambia la escala temporal aunque los períodos tengan las mismas observaciones', async () => {
+  const yesterday = new Date(`${today}T00:00:00Z`);
+  yesterday.setUTCDate(yesterday.getUTCDate() - 1);
+  const value = { ...empty.valuation!, amount: 10 };
+  mocks.getPortfolio.mockResolvedValue({ ...empty, valuation: value, history: [
+    { date: yesterday.toISOString().slice(0, 10), valueUsd: 10, totalCards: 2, unpricedCards: 0, valuation: value },
+    { date: today, valueUsd: 10, totalCards: 2, unpricedCards: 0, valuation: value },
+  ] });
+  render(<PortfolioOverview />);
+  const graph = await screen.findByRole('img', { name: /Valor observado de tus colecciones/ });
+  const initialX = Number(graph.querySelector('circle')!.getAttribute('cx'));
+  fireEvent.click(screen.getByRole('button', { name: '7 días' }));
+  expect(Number(graph.querySelector('circle')!.getAttribute('cx'))).toBeLessThan(initialX);
+  expect(graph.querySelectorAll('circle')).toHaveLength(2);
 });

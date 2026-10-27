@@ -63,6 +63,8 @@ los modelos de dominio y no sustituyen el inventario completo.
 | `SyncState` | `sync_state` |
 | `Friendship` | `friendships` |
 | `TcgcsvGroupJob` | `tcgcsv_group_jobs` |
+| `TcgcsvDailyBatch` | `tcgcsv_daily_batches` |
+| `TcgcsvBatchGroup` | `tcgcsv_batch_groups` |
 | `PriceSyncSet` | `price_sync_sets` |
 | `PriceSyncSetDay` | `price_sync_set_days` |
 | `PriceSyncCardDay` | `price_sync_card_days` |
@@ -167,7 +169,7 @@ El catálogo. **20.670 filas** hoy.
 | `setId` | `String` | FK a `card_sets`, `onDelete: Cascade` |
 | `imageSmall`, `imageLarge` | `String` | |
 | `language` | `String? @default("en")` | |
-| `rawJson` | `Json` | **obligatorio**: preserva ataques, habilidades, legalidades y el bloque `tcgplayer.prices` (histórico, ya no es la fuente de precios: eso es tcgdex) |
+| `rawJson` | `Json` | **obligatorio**: preserva ataques, habilidades, legalidades y el bloque `tcgplayer.prices` (histórico, ya no es la fuente de precios: eso es TCGCSV) |
 | `syncedAt` | `DateTime` | |
 
 Relaciones: `set CardSet`, `prices CardPrice[]`, `items CollectionItem[]` y
@@ -351,6 +353,11 @@ estado vigente.
 | [20261013203000_tcgcsv_comparison](../prisma/migrations/20261013203000_tcgcsv_comparison/migration.sql) | Ingesta TCGCSV y snapshots de comparación. |
 | [20261014010000_tcgcsv_discovery](../prisma/migrations/20261014010000_tcgcsv_discovery/migration.sql) | Descubrimiento durable de grupos. |
 | [20261018010000_price_sync_registry](../prisma/migrations/20261018010000_price_sync_registry/migration.sql) | Registro de sets y controles diarios de precios. |
+| [20261026010000_tcgcsv_daily_batch](../prisma/migrations/20261026010000_tcgcsv_daily_batch/migration.sql) | Alcance durable de la tanda común de las 18 ARG. |
+| [20261026235959_tcgcsv_batch_backfill_guard](../prisma/migrations/20261026235959_tcgcsv_batch_backfill_guard/migration.sql) | Resguardo del backfill acreditado de la tanda del 26. |
+| [20261027010000_tcgcsv_batch_outcomes](../prisma/migrations/20261027010000_tcgcsv_batch_outcomes/migration.sql) | Publicación objetivo y resultados terminales por grupo. |
+| [20261027020000_tcgcsv_worker_lease](../prisma/migrations/20261027020000_tcgcsv_worker_lease/migration.sql) | Lease durable del consumidor serial entre procesos. |
+| [20261027030000_tcgcsv_wall_clock_reservations](../prisma/migrations/20261027030000_tcgcsv_wall_clock_reservations/migration.sql) | Reservas conservadoras con el fin de petición de la telemetría. |
 
 Las migraciones aplicadas son historia inmutable: no reescribir el esquema inicial
 para añadir cambios. Usar migraciones aditivas y `prisma migrate deploy` con
@@ -597,6 +604,18 @@ incluidas cotización real, ausencia de precio, falta de asociación, falta de
 soporte, espera, reintento y fallo. Los precios siguen almacenados como
 observaciones en `card_prices`; no se impone unicidad por día porque pueden
 llegar variantes múltiples.
+
+`tcgcsv_daily_batches` fija el alcance habilitado de la tanda por fecha UTC:
+`syncDate` es su clave, `openedAt` registra la apertura y `setIds` conserva la
+lista original. Una señal repetida, reinicio o baja posterior no vuelve a abrir
+ese alcance. Los resultados siguen por set/carta y las bajas manuales se respetan
+al consumir; una demanda que llegó después se considera en la tanda siguiente.
+
+El lote conserva `feedPublishedAt`, `status`, intentos de manifest, próxima espera
+y cierre. `tcgcsv_batch_groups` usa `(syncDate, groupId)` y mantiene alcance local,
+estado, intentos y motivo por grupo; la cola singleton ya no representa por sí sola
+el resultado histórico. `workerLockedBy/workerLeaseUntil` en discovery coordinan
+un consumidor global; los leases de grupo y reservas de archivos siguen separados.
 
 `provider_rate_limits.blockedUntil` mantiene pausas 429 entre reinicios. Los
 trabajos preexistentes se marcan como legacy para diferir los que no correspondan

@@ -4,7 +4,7 @@ import { cva, type VariantProps } from 'class-variance-authority';
 
 import { useCurrency } from '@/hooks/use-currency';
 import { AnimatedNumber } from '@/components/visual-preview/effects';
-import { useVisualPreview } from '@/components/visual-preview/visual-preview';
+import { useAppVisuals } from '@/components/visual-preview/visual-preview';
 import { cn } from '@/lib/cn';
 
 /**
@@ -82,7 +82,7 @@ export function Money({
   ...props
 }: MoneyProps) {
   const { formatMoney } = useCurrency();
-  const visual = useVisualPreview();
+  const visual = useAppVisuals();
 
   return (
     <span {...props} className={cn(moneyVariants({ tone, size }), className)}>

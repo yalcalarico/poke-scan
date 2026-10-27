@@ -1,0 +1,15 @@
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "pokemon_cards", schema "public" at "localhost:55432"
+
+20 migrations found in prisma/migrations
+
+Applying migration `20261026010000_tcgcsv_daily_batch`
+
+The following migration(s) have been applied:
+
+migrations/
+  └─ 20261026010000_tcgcsv_daily_batch/
+    └─ migration.sql
+      
+All migrations have been successfully applied.

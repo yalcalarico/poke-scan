@@ -15,6 +15,24 @@ const response = {
 beforeEach(() => getCardComparison.mockReset());
 
 describe('CardComparisonPanel', () => {
+  it('cambia el eje temporal al cambiar período aunque la API devuelva los mismos puntos', async () => {
+    getCardComparison.mockImplementation(async (_cardId: string, _variant: string, days: number) => ({
+      ...response, windowDays: days,
+      series: [{ ...response.series[1]!, points: [
+        { ...response.series[1]!.current, date: '2026-10-12', market: 5 },
+        { ...response.series[1]!.current, date: '2026-10-13', market: 6 },
+      ] }],
+    }));
+    render(<CardComparisonPanel cardId="base1-1" variants={['normal']} />);
+    const month = await screen.findByRole('img', { name: /durante 30 días/ });
+    const firstX = Number(month.querySelector('circle')!.getAttribute('cx'));
+    fireEvent.click(screen.getByRole('button', { name: '7 días' }));
+    const week = await screen.findByRole('img', { name: /durante 7 días/ });
+    expect(Number(week.querySelector('circle')!.getAttribute('cx'))).toBeLessThan(firstX);
+    expect(week.querySelectorAll('circle')).toHaveLength(2);
+    expect(getCardComparison.mock.calls.at(-1)?.[2]).toBe(7);
+  });
+
   it('no muestra el precio de la variante anterior mientras carga la nueva', async () => {
     let finish!: (data: typeof response) => void;
     getCardComparison.mockResolvedValueOnce(response).mockImplementationOnce(() => new Promise((resolve) => { finish = resolve; }));
