@@ -1,11 +1,12 @@
 # Migración de contexto — 27/10/2026
 
-Gentle Shell es el entorno de orquestación elegido. Los cambios de contexto y el
-retiro de orquestación Codex/OpenCode y adaptadores HerdR están aplicados por
-pedido humano. **Implementación y verificación del alcance aprobadas:** comprobaciones
-locales, verificador independiente, carga efectiva de configuración y confirmación
-humana del respaldo. Publicación autorizada, en curso. No cambia producto,
-dependencias ni servicios.
+Gentle Shell es el entorno de orquestación elegido. **Migración documental
+finalizada, verificada y publicada:** instrucciones/continuidad consolidadas y
+retiro global aplicado con respaldo. Se acreditaron comprobaciones locales,
+verificador independiente, carga efectiva de configuración y confirmación humana
+del respaldo. El CI general de integración se informa aparte; no se lo declara
+aprobado ni se exige un merge para cerrar esta entrega. Sin cambios de producto,
+dependencias ni servicios por esta migración.
 Seguimiento: [feature ODD](../../odd/tasks/gentle-context-migration.md).
 
 ## Respaldo y recuperación
@@ -163,6 +164,38 @@ nativos previos devolvieron `reviewDue=false`; para el candidato exacto
 registró revisión declinada, `lineage_created=false`. No hay recibo aprobado;
 la verificación independiente sí fue ejecutada posteriormente.
 
-T1-T7 completos dentro del alcance y método indicados. Resta la entrega remota
-T8, autorizada por el usuario; no se confunde cierre técnico con aprobación de
-merge ni se cambian controles del harness.
+### Publicación confirmada
+
+- [Issue #11](https://github.com/yalcalarico/poke-scan/issues/11): alcance aprobado por el dueño, etiqueta `status:approved`.
+- [Tracker #12](https://github.com/yalcalarico/poke-scan/pull/12): integración a master, **borrador / no merge**.
+- [PR #13](https://github.com/yalcalarico/poke-scan/pull/13): backlog, continuidad y navegación.
+- [PR #14](https://github.com/yalcalarico/poke-scan/pull/14): instrucciones atómicas, 440 líneas justificadas.
+- [PR #15](https://github.com/yalcalarico/poke-scan/pull/15): retiro global, compatibilidad y cierre verificado.
+
+Las ramas se subieron sin forzar referencias; cada hijo apunta al anterior. Cuerpo,
+título, base/head, estado y etiqueta única `type:docs` comprobados por readback de
+cada PR. `Refs #11` no cierra el issue automáticamente. Creación de issue, etiquetas
+y los cuatro PRs autorizada expresamente; actor ADMIN comprobado. Los cuerpos
+públicos no incluyen rutas personales, credenciales o redes privadas.
+
+### CI de integración: resultado separado del cierre documental
+
+Los checks iniciales de #13, #14 y #15 pasaron (runs `40531876172`, `40531888000`
+y `40531905977`). El tracker no tiene CI acreditada en verde: el run original
+`40531859410` falló en «Suite completa en infraestructura descartable» y omitió
+el smoke posterior. El watch perdió los checks cuando cambió el head del tracker;
+`--log-failed` del run original no entregó detalle útil, por lo que no se atribuye
+una causa concreta.
+
+El head remoto pasó externamente de `7587266` a `2d2ec885812d30c6cdcdda7ecda3da44564aeec6`,
+merge de master `c740a09` que incorpora package/lockfile frontend. No fue un merge
+de esta sesión. El run ya existente `40532392594` del nuevo head también terminó
+failure; no se lanzó ningún rerun ni se sobrescribió la rama.
+
+El dueño aclaró que ese fallo corresponde a otro alcance. T1-T8 quedan completas;
+T9 se descarta como gate auxiliar de esta migración, **no como prueba aprobada**.
+Reparar CI/producto/dependencias y decidir merges son trabajos separados. No hace
+falta cerrar issues/PRs ni mergear para destrabar la entrega documental. Los checks
+que genere el registro final no heredan el pass de un head anterior; no se afirma
+su resultado sin observarlo. Se mantienen los controles reales de integración y
+el tracker borrador/no merge.

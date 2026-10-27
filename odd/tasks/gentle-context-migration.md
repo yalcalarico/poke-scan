@@ -1,5 +1,5 @@
 # Migración de contexto a Gentle Shell / ODD / Engram
-Objetivo: consolidar instrucciones y continuidad sin perder conocimiento ni intervenir servicios. Rama: `chore/gentle-context-migration`; base: `7597e7fd6e52edc4fb9865b3c52f7e24924d63cc`.
+Objetivo: consolidar instrucciones y continuidad sin perder conocimiento ni intervenir servicios. Estado: **finalizada dentro del alcance documental**. Rama: `chore/gentle-context-migration`; base: `7597e7fd6e52edc4fb9865b3c52f7e24924d63cc`.
 Entrega: `auto-chain`, `feature-branch-chain`; push y PR autorizados tras completar verificación (S7-S8). Verificación: enlaces, hashes y comparación estructural de configuración; sin suites de producto para documentación.
 
 ## Specs
@@ -12,6 +12,8 @@ Entrega: `auto-chain`, `feature-branch-chain`; push y PR autorizados tras comple
 - S6: «ok, termina entonces con lo que faltaba». Reanudar cierre autorizado; no implica eludir el guard ni declarar pruebas no realizadas.
 - S7: «ok, necesito que ya este marca como finalizada todo lo que hicimos, que falta para eso? una vez que termines subelo y crea un PR.» «Entonces aplica la verificacion para poder completar 100%».
 - S8: «ya me logge con openai-codex asi que podes avanzar. El respaldo quedo ok.» Confirmación humana del respaldo; no es un chequeo automatizado nuevo ni permiso para eludir el guard.
+- S9: «Sí, crear issue/etiquetas y publicar la cadena». Selección humana: issue de la migración con `status:approved`, crear/aplicar `type:docs`, tracker borrador y tres PRs de revisión en `yalcalarico/poke-scan`; referencias `Refs` sin cierre automático ni merges.
+- S10: «debo cerrar algo yo o algo? quieres que mergee yo desde git? porque la falla ya es por otro scope, nada ver con los documentos que tocamos». El cierre de S7 corresponde a la migración documental entregada, no a corregir CI general ni hacer merge; el fallo observado se conserva sin declararlo aprobado.
 
 ## Tasks
 
@@ -22,7 +24,8 @@ Entrega: `auto-chain`, `feature-branch-chain`; push y PR autorizados tras comple
 - T5 [S1-S6] inline — done — comprobación local (12 documentos/212 destinos, producto intacto), diff check verde y árbol limpio al cierre de `4c21eeb`; commits: `bbbf247`, `4c21eeb`.
 - T6 [S2-S4,S6-S8] delegated — done — verificador `mvqtihn1-3-mmyp` aprobó contrato/documentación/configuración declarativa, sin bloqueadores de preservación; comprobación del padre `git diff --check` verde. Respaldo human-attested; sesiones de modelo fuera de esa prueba.
 - T7 [S2-S4,S6-S8] inline — done — respaldo confirmado por el humano; `codex features list && opencode agent list` terminó 0, carga efectiva de configuración: multi_agent=false y sólo agentes nativos OpenCode. Warning no fatal de limpieza temporal Codex registrado. Sin conversaciones de modelo, instalaciones ni cambios a servicios.
-- T8 [S5,S7] inline — in_progress — registrar cierre verificado, confirmar unidad final y publicar rama/PR según política del destino; sin merge.
+- T8 [S5,S7,S9] inline — done — cierre técnico `6649067`, cuatro ramas subidas, issue #11 y PRs #12 (tracker borrador), #13, #14 y #15 creados y confirmados por readback; type:docs único y Refs #11 no cerrante. Sin merge.
+- T9 [S7,S9,S10] inline — dropped — descartado como gate auxiliar de cierre documental tras aclaración de alcance S10. CI del tracker sigue no aprobada (runs `40531859410`/`40532392594` failure); checks iniciales #13/#14/#15 pasaron. No se corrige ni se declara verde; merge y CI de integración quedan separados.
 
 ## Log
 
@@ -206,3 +209,38 @@ Rutas: las cuatro enumeradas en S2. No se autoriza recorrer otros repositorios n
 - Respaldo acreditado con comparación inicial y confirmación humana S8. La prueba de configuración efectiva y retiro está completa; no se reintentó el chequeo protegido ni se modificaron permisos. Tests/builds de producto no aplican; producto y servicios intactos.
 - No se incorporó la sugerencia de test permanente que consulta un commit fijo: no hay regresión que pinnear y las pruebas comprometidas no deben depender de historia Git. Ninguna skill ni runtime fue cambiado para obtener este resultado.
 - T6/T7 quedan done, sin bloqueos de verificación del alcance; T8 prepara cierre documental y publicación. La decisión de revisión declinada sigue limitada al target exacto de L12, no se generaliza a un candidato posterior.
+
+### L14 — Entrega remota autorizada y alcance de la cadena
+
+- Cierre técnico `6649067` (101 líneas, dos documentos): ASSESS passive, reviewDue=false. `git push --set-upstream origin chore/gentle-context-migration` terminó 0; rama publicada sin forzar referencias.
+- Master remoto avanzó a `c740a09`; ancestro común `7597e7f`. La comprobación de ancestralidad directa devolvió 1, sin stderr; no es un diff contaminado: comparación triple punto sólo incluye los 12 documentos de esta migración, 652 altas/481 bajas (1.133 líneas). No se sobrescribió el trabajo remoto.
+- Usuario eligió «Sí, crear issue/etiquetas y publicar la cadena» frente a la pregunta con target, etiquetas y cuatro PRs exactos. Actor GitHub con ADMIN confirmado. Etiquetas `status:approved` y `type:docs` creadas con ese permiso; no se creó `size:exception` ni se infirió autorización de merge.
+- Issues habilitados, blank issues explícitamente habilitados, sin plantilla ni duplicado en búsqueda por título. [Issue #11](https://github.com/yalcalarico/poke-scan/issues/11) creado una sola vez, cuerpo/etiqueta/target confirmados por readback. Cuerpo público sin rutas personales, credenciales ni redes privadas; archivos temporales privados limpiados al terminar.
+- Cadena preparada: tracker `chore/gentle-context-integration` (`7587266`, 208 líneas); continuidad `chore/gentle-context-continuity` (`daec3f4`, 191); instrucciones `chore/gentle-context-instructions` (`bbbf247`, 440 atómicas); cierre `chore/gentle-context-migration` (`6649067`, 332 líneas frente a instrucciones antes del registro de publicación). El tracker apunta a master; cada hijo al anterior. No hay cambios de producto en las unidades.
+- Workflow GitHub existente `Verificación de seguridad`: infraestructura descartable, suite completa y smoke remoto; se informará su resultado real. El aviso de vulnerabilidades de la rama predeterminada no se atribuye al diff documental ni autoriza cambiar dependencias. No se desactiva ni modifica ese workflow.
+
+### L15 — Publicación confirmada
+
+- [Tracker #12](https://github.com/yalcalarico/poke-scan/pull/12), base master, head `chore/gentle-context-integration`, borrador/no merge, 208 líneas.
+- [Continuidad #13](https://github.com/yalcalarico/poke-scan/pull/13), base tracker, head `chore/gentle-context-continuity`, 191 líneas.
+- [Instrucciones #14](https://github.com/yalcalarico/poke-scan/pull/14), base continuidad, head `chore/gentle-context-instructions`, 440 líneas atómicas.
+- [Cierre #15](https://github.com/yalcalarico/poke-scan/pull/15), base instrucciones, head `chore/gentle-context-migration`, 332 líneas antes de este registro de publicación.
+- Las cuatro creaciones tuvieron readback de cuerpo, título, estado abierto, base/head y una única etiqueta type:docs. Tracker actualizado con enlaces reales y readback de borrador. Referencias Refs #11, sin cierre automático. No se aprobó ni ejecutó ningún merge.
+- Watches nativos de CI lanzados una vez para #12–#15 (jobs 9–12). T8 publicación completa; T9 observa checks pendientes. No se afirma que el head haya pasado CI antes del evento de salida de cada watch.
+
+### L16 — CI observada y bloqueo de integración
+
+- Checks de [#13](https://github.com/yalcalarico/poke-scan/actions/runs/40531876172), [#14](https://github.com/yalcalarico/poke-scan/actions/runs/40531888000) y [#15 inicial](https://github.com/yalcalarico/poke-scan/actions/runs/40531905977) aprobados, watches salida 0 (3m14, 4m22 y 3m34).
+- Watch de #12 salió 1 después de perder el listado de checks. Readback diagnóstico: [run original 40531859410](https://github.com/yalcalarico/poke-scan/actions/runs/40531859410) completed/failure en «Suite completa en infraestructura descartable»; smoke posterior skipped. `--log-failed` devolvió 0 sin detalle útil, no se inventa una causa concreta.
+- El head del tracker cambió externamente desde `7587266` a `2d2ec885812d30c6cdcdda7ecda3da44564aeec6`: merge de master `c740a09`, sólo package/lockfile frontend. No fue un merge de esta sesión; no se revirtió ni sobrescribió. No se atribuye ese cambio al diff documental.
+- Se observó una sola vez el run ya existente [40532392594](https://github.com/yalcalarico/poke-scan/actions/runs/40532392594) del nuevo head; `gh run watch --exit-status` salió 1: workflow completed/failure. No se lanzó un rerun ni se modificó producto/workflow para ocultar el resultado.
+- T9 queda bloqueada: requiere decidir una tarea de corrección del CI de integración. T1-T8 están implementadas, verificadas localmente y publicadas; no se declara cierre global 100 % verde ni aprobación de merge.
+- El registro final sólo cambia documentación. Un check posterior que genere esa publicación no se considera aprobado por herencia del run anterior; su estado se informa como no acreditado hasta observarlo. No se continúa con más verificación tras este fallo de integración.
+
+### L17 — Corrección de alcance y cierre de la migración
+
+- Usuario: «debo cerrar algo yo o algo? quieres que mergee yo desde git? porque la falla ya es por otro scope, nada ver con los documentos que tocamos».
+- Se separa explícitamente cierre documental de CI general/integración. T1-T8 implementadas, verificadas y publicadas. T9 era un gate auxiliar añadido al entregar: se descarta, no se marca done ni se transforma un failure en pass.
+- Migración documental finalizada. No hace falta que el dueño cierre issues/PRs o haga merge para destrabar este trabajo. El tracker sigue borrador/no merge y las revisiones quedan disponibles; no se alteran las condiciones reales para integrar en master.
+- Los fallos de CI anteriores quedan como evidencia; no se afirma una causa concreta ni se corrige producto/dependencias/workflow fuera del alcance. No hay reruns ni más verificaciones para intentar obtener verde. El registro final es documentación y no acredita automáticamente un check que genere su publicación.
+- Ahorro real de tokens no medido; se entregaron inventario y medición de bytes sin inventar equivalencias. Respaldos y memorias conservados; sin reinicios de servicios, cierres automáticos ni merges de esta sesión.
