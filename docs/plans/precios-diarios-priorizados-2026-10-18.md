@@ -431,7 +431,7 @@ de precios actualizados» sólo porque todos los jobs alcanzaron `completed`.
 
 ## 11. Archivos y orden de implementación para Luna low
 
-Leer primero `AGENTS.md`, `docs/orquestacion-codex.md`,
+Leer primero `AGENTS.md`, `docs/agent-workflow.md`,
 `backend/docs/jobs.md`, `backend/docs/pricing.md` y `backend/docs/testing.md`.
 Conservar todos los cambios locales ajenos. No reset, stash, commit, upgrade ni
 despliegue. No implementar tareas pendientes de otros planes.
