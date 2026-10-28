@@ -1,9 +1,56 @@
 import assert from 'node:assert/strict';
-import { existsSync, lstatSync, readFileSync, readlinkSync } from 'node:fs';
+import { cpSync, existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, readlinkSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import { spawnSync } from 'node:child_process';
 import { app, environment, excluded, frontend, prepare } from '../scripts/browser-runner.mjs';
+
+// La copia aísla las rutas relativas del CLI; el pnpm sintético nunca instala ni usa red.
+function withCliFixture(check) {
+  const root = realpathSync(mkdtempSync(join(tmpdir(), 'browser-runner-cli-')));
+  try {
+    mkdirSync(join(root, 'scripts'));
+    mkdirSync(join(root, 'bin'));
+    const runner = join(root, 'scripts/browser-runner.mjs');
+    cpSync(join(frontend, 'scripts/browser-runner.mjs'), runner);
+    writeFileSync(join(root, 'bin/pnpm'),
+      `#!${process.execPath}\nconsole.log(JSON.stringify(process.argv.slice(2)));\n`, { mode: 0o755 });
+    check((...args) => spawnSync(process.execPath, [runner, ...args], {
+      cwd: root, env: { PATH: join(root, 'bin') }, encoding: 'utf8',
+    }), root);
+  } finally { rmSync(root, { recursive: true, force: true }); }
+}
+
+for (const flag of ['--dry-run', '--with-deps']) {
+  test(`CLI install rechaza ${flag} sin efectos locales`, () => {
+    withCliFixture((run, root) => {
+      const before = readdirSync(root).sort();
+      const result = run('install', flag);
+      assert.deepEqual({
+        status: result.status, stdout: result.stdout, stderr: result.stderr,
+        entries: readdirSync(root).sort(),
+      }, {
+        status: 2, stdout: '', stderr: 'El modo install no acepta argumentos adicionales.\n',
+        entries: before,
+      });
+    });
+  });
+}
+
+test('CLI conserva install sin argumentos y test con argv reenviado', () => {
+  withCliFixture((run) => {
+    for (const [args, forwarded] of [
+      [['install'], ['exec', 'playwright', 'install', 'chromium']],
+      [['test', '--grep', 'subida anónima'], ['exec', 'playwright', 'test', '--grep', 'subida anónima']],
+    ]) {
+      const result = run(...args);
+      assert.deepEqual({ status: result.status, stdout: result.stdout, stderr: result.stderr }, {
+        status: 0, stdout: `${JSON.stringify(forwarded)}\n`, stderr: '',
+      });
+    }
+  });
+});
 
 test('excluye secretos y estado generado; no hereda opciones ni endpoints', () => {
   for (const name of ['.env', '.env.local', '.next', '.git', 'node_modules',

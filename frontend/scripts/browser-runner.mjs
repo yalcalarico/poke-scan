@@ -65,6 +65,11 @@ export function prepare() {
 
 async function main(mode, args) {
   if (!['test', 'install', 'serve'].includes(mode)) throw new Error('Modo de navegador inválido.');
+  if (mode === 'install' && args.length > 0) {
+    process.stderr.write('El modo install no acepta argumentos adicionales.\n');
+    process.exitCode = 2;
+    return;
+  }
   const env = environment();
   if (mode === 'serve') env.NODE_OPTIONS = `--import=${new URL('../e2e/browser-offline.mjs', import.meta.url).href}`;
   for (const path of [output, env.PLAYWRIGHT_BROWSERS_PATH, env.HOME, env.TMPDIR]) {

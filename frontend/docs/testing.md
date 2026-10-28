@@ -14,6 +14,11 @@ pnpm --dir frontend run test:browser:install
 pnpm --dir frontend run test:browser
 ```
 
+El instalador `test:browser:install` no acepta argumentos ni flags: incluso
+`--dry-run` y `--with-deps` se rechazan antes de crear directorios o ejecutar procesos,
+con salida 2, stdout vacío y stderr `El modo install no acepta argumentos adicionales.`
+seguido de un salto de línea. Sin argumentos instala Chromium como antes.
+
 Para enfocar un caso: `pnpm --dir frontend run test:browser --grep 'subida anónima'`.
 Los wrappers usan `pnpm exec playwright` e imponen `PLAYWRIGHT_BROWSERS_PATH`
 en `frontend/.playwright-browsers` tanto al instalar como al probar: no requiere export.
