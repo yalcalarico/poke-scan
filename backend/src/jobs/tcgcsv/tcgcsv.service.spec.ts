@@ -1,3 +1,4 @@
+import { Logger } from '@nestjs/common';
 import { PrismaClient, Prisma } from '@prisma/client';
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createHash } from 'node:crypto';
@@ -52,6 +53,8 @@ describe('TCGCSV: publicación SQL y presupuesto durable', () => {
   beforeEach(async () => {
     vi.restoreAllMocks();
     await clean();
+    vi.spyOn(Logger.prototype, 'log').mockImplementation(() => undefined);
+    vi.spyOn(Logger.prototype, 'warn').mockImplementation(() => undefined);
     process.env.ENABLE_TCGCSV_INGESTION = 'true';
     await prisma.$executeRaw`UPDATE tcgcsv_discovery_state SET "requestCount" = 0, "downloadCount" = 0, "requestWindowStartedAt" = NOW(), "downloadWindowStartedAt" = NOW() WHERE id = 'global'`;
     body = prices(); buildReads = 0; changedBuild = false; expireLease = false; failSnapshot = false;
@@ -134,7 +137,10 @@ describe('TCGCSV: publicación SQL y presupuesto durable', () => {
     await service.enqueue(24722); await service.runOne(24722);
     const previous = await prisma.cardPrice.findFirstOrThrow({ where: { cardId: CARD } });
     await prisma.$executeRaw`UPDATE tcgcsv_group_jobs SET status = 'pending', "availableAt" = NOW(), "downloadStartedAt" = NOW() - INTERVAL '25 hours' WHERE "groupId" = 24722`;
+    vi.mocked(Logger.prototype.log).mockClear();
     await service.runOne(24722);
+    expect(Logger.prototype.log).toHaveBeenCalledWith('TCGCSV grupo=24722 sets=me55 tanda=interactive: sin publicación nueva; feed=2026-10-12T20:05:44.000Z');
+    expect(Logger.prototype.log).not.toHaveBeenCalledWith(expect.stringContaining('publicación confirmada'));
     expect(client.fetchFeed).toHaveBeenCalledTimes(5);
     expect((await prisma.cardPrice.findFirstOrThrow({ where: { cardId: CARD } })).fetchedAt).toEqual(previous.fetchedAt);
     expect(await prisma.cardPrice.count({ where: { cardId: CARD } })).toBe(1);
@@ -159,12 +165,15 @@ describe('TCGCSV: publicación SQL y presupuesto durable', () => {
   it('un fallo de red tras reservar contenido no publica ni devuelve el presupuesto', async () => {
     vi.mocked(client.fetchFeed).mockImplementation(async (path) => {
       if (path === 'last-updated.txt') return BUILD;
-      throw new Error('fallo de red simulado');
+      throw new Error('fallo de red simulado https://private.invalid/token');
     });
     await service.enqueue(24722); await service.runOne(24722);
     expect(await prisma.cardPrice.count({ where: { cardId: CARD } })).toBe(0);
     const [job] = await prisma.$queryRaw<{ status: string; downloadStartedAt: Date; availableAt: Date }[]>`SELECT * FROM tcgcsv_group_jobs WHERE "groupId" = 24722`;
     expect(job.status).toBe('failed');
+    expect(Logger.prototype.warn).toHaveBeenCalledWith('TCGCSV grupo=24722 sets=me55 tanda=interactive: fallo; fase=products; motivo=Error de validación o ejecución; se conserva el precio previo');
+    expect(JSON.stringify(vi.mocked(Logger.prototype.warn).mock.calls)).not.toContain('private.invalid');
+    expect(Logger.prototype.log).not.toHaveBeenCalledWith(expect.stringContaining('publicación confirmada'));
     expect(job.availableAt.getTime() - job.downloadStartedAt.getTime()).toBeGreaterThanOrEqual(86400000);
     await service.enqueue(24722); expect(await service.runOne(24722)).toBe(false);
   });
@@ -194,6 +203,8 @@ describe('TCGCSV: publicación SQL y presupuesto durable', () => {
     expect(await prisma.cardPrice.count({ where: { cardId: CARD } })).toBe(0);
     const runs = await prisma.$queryRaw<{ count: number }[]>`SELECT COUNT(*)::int AS count FROM price_ingestion_runs WHERE checksum = ${checksum(body)}`;
     expect(runs[0].count).toBe(0);
+    expect(Logger.prototype.log).not.toHaveBeenCalledWith(expect.stringContaining('publicación confirmada'));
+    expect(Logger.prototype.warn).toHaveBeenCalledWith(expect.stringContaining('fase=publication; motivo=Mapeo TCGCSV previamente asociado a otra carta'));
     expect((await prisma.cardExternalId.findUnique({ where: { provider_externalId: { provider: 'tcgcsv', externalId: String(PRODUCT) } } }))?.cardId).toBe(OTHER);
   });
   it('un corte de colecciones fallido no revierte ni marca fallida la publicación confirmada', async () => {
@@ -214,6 +225,8 @@ describe('TCGCSV: publicación SQL y presupuesto durable', () => {
     vi.mocked(client.fetchFeed).mockImplementation(async (path) => path === 'last-updated.txt' ? BUILD : path.endsWith('/products') ? products.replaceAll('24722', String(DYNAMIC_GROUP)) : prices());
     await service.enqueue(DYNAMIC_GROUP);
     await service.runOne(DYNAMIC_GROUP);
+    expect(Logger.prototype.log).toHaveBeenCalledWith(`TCGCSV grupo=${DYNAMIC_GROUP} sets=${DYNAMIC_SET} tanda=interactive: inicio`);
+    expect(Logger.prototype.log).toHaveBeenCalledWith(`TCGCSV grupo=${DYNAMIC_GROUP} sets=${DYNAMIC_SET} tanda=interactive: publicación confirmada; feed=2026-10-12T20:05:44.000Z; quoted=1 no_quote=0 unmapped=0 observations=1`);
     expect((await prisma.cardPrice.findFirstOrThrow({ where: { cardId: OTHER } })).externalGroupId).toBe(DYNAMIC_GROUP);
   });
   it('superar500requests no bloquea otra instancia ni impide publicar', async () => {

@@ -1,3 +1,4 @@
+import { Logger } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { PrismaService } from '../../prisma/index.js';
@@ -86,6 +87,8 @@ describe('TCGCSV: todos los grupos terminan, incluso después de medianoche', ()
     at = evening; feed = publication; fault = 'none'; lastPricesGroup = 0; manifestReads = 0;
     vi.mocked(client.fetchFeed).mockClear();
     await service().signalDaily();
+    vi.spyOn(Logger.prototype, 'log').mockImplementation(() => undefined).mockClear();
+    vi.spyOn(Logger.prototype, 'warn').mockImplementation(() => undefined).mockClear();
   });
 
   afterAll(async () => {
@@ -109,6 +112,11 @@ describe('TCGCSV: todos los grupos terminan, incluso después de medianoche', ()
     expect(await p.priceSyncSetDay.count({ where: { setId: { in: sets }, syncDate: today } })).toBe(0);
     expect(await p.priceSyncCardDay.count({ where: { cardId: { in: sets }, syncDate: day, status: 'quoted' } })).toBe(3);
     expect(manifestReads).toBe(7);
+    for (const [i, groupId] of groups.entries()) {
+      const context = `TCGCSV grupo=${groupId} sets=${sets[i]} tanda=${day.toISOString().slice(0, 10)}`;
+      expect(Logger.prototype.log).toHaveBeenCalledWith(`${context}: inicio`);
+      expect(Logger.prototype.log).toHaveBeenCalledWith(`${context}: publicación confirmada; feed=${publication.toISOString()}; quoted=1 no_quote=0 unmapped=0 observations=1`);
+    }
   });
 
   it('dos instancias consumen un solo grupo por vez con un lease durable global', async () => {
@@ -145,6 +153,8 @@ describe('TCGCSV: todos los grupos terminan, incluso después de medianoche', ()
         .toMatchObject({ status: 'failed', lastError: expect.stringContaining(`fase: ${phase}`) });
       expect(await p.priceSyncSetDay.findUnique({ where: { provider_setId_syncDate: { provider: 'tcgcsv', setId: sets[1], syncDate: day } } })).toMatchObject({ status: 'failed' });
       expect(await p.priceSyncCardDay.findUnique({ where: { provider_cardId_syncDate: { provider: 'tcgcsv', cardId: sets[1], syncDate: day } } })).toMatchObject({ status: 'failed' });
+      expect(Logger.prototype.warn).toHaveBeenCalledWith(`TCGCSV grupo=${groups[1]} sets=${sets[1]} tanda=${day.toISOString().slice(0, 10)}: fallo; fase=${phase}; motivo=${phase === 'publication' ? 'Lease TCGCSV vencido o build ya publicado' : 'Tiempo de espera HTTP agotado'}; se conserva el precio previo`);
+      expect(Logger.prototype.log).not.toHaveBeenCalledWith(expect.stringMatching(`grupo=${groups[1]} .*publicación confirmada`));
       const job = await p.tcgcsvGroupJob.findUniqueOrThrow({ where: { groupId: groups[1] } });
       const calls = vi.mocked(client.fetchFeed).mock.calls.length;
       await service().poll(); expect(client.fetchFeed).toHaveBeenCalledTimes(calls);
