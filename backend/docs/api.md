@@ -1319,16 +1319,26 @@ curl 'http://localhost:3001/api/collections/$ID/items?sort=number' \
 `normal`, `holofoil`, `reverseHolofoil`, `firstEditionNormal`,
 `firstEditionHolofoil`, `firstEdition`, `unlimited`, `unlimitedHolofoil`.
 
+**Política NM:** el DTO sigue aceptando `NM`, `LP`, `MP`, `HP` y `DM` para
+clientes legacy, pero toda alta nueva persiste `condition: 'NM'`. Condiciones
+fuera del enum siguen dando `400`. No se convierten ni fusionan filas históricas:
+las lecturas siguen mostrando su condición guardada hasta que se edite esa fila.
+Las variantes y sus precios conservan su semántica actual.
+
 **Semántica de `quantity`**: "agregar N copias **más**". Si ya existe un item
 con el mismo `(collectionId, cardId, variant, condition)` — hay un
 `@@unique` compuesto — se le **incrementa** `quantity` en vez de crear otra fila.
+La condición efectiva de esa clave es siempre `NM`, incluso si se envió `LP` u
+otro valor legacy. El rango 1..999 limita cada operación, no el total acumulado.
 `INSERT ... ON CONFLICT DO UPDATE` resuelve la carrera de dos altas simultáneas
 sin intentar consultar dentro de una transacción PostgreSQL abortada. Conserva
 las notas existentes y solo abre la marca de intercambio si el alta envía `true`.
 
 Para escrituras cuyo resultado pudo perderse, el cliente puede enviar
 `Idempotency-Key: <UUID>` (idealmente un UUID generado una sola vez por intento).
-La clave queda vinculada al usuario y al hash de colección + payload normalizado.
+La clave queda vinculada al usuario y al hash de colección + payload con defaults
+resueltos. El hash conserva la condición original recibida, antes de normalizar
+la persistencia a NM: reutilizar una clave cambiando `LP` por `NM` da `409`.
 El header pasa por DTO + `ValidationPipe` y se normaliza a minúsculas: cambiar
 mayúsculas del UUID no crea otro intento. Una clave vacía o headers duplicados
 concatenados se rechazan; no se convierten en una llamada sin protección.
@@ -1340,7 +1350,10 @@ La respuesta sigue siendo `CollectionItemDto`; `quantity` refleja el total actua
 del ítem, por lo que el cliente acredita el delta enviado por su operación y no
 usa ese total para deducir cuánto sumó el intento. El replay devuelve el estado
 actual del ítem (también sus atributos/notas), no un snapshot de la respuesta
-original. No vuelve a aplicar notas ni la marca de intercambio del payload.
+original. No vuelve a aplicar notas ni la marca de intercambio del payload,
+ni dispara una nueva captura de comparación. Una operación confirmada antes de
+la política NM puede seguir apuntando a una fila legacy: su replay devuelve esa
+fila sin convertirla ni sumar otra vez, con los mismos controles de ownership.
 
 Después de 30 días, la clave persistida funciona como tombstone: devuelve `410`
 y no vuelve a escribir. Al llegar un reintento vencido se borra el ID del
@@ -1476,6 +1489,14 @@ curl -X POST http://localhost:3001/api/collections/$ID/refresh-prices \
 
 El item se busca por `{ id: itemId, collection: { userId } }`, así que el
 `collectionId` sale de la fila existente.
+
+Toda edición exitosa persiste `condition: 'NM'`, incluso si se omite `condition`
+o se envía un valor legacy válido (`LP`, `MP`, `HP`, `DM`). El enum y su validación
+siguen vigentes. La cantidad enviada reemplaza el total; los atributos omitidos,
+el ID y la fecha de alta se conservan. No hay conversión masiva del historial.
+Si normalizar una fila legacy colisiona con otra NM de la misma colección,
+carta y variante, devuelve el `409` existente sin fusionar ni modificar ninguna
+fila, cantidades, notas, contadores o registros de idempotencia.
 
 | Error | Cuándo |
 |---|---|
