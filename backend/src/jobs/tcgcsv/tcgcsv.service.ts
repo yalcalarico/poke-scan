@@ -428,9 +428,11 @@ export class TcgcsvService implements OnModuleInit {
     let madeHttpRequest = false;
     let consumedFile = false;
     let failurePhase = 'group_identity';
+    const logContext = (): string => `TCGCSV grupo=${job.groupId} sets=${resolvedSetIds.join(',') || '-'} tanda=${job.syncDate?.toISOString().slice(0, 10) ?? 'interactive'}`;
     try {
       if (batch) await this.batches.claim(batch.syncDate, job.groupId);
       resolvedSetIds = await this.setsForGroup(job.groupId);
+      this.logger.log(`${logContext()}: inicio`);
       if (resolvedSetIds.length === 0) throw new Error('Grupo sin registro validado');
       const setIds = resolvedSetIds;
       failurePhase = 'manifest';
@@ -438,6 +440,7 @@ export class TcgcsvService implements OnModuleInit {
       const build = parseBuild(buildText, this.clock());
       if (batch?.feedPublishedAt && build.getTime() !== batch.feedPublishedAt.getTime()) {
         await this.batches.failRemaining(batch.syncDate, 'La fuente cambió de publicación; no se mezcla otro feed dentro de la tanda');
+        this.logger.warn(`${logContext()}: sin publicación; fase=manifest; motivo=La fuente cambió de publicación; feed=${build.toISOString()}`);
         return true;
       }
       if (job.publishedBuild !== null && build <= job.publishedBuild) {
@@ -445,9 +448,11 @@ export class TcgcsvService implements OnModuleInit {
         if (batch) {
           await this.batches.groupFailed(batch.syncDate, job.groupId, owner,
             'La publicación ya existe pero no hay un resultado confirmado para este grupo en la tanda', true);
+          this.logger.warn(`${logContext()}: sin publicación nueva; feed=${build.toISOString()}; sin resultado confirmado en la tanda`);
           return true;
         }
         await this.markNoNewFeed(job, owner, build, setIds);
+        this.logger.log(`${logContext()}: sin publicación nueva; feed=${build.toISOString()}`);
         return true;
       }
       const reserved = await this.prisma.$transaction(async (tx) => {
@@ -473,6 +478,7 @@ export class TcgcsvService implements OnModuleInit {
         if (batch) await this.prisma.$executeRaw`UPDATE tcgcsv_batch_groups SET status = 'pending',
           "nextAttemptAt" = (SELECT "availableAt" FROM tcgcsv_group_jobs WHERE "groupId" = ${job.groupId})
           WHERE "syncDate" = ${batch.syncDate}::date AND "groupId" = ${job.groupId} AND status = 'processing'`;
+        this.logger.log(`${logContext()}: en espera; motivo=reserva de descarga de 24 horas vigente; sin publicación`);
         return true;
       }
       consumedFile = true;
@@ -487,7 +493,7 @@ export class TcgcsvService implements OnModuleInit {
       if (build.getTime() !== confirmedBuild.getTime()) throw new Error('Build TCGCSV cambió durante la descarga');
       const checksum = createHash('sha256').update(productsText).update('\n').update(pricesText).digest('hex');
       failurePhase = 'publication';
-      await this.prisma.$transaction(async (tx) => {
+      const counts = await this.prisma.$transaction(async (tx) => {
         const [locked] = await tx.$queryRaw<GroupJob[]>`
           SELECT * FROM tcgcsv_group_jobs WHERE "groupId" = ${job.groupId} AND "lockedBy" = ${owner} AND "leaseUntil" > NOW() FOR UPDATE
         `;
@@ -579,7 +585,14 @@ export class TcgcsvService implements OnModuleInit {
           WHERE d.provider = 'tcgcsv' AND d."setId" = ANY(${setIds}::text[]) AND d."syncDate" = ${outcomeDay}::date`;
         if (batch) await tx.$executeRaw`UPDATE tcgcsv_batch_groups SET status = 'completed', "finishedAt" = ${at},
           "lastError" = NULL, "nextAttemptAt" = NULL WHERE "syncDate" = ${batch.syncDate}::date AND "groupId" = ${job.groupId}`;
+        return {
+          quoted: resultRows.filter((row) => row.status === 'quoted').length,
+          noQuote: resultRows.filter((row) => row.status === 'no_quote').length,
+          unmapped: resultRows.filter((row) => row.status === 'unmapped').length,
+          observations: observations.length,
+        };
       }, { timeout: 20000 });
+      this.logger.log(`${logContext()}: publicación confirmada; feed=${build.toISOString()}; quoted=${counts.quoted} no_quote=${counts.noQuote} unmapped=${counts.unmapped} observations=${counts.observations}`);
       if (batch) await this.batches.finish(batch.syncDate);
       try { await this.snapshots.capture(); }
       catch { this.logger.warn('El lote TCGCSV se publicó; quedó pendiente el corte de colecciones'); }
@@ -589,7 +602,7 @@ export class TcgcsvService implements OnModuleInit {
         await this.batches.groupFailed(batch.syncDate, job.groupId, owner,
           `Falló el grupo TCGCSV (fase: ${failurePhase}): ${failureReason(error)}; ${consumedFile ? 'archivo consumido, se conserva la reserva de 24 horas' : 'sin descargar contenido'}`,
           consumedFile || failurePhase !== 'manifest');
-        this.logger.warn(`El grupo TCGCSV ${job.groupId} registra su fallo en la tanda y conserva el precio previo`);
+        this.logger.warn(`${logContext()}: fallo; fase=${failurePhase}; motivo=${failureReason(error)}; se conserva el precio previo`);
         return true;
       }
       if (error instanceof ProviderRateLimitError && error.providerId === 'tcgcsv') {
@@ -601,7 +614,7 @@ export class TcgcsvService implements OnModuleInit {
         await this.finish(job.groupId, owner, 'failed', 3600000, message);
         if (resolvedSetIds.length && madeHttpRequest) await this.recordRunFailure(job.groupId, resolvedSetIds, job.syncDate, new Date(this.clock().getTime() + 3600000), 'waiting_feed', message);
       }
-      this.logger.warn(`El grupo TCGCSV ${job.groupId} conserva el último lote publicado`);
+      this.logger.warn(`${logContext()}: fallo; fase=${failurePhase}; motivo=${failureReason(error)}; se conserva el precio previo`);
     }
     return true;
   }
