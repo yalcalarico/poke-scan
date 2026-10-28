@@ -50,6 +50,8 @@ const SCRIPTS = [
   ['test:backend', 'Tests del backend'],
   ['verify:app', 'Smoke test HTTP del stack corriendo (cartas, precios, colecciones, UI)'],
   ['test:frontend', 'Tests del frontend'],
+  ['pnpm --dir frontend run test:browser', 'Baseline Chromium aislado en :3100; ver frontend/docs/testing.md'],
+  ['pnpm --dir frontend run test:browser:install', 'Instalar Chromium en frontend/.playwright-browsers (ruta impuesta)'],
   ['lint', 'Lint en backend y frontend'],
   ['typecheck', 'Typecheck del frontend'],
   ['build', 'Build de producción'],
