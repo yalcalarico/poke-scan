@@ -75,6 +75,36 @@ test('preload responde sin red y rechaza sockets externos antes de conectar', ()
   assert.match(denied.stderr, /Conexión saliente no permitida/);
 });
 
+test('preload sirve sólo el catálogo sintético exacto, nunca escrituras ni otros destinos', () => {
+  const preload = new URL('./browser-offline.mjs', import.meta.url).href;
+  const run = (url, method = 'GET') => spawnSync(process.execPath,
+    ['--import', preload, '--input-type=module', '-e',
+      `const r = await fetch(${JSON.stringify(url)}, { method: ${JSON.stringify(method)} }); console.log(r.status, await r.text());`],
+    { env: environment({ PATH: '' }), encoding: 'utf8' });
+  const fixture = new URL('./catalog.json', import.meta.url);
+  const before = readFileSync(fixture);
+  const card = run('http://127.0.0.1:3100/api/cards/browser-card');
+  assert.deepEqual({ status: card.status, stdout: card.stdout, stderr: card.stderr }, {
+    status: 0, stdout: `200 ${JSON.stringify(JSON.parse(before.toString()))}\n`, stderr: '',
+  });
+  const related = run('http://127.0.0.1:3100/api/cards/search?setId=browser-set&pageSize=15');
+  assert.deepEqual({ status: related.status, stdout: related.stdout, stderr: related.stderr }, {
+    status: 0, stdout: '200 {"data":[],"total":0,"page":1,"pageSize":15,"totalPages":0}\n', stderr: '',
+  });
+  for (const [url, method] of [
+    ['http://127.0.0.1:3001/api/cards/browser-card', 'GET'],
+    ['https://example.invalid/api/cards/browser-card', 'GET'],
+    ['http://127.0.0.1:3100/api/cards/browser-card?extra=1', 'GET'],
+    ['http://127.0.0.1:3100/api/cards/browser-card', 'POST'],
+  ]) {
+    const denied = run(url, method);
+    assert.equal(denied.status, 1);
+    assert.equal(denied.stdout, '');
+    assert.equal(denied.stderr, 'Solicitud de catálogo no permitida en Next aislado.\n');
+    assert.deepEqual(readFileSync(fixture), before, 'Fixture sin mutación');
+  }
+});
+
 test('copia exclusiva, deps enlazadas, fuentes locales y limpieza sin alterar originales', () => {
   const original = readFileSync(join(frontend, 'app/layout.tsx'), 'utf8');
   const cleanup = prepare();

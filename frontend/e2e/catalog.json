@@ -1,0 +1,24 @@
+{
+  "id": "browser-card",
+  "name": "Carta sintética E2E",
+  "supertype": "Pokémon",
+  "subtypes": [],
+  "hp": null,
+  "types": [],
+  "number": "1",
+  "rarity": null,
+  "artist": null,
+  "setId": "browser-set",
+  "set": {
+    "id": "browser-set",
+    "name": "Set sintético E2E",
+    "series": null,
+    "printedTotal": 1,
+    "total": 1,
+    "releaseDate": null,
+    "logoUrl": null,
+    "symbolUrl": null
+  },
+  "imageSmall": "/icons/icon-192.png",
+  "imageLarge": "/icons/icon-192.png"
+}

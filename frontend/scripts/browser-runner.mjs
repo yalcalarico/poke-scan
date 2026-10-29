@@ -24,6 +24,7 @@ export function environment(parent = process.env) {
     CI: '1',
     NEXT_TELEMETRY_DISABLED: '1',
     NEXT_PUBLIC_API_URL: '/api',
+    DEV_API_PROXY_TARGET: 'http://127.0.0.1:3100/api',
     PLAYWRIGHT_BROWSERS_PATH: join(frontend, '.playwright-browsers'),
     PLAYWRIGHT_NO_COPY_PROMPT: '1',
     NEXT_FONT_GOOGLE_MOCKED_RESPONSES: join(app, 'font-responses.cjs'),
