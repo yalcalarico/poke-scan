@@ -1,7 +1,9 @@
+import { createHash } from 'node:crypto';
 import type { PriceProvider } from '../providers/card-provider.interface.js';
 import {
   ConflictException,
   type ExecutionContext,
+  type INestApplication,
   GoneException,
   NotFoundException,
   ValidationPipe,
@@ -18,6 +20,7 @@ import { CollectionComparisonService } from '../../jobs/collection-comparison.se
 import { COMPARISON_POLICY } from '../../jobs/comparison.dto.js';
 import { CollectionsService } from './collections.service.js';
 import { AddItemDto } from './dto/add-item.dto.js';
+import { CARD_CONDITIONS } from './dto/card-variant.js';
 import { CreateCollectionDto } from './dto/create-collection.dto.js';
 import { ListItemsDto } from './dto/list-items.dto.js';
 import { UpdateItemDto } from './dto/update-item.dto.js';
@@ -685,6 +688,263 @@ describe('CollectionsService', () => {
     ).toMatchObject({ quantity: 3, notes: 'conservar', isForTrade: true });
   });
 
+  describe('HTTP política NM', () => {
+    let app: INestApplication;
+    let baseUrl: string;
+    let actor: string;
+    const key = '0b547447-5c58-4b87-8384-1d3c42dc3eea';
+
+    beforeEach(async () => {
+      actor = userA;
+      const httpModule = await Test.createTestingModule({
+        controllers: [CollectionsController],
+        providers: [
+          { provide: CollectionsService, useValue: service },
+          { provide: PortfolioService, useValue: {} },
+        ],
+      })
+        .overrideGuard(JwtAuthGuard)
+        .useValue({
+          canActivate(context: ExecutionContext) {
+            context.switchToHttp().getRequest<{ user: { sub: string } }>().user =
+              { sub: actor };
+            return true;
+          },
+        })
+        .compile();
+      app = httpModule.createNestApplication();
+      app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
+      await app.listen(0, '127.0.0.1');
+      baseUrl = await app.getUrl();
+    });
+
+    afterEach(async () => {
+      await app?.close();
+      vi.restoreAllMocks();
+    });
+
+    const send = (path: string, method = 'GET', payload?: unknown, operationKey?: string) =>
+      fetch(`${baseUrl}${path}`, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          ...(operationKey ? { 'Idempotency-Key': operationKey } : {}),
+        },
+        ...(payload === undefined ? {} : { body: JSON.stringify(payload) }),
+      });
+
+    async function accepted(path: string, method: string, payload: unknown, status: number, operationKey?: string) {
+      const response = await send(path, method, payload, operationKey);
+      expect(response.status).toBe(status);
+      return response.json();
+    }
+
+    // El estado visible se relee por HTTP; el ledger privado sólo complementa
+    // esa prueba porque no existe un endpoint público que lo exponga.
+    async function state(collectionId: string) {
+      const items = await send(`/collections/${collectionId}/items`);
+      const collection = await send(`/collections/${collectionId}`);
+      expect(items.status).toBe(200);
+      expect(collection.status).toBe(200);
+      const listed = await collection.json();
+      const page = await items.json();
+      return {
+        items: page.data.map((item: {
+          id: string; condition: string; variant: string; quantity: number;
+          notes: string | null; isForTrade: boolean; addedAt: string;
+        }) => ({
+          id: item.id, condition: item.condition, variant: item.variant,
+          quantity: item.quantity, notes: item.notes,
+          isForTrade: item.isForTrade, addedAt: item.addedAt,
+        })),
+        total: page.total,
+        counts: [listed.itemCount, listed.uniqueCount, listed.duplicateCount, listed.totalValueUsd],
+        operations: await prismaClient.collectionItemAddOperation.findMany({
+          where: { userId: userA }, orderBy: { key: 'asc' },
+        }),
+      };
+    }
+
+    async function legacyItem(collectionId: string, condition = 'LP') {
+      return prismaClient.collectionItem.create({
+        data: {
+          collectionId, cardId: TEST_CARD_ID, condition,
+          variant: 'normal', quantity: 3, notes: 'histórica', isForTrade: true,
+        },
+      });
+    }
+
+    it.each(CARD_CONDITIONS)('alta acepta %s pero persiste NM sin convertir filas históricas', async (condition) => {
+      const collection = await createCollection(userA);
+      const legacy = await legacyItem(collection.id, 'HP');
+      const path = `/collections/${collection.id}/items`;
+      const result = await accepted(path, 'POST', {
+        cardId: TEST_CARD_ID, condition, variant: 'holofoil', quantity: 2,
+        notes: 'nueva', isForTrade: true,
+      }, 201);
+      expect(result).toMatchObject({
+        condition: 'NM', variant: 'holofoil', quantity: 2,
+        notes: 'nueva', isForTrade: true, price: { market: 55 },
+      });
+      expect((await state(collection.id)).items).toEqual(expect.arrayContaining([
+        expect.objectContaining({ id: result.id, condition: 'NM', quantity: 2 }),
+        expect.objectContaining({ id: legacy.id, condition: 'HP', quantity: 3, notes: 'histórica' }),
+      ]));
+    });
+
+    it.each([undefined, ...CARD_CONDITIONS])('editar legacy con condición %s normaliza sin cambiar identidad ni atributos omitidos', async (condition) => {
+      const collection = await createCollection(userA);
+      const legacy = await legacyItem(collection.id);
+      const result = await accepted(`/items/${legacy.id}`, 'PATCH', {
+        quantity: 7, ...(condition === undefined ? {} : { condition }),
+      }, 200);
+      expect(result).toMatchObject({
+        id: legacy.id, condition: 'NM', quantity: 7, variant: 'normal',
+        notes: 'histórica', isForTrade: true, addedAt: legacy.addedAt.toISOString(),
+        price: { market: 99 },
+      });
+      expect((await state(collection.id)).items).toEqual([
+        expect.objectContaining({ id: legacy.id, condition: 'NM', quantity: 7, notes: 'histórica', isForTrade: true }),
+      ]);
+    });
+
+    it('upsert NM conserva notas y OR de intercambio, suma deltas sin tope agregado y separa variantes', async () => {
+      const collection = await createCollection(userA);
+      const path = `/collections/${collection.id}/items`;
+      const first = await accepted(path, 'POST', { cardId: TEST_CARD_ID, quantity: 999, notes: 'conservar' }, 201);
+      const second = await accepted(path, 'POST', {
+        cardId: TEST_CARD_ID, quantity: 2, notes: 'no pisar', isForTrade: true,
+      }, 201);
+      expect(second).toMatchObject({ id: first.id, condition: 'NM', quantity: 1001, notes: 'conservar', isForTrade: true });
+      const third = await accepted(path, 'POST', { cardId: TEST_CARD_ID, isForTrade: false }, 201);
+      expect(third).toMatchObject({ id: first.id, quantity: 1002, isForTrade: true });
+      const holo = await accepted(path, 'POST', { cardId: TEST_CARD_ID, variant: 'holofoil' }, 201);
+      expect(holo).toMatchObject({ condition: 'NM', quantity: 1, price: { market: 55 } });
+      expect(holo.id).not.toBe(first.id);
+      const edited = await accepted(`/items/${first.id}`, 'PATCH', { quantity: 7, notes: 'editada', isForTrade: false }, 200);
+      expect(edited).toMatchObject({ quantity: 7, notes: 'editada', isForTrade: false, price: { market: 99 } });
+      expect((await state(collection.id)).counts).toEqual([8, 2, 1, 748]);
+      const before = await state(collection.id);
+      const conflict = await send(`/items/${first.id}`, 'PATCH', { variant: 'holofoil', notes: 'no guardar' });
+      expect(conflict.status).toBe(409);
+      expect(await conflict.json()).toEqual({
+        statusCode: 409, error: 'Conflict',
+        message: 'Ya existe un item con esa misma variante y condición en la colección',
+      });
+      expect(await state(collection.id)).toEqual(before);
+    });
+
+    it('altas legacy de condiciones distintas incrementan la fila NM existente sin reemplazar atributos', async () => {
+      const collection = await createCollection(userA);
+      const path = `/collections/${collection.id}/items`;
+      const first = await accepted(path, 'POST', { cardId: TEST_CARD_ID, quantity: 2, notes: 'NM original' }, 201);
+      const legacy = await accepted(path, 'POST', {
+        cardId: TEST_CARD_ID, condition: 'DM', quantity: 3, notes: 'no reemplazar', isForTrade: true,
+      }, 201, key);
+      expect(legacy).toMatchObject({ id: first.id, condition: 'NM', quantity: 5, notes: 'NM original', isForTrade: true });
+      const again = await accepted(path, 'POST', { cardId: TEST_CARD_ID, condition: 'MP', isForTrade: false }, 201);
+      expect(again).toMatchObject({ id: first.id, condition: 'NM', quantity: 6, notes: 'NM original', isForTrade: true });
+      const saved = await state(collection.id);
+      expect(saved.items).toHaveLength(1);
+      expect(saved.counts).toEqual([6, 1, 1, 594]);
+      expect(saved.operations).toHaveLength(1);
+    });
+
+    it('alta idempotente legacy normaliza NM pero conserva el hash original y replay sin escrituras', async () => {
+      const collection = await createCollection(userA);
+      const path = `/collections/${collection.id}/items`;
+      const payload = { cardId: TEST_CARD_ID, condition: 'LP', quantity: 2, notes: 'original' };
+      const first = await accepted(path, 'POST', payload, 201, key);
+      expect(first).toMatchObject({ condition: 'NM', quantity: 2, notes: 'original' });
+      const before = await state(collection.id);
+      const capture = vi.spyOn(moduleRef.get(CollectionComparisonService), 'capture');
+      const replay = await accepted(path, 'POST', payload, 201, key);
+      expect(replay).toMatchObject({ id: first.id, condition: 'NM', quantity: 2 });
+      expect(capture).not.toHaveBeenCalled();
+      expect(await state(collection.id)).toEqual(before);
+      const conflict = await send(path, 'POST', { ...payload, condition: 'NM' }, key);
+      expect(conflict.status).toBe(409);
+      expect(await conflict.json()).toEqual({ statusCode: 409, error: 'Conflict', message: 'La clave ya se usó con otros datos' });
+      expect(await state(collection.id)).toEqual(before);
+    });
+
+    it('replay de una operación anterior a la política devuelve legacy sin normalizar ni sumar ni capturar', async () => {
+      const collection = await createCollection(userA);
+      const legacy = await legacyItem(collection.id);
+      const payload = { cardId: TEST_CARD_ID, condition: 'LP', quantity: 3, notes: 'histórica', isForTrade: true };
+      // Fixture del formato previo: no llama al alta actual para simular historia.
+      const payloadHash = createHash('sha256').update(JSON.stringify({
+        collectionId: collection.id, cardId: TEST_CARD_ID, variant: 'normal',
+        condition: 'LP', quantity: 3, notes: 'histórica', isForTrade: true,
+      })).digest('hex');
+      await prismaClient.collectionItemAddOperation.create({
+        data: { userId: userA, key, payloadHash, resultItemId: legacy.id, expiresAt: new Date(Date.now() + 86400000) },
+      });
+      const before = await state(collection.id);
+      const capture = vi.spyOn(moduleRef.get(CollectionComparisonService), 'capture');
+      const result = await accepted(`/collections/${collection.id}/items`, 'POST', payload, 201, key);
+      expect(result).toMatchObject({ id: legacy.id, condition: 'LP', quantity: 3, notes: 'histórica', isForTrade: true });
+      expect(capture).not.toHaveBeenCalled();
+      expect(await state(collection.id)).toEqual(before);
+    });
+
+    it.each([{}, { condition: 'MP' }, { quantity: 9, notes: 'no guardar', isForTrade: false }])('colisión legacy con NM da 409 sin fusionar ni alterar datos: %j', async (payload) => {
+      const collection = await createCollection(userA);
+      const legacy = await legacyItem(collection.id);
+      await accepted(`/collections/${collection.id}/items`, 'POST', { cardId: TEST_CARD_ID, quantity: 2, notes: 'NM' }, 201, key);
+      const before = await state(collection.id);
+      const capture = vi.spyOn(moduleRef.get(CollectionComparisonService), 'capture');
+      const response = await send(`/items/${legacy.id}`, 'PATCH', payload);
+      expect(response.status).toBe(409);
+      expect(await response.json()).toEqual({
+        statusCode: 409, error: 'Conflict',
+        message: 'Ya existe un item con esa misma variante y condición en la colección',
+      });
+      expect(capture).not.toHaveBeenCalled();
+      expect(await state(collection.id)).toEqual(before);
+    });
+
+    it('ownership devuelve 404 en alta y edición legacy sin efectos', async () => {
+      const collection = await createCollection(userA);
+      const legacy = await legacyItem(collection.id);
+      const before = await state(collection.id);
+      actor = userB;
+      for (const [path, method, payload, message] of [
+        [`/collections/${collection.id}/items`, 'POST', { cardId: TEST_CARD_ID, condition: 'LP' }, `Colección no encontrada: ${collection.id}`],
+        [`/items/${legacy.id}`, 'PATCH', { condition: 'NM', quantity: 8 }, `Item no encontrado: ${legacy.id}`],
+      ] as const) {
+        const response = await send(path, method, payload, key);
+        expect(response.status).toBe(404);
+        expect(await response.json()).toEqual({ statusCode: 404, error: 'Not Found', message });
+      }
+      actor = userA;
+      expect(await state(collection.id)).toEqual(before);
+      expect(await prismaClient.collectionItemAddOperation.count({ where: { userId: userB } })).toBe(0);
+    });
+
+    it.each([
+      [{ condition: 'INVALID' }, 'condition must be one of the following values: NM, LP, MP, HP, DM'],
+      [{ quantity: 0 }, 'quantity must not be less than 1'],
+      [{ quantity: 1000 }, 'quantity must not be greater than 999'],
+      [{ quantity: 1.5 }, 'quantity must be an integer number'],
+      [{ variant: 'INVALID' }, 'variant must be one of the following values: normal, holofoil, reverseHolofoil, firstEditionNormal, firstEditionHolofoil, firstEdition, unlimited, unlimitedHolofoil'],
+      [{ notes: 'x'.repeat(501) }, 'notes must be shorter than or equal to 500 characters'],
+    ] as const)('validación rechaza alta y edición sin escrituras: %j', async (invalid, message) => {
+      const collection = await createCollection(userA);
+      const legacy = await legacyItem(collection.id);
+      const before = await state(collection.id);
+      for (const [path, method, payload] of [
+        [`/collections/${collection.id}/items`, 'POST', { cardId: TEST_CARD_ID, ...invalid }],
+        [`/items/${legacy.id}`, 'PATCH', invalid],
+      ] as const) {
+        const response = await send(path, method, payload, key);
+        expect(response.status).toBe(400);
+        expect(await response.json()).toEqual({ statusCode: 400, error: 'Bad Request', message: [message] });
+        expect(await state(collection.id)).toEqual(before);
+      }
+    });
+  });
+
   it('HTTP real: perder la respuesta y repetir la clave confirma el mismo alta sin duplicarla', async () => {
     const collection = await createCollection(userA);
     const key = '4b564c9d-2f7b-4ef7-ab5e-20f2f3d9b647';
@@ -1270,15 +1530,11 @@ describe('CollectionsService', () => {
       service.updateItem(userA, normal.id, updateItemDto({ variant: 'holofoil' })),
     ).rejects.toBeInstanceOf(ConflictException);
 
-    // Choca por condición: mismo variant 'normal' pero condición 'LP' ya usada
-    await service.addItem(
-      userA,
-      collection.id,
-      addItem(TEST_CARD_ID, { condition: 'LP' }),
+    // El input legacy se acepta pero apunta a la misma condición NM.
+    const normalized = await service.updateItem(
+      userA, normal.id, updateItemDto({ condition: 'LP' }),
     );
-    await expect(
-      service.updateItem(userA, normal.id, updateItemDto({ condition: 'LP' })),
-    ).rejects.toBeInstanceOf(ConflictException);
+    expect(normalized).toMatchObject({ id: normal.id, condition: 'NM', quantity: 7 });
 
     // Mover a una combinación libre sí funciona
     const moved = await service.updateItem(
@@ -1293,7 +1549,7 @@ describe('CollectionsService', () => {
       where: { collectionId: collection.id },
       orderBy: { variant: 'asc' },
     });
-    expect(rows).toHaveLength(3);
+    expect(rows).toHaveLength(2);
   });
 
   it('remove y removeItem borran en cascada', async () => {

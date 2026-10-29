@@ -4,6 +4,78 @@ Corré `pnpm --dir frontend run test` para Vitest. Los tests de lógica de image
 
 Para verificar cambios completos usá `pnpm run check` desde la raíz. Antes de los tests backend, detené el stack con `pnpm run stop` para que el worker de precios no compita con los specs.
 
+## Baseline de navegador (Chromium escritorio)
+
+Desde la raíz, con pnpm 10.17.1, la preparación inicial es:
+
+```sh
+pnpm --dir frontend add -D @playwright/test
+pnpm --dir frontend run test:browser:install
+pnpm --dir frontend run test:browser
+```
+
+El instalador `test:browser:install` no acepta argumentos ni flags: incluso
+`--dry-run` y `--with-deps` se rechazan antes de crear directorios o ejecutar procesos,
+con salida 2, stdout vacío y stderr `El modo install no acepta argumentos adicionales.`
+seguido de un salto de línea. Sin argumentos instala Chromium como antes.
+
+Para enfocar un caso: `pnpm --dir frontend run test:browser --grep 'subida anónima'`.
+Los wrappers usan `pnpm exec playwright` e imponen `PLAYWRIGHT_BROWSERS_PATH`
+en `frontend/.playwright-browsers` tanto al instalar como al probar: no requiere export.
+El runner arranca **sólo Next dev --webpack** en `127.0.0.1:3100` y rechaza
+reutilizar un servidor existente. No levanta API, DB, Redis ni el stack.
+Copia sólo fuentes/config necesarios a `.playwright-app/`, sin `.env*`, `.next`,
+`.git`, binarios, output ni symlinks de fuentes; enlaza únicamente `node_modules`.
+Next carga entorno y genera su dist dentro de esa copia, no en el frontend original.
+El entorno hijo se reconstruye: sólo hereda PATH, sin NODE_OPTIONS, proxies ni endpoints;
+HOME y temporales quedan en output local. Una copia previa hace fallar el arranque.
+La salida normal o SIGINT/SIGTERM limpia sólo la copia creada, tras salir Next;
+SIGKILL puede dejarla: no se borra automáticamente una copia de otra ejecución.
+Prueba estructural (sin servidor): `pnpm --dir frontend exec node --test e2e/browser-runner.test.mjs`.
+
+`e2e/scanner.spec.ts` navega la página real `/escanear` y verifica:
+
+- Tab y Shift+Tab sobre «Subir una foto» y «Buscar a mano», con `:focus-visible`
+  y outline computado sólido de 2 px, offset de 2 px y contraste ≥3:1 contra la
+  superficie exterior bajo ese outline, no contra el fondo del botón. Conserva
+  el color exacto del tema en claro/oscuro y comprueba forced-colors (se informa
+  skip si la media query no es soportada). El outline RGB/RGBA se compone sobre
+  la superficie opaca en sRGB antes de linealizar y calcular luminancia; no se
+  fija un RGB de sistema portable para Highlight. Imágenes de fondo, superficies
+  parcialmente transparentes y formatos no soportados fallan explícitamente.
+- Enter sobre subida anónima lleva a `/login?next=escanear`, sin abrir archivos
+  ni llamar reconocimiento u otros endpoints de escáner.
+- Login sintético usa los nombres accesibles «Email (obligatorio)» y
+  «Contraseña (obligatorio)», vuelve al escáner con un único login y sin refresh
+  anticipado; recargar ejercita
+  `/users/me` 401 → `/auth/refresh` → `/users/me` con bearer. La subida abre el
+  selector, que se cancela sin enviar imágenes.
+
+El contexto nuevo bloquea service workers. Toda API se intercepta: sólo permite
+`GET /api/currency/usd-ars` (404, conversión deshabilitada) y, en el caso de login,
+`POST /api/auth/login`, `GET /api/users/me` y `POST /api/auth/refresh` con shapes
+`AuthResponseDto`/`UserDto`, credenciales `.invalid` y token sintéticos.
+No hay comodín de respuestas exitosas: tráfico API o externo no previsto se
+aborta **y hace fallar el test al cerrar**, aunque la UI capture el error.
+Sólo pasan documentos/RSC de escáner/login, assets locales y el WebSocket
+`ws://127.0.0.1:3100/_next/hmr` de Next (también transporta debug RSC para hidratar).
+Webpack usa `NEXT_FONT_GOOGLE_MOCKED_RESPONSES`, verificado en el loader de Next:
+Geist/Geist Mono reciben CSS local Arial, sin descargar CSS ni archivos de Google.
+Un preload exclusivo de Next simula dist-tags npm como 503 y termina el proceso
+ante conexiones TCP distintas del loopback :3100; también se hereda a sus workers.
+El layout original no cambia. Esto no acredita tipografía de producción, backend,
+cookies reales, reconocimiento, contraste AA, cámara, Safari ni iPhone físico.
+
+Screenshots, videos y traces están apagados. `PLAYWRIGHT_NO_COPY_PROMPT=1` evita
+extraer el snapshot de página de error; `preserveOutput: 'never'` descarta las
+salidas por test, incluido `error-context.md` (sin opción pública propia de apagado).
+Usa reporter de consola y `.playwright-output/` ignorado para la salida del runner.
+Los binarios locales también están ignorados. ESLint excluye únicamente los
+nuevos directorios generados `.playwright-browsers/**`, `.playwright-output/**`
+y `.playwright-app/**`; el código fuente de `e2e/` y `scripts/` sigue lintado.
+Vitest no recoge `e2e/*.spec.ts`:
+sus dos configs mantienen sus includes existentes, sin modificar tests previos.
+
 ## Escáner visual
 
 - `camera-visual.test.ts`: elige el #1, conserva su set, consulta precio solo para su ID y tolera falta de precios.

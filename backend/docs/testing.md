@@ -255,6 +255,23 @@ Tres cosas más que aparecen en los specs con SQL crudo:
   (`collections.service.spec.ts:61`). Asumen que el catálogo está sincronizado.
   Si la base está vacía, esos specs fallan con un error de `expect(set).not.toBeNull()`.
 
+### Relojes en los specs TCGCSV
+
+Reutilizá el reloj inyectado (`COMPARISON_CLOCK`): gobierna planificación,
+publicación y pausas. PostgreSQL `NOW()` gobierna leases, elegibilidad y reservas;
+no lo reemplaces ni cambies el reloj global para alinear un fixture.
+
+- Para skew, tomá `NOW()` de la base de tests y adelantá el reloj inyectado.
+  Abrí la tanda que contiene ese instante: cambia a las **21 UTC**, no a
+  medianoche, y vence a las 21 UTC siguientes (`syncDate + 45 h`). Exigí consumo
+  real, reserva de al menos 24 h desde el inicio registrado y rechazo de una
+  reencolada inmediata sin repetir contenido ni cambiar la reserva.
+- Para 429, usá un override local por delante de `NOW()` y exigí exactamente
+  `reloj + Retry-After`. Probá la pausa con otro grupo elegible, sin HTTP,
+  reclamo ni cambios de contadores; un grupo deshabilitado no acredita bloqueo.
+  Restaurá el override en `finally`, los spies en teardown y el estado compartido
+  con los snapshots del fixture. No agregues sleeps ni tolerancias temporales.
+
 ### Cómo testear Redis
 
 Redis es opcional en el diseño: `RedisService` arranca igual si `REDIS_URL` no

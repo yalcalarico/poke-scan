@@ -564,7 +564,7 @@ export class CollectionsService {
         (id, "collectionId", "cardId", variant, condition, quantity,
          "isForTrade", notes, "addedAt", "updatedAt")
       VALUES (${randomUUID()}, ${collectionId}, ${dto.cardId},
-              ${dto.variant ?? 'normal'}, ${dto.condition ?? 'NM'}, ${dto.quantity ?? 1},
+              ${dto.variant ?? 'normal'}, 'NM', ${dto.quantity ?? 1},
               ${dto.isForTrade ?? false}, ${dto.notes ?? null}, NOW(), NOW())
       ON CONFLICT ("collectionId", "cardId", variant, condition)
       DO UPDATE SET quantity = collection_items.quantity + EXCLUDED.quantity,
@@ -616,6 +616,8 @@ export class CollectionsService {
     key: string,
   ): Promise<CollectionItemDto> {
     const variant = dto.variant ?? 'normal';
+    // La condición original sigue identificando el intento, aunque se guarde NM.
+    // Normalizarla acá rompería los replays de clientes y operaciones anteriores.
     const condition = dto.condition ?? 'NM';
     const quantity = dto.quantity ?? 1;
     const payloadHash = createHash('sha256')
@@ -711,6 +713,9 @@ export class CollectionsService {
       if (!isUniqueViolation(error)) throw error;
       await this.assertOwned(userId, collectionId);
       item = await replay();
+      // Confirmar un intento previo no es una escritura nueva: tampoco debe
+      // recalcular snapshots ni convertir la fila legacy a la que apunta.
+      return this.confirmAddedItem(item);
     }
     await this.captureComparison(userId);
     return this.confirmAddedItem(item);
@@ -733,7 +738,7 @@ export class CollectionsService {
     const existing = await this.findOwnedItem(userId, itemId);
 
     const variant = dto.variant ?? existing.variant;
-    const condition = dto.condition ?? existing.condition;
+    const condition = 'NM';
 
     if (variant !== existing.variant || condition !== existing.condition) {
       const conflict = await this.prisma.collectionItem.findFirst({
@@ -753,12 +758,11 @@ export class CollectionsService {
       }
     }
 
-    const data: Prisma.CollectionItemUpdateInput = {};
+    const data: Prisma.CollectionItemUpdateInput = { condition };
     if (dto.quantity !== undefined) data.quantity = dto.quantity;
     if (dto.isForTrade !== undefined) data.isForTrade = dto.isForTrade;
     if (dto.notes !== undefined) data.notes = dto.notes;
     if (dto.variant !== undefined) data.variant = dto.variant;
-    if (dto.condition !== undefined) data.condition = dto.condition;
 
     let item: ItemWithCard;
     try {
