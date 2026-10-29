@@ -76,6 +76,16 @@ export const test = base.extend<{ catalog: Catalog }>({
           quantity: 3, isForTrade: true, notes: null, addedAt: '2000-01-01T00:00:00.000Z', price: null };
         return json(item, 201);
       }
+      if (method === 'PATCH' && path === '/api/items/browser-item' && !url.search
+        && request.headers().authorization === 'Bearer synthetic-browser-access-token' && item) {
+        const body: unknown = request.postDataJSON();
+        const update = { quantity: 5, isForTrade: false, notes: 'Nota sintética editada', variant: 'holofoil', condition: 'NM' };
+        expect(body, 'Payload completo de la edición').toEqual(update);
+        state.writes.push(body);
+        if (state.failSave) return json({ statusCode: 503, message: 'Actualización sintética no disponible' }, 503);
+        item = { ...item, ...update, variant: 'holofoil', condition: 'NM' };
+        return json(item);
+      }
       // La guardia original aborta y registra todo lo que este escenario no permite.
       return route.fallback();
     });
