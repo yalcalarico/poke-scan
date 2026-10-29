@@ -83,11 +83,13 @@ export class TcgcsvService implements OnModuleInit {
     if (!this.enabled()) return 0;
     const planning = await this.prisma.$queryRaw<{ syncDate: Date }[]>`
       SELECT "syncDate" FROM tcgcsv_daily_batches WHERE status = 'planning' ORDER BY "syncDate" LIMIT 1`;
-    if (!this.dailyWindowOpen() && !planning.length) return 0;
     await this.registry?.ensureCuratedSeed();
     await this.registry?.reconcileCollectionSets();
     await this.registry?.reconcileValidatedSets();
-    const day = planning[0]?.syncDate ?? new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+    // Antes de las 21 UTC sigue vencida la tanda anterior, incluso después de medianoche.
+    // Sólo recuperamos esa apertura: no reconstruimos todos los días de una suspensión.
+    const due = new Date(now.getTime() - 21 * 3600000);
+    const day = planning[0]?.syncDate ?? new Date(Date.UTC(due.getUTCFullYear(), due.getUTCMonth(), due.getUTCDate()));
     // Una apertura durable fija el alcance aunque todos los objetivos ya existan o se deshabiliten luego.
     const [batch] = await this.prisma.$queryRaw<{ setIds: string[]; status: string }[]>`
       INSERT INTO tcgcsv_daily_batches ("syncDate", "openedAt", "setIds")

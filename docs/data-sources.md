@@ -47,8 +47,10 @@ Consultar [precios](../backend/docs/pricing.md) y [providers](../backend/docs/pr
 - Los días no observados quedan como huecos. No se supone que exista archivo
   histórico descargable ni se fabrican valores para completar una gráfica.
 
-Operación: `pnpm run prices:sync` solicita un ciclo y muestra avance;
-`pnpm run prices:status --watch` sólo observa; `pnpm run prices:sets` administra
+La API recupera al arrancar la última tanda vencida de las 21 UTC, incluso
+pasada la medianoche, sin reconstruir días perdidos ni cambiar reservas.
+Operación: `pnpm run prices:status -- --watch` sólo observa;
+`pnpm run prices:sets` administra
 el alcance. Ctrl+C cierra la vista, no cancela los jobs del backend.
 Ver [jobs](../backend/docs/jobs.md), [comparación](../frontend/docs/comparison.md)
 y [cierre del plan diario](plans/precios-diarios-priorizados-2026-10-18-estado.md).

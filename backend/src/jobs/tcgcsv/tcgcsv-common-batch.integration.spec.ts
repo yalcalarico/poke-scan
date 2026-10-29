@@ -11,6 +11,8 @@ const groups = [998260001, 998260002, 998260003, 998260004];
 const day = new Date(new Date().toISOString().slice(0, 10));
 const evening = new Date(day.getTime() + 21 * 3600000);
 const build = new Date(day.getTime() + 20 * 3600000);
+const yesterday = new Date(day.getTime() - 86400000);
+const batchDates = [yesterday, day, new Date(day.getTime() + 86400000)];
 
 describe('TCGCSV: una tanda común a las 18 ARG', () => {
   const p = new PrismaClient();
@@ -30,9 +32,10 @@ describe('TCGCSV: una tanda común a las 18 ARG', () => {
     registry = await p.priceSyncSet.findMany({ select: { setId: true, enabled: true } });
     rate = await p.providerRateLimit.findUnique({ where: { providerId: 'tcgcsv' } });
     discovery = await p.tcgcsvDiscoveryState.findUnique({ where: { id: 'global' } });
-    batches = await p.tcgcsvDailyBatch.findMany({ where: { syncDate: { in: [day, new Date(day.getTime() + 86400000)] } } });
-    batchGroups = await p.tcgcsvBatchGroup.findMany({ where: { syncDate: { in: [day, new Date(day.getTime() + 86400000)] } } });
-    await p.tcgcsvDailyBatch.deleteMany({ where: { syncDate: { in: [day, new Date(day.getTime() + 86400000)] } } });
+    batches = await p.tcgcsvDailyBatch.findMany({ where: { syncDate: { in: batchDates } } });
+    batchGroups = await p.tcgcsvBatchGroup.findMany({ where: { syncDate: { in: batchDates } } });
+    await p.tcgcsvDailyBatch.deleteMany({ where: { syncDate: { in: batchDates } } });
+    await p.tcgcsvDailyBatch.create({ data: { syncDate: yesterday, openedAt: yesterday, setIds: [], status: 'completed' } });
     await p.priceSyncSet.updateMany({ data: { enabled: false } });
     await p.providerRateLimit.deleteMany({ where: { providerId: 'tcgcsv' } });
     process.env.ENABLE_TCGCSV_INGESTION = 'true';
@@ -73,7 +76,7 @@ describe('TCGCSV: una tanda común a las 18 ARG', () => {
     await p.providerRateLimit.deleteMany({ where: { providerId: 'tcgcsv' } });
     if (rate) await p.providerRateLimit.create({ data: rate });
     if (discovery) await p.tcgcsvDiscoveryState.update({ where: { id: 'global' }, data: discovery });
-    await p.tcgcsvDailyBatch.deleteMany({ where: { syncDate: { in: [day, new Date(day.getTime() + 86400000)] } } });
+    await p.tcgcsvDailyBatch.deleteMany({ where: { syncDate: { in: batchDates } } });
     if (batches.length) await p.tcgcsvDailyBatch.createMany({ data: batches });
     if (batchGroups.length) await p.tcgcsvBatchGroup.createMany({ data: batchGroups });
     if (flag === undefined) delete process.env.ENABLE_TCGCSV_INGESTION; else process.env.ENABLE_TCGCSV_INGESTION = flag;

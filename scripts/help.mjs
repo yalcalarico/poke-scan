@@ -32,7 +32,6 @@ const SCRIPTS = [
   ['sync', '⚠  Sincronizar catálogo completo (~20.670 cartas, varios minutos)'],
   ['sync-state:migrate', 'Migrar el cursor del sync desde Redis a Postgres (una vez)'],
   ['prices:retention', 'Consolidar/podar card_prices (dry run por default)'],
-  ['prices:sync', 'Pedir un ciclo TCGdex + TCGCSV y ver el avance (API activa; Ctrl+C cierra la vista)'],
   ['prices:status', 'Ver colas y cobertura de precios; --watch sigue el avance'],
   ['prices:sets', 'Listar, habilitar o deshabilitar sets del ciclo diario (prices:sets -- help)'],
   ['cache:clear', 'Vaciar la caché de Redis'],

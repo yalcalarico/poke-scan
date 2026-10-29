@@ -28,7 +28,10 @@ la ausencia no se transforma en cero ni en una cotización de otra variante.
 
 El ciclo diario TCGCSV usa sets habilitados, 21:00 UTC y reanudación cada quince
 minutos. Descubrimiento y consumidor respetan build, reservas de 24 h, leases,
-serialización y 429/Retry-After. Las lecturas no descargan archivos.
+serialización y 429/Retry-After. El arranque y la reanudación recuperan la última
+apertura vencida de las 21 UTC, también después de medianoche, sin reconstruir
+días perdidos ni cambiar la publicación de una tanda abierta.
+Las lecturas no descargan archivos.
 Ver [precios](pricing.md), [jobs](jobs.md) y [fuentes](../../docs/data-sources.md).
 
 ## Procedencia histórica

@@ -67,17 +67,21 @@ leases persistentes, una descarga del mismo archivo cada 24 h y pausas
   confirma ambos leases y guarda precio y resultado en la misma transacción.
 - Reanudación cada 15 min y consumidor cada cinco segundos; descubrimiento cada
   diez minutos. Antes de abrir una tanda no se descargan grupos aislados por una
-  lectura o señal. Una tanda abierta sí continúa tras un reinicio o despertar;
-  no se promete ejecución mientras la PC esté suspendida.
+  lectura o señal. Al arrancar o reanudar se recupera la última apertura vencida:
+  antes de las 21 UTC corresponde a la fecha UTC anterior, incluso después de
+  medianoche (21 ARG). No se abre la tanda del nuevo día calendario antes de hora
+  ni se reconstruyen todos los días perdidos. Una tanda ya abierta conserva
+  alcance y publicación; una cerrada no se reabre. No se promete ejecución
+  mientras la PC esté suspendida.
 - Los errores anteriores al contenido admiten hasta tres intentos acotados; si
   ya se consumió un archivo, el grupo falla y conserva las 24 h. La tanda siguiente
   vuelve a incluir todo el alcance habilitado, también los éxitos y fallos previos.
   Si la publicación objetivo fue reemplazada, o llegan las siguientes 18 sin
   terminar, lo restante falla explícitamente; no se mezcla otro feed ni se pisa
   una tanda activa con la siguiente.
-- `pnpm run prices:sync` solicita sólo TCGCSV; `prices:status` muestra su estado;
-  `prices:sets` administra alcance. La señal durable para una nueva tanda espera las 18 ARG; no fuerza
-  una descarga inmediata ni resetea reservas.
+- `pnpm run prices:status -- --watch` observa el avance sin pedir trabajo;
+  `prices:sets` administra alcance. La API activa con ingesta habilitada inicia
+  y recupera las tandas automáticamente; no hace falta un comando de sync.
 - Transición autorizada el **26/10**: la tanda de hoy exceptúa los tres grupos
   con importaciones genuinas de esta mañana (`bw11`, `bwp`, `pop8`). Conservan
   sus objetivos terminales y reservas; a partir del 27/10 entran en el lote nuevo.

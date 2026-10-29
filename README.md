@@ -27,6 +27,16 @@ pnpm run dev      # levanta API + web juntos, Ctrl+C baja ambos
 > necesita la licencia de Xcode CLItools. Si te dice que no la aceptaste,
 > usá `pnpm run`.
 
+### Precios automáticos
+
+Con la API activa y `ENABLE_TCGCSV_INGESTION=true`, la tanda abre a las 21 UTC
+(18 ARG). Al arrancar o reanudar recupera la última apertura vencida, también
+pasada la medianoche UTC (21 ARG), sin reconstruir días perdidos. Conserva el
+feed de la tanda activa y las reservas de 24 h; si el feed fue reemplazado,
+registra el fallo sin inventar historia. No necesitás un comando de sync.
+`pnpm run prices:status -- --watch` observa el avance sin solicitar descargas.
+Ver [operación de precios](backend/docs/pricing.md#ciclo-diario-y-operación).
+
 ### Requisitos
 
 Node 22 · pnpm 10 · Docker Desktop. Nada más.
