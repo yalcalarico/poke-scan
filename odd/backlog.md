@@ -5,11 +5,18 @@ estados de producto proceden del corte 27/10/2026 y de los contrastes estáticos
 indicados abajo; no acreditan runtime actual. Cada feature nueva se define desde
 el pedido humano. No se inventan specs ni se reabren entregas por documentación.
 
-## Lanzamiento: 18 IDs abiertos, 20 cerrados
+## Orden de trabajo y corte histórico
 
-Los cierres y los 38 IDs se preservan en el [registro histórico por ID](../docs/plans/lanzamiento-2026-10-07/REGISTRO-TAREAS.md).
-Parcial/condicionado cuenta como abierto, no como implementación fallida. No sumar
-estos IDs con revisiones posteriores como si tuvieran el mismo alcance.
+Seguir el [plan por fases](plan-pendientes.md), empezando por el preflight NM sin
+cambiar datos reales. Este backlog conserva la autoridad de estados; el plan
+ordena dependencias y aceptación, no crea otra lista de cierres ni autoriza ejecución.
+
+El corte histórico conserva **18 IDs abiertos y 20 cerrados**, no 18 activos hoy.
+Los 38 IDs y sus cierres están en el [registro histórico por ID](../docs/plans/lanzamiento-2026-10-07/REGISTRO-TAREAS.md).
+La tabla activa mantiene 13 IDs (SEO-02 sólo en su alcance local); cinco IDs y la
+porción restante de SEO-02 quedan en [infra diferida](infra-diferida.md), dormida
+hasta pedido explícito de configurar la mini PC. No sumar porciones de SEO-02 ni
+revisiones posteriores como IDs nuevos. Parcial/condicionado no significa fallo.
 
 | ID | Pendiente preservado | Entrada para habilitarlo |
 |---|---|---|
@@ -21,15 +28,10 @@ estos IDs con revisiones posteriores como si tuvieran el mismo alcance.
 | RES-01 | Entrevistas y resultados | Participantes gestionados por el dueño |
 | RES-02 | Corpus etiquetado y medición | Fotos voluntarias con identidad exacta; protocolo ya entregado |
 | RES-03 | Ejecución y resultados manuales | Participantes, consentimiento, custodia y retención |
-| INF-01 | Cuenta, dominio y operación reales | Mini PC/servicios disponibles; preparación local aceptada |
-| INF-03 | Off-host y operación de backups | Custodia/cuentas/equipo; ensayo local aceptado |
-| INF-04 | Uptime, carga/consumo y presupuesto reales | Host objetivo disponible |
-| SEO-01 | Dominio/salida productivos | Dominio y operación; auditoría/matriz local aceptadas |
-| SEO-02 | Contenido dependiente de entradas | SEO-01, entorno y brief MKT-03 |
-| SEO-03 | Dominio/salida productivos | Fase documental y preview local aceptados |
+| SEO-02 (local) | Contenido y brief respaldados por evidencia | MKT-03; no exige despliegue para prepararlos |
 | MKT-03 | Mensaje/oferta respaldados por evidencia | Resultados RES-01/03; decisión de oferta si aplica |
 | NEG-01 | Validación y decisión comercial | Evidencia RES-01/03 y DEC-05 |
-| NEG-02 | Costes y licencias | Presupuesto, fuentes y consumo medido |
+| NEG-02 | Costes y licencias: análisis local habilitable desde ahora | Presupuesto y fuentes; distinguir estimaciones de consumo medido |
 | NEG-03 | Requisitos comerciales/GO | Cuenta documental aceptada; validación comercial pendiente |
 
 ## Revisiones posteriores: no sumar al contador de lanzamiento
@@ -39,7 +41,7 @@ estos IDs con revisiones posteriores como si tuvieran el mismo alcance.
 | REV-01/03/04/05/06 | Implementadas; no reabrir por migración documental |
 | REV-02/07 | Sin corrección aplicada; reproducir en Safari/iPhone físico |
 | Validación física REV-04 | Encuadre/cámara/audio en iPhone pendientes; emulación no los acredita |
-| NM global y conversión histórica | Frontend entregado; backend y conversión **sin aplicar**, parche preservado. Requiere tarea autorizada de datos y coordinación de runtime |
+| NM global y conversión histórica | Frontend entregado; política de escrituras backend implementada en `d8fba3d`, tests/check y diferencial aprobados. [Unidad cerrada](tasks/collection-nm-policy.md) sin revisión nativa por decisión humana explícita para ese commit. Conversión histórica **sin aplicar**; requiere autorización operativa propia |
 | Textos/períodos | Gate posterior del 26/10 aprobado; el timeout de un intento anterior no es el estado actual |
 
 Fuentes: [registro de revisión móvil](../docs/evaluations/revision-usuario-2026-10-25/TAREAS.md),
@@ -55,9 +57,6 @@ Fuentes: [registro de revisión móvil](../docs/evaluations/revision-usuario-202
   aún ambiguas (incluido Futsal), ahorro entre ciclos y backfill diferido.
   Consultar [estado del producto](../docs/estado-actual.md) para cierres posteriores:
   los contadores operativos del 21/22/26 no son estados vivos ni nuevas órdenes.
-- Operación externa: mini PC + Cloudflare Tunnel, Resend y B2 elegidos; conservar
-  dueño custodio age, retención 30 días y supresiones antes de reabrir tráfico.
-  La disponibilidad de cuentas/equipo y publicación mantienen sus gates propios.
 
 ## Rescate de planes sustituidos
 
