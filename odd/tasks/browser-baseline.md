@@ -56,7 +56,7 @@ Commit `2cb32c6` (`test(frontend): add isolated Chromium browser baseline`):12ar
 RDD on. ASSESS del rango comprometido no evaluó por untracked sin declarar. INSPECT pidió selección; se excluyeron los cuatro documentos untracked, sin ignorarlos/borrarlos. Segundo INSPECT devuelve stop `managed_assets_outdated`, sin START/lineage/recibo. Continuación exacta del proveedor:
 
 ```sh
-/Users/ysmaelalcalarico/Library/pnpm/global/5/.pnpm/gentle-pi@4.3.0_@earendil-works+pi-ai@1.4.0_@aws-sdk+credential-provider-node@3.972.89__18a9ba93803c35a8d40777ffcc9876c9/node_modules/gentle-pi/.gentle-ai/v4.2.0/gentle-ai sync --agent pi
+gentle-ai sync --agent pi
 ```
 
 No se ejecuta mantenimiento del harness ni se reintenta START. T3 espera decisión: autorizar ese mantenimiento y retomar revisión, o dejar explícitamente sólo `2cb32c6` sin revisión nativa. La excepción anterior de NM no cubre este candidato. Comprobaciones funcionales/independientes aprobadas no sustituyen ese permiso. Tracker queda sin commit durante el bloqueo para no ampliar el candidato.
@@ -71,7 +71,7 @@ T3 espera decisión humana: aislar el candidato en un worktree limpio para revis
 
 ### L8 — Revisión aislada y corrección acotada
 
-Usuario: «dale». Worktree limpio detached en `.git/agent-worktrees/browser-baseline-review`, registrado, HEAD inicial `2cb32c6`. START del rango comprometido crea `review-00efeeba6711dfb0` para12archivos del baseline, no NM ni documentos previos. Consentimiento resuelto por host interactivo. Raíz de todas las operaciones posteriores: `/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/.git/agent-worktrees/browser-baseline-review`. Target inicial `sha256:2d3b47915185910d5444249a32b9ca584fdc08f05b13f1c02d4989ae981315b9`.
+Usuario: «dale». Worktree limpio detached en `.git/agent-worktrees/browser-baseline-review`, registrado, HEAD inicial `2cb32c6`. START del rango comprometido crea `review-00efeeba6711dfb0` para12archivos del baseline, no NM ni documentos previos. Consentimiento resuelto por host interactivo. Raíz de todas las operaciones posteriores: `.git/agent-worktrees/browser-baseline-review`. Target inicial `sha256:2d3b47915185910d5444249a32b9ca584fdc08f05b13f1c02d4989ae981315b9`.
 
 Cuatro revisores ejecutados por capture_group y refuter por captura nativa corroboran R1-001/R3-001: modo install ignora args, incluyendo `--dry-run`/`--with-deps`. Plan nativo aceptado100líneasdiff, dentro de presupuesto200; corrección61líneasdiff. Install rechaza args con exit2, stdout vacío, stderr exacto `El modo install no acepta argumentos adicionales.\n` antes de env/mkdir/spawn. Mantiene instalación sin args y forwarding de test; docs/help actualizados.
 
@@ -98,11 +98,8 @@ Usuario autoriza unidad TCGCSV separada con «go»; continuidad detallada en `tc
 
 STATUS bound reconoce árbol corregido `d53fb4e5196d930b86c6befa9158cb5c0716bf08` y ofrece targeted_validation. Primer intento de captura rechazado sin mutación por copia inexacta de binding; STATUS fresco reofrece mismo slot, binding exacto devuelve forecast1review-validator porpi_host_relay. Validador admitido nativamente: approved. STATUS bound ofrece acknowledge-approved exacto; ejecutado, resultado `native-approved-acknowledgement-completed`, `authority: burned`, `burn_evidence: gentle-ai.review-acknowledged/v1`, `mutation_outcome: committed`. No STATUS tras burn.
 
-Lineage: `review-00efeeba6711dfb0`. Target final: `sha256:f0ce8605e7a3e715dcfd4f238125c94128a03c6f3db0ffd9bfb486865973349a`. Revisión consumida: `sha256:bc35100d6c97b9ecd19b27ecc8a75b714db2ee4275cd2104f5abf84f5a54e0d1`. Raíz: `/Users/ysmaelalcalarico/Projects/pokemon-cards-scanner-app/.git/agent-worktrees/browser-baseline-review`, HEAD77046d0. Cubre baseline+corrección, no NM ni TCGCSVtestfix ni documentos previos. No conservar token de ack en estos registros.
+Lineage: `review-00efeeba6711dfb0`. Target final: `sha256:f0ce8605e7a3e715dcfd4f238125c94128a03c6f3db0ffd9bfb486865973349a`. Revisión consumida: `sha256:bc35100d6c97b9ecd19b27ecc8a75b714db2ee4275cd2104f5abf84f5a54e0d1`. Raíz: `.git/agent-worktrees/browser-baseline-review`, HEAD77046d0. Cubre baseline+corrección, no NM ni TCGCSVtestfix ni documentos previos. No conservar token de ack en estos registros.
 
 Cierre:7/7Chromium,6/6runner,5casosdiferenciales y verificador independiente aprobados; gate global posterior0. Fallos previos permanecen registrados en logs, todos resueltos en el alcance autorizado. Sin omisiones en esos focales; no acredita cámara/fotos/contrasteAAintegral/Safari/iPhone físico ni tipografía de producción. Próxima unidad de fase2: ampliar baseline a búsqueda/guardado UI con alcance y fixtures propios; no está implementada por este primer corte. Sin push/PR ni retiro de worktree autorizado.
 
 Risk: item 5 — dependencia y runner de desarrollo; verificación independiente y revisión nativa completadas.
-
-
-

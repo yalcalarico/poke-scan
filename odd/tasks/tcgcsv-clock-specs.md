@@ -50,6 +50,3 @@ Usuario: «Review the delivered subagent output and continue.» Job13 `pnpm run 
 Revisión nativa del baseline se retomó exclusivamente en su worktree aisladoHEAD77046d0; no se agregaron allí estos specs backend. Validador dirigido aprobó corrección del runner y ack exacto consumió `review-00efeeba6711dfb0`, authorityburned. No implica revisión nativa propia de esta unidad test-only. Los documentos locales previos permanecen preservados fuera de los commits de producto. No repetir suites/builds verdes intactos por el cierre documental.
 
 Risk: none — cambios sólo de fixtures/aserciones y documentación de tests.
-
-
-

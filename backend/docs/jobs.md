@@ -284,6 +284,21 @@ los aliases nuevos se guardan junto al registro. Para IDs ya conocidos, el
 Las cartas sin `setId` se omiten (puede pasar si el set no se sincronizó) y los
 errores de una carta no cortan la página.
 
+## Seguimiento de grupos TCGCSV en el log
+
+Cada grupo reclamado informa `inicio` con `grupo`, los IDs de `sets` resueltos
+(`-` si no se pudo validar la identidad) y `tanda` (fecha UTC original o
+`interactive`). `publicación confirmada` aparece sólo después del commit e
+incluye `feed`, cartas `quoted`, `no_quote`, `unmapped` y cantidad de
+`observations`. Publicar no implica que todas las cartas tengan cotización.
+
+Un build repetido informa `sin publicación nueva`; una reserva vigente informa
+`en espera`, sin acreditar precios nuevos. Los fallos indican grupo, sets,
+tanda, fase y motivo sanitizado, sin volcar el error crudo. El cambio de feed o
+la falta de resultado confirmado en la tanda también se avisan sin anunciar
+éxito. Una pausa del proveedor o una cola sin trabajo elegible, anteriores al
+reclamo de un grupo, no generan un `inicio`.
+
 ## `SyncPricesService`
 
 `getPricesForCard` lee el último precio confirmado por carta y variante del
