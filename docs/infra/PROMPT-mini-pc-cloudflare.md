@@ -17,11 +17,11 @@ publicación ni cuentas, y no cierra INF-01/03/04 o SEO por preparación documen
 | Correo | Resend Free previsto; adaptador simulado aceptado. Cuenta, dominio/remitente y envíos reales al final. [Guía](resend-recovery.md). |
 | Backups | Backblaze B2 previsto; identidad privada age en bóveda del dueño y recuperación cifrada separada. Máximo 30 días desde creación original. No renovar fecha al copiar/restaurar. |
 | Bajas/restore | Registro independiente de bajas; comprobar/aplicar antes de tráfico restaurado y fallar cerrado sin cobertura. Conservarlo hasta comprobar que no hay copias restaurables afectadas. |
-| TCGdex | Ciclo diario **03:15 UTC**, resumidor cada 15 min y recuperación al arrancar después del corte; cola y gate durable 2,3 s. `ENABLE_PRICE_BACKFILL_CRON` + `PRICE_QUEUE_ENABLED`. |
+| TCGdex | Retirado como fuente activa. Sus observaciones son históricas; no habilitar sus flags ni consumidores anteriores. |
 | TCGCSV | Ciclo diario **21:00 UTC**, resumidor cada 15 min y discovery cada 10 min. `ENABLE_TCGCSV_INGESTION=true` tras el gate/autorización propios. Validar `last-updated.txt`/build y una descarga por archivo de precios cada 24 h. Sin antiguos topes 40 grupos/500 requests/lotes de diez; mantener serialización, leases, identidad segura y pausas 429. |
 | Alcance diario | `price_sync_sets`: semilla curada + sets de colecciones, prioridad/habilitación explícitas. No barrido horario del catálogo entero. |
 | Históricos | Migrar observaciones, controles diarios, señales, leases, cuotas por archivo, mappings y registro sin resetear fechas. No inventar días ausentes ni mezclar referencia activa y comparación. |
-| Comandos | Con API encendida: `pnpm run prices:sync`, `pnpm run prices:status --watch`, `pnpm run prices:sets`. Ctrl+C cierra la vista, no los jobs. |
+| Comandos | La API con ingesta habilitada abre o recupera automáticamente la última tanda correspondiente a las 21:00 UTC. Para observar: `pnpm run prices:status -- --watch`; para administrar alcance: `pnpm run prices:sets`. Ctrl+C cierra la vista, no los jobs. |
 
 Aplicar las migraciones existentes según el repositorio del momento, con respaldo
 y ensayo propios; no fijar un número histórico de migraciones. El calendario,

@@ -18,7 +18,8 @@ concilia asociaciones almacenadas sin red. Ver la sección de cobertura en
 [precios](pricing.md#cobertura-y-caché-de-productos--21102026).
 `SyncPricesService` lee PostgreSQL y solicita grupos; el refresco de colección
 usa selección local por ownership y variante, sin consultas externas ni N+1.
-`prices:sync` solicita sólo TCGCSV. Ver [precios](pricing.md) y [providers](providers.md).
+La API inicia y recupera automáticamente la tanda vencida; `prices:status -- --watch`
+permite observarla. Ver [precios](pricing.md) y [providers](providers.md).
 
 Desde el 26/10, por pedido del usuario, todos los grupos del alcance diario
 entran en una tanda común a las **21:00 UTC (18:00 Argentina)**. La planificación
@@ -28,7 +29,11 @@ manuales esperan las 18 para abrir un lote nuevo. El usuario corrigió después 
 cierre: **no hay corte a medianoche UTC**. `tcgcsv_daily_batches` fija alcance,
 publicación y estado; `tcgcsv_batch_groups` conserva el resultado de cada grupo.
 El lote abierto continúa tras medianoche/reinicio hasta resultados terminales,
-sin convertir pendientes en una aparente ejecución terminada. Fallar después de
+sin convertir pendientes en una aparente ejecución terminada. Si faltó abrirlo,
+el arranque y la reanudación recuperan la última tanda vencida de las 21 UTC:
+antes de esa hora corresponde a la fecha UTC anterior. No se adelanta la tanda
+del nuevo día calendario ni se reconstruyen todos los días de una suspensión.
+Una tanda cerrada no se reabre; una activa conserva alcance y publicación. Fallar después de
 consumir contenido conserva las 24 h y deja fallo explícito para la siguiente
 tanda; antes de contenido se admiten reintentos acotados. Un cambio de feed o la
 llegada de las siguientes 18 cierra lo no completado como fallo explícito.
@@ -508,9 +513,10 @@ pnpm run db:sync
 ## Cronjobs diarios de precios y operación
 
 TCGCSV planifica a las 21:00 UTC (18:00 en Argentina) y reanuda cada quince
-minutos. El backend debe estar activo; las interrupciones no generan puntos
-históricos ausentes. Los pendientes de días anteriores se retoman con objetivos
-actuales, conservando sus reservas.
+minutos y recupera la última apertura vencida al arrancar. El backend debe estar
+activo y la ingesta habilitada; las interrupciones no generan puntos históricos
+ausentes. La tanda recuperada conserva su fecha, valida que su feed siga disponible
+y respeta las reservas; no atribuye publicaciones nuevas a días anteriores.
 
 TCGCSV descubre identidades cada diez minutos y planifica sólo grupos asociados
 a sets habilitados. Su consumidor conserva el control de cuota y las reservas
@@ -526,16 +532,14 @@ conserva IDs de sets sin asociación y motivos, sin datos personales. Ver
 Desde la raíz o desde backend, con la API activa:
 
 ```bash
-pnpm run prices:sync
-pnpm run prices:sync -- --no-watch
 pnpm run prices:status
 pnpm run prices:status -- --watch --seconds=120
 pnpm run prices:status -- --json
 ```
 
-`prices:sync` pide un ciclo de TCGCSV y muestra el avance cada cinco
-segundos por hasta diez minutos. `--seconds=N` ajusta esa duración entre 1 y
-86400 segundos. Ctrl+C cierra la vista; la instancia activa sigue trabajando.
+`prices:status -- --watch` muestra el avance cada cinco segundos por hasta diez
+minutos. `--seconds=N` ajusta esa duración entre 1 y 86400 segundos. Ctrl+C cierra
+la vista; la instancia activa sigue trabajando. Sin `--watch` consulta una vez.
 `prices:status` sólo consulta datos locales, sin bootstrap ni requests externos.
 La CLI no inicia otra API, no ejecuta proveedores y no elimina ni adelanta leases
 o presupuestos de descarga.
@@ -546,7 +550,11 @@ manuales con los mismos servicios de cron. Un pedido manual puede adelantar
 la lectura del manifest TCGCSV, pero reutiliza el catálogo si el build no cambió
 y conserva el backoff de errores, los leases y las 24 h del archivo de precios.
 La ingesta requiere `ENABLE_TCGCSV_INGESTION=true`. Apagarla conserva el trabajo
-ya pendiente y las reservas; la CLI no inicia otro consumidor.
+ya pendiente y las reservas; la CLI no inicia otro consumidor. Se retiró el alias
+público para pedir ciclos: la recuperación automática no lo necesita.
+El modo interno `sync` de `scripts/prices-sync.mjs` y `requestCycles` se conservan
+por compatibilidad con las herramientas de registro y sus pruebas; no cambian
+parsing, cuotas ni leases y no se ofrecen como comando operativo.
 La cola muestra `en espera` para pendientes cuya disponibilidad o última descarga
 impiden ejecutarlos ahora; los fallos reales conservan su estado y backoff.
 La próxima disponibilidad mostrada nunca queda en el pasado y contempla la espera

@@ -128,10 +128,8 @@ sync: ## ⚠ Sincronizar el catálogo completo de pokemontcg.io (~20.670 cartas,
 	@printf "  el proceso es reanudable: si se corta, volvé a correrlo y sigue donde quedó.\n\n"
 	@cd backend && pnpm run db:sync
 
-prices: ## Refrescar los precios guardados
-	@printf "  los precios se consultan bajo demanda (cache 1 h en Redis)\n"
-	@printf "  para precargar los de tu colección, usá la API:\n"
-	@printf "    curl -X POST http://localhost:$(API_PORT)/api/cards/<id>/prices -H 'X-Admin-Key: <ADMIN_KEY>'\n"
+prices: ## Observar el estado local de precios (sin pedir descargas)
+	@pnpm run prices:status
 
 cache-clear: ## Vaciar la caché de Redis
 	@docker exec pokemon-scanner-redis redis-cli FLUSHDB

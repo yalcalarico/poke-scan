@@ -21,12 +21,14 @@ describe('TCGCSV: reanudación al cruzar medianoche', () => {
   const originalFlag = process.env.ENABLE_TCGCSV_INGESTION;
   const early = new Date(today.getTime() + 5 * 60000);
   const service = new TcgcsvService(p as PrismaService, client, {} as CollectionComparisonService, () => early);
-  let originalBatch: Awaited<ReturnType<typeof p.tcgcsvDailyBatch.findUnique>>;
+  let originalBatches: Awaited<ReturnType<typeof p.tcgcsvDailyBatch.findMany>> = [];
   let originalBatchGroups: Awaited<ReturnType<typeof p.tcgcsvBatchGroup.findMany>> = [];
   beforeAll(async () => {
-    originalBatch = await p.tcgcsvDailyBatch.findUnique({ where: { syncDate: today } });
-    originalBatchGroups = await p.tcgcsvBatchGroup.findMany({ where: { syncDate: today } });
-    await p.tcgcsvDailyBatch.deleteMany({ where: { syncDate: today } });
+    originalBatches = await p.tcgcsvDailyBatch.findMany({ where: { syncDate: { in: [yesterday, today] } } });
+    originalBatchGroups = await p.tcgcsvBatchGroup.findMany({ where: { syncDate: { in: [yesterday, today] } } });
+    await p.tcgcsvDailyBatch.deleteMany({ where: { syncDate: { in: [yesterday, today] } } });
+    // La tanda anterior ya cerró: la demanda posterior no debe reabrirla ni adelantar la nueva.
+    await p.tcgcsvDailyBatch.create({ data: { syncDate: yesterday, openedAt: yesterday, setIds: [], status: 'completed' } });
     process.env.ENABLE_TCGCSV_INGESTION = 'true';
     vi.spyOn(client, 'fetchFeed');
     for (const [i, setId] of [carry, fresh].entries()) {
@@ -40,8 +42,8 @@ describe('TCGCSV: reanudación al cruzar medianoche', () => {
     await p.priceSyncCardDay.create({ data: { provider: 'tcgcsv', cardId: carry, setId: carry, syncDate: yesterday, status: 'pending' } });
   });
   afterAll(async () => {
-    await p.tcgcsvDailyBatch.deleteMany({ where: { syncDate: today } });
-    if (originalBatch) await p.tcgcsvDailyBatch.create({ data: originalBatch });
+    await p.tcgcsvDailyBatch.deleteMany({ where: { syncDate: { in: [yesterday, today] } } });
+    if (originalBatches.length) await p.tcgcsvDailyBatch.createMany({ data: originalBatches });
     if (originalBatchGroups.length) await p.tcgcsvBatchGroup.createMany({ data: originalBatchGroups });
     await p.tcgcsvGroupJob.deleteMany({ where: { groupId: { in: groups } } });
     await p.cardSet.deleteMany({ where: { id: { in: [carry, fresh] } } });
@@ -49,7 +51,7 @@ describe('TCGCSV: reanudación al cruzar medianoche', () => {
     vi.restoreAllMocks();
     await p.$disconnect();
   });
-  it('un pendiente de ayer espera las 18 ARG sin adelantar objetivos ni alterar su reserva', async () => {
+  it('una tanda anterior cerrada espera las 18 ARG sin reabrirse ni alterar reservas', async () => {
     await service.resumeDaily();
     await service.signalDaily();
     await service.poll();

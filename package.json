@@ -31,7 +31,6 @@
     "sync": "pnpm --dir backend run db:sync",
     "sync-state:migrate": "pnpm --dir backend run db:migrate-sync-state",
     "prices:retention": "pnpm --dir backend run prices:retention",
-    "prices:sync": "pnpm --dir backend run prices:sync",
     "prices:status": "pnpm --dir backend run prices:status",
     "prices:sets": "pnpm --dir backend run prices:sets",
     "user:dev": "pnpm --dir backend run db:dev-user",

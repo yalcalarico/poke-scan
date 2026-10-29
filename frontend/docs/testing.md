@@ -76,6 +76,47 @@ y `.playwright-app/**`; el código fuente de `e2e/` y `scripts/` sigue lintado.
 Vitest no recoge `e2e/*.spec.ts`:
 sus dos configs mantienen sus includes existentes, sin modificar tests previos.
 
+## Búsqueda y guardado por navegador
+
+`e2e/search-save.spec.ts` recorre `/buscar` → ficha real → añadir a una colección
+sintética existente. Cubre resultados, vacío y error de búsqueda; variante Holofoil,
+alta NM, tres copias e intercambio; confirmación y lectura posterior tras recargar
+la ficha y abrir Administrar. Un 503 de alta mantiene el formulario y sus valores,
+no anuncia éxito y sigue sin ubicación al recargar. No modifica el caso 409.
+
+El catálogo `e2e/catalog.json` es sintético y no tiene precios. El preload exclusivo
+de Next responde sólo dos GET exactos: la carta `browser-card` y relacionadas del
+set `browser-set`. `DEV_API_PROXY_TARGET` se fija a loopback :3100 sólo en el runner;
+no se conecta a la API. Otros requests `/api/` desde Next terminan el proceso.
+La guardia TCP sigue restringida a ese puerto. El navegador permite sólo las rutas,
+queries, bearer y payload del escenario; todo lo demás cae en la guardia original.
+El inventario vive en memoria por test y cambia únicamente con los POST/PATCH
+esperados que terminan con éxito.
+
+Ejecutá `pnpm --dir frontend run test:browser --grep 'búsqueda|fallo de alta'`
+para estos casos o `pnpm --dir frontend run test:browser` para incluir el escáner.
+La lectura del editor comprueba identidad, variante, cantidad e intercambio; NM
+se comprueba también en payload y respuestas de ubicación/items. Esto acredita
+integración del cliente con respuestas simuladas, no persistencia PostgreSQL,
+ownership del backend ni idempotencia. No usa inventario, API ni precios reales;
+no agrega capturas, traces o videos.
+
+## Edición por navegador
+
+`e2e/search-save.spec.ts` también recorre Administrar sobre el alta sintética:
+
+- Edición de cantidad, intercambio y notas, confirmación y lectura tras recargar.
+- Cierre sin guardar: ninguna escritura adicional y valores originales.
+- Error 503 al actualizar: formulario y valores conservados, sin confirmación de
+  éxito ni cambio de la carta al recargar.
+
+Ejecutá `pnpm --dir frontend run test:browser --grep 'edición guardada'` para
+estos tres casos. El escenario admite sólo el PATCH esperado a
+`/api/items/browser-item`, con bearer, payload completo y sin query. El estado
+sigue siendo local a cada test; no admite DELETE ni crea colecciones. Se conservan
+los límites de aislamiento anteriores: no acredita persistencia PostgreSQL,
+ownership backend, inventario real ni dispositivos físicos.
+
 ## Escáner visual
 
 - `camera-visual.test.ts`: elige el #1, conserva su set, consulta precio solo para su ID y tolera falta de precios.

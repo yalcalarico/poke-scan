@@ -119,6 +119,49 @@ describe('TCGCSV: todos los grupos terminan, incluso después de medianoche', ()
     }
   });
 
+  for (const entry of ['startup', 'resume'] as const) {
+    it(`${entry} recupera la tanda perdida después de medianoche sin abrir la del calendario nuevo`, async () => {
+      await clean();
+      at = new Date(today.getTime() + 5 * 60000);
+      const recovered = service();
+      const discover = vi.spyOn(recovered, 'discover').mockResolvedValue(false);
+      if (entry === 'startup') await recovered.onModuleInit();
+      else await recovered.resumeDaily();
+      expect(await p.tcgcsvDailyBatch.findUnique({ where: { syncDate: day } })).toMatchObject({ status: 'pending', openedAt: at });
+      expect(await p.tcgcsvBatchGroup.count({ where: { syncDate: day, status: 'pending' } })).toBe(3);
+      expect(await p.tcgcsvDailyBatch.count({ where: { syncDate: today } })).toBe(0);
+      expect(client.fetchFeed).not.toHaveBeenCalled();
+      await recovered.poll();
+      const bound = await p.tcgcsvDailyBatch.findUniqueOrThrow({ where: { syncDate: day } });
+      expect(bound).toMatchObject({ status: 'running', feedPublishedAt: publication });
+      await service().resumeDaily();
+      expect(await p.tcgcsvDailyBatch.findUniqueOrThrow({ where: { syncDate: day } })).toEqual(bound);
+      await service().poll(); await service().poll();
+      expect(await p.tcgcsvDailyBatch.findUnique({ where: { syncDate: day } })).toMatchObject({ status: 'completed', feedPublishedAt: publication });
+      expect(await p.cardPrice.count({ where: { cardId: { in: sets }, feedPublishedAt: publication, fetchedAt: at } })).toBe(3);
+      expect(await p.priceSyncCardDay.count({ where: { cardId: { in: sets }, syncDate: day, status: 'quoted' } })).toBe(3);
+      expect(await p.priceSyncSetDay.count({ where: { setId: { in: sets }, syncDate: today } })).toBe(0);
+      at = new Date(today.getTime() + 21 * 3600000 - 1);
+      await service().resumeDaily();
+      expect(await p.tcgcsvDailyBatch.count({ where: { syncDate: today } })).toBe(0);
+      expect(client.fetchFeed).toHaveBeenCalledTimes(13);
+      discover.mockRestore();
+    });
+  }
+
+  it('la recuperación rechaza una publicación reemplazada sin descargar ni crear precios históricos', async () => {
+    await clean();
+    at = new Date(today.getTime() + 20 * 3600000 + 30 * 60000);
+    feed = new Date(publication.getTime() + 86400000);
+    await service().resumeDaily();
+    await service().poll();
+    expect(await p.tcgcsvDailyBatch.findUnique({ where: { syncDate: day } })).toMatchObject({ status: 'failed', feedPublishedAt: null });
+    expect(await p.tcgcsvBatchGroup.count({ where: { syncDate: day, status: 'failed' } })).toBe(3);
+    expect(await p.tcgcsvGroupJob.count({ where: { groupId: { in: groups }, downloadStartedAt: { not: null } } })).toBe(0);
+    expect(await p.cardPrice.count({ where: { cardId: { in: sets } } })).toBe(0);
+    expect(client.fetchFeed).toHaveBeenCalledExactlyOnceWith('last-updated.txt', 4096);
+  });
+
   it('dos instancias consumen un solo grupo por vez con un lease durable global', async () => {
     const original = vi.mocked(client.fetchFeed).getMockImplementation()!;
     let inFlight = 0;
