@@ -26,8 +26,9 @@ describe('TCGCSV: planificación diaria acotada (PostgreSQL real)', () => {
   const prisma = new PrismaClient();
   const client = new TcgcsvClient();
   const snapshots = { capture: async () => undefined };
+  let clockOverride: Date | undefined;
   const service = new TcgcsvService(prisma as PrismaService, client, snapshots as unknown as CollectionComparisonService,
-    () => { const at = new Date(); at.setUTCHours(21, 0, 0, 0); return at; });
+    () => { if (clockOverride) return clockOverride; const at = new Date(); at.setUTCHours(21, 0, 0, 0); return at; });
   const originalFlag = process.env.ENABLE_TCGCSV_INGESTION;
   let originalRate: { providerId: string; lastCalledAt: Date; blockedUntil: Date | null; updatedAt: Date } | null = null;
   let originalCounters: { requestCount: number; requestWindowStartedAt: Date } | null = null;
@@ -71,6 +72,8 @@ describe('TCGCSV: planificación diaria acotada (PostgreSQL real)', () => {
   });
 
   afterAll(async () => {
+    clockOverride = undefined;
+    vi.restoreAllMocks();
     await prisma.tcgcsvDailyBatch.deleteMany({ where: { syncDate: batchDay } });
     if (originalBatch) await prisma.tcgcsvDailyBatch.create({ data: originalBatch });
     if (originalBatchGroups.length) await prisma.tcgcsvBatchGroup.createMany({ data: originalBatchGroups });
@@ -212,16 +215,33 @@ describe('TCGCSV: planificación diaria acotada (PostgreSQL real)', () => {
       origin: 'daily', status: 'pending', syncDate, availableAt: new Date(0), downloadStartedAt: null,
     } });
     await prisma.providerRateLimit.update({ where: { providerId: 'tcgcsv' }, data: { blockedUntil: null, lastCalledAt: new Date(0) } });
+    await service.enqueue(GROUP_BOUNDARY);
+    const other = await prisma.tcgcsvGroupJob.findUniqueOrThrow({ where: { groupId: GROUP_BOUNDARY } });
+    const [dbClock] = await prisma.$queryRaw<{ now: Date }[]>`SELECT NOW() AS now`;
+    expect(other).toMatchObject({ origin: 'interactive', status: 'pending', lockedBy: null, downloadStartedAt: null });
+    expect(other.availableAt.getTime()).toBeLessThanOrEqual(dbClock.now.getTime());
+    const pausedAt = new Date(dbClock.now.getTime() + 120_000);
     vi.mocked(client.fetchFeed).mockClear().mockRejectedValue(new ProviderRateLimitError('tcgcsv', 120_000));
-    expect(await service.runOne(GROUP_ENABLED)).toBe(true);
-    const limit = await prisma.providerRateLimit.findUniqueOrThrow({ where: { providerId: 'tcgcsv' } });
-    expect(limit.blockedUntil!.getTime()).toBeGreaterThan(Date.now() + 110_000);
-    const target = await prisma.priceSyncCardDay.findUniqueOrThrow({ where: { provider_cardId_syncDate: { provider: 'tcgcsv', cardId: CARD_ENABLED, syncDate } } });
-    expect(target).toMatchObject({ status: 'failed', attempts: 5 });
-    await service.planDailyTargets(true);
-    expect(await prisma.tcgcsvGroupJob.findUniqueOrThrow({ where: { groupId: GROUP_ENABLED } })).toMatchObject({ status: 'failed' });
-    expect(await service.runOne(GROUP_DISABLED)).toBe(false);
-    expect(client.fetchFeed).toHaveBeenCalledTimes(1);
+    clockOverride = pausedAt;
+    try {
+      expect(await service.runOne(GROUP_ENABLED)).toBe(true);
+      const limit = await prisma.providerRateLimit.findUniqueOrThrow({ where: { providerId: 'tcgcsv' } });
+      expect(limit.blockedUntil).toEqual(new Date(pausedAt.getTime() + 120_000));
+      const target = await prisma.priceSyncCardDay.findUniqueOrThrow({ where: { provider_cardId_syncDate: { provider: 'tcgcsv', cardId: CARD_ENABLED, syncDate } } });
+      expect(target).toMatchObject({ status: 'failed', attempts: 5 });
+      const counters = await prisma.tcgcsvDiscoveryState.findUniqueOrThrow({ where: { id: 'global' } });
+      expect(await service.runOne(GROUP_BOUNDARY)).toBe(false);
+      expect(await prisma.tcgcsvGroupJob.findUniqueOrThrow({ where: { groupId: GROUP_BOUNDARY } })).toEqual(other);
+      expect(await prisma.tcgcsvDiscoveryState.findUniqueOrThrow({ where: { id: 'global' } })).toEqual(counters);
+      expect(await prisma.providerRateLimit.findUniqueOrThrow({ where: { providerId: 'tcgcsv' } })).toEqual(limit);
+      expect(client.fetchFeed).toHaveBeenCalledTimes(1);
+      // La señal sigue correspondiendo al día planificado, incluso si el skew cruza medianoche.
+      clockOverride = undefined;
+      await service.planDailyTargets(true);
+      expect(await prisma.tcgcsvGroupJob.findUniqueOrThrow({ where: { groupId: GROUP_ENABLED } })).toMatchObject({ status: 'failed' });
+      expect(await prisma.priceSyncCardDay.findUniqueOrThrow({ where: { provider_cardId_syncDate: { provider: 'tcgcsv', cardId: CARD_ENABLED, syncDate } } })).toEqual(target);
+      expect(client.fetchFeed).toHaveBeenCalledTimes(1);
+    } finally { clockOverride = undefined; }
   });
 
   it('recupera evidencia ya recibida hoy sin encolar otro archivo ni inventar precios', async () => {

@@ -129,11 +129,30 @@ describe('TCGCSV: todos los grupos terminan, incluso después de medianoche', ()
   });
 
   it('una diferencia de reloj no adelanta las 24 horas del final del archivo', async () => {
-    at = new Date(Date.now() + 120000);
+    await clean();
+    const [dbClock] = await p.$queryRaw<{ now: Date }[]>`SELECT NOW() AS now`;
+    const skew = new Date(dbClock.now.getTime() + 120000);
+    // La tanda vigente cambia a las 21 UTC, no a medianoche.
+    const shifted = new Date(skew.getTime() - 21 * 3600000);
+    const batchDay = new Date(Date.UTC(shifted.getUTCFullYear(), shifted.getUTCMonth(), shifted.getUTCDate()));
+    at = new Date(batchDay.getTime() + 21 * 3600000);
+    feed = new Date(batchDay.getTime() + 20 * 3600000);
+    await service().signalDaily();
+    at = skew;
     await service().poll();
     const job = await p.tcgcsvGroupJob.findUniqueOrThrow({ where: { groupId: groups[0] } });
-    expect(job.downloadStartedAt!.getTime()).toBeGreaterThanOrEqual(at.getTime());
-    expect(job.availableAt.getTime()).toBeGreaterThanOrEqual(at.getTime() + 86400000);
+    expect(job).toMatchObject({ status: 'completed', publishedBuild: feed, downloadStartedAt: expect.any(Date) });
+    expect(client.fetchFeed).toHaveBeenCalledWith(`tcgplayer/3/${groups[0]}/products`, expect.any(Number));
+    expect(client.fetchFeed).toHaveBeenCalledWith(`tcgplayer/3/${groups[0]}/prices`, expect.any(Number));
+    expect(job.downloadStartedAt!.getTime()).toBeGreaterThanOrEqual(skew.getTime());
+    expect(job.availableAt.getTime()).toBeGreaterThanOrEqual(job.downloadStartedAt!.getTime() + 86400000);
+    const contentCalls = vi.mocked(client.fetchFeed).mock.calls.filter(([path]) => path !== 'last-updated.txt');
+    await service().enqueue(groups[0]);
+    const queued = await p.tcgcsvGroupJob.findUniqueOrThrow({ where: { groupId: groups[0] } });
+    expect(queued).toMatchObject({ status: 'pending', origin: 'interactive', downloadStartedAt: job.downloadStartedAt, availableAt: job.availableAt });
+    expect(await service().runOne(groups[0])).toBe(false);
+    expect(vi.mocked(client.fetchFeed).mock.calls.filter(([path]) => path !== 'last-updated.txt')).toEqual(contentCalls);
+    expect(await p.tcgcsvGroupJob.findUniqueOrThrow({ where: { groupId: groups[0] } })).toEqual(queued);
   });
 
   for (const phase of ['products', 'prices', 'publication'] as const) {
