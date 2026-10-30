@@ -12,7 +12,7 @@ Para arrancar: [README del proyecto](../README.md). Para trabajar:
 | Catálogo y proveedores | [Fuentes](data-sources.md), [proveedores backend](../backend/docs/providers.md) |
 | Contratos y persistencia | [API](../backend/docs/api.md), [base de datos](../backend/docs/database.md), [módulos](../backend/docs/modules.md) |
 | Precios y operación de jobs | [TCGCSV](../backend/docs/pricing.md), [jobs](../backend/docs/jobs.md), [métricas privadas](../backend/docs/metrics.md) |
-| Frontend y diseño | [Rutas](../frontend/docs/routes.md), [componentes](../frontend/docs/components.md), [construcción](../frontend/docs/build-guide.md), [design system](../frontend/docs/design-system.md) |
+| Frontend y diseño | [Viñeta](../frontend/docs/vineta.md), [Rutas](../frontend/docs/routes.md), [componentes](../frontend/docs/components.md), [construcción](../frontend/docs/build-guide.md), [design system](../frontend/docs/design-system.md) |
 | Sesión y reconocimiento | [Cliente API](../frontend/docs/api-client.md), [escáner DINOv2](../frontend/docs/scanner.md) |
 | Gráficas y colecciones | [Historial de fuente única](../frontend/docs/comparison.md), [portafolio](../frontend/docs/portfolio.md) |
 | Pruebas y trampas | [Testing backend](../backend/docs/testing.md), [frontend](../frontend/docs/testing.md), [gotchas backend](../backend/docs/gotchas.md), [frontend](../frontend/docs/gotchas.md) |

@@ -562,3 +562,17 @@ decisiones pendientes del procedimiento BE-05.
 `Revisar eliminación` abre `/eliminar-cuenta` en PlainShell, para conservar una confirmación visible cuando la baja cierre la sesión. Espera la recuperación de sesión antes de consultar disponibilidad; si está deshabilitada o no es verificable, no pide la contraseña. Con disponibilidad confirmada exige contraseña actual, ELIMINAR y checkbox explícito. Un único POST coordinado con login/refresh, sin replay. Éxito exacto limpia sólo la época vigente; resultado incierto no ofrece reenviar a ciegas. Contraseña/confirmación se vacían al cambiar de página/historial. No-store/no-referrer/noindex y exclusión/purga del SWv6; no usa un shell offline para este flujo.
 
 Validación local real con cuentas sintéticas, ambos temas/390y1280, capturas y restore en [cierre de baja](../../docs/plans/lanzamiento-2026-10-07/RESULTADOS/BE-05-eliminacion-validacion.md). Activación habitual pendiente de custodia/operación real.
+
+
+## Extensiones de Viñeta
+
+| Ruta | Sesión y propósito |
+|---|---|
+| `/colecciones/[id]/objetivos` | Autenticada: crear, editar, sugerir y elegir próximo objetivo de la colección propia |
+| `/inicio/vitrina` | Autenticada: elegir referencias más valiosas o pool manual persistente |
+| `/ajustes/perfil` | Autenticada: editar nombre visible; correo sólo lectura |
+| `/ajustes/clave` | Autenticación validada por el componente; conserva éxito visible después de cerrar sesiones y ofrece login manual |
+
+Son rutas del árbol `(app)` existente, no otra aplicación ni variante de apariencia. Inicio mantiene preview real de catálogo para invitados y consulta vitrina, portafolio y objetivos privados sólo tras bootstrap autenticado. Todas estas páginas tienen metadata noindex; claves permanecen sólo en memoria y no se envían por query.
+
+Guías: [Viñeta](vineta.md), [objetivos](goals.md), [vitrina](showcase.md), [cuenta](account-controls.md).
