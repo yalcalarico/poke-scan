@@ -52,6 +52,7 @@ import { CollectionComparisonPanel } from '@/components/prices/comparison-panel'
 import { CollectionStats, CollectionSummary } from './collection-summary';
 import { ItemSheet } from './item-sheet';
 import { MotionGrid } from '@/components/visual-preview/effects';
+import { CollectionGoalPanel } from '@/components/goals/home-goal-panel';
 
 /**
  * El copy de la acción masiva, en un solo lugar.
@@ -456,6 +457,8 @@ export function CollectionDetailScreen({ collectionId }: CollectionDetailScreenP
               />
 
               <CollectionActions collection={collection} onEdit={() => setIsSettingsOpen(true)} />
+
+              <CollectionGoalPanel key={collectionId} collectionId={collectionId} />
 
               <CollectionPriceRefresh collectionIds={[collectionId]} needsRefresh={collection.itemCount > 0 && Boolean(stats.valuation?.coverage.unpricedCopies || stats.valuation?.recency?.freshness !== 'fresh')} onRefresh={refreshPrices} />
 
