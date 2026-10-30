@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
+import { MotionControl } from '@/components/visual-preview/visual-preview';
 import { AppMark } from '@/components/brand';
 import { NAV_ITEMS, isNavItemActive } from '@/components/nav';
 import { cn } from '@/lib/cn';
@@ -108,7 +109,7 @@ export function BottomNav() {
                   >
                     {item.href === '/colecciones' ? (
                       <>
-                        <span className="sm:hidden">Cartas</span>
+                        <span className="sm:hidden">Colecciones</span>
                         <span className="hidden sm:inline">Colecciones</span>
                       </>
                     ) : (
@@ -120,6 +121,7 @@ export function BottomNav() {
             );
           })}
         </ul>
+        <div className="hidden shrink-0 items-center lg:flex"><MotionControl/></div>
       </div>
     </nav>
 

@@ -2,22 +2,23 @@
 
 import { useEffect, useRef, type CSSProperties, type ReactNode } from 'react';
 import { cn } from '@/lib/cn';
-import { useVisualGridMemory, useAppVisuals } from './visual-preview';
+import { useVisualGridMemory, useAppVisuals, useVisualMotionPaused } from './visual-preview';
 import styles from './visual-preview.module.css';
 
 function useMotionVisibility<T extends HTMLElement>(enabled = true) {
+  const paused=useVisualMotionPaused();
   const ref = useRef<T>(null);
   useEffect(() => {
     const node = ref.current;
     if (!node) return;
     let visible = true;
-    const update = () => node.classList.toggle(styles.motionPaused, !visible || document.hidden);
+    const update = () => node.classList.toggle(styles.motionPaused, !visible || document.hidden || paused);
     const observer = typeof IntersectionObserver === 'undefined' ? null : new IntersectionObserver(([entry]) => { visible = entry.isIntersecting; update(); });
     observer?.observe(node);
     document.addEventListener('visibilitychange', update);
     update();
     return () => { observer?.disconnect(); document.removeEventListener('visibilitychange', update); };
-  }, [enabled]);
+  }, [enabled,paused]);
   return ref;
 }
 
@@ -43,6 +44,7 @@ export function ScannerEffect() {
 /** El texto accesible siempre contiene el valor final, sin anunciar cada frame. */
 export function AnimatedNumber({ value, format = String, className }: { value: number; format?: (value: number) => string; className?: string }) {
   const active = useAppVisuals();
+  const paused=useVisualMotionPaused();
   const ref = useRef<HTMLSpanElement>(null);
   const previous = useRef(0);
   useEffect(() => {
@@ -64,13 +66,13 @@ export function AnimatedNumber({ value, format = String, className }: { value: n
     };
     const visibility = () => { if (document.hidden) end(); };
     const preference = () => { if (motion.matches) end(); };
-    if (active && !motion.matches && !document.hidden && Number.isFinite(value)) frame = requestAnimationFrame(tick);
+    if (active && !paused && !motion.matches && !document.hidden && Number.isFinite(value)) frame = requestAnimationFrame(tick);
     else node.textContent = format(value);
     const observer = typeof IntersectionObserver === 'undefined' ? null : new IntersectionObserver(([entry]) => { if (!entry.isIntersecting) end(); });
     observer?.observe(node);
     motion.addEventListener('change', preference); document.addEventListener('visibilitychange', visibility);
     return () => { end(); observer?.disconnect(); motion.removeEventListener('change', preference); document.removeEventListener('visibilitychange', visibility); };
-  }, [active, format, value]);
+  }, [active, paused, format, value]);
   if (!active) return <span className={cn('tabular-nums', className)}>{format(value)}</span>;
   return <span className={cn('tabular-nums', className)}><span className="sr-only">{format(value)}</span><span ref={ref} aria-hidden="true">{format(value)}</span></span>;
 }
@@ -79,10 +81,12 @@ export function AnimatedNumber({ value, format = String, className }: { value: n
 export function MotionGrid({ children, className, scopeKey = 'catalog' }: { children: ReactNode; className?: string; scopeKey?: string }) {
   const active = useAppVisuals();
   const memory = useVisualGridMemory();
+  const paused=useVisualMotionPaused();
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const root = ref.current;
     if (!active || !root) return;
+    if(paused){memory?.delete(scopeKey);return;}
     const media = window.matchMedia('(prefers-reduced-motion: reduce)');
     const previous = memory?.get(scopeKey);
     let positions = previous && performance.now() - previous.capturedAt < 5000 ? previous.positions : new Map<string, DOMRect>();
@@ -123,6 +127,6 @@ export function MotionGrid({ children, className, scopeKey = 'catalog' }: { chil
       if (positions.size > 0) memory?.set(scopeKey, { positions, capturedAt: performance.now() });
       cancel(); observer.disconnect(); media.removeEventListener('change', preference); document.removeEventListener('visibilitychange', preference);
     };
-  }, [active, memory, scopeKey]);
+  }, [active, paused, memory, scopeKey]);
   return <div ref={ref} className={className}>{children}</div>;
 }
