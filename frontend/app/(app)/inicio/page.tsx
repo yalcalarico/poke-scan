@@ -1,16 +1,15 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { AppMark } from "@/components/brand";
 import { ScreenContainer } from "@/components/layout/screen-container";
-import {
-  FeatureGrid,
-  HomeCta,
-  ScanSessionResume,
-  fetchPreviewCards,
-} from "@/components/home";
+import { HomeCta, ScanSessionResume, fetchPreviewCards } from "@/components/home";
 import { PersonalShowcase } from "@/components/home/personal-showcase";
+import { HomeGallery } from "@/components/home/home-gallery";
 import { HomePortfolioSummary } from "@/components/home/home-portfolio-summary";
 import { HomeGoalPanel } from "@/components/goals/home-goal-panel";
 import { InstallCta } from "@/components/share";
+import { buttonVariants } from "@/components/ui";
+import styles from "@/components/home/home-screen.module.css";
 
 export const metadata: Metadata = {
   title: "Inicio",
@@ -18,44 +17,45 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-/** El catálogo público se resuelve en servidor; la cuenta se consulta después del bootstrap cliente. */
 export default async function HomePage() {
   const previewCards = await fetchPreviewCards();
   return (
-    <ScreenContainer
-      labelledBy="home-title"
-      className="flex flex-col gap-6 sm:gap-8"
-    >
+    <ScreenContainer labelledBy="home-title" className={styles.home}>
+      <header className={styles.mobileHeader}><AppMark size={36} /><span>PokéScan</span></header>
       <ScanSessionResume />
-      <section data-vineta-hero aria-labelledby="home-title">
-        <div data-vineta-copy>
-          <AppMark size={48} />
-          <p className="text-overline text-secondary">Tu colección viva</p>
-          <h1
-            id="home-title"
-            className="text-display text-primary sm:text-display-lg"
-          >
-            Tus cartas cuentan historias.
-          </h1>
-          <p className="text-body text-secondary">
-            Escaneá, revisá y elegí una colección para guardar. Descubrí su
-            valor y dale rumbo a tu próximo hallazgo.
-          </p>
+      <section className={styles.hero} aria-labelledby="home-title">
+        <div className={styles.copy}>
+          <div className={styles.intro}>
+          <span className={styles.eyebrow}>VIÑETA / Tu colección viva</span>
+          <h1 id="home-title">Tus cartas<br />cuentan historias.</h1>
+          <p>Guardalas en un lugar propio. Descubrí su valor y elegí cuál va a ser tu próximo hallazgo.</p>
+          </div>
           <HomeCta />
+          <p className="text-caption text-secondary">Tu colección y tus acciones, conectadas a tu cuenta.</p>
         </div>
         <PersonalShowcase guestCards={previewCards} />
       </section>
-      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
-        <HomePortfolioSummary />
-        <HomeGoalPanel />
+      <div className={styles.columns}>
+        <div className={styles.stack}>
+          <section className={styles.stack}>
+            <header className={styles.sectionLabel}>
+              <div><span className="text-overline text-secondary">Tu vitrina</span><h2>Cartas que cuentan algo.</h2></div>
+              <Link href="/buscar" className={buttonVariants({ variant: "secondary" })}>Ver todas</Link>
+            </header>
+            <HomeGallery guestCards={previewCards} />
+          </section>
+          <section className={styles.share}>
+            <div className={styles.stack}>
+              <span className={styles.badge}>Compartir con intención</span>
+              <h2>Una vitrina para mostrar.</h2>
+              <p>Elegí una colección y revisá qué querés compartir antes de publicar su enlace.</p>
+            </div>
+            <Link href="/colecciones" className={buttonVariants({ variant: "secondary" })}>Elegir colección</Link>
+          </section>
+        </div>
+        <aside className={styles.sidebar}><HomePortfolioSummary /><HomeGoalPanel /></aside>
       </div>
-      <FeatureGrid />
-      <footer className="flex flex-col items-center gap-5 border-t border-line-subtle pt-8">
-        <p className="text-caption text-secondary">
-          Escaneá, coleccioná y compartí con PokéScan.
-        </p>
-        <InstallCta />
-      </footer>
+      <footer className={styles.footer}><InstallCta /></footer>
     </ScreenContainer>
   );
 }

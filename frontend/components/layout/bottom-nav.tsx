@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 
 import { MotionControl } from '@/components/visual-preview/visual-preview';
 import { AppMark } from '@/components/brand';
+import { HomeNavIcon } from '@/components/home/home-icons';
 import { NAV_ITEMS, isNavItemActive } from '@/components/nav';
 import { cn } from '@/lib/cn';
 
@@ -99,7 +100,11 @@ export function BottomNav() {
                     isActive ? 'text-brand' : 'text-tertiary hover:text-secondary',
                   )}
                 >
-                  <Icon className="h-6 w-6" strokeWidth={isActive ? 2.25 : 1.75} aria-hidden="true" />
+                  {pathname === '/inicio' ? (
+                    <HomeNavIcon href={item.href} className="h-6 w-6" aria-hidden="true" />
+                  ) : (
+                    <Icon className="h-6 w-6" strokeWidth={isActive ? 2.25 : 1.75} aria-hidden="true" />
+                  )}
                   <span
                     className={cn(
                       'text-caption leading-none lg:text-body',

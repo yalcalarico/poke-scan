@@ -7,7 +7,7 @@ La dirección elegida es `design/vitrina-variantes/03-vitrina-comic.html`. Se ad
 | Parte | Implementación |
 |---|---|
 | Tinta y tramas | CSS Module existente de la capa visual; bordes con `--text-primary`, superficies `--warning-soft`/`--info-soft`, radios y sombras del sistema |
-| Inicio | Hero narrativo con cartas reales, [vitrina personal](showcase.md), resumen de portafolio y [objetivos](goals.md) |
+| Inicio | [Home fiel a Viñeta](home-vineta.md): abanico, galería real, compartir, [vitrina personal](showcase.md), portafolio y [objetivos](goals.md) |
 | Colecciones | Listado y detalle reales conservados; objetivos accesibles en cada álbum |
 | Cuenta | [Datos y clave](account-controls.md), con sesiones reales y sin billing ficticio |
 | Accesibilidad | Temas claro/oscuro, foco visible, reduced-motion y forced-colors |

@@ -32,7 +32,7 @@ function OwnedSummary() {
   const result = useAsync(getPortfolio, []);
   return (
     <Surface className="flex flex-col gap-4">
-      <h2 className="text-h2 text-primary">Valor de tus colecciones</h2>
+      <h2 className="text-overline text-secondary">Valor de referencia</h2>
       {result.status === "loading" ? (
         <p role="status">Cargando valoración…</p>
       ) : result.status === "error" ? (
