@@ -581,3 +581,35 @@ export interface AccountDeletionRequestDto { password: string; confirmation: 'EL
 export interface AccountDeletionResponseDto { success: true }
 export interface AccountDeletionAvailabilityDto { available: boolean }
 export type AccountDeletionErrorCode = 'INPUT_INVALID' | 'SESSION_REQUEST_FORBIDDEN' | 'ACCOUNT_DELETION_AUTH_INVALID' | 'ACCOUNT_DELETION_RATE_LIMITED' | 'ACCOUNT_DELETION_RESULT_UNKNOWN';
+
+// ─── Objetivos y vitrina personal ───
+export interface CollectionGoalDto {
+  id: string;
+  collectionId: string;
+  title: string;
+  isNext: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ShowcasePreferenceDto {
+  mode: "value" | "personal";
+  cardIds: string[];
+}
+
+export interface ShowcaseCardDto {
+  card: CardDto;
+  variant: CardVariant;
+  market: number | null;
+  currency: "USD";
+  fetchedAt: string | null;
+}
+
+export interface ShowcaseDto {
+  preferences: ShowcasePreferenceDto;
+  cards: ShowcaseCardDto[];
+}
+
+export interface PasswordChangeResponseDto {
+  success: true;
+}
