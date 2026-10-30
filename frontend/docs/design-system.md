@@ -1446,3 +1446,10 @@ Moneda, Fechas y números, el Service Worker y sus 4 cachés (navegaciones
 `NetworkFirst` 50, nunca cachea requests autenticadas, registro solo en producción),
 la proporción `aspect-[63/88]` (63 × 88 mm reales, no una aproximación), el idioma
 `lang="es-AR"`, y la política Server Component / Client Component.
+
+
+## 15. Dirección Viñeta
+
+La apariencia única adopta la propuesta elegida `design/vitrina-variantes/03-vitrina-comic.html`: tinta marcada, tramas y paneles narrativos. El bloque histórico de comparación V2 de §0 no describe un selector vigente. No se restaura ninguna apariencia alternativa.
+
+No cambian los valores de tokens de `app/globals.css`: bordes de tinta usan `--text-primary`, papel editorial `--warning-soft`, escenario de cartas `--info-soft`; las acciones y errores conservan sus semánticas. Tipografía, espaciado, radios y sombras existentes se mantienen. `components/visual-preview/visual-preview.module.css` delimita el tratamiento; `Surface` y `Button` exponen marcadores `data-ui`, sin detectar clases Tailwind por coincidencias frágiles.

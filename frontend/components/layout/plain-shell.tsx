@@ -1,5 +1,7 @@
 import type { ReactNode } from 'react';
 
+import styles from '@/components/visual-preview/visual-preview.module.css';
+import { cn } from '@/lib/cn';
 import { OfflineToast } from '@/components/layout/offline-toast';
 
 /**
@@ -16,7 +18,7 @@ import { OfflineToast } from '@/components/layout/offline-toast';
  */
 export function PlainShell({ children }: { children: ReactNode }) {
   return (
-    <div className="flex min-h-dvh flex-col bg-canvas font-sans text-primary">
+    <div className={cn(styles.scope,"flex min-h-dvh flex-col bg-canvas font-sans text-primary")}>
       {children}
       <OfflineToast />
     </div>

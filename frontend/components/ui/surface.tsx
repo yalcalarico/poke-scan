@@ -38,6 +38,7 @@ export function Surface({
     as,
     {
       ...rest,
+      'data-ui': 'surface',
       className: cn(
         'rounded-surface border border-line bg-surface shadow-sm',
         padded ? 'p-4' : 'p-0',
