@@ -6,6 +6,8 @@ import { JwtModule, type JwtSignOptions } from '@nestjs/jwt';
 import { APP_FILTER } from '@nestjs/core';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard.js';
 import { AuthController } from './auth.controller.js';
+import { PasswordChangeController } from './password-change.controller.js';
+import { PasswordChangeService } from './password-change.service.js';
 import { AuthService } from './auth.service.js';
 import { PasswordRecoveryService } from './password-recovery.service.js';
 import { RECOVERY_MAIL_PORT } from './recovery-mail.port.js';
@@ -27,9 +29,9 @@ import { RefreshJwtModule } from './refresh-jwt.module.js';
     }),
     RefreshJwtModule, AccountDeletionModule,
   ],
-  controllers: [AuthController],
+  controllers: [AuthController, PasswordChangeController],
   providers: [
-    AuthService, PasswordRecoveryService, JwtAuthGuard,
+    AuthService, PasswordRecoveryService, PasswordChangeService, JwtAuthGuard,
     { provide: RECOVERY_MAIL_PORT, inject: [ConfigService], useFactory: createResendRecoveryMailPort },
     { provide: APP_FILTER, useClass: RecoveryHttpFilter },
   ],

@@ -70,6 +70,7 @@ model User {
   scanJobs      ScanJob[]
   portfolioSnapshots PortfolioSnapshot[]
   collectionItemAddOperations CollectionItemAddOperation[]
+  showcasePreference ShowcasePreference?
 
   // Fase 8: sistema de amigos. Cada Friendship es un par (requester, addressee)
   // con un único estado; las dos relaciones inversas permiten consultar
@@ -250,6 +251,7 @@ model Collection {
   userId    String
   name      String
   isDefault Boolean  @default(false)
+  nextGoalId String? @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -257,9 +259,34 @@ model Collection {
   items      CollectionItem[]
   shareLinks ShareLink[]
   comparisonSnapshots CollectionComparisonSnapshot[]
+  goals CollectionGoal[] @relation("CollectionGoals")
+  nextGoal CollectionGoal? @relation("NextCollectionGoal", fields: [nextGoalId], references: [id], onDelete: SetNull)
 
   @@index([userId])
   @@map("collections")
+}
+
+model CollectionGoal {
+  id String @id @default(uuid())
+  collectionId String
+  title String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  collection Collection @relation("CollectionGoals", fields: [collectionId], references: [id], onDelete: Cascade)
+  nextForCollection Collection? @relation("NextCollectionGoal")
+
+  @@index([collectionId, createdAt, id])
+  @@map("collection_goals")
+}
+
+model ShowcasePreference {
+  userId String @id
+  mode String @default("value")
+  cardIds String[] @default([])
+  updatedAt DateTime @updatedAt
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("showcase_preferences")
 }
 
 model PortfolioSnapshot {

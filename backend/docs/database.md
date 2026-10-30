@@ -620,3 +620,12 @@ un consumidor global; los leases de grupo y reservas de archivos siguen separado
 `provider_rate_limits.blockedUntil` mantiene pausas 429 entre reinicios. Los
 trabajos preexistentes se marcan como legacy para diferir los que no correspondan
 al registro, sin borrar filas. Ver [jobs.md](jobs.md) para operación.
+
+
+## Objetivos y vitrina de cuenta
+
+Migración aditiva `20261029181255_vineta_product`: `collection_goals` almacena título y fechas de cada objetivo bajo una colección con cascade. `collections.nextGoalId` es una FK nullable/única; los servicios validan que el objetivo pertenezca a esa misma colección propia y serializan cambios con lock de colección. No hay porcentaje de progreso inferido.
+
+`showcase_preferences` tiene una fila por `userId`, modo `value`/`personal`, array de IDs elegidos y `updatedAt`. Un check limita modos y excluye elementos nulos; DTOs validan tamaño, strings y duplicados antes del guardado, y el servicio valida ownership. Los IDs no son evidencia de propiedad permanente: cada lectura vuelve a limitar cartas a las colecciones actuales del usuario. Las referencias de valor siguen usando `card_prices` local bajo la política TCGCSV vigente. No se reescribe inventario ni historia.
+
+La migración no modifica tablas de precios, GIN/pg_trgm ni formato de credenciales. El cambio de clave usa campos y revocación de tokens existentes; no agrega secretos ni tablas nuevas de contraseñas.

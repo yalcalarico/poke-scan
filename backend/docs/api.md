@@ -2049,3 +2049,23 @@ Las tres rutas llevan `Cache-Control: no-store`. Sin migración nueva devuelven
 503 con mensaje de actualización local pendiente. El contrato exacto está en
 `src/jobs/comparison.dto.ts`. `GET /cards/:id/prices/history` también admite
 `provider=tcgcsv`; los contratos legacy conservan su comportamiento previo.
+
+
+## Viñeta: objetivos, vitrina y cuenta
+
+Todas las rutas siguientes requieren JWT vigente; datos privados sólo del dueño.
+
+| Método y ruta | Contrato |
+|---|---|
+| `GET /api/collections/:collectionId/goals` | Objetivos de la colección; ajena/inexistente: 404 |
+| `POST /api/collections/:collectionId/goals` | `{ title }`, texto recortado 1–120 caracteres; el primero queda próximo |
+| `PATCH /api/collections/:collectionId/goals/:goalId` | Edita `{ title }`; rechazos no modifican objetivo ni próximo |
+| `PATCH /api/collections/:collectionId/goals/:goalId/next` | Elige próximo sólo dentro de la misma colección propia |
+| `GET /api/showcase` | `{ preferences, cards }`; referencias locales, nunca descargas de proveedor |
+| `PATCH /api/showcase` | `{ mode: value \| personal, cardIds }`, hasta 60 IDs únicos de cartas propias |
+| `PATCH /api/users/me` | `{ displayName }`, recortado 1–80; no cambia email/username |
+| `POST /api/auth/password-changes` | `{ currentPassword, newPassword }`, JSON/origen/encabezado de sesión, sin replay automático |
+
+Objetivos devuelven `id`, `collectionId`, `title`, `isNext`, `createdAt`, `updatedAt`. La vitrina devuelve cartas públicas y variante propia, `market` nullable, `currency: USD` y recepción local `fetchedAt` nullable. Modo valor elige hasta tres cartas distintas por referencia unitaria disponible; modo personal conserva selección pero filtra ownership actual. Cero conocido y ausencia siguen siendo diferentes.
+
+Cambio de clave exitoso devuelve únicamente `{ success: true }`, revoca sesiones/recuperaciones vigentes e incrementa authVersion bajo el lock compartido de usuario. No emite sesión nueva. Ver [objetivos](collection-goals.md), [vitrina](showcase.md) y [cuenta](account-controls.md) para validación, consistencia y checks.

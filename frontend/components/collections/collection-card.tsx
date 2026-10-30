@@ -119,6 +119,13 @@ export function CollectionCard({ collection, cover, className }: CollectionCardP
         fuera de contexto.
       */}
       <div className="border-t border-line-subtle p-2">
+        <Link
+          href={`/colecciones/${encodeURIComponent(collection.id)}/objetivos`}
+          aria-label={`Ver objetivos de ${collection.name}`}
+          className="flex min-h-11 items-center justify-center rounded-control text-label text-secondary hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--focus-ring)]"
+        >
+          Ver objetivos
+        </Link>
         <Link href="/escanear" aria-label={`Sumar cartas a ${collection.name}`} className="mb-2 flex min-h-11 items-center justify-center gap-2 rounded-control border border-brand bg-brand-soft text-label text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--focus-ring)]">Sumar cartas</Link>
         <Link
           href={`/colecciones/${encodeURIComponent(collection.id)}/sets`}

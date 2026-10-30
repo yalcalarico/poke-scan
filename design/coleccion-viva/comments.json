@@ -1,0 +1,60 @@
+{
+  "version": 1,
+  "comments": [
+    {
+      "id": "r6s1l50r",
+      "file": "01-vitrina-personal.html",
+      "selector": "#content > div > div",
+      "excerpt": "EXPLORAR CON INTENCIÓN Más que un nombre En el producto: expansión, número, rareza e ilustrador. Ver objetivos Buscar por nombre Sólo filtra las seis ilustraciones de esta maqueta. Pikachu RAYO ESTUDIO VISUAL ✧ Pikachu Ilustración editorial · Sin cotización Gengar SOMBRA ESTUDIO VISUAL ✧ Gengar Ilus",
+      "comment": "Para buscar cartas debe permitirme filtrar por set/coleccion, ordenar por varios filtros, hasta por precio.",
+      "createdAt": "2026-10-29T17:27:07.836Z",
+      "status": "resolved",
+      "sentAt": "2026-10-29T17:27:07.858Z",
+      "resolvedAt": "2026-10-29T17:29:24.064Z"
+    },
+    {
+      "id": "o4dtizbx",
+      "file": "01-vitrina-personal.html",
+      "selector": "#content > div > header",
+      "excerpt": "COLECCIÓN DE MUESTRA Tu colección, a mano. Explorá esta selección editorial. Lo que guardes acá vive sólo hasta recargar. Escanear carta Compartir",
+      "comment": "Deberían ser colecciones, porque puedo crear colecciones para lo que quiera, ejemplo, colección de solo pikachus si lo que quiero es coleccionar solo esas cartas de todas las colecciones, o si quiero crear una colección de cada colección, o una custom, con el nombre que quiera, No es solo una colección única, el contenido me gusta, pero podrían ser varias colecciones",
+      "createdAt": "2026-10-29T17:32:21.078Z",
+      "status": "resolved",
+      "sentAt": "2026-10-29T17:33:53.293Z",
+      "resolvedAt": "2026-10-29T17:36:50.137Z"
+    },
+    {
+      "id": "vk8fktyg",
+      "file": "01-vitrina-personal.html",
+      "selector": "#content > div",
+      "excerpt": "PREFERENCIAS DE MAQUETA Tu espacio personal. Ninguna preferencia se guarda en tu cuenta. Volver Apariencia La misma identidad en claro y oscuro. Usar oscuro Estado de esta muestra Podés reiniciar lo guardado, las deseadas y la mesa. Sólo se modifica la memoria del prototipo. Reiniciar muestra",
+      "comment": "En ajustes debe tener los datos personales de la cuenta, poder cambiar de clave, ver las colecciones que tengo, modificar políticas o algo, ver la suscripción para cuando pongamos la version PRO. y todo lo respecto a una cuenta",
+      "createdAt": "2026-10-29T17:33:47.362Z",
+      "status": "resolved",
+      "sentAt": "2026-10-29T17:33:53.293Z",
+      "resolvedAt": "2026-10-29T17:36:50.137Z"
+    },
+    {
+      "id": "0dj48zzq",
+      "file": "01-vitrina-personal.html",
+      "selector": "#content > div > section > div:nth-of-type(2)",
+      "excerpt": "Gengar SOMBRA ESTUDIO VISUAL ✧ Charizard FUEGO ESTUDIO VISUAL ✧ Pikachu RAYO ESTUDIO VISUAL ✧",
+      "comment": "Estas 3 cartas deberían ser también las 3 mas valiosas de tus colecciones, o que el usuario seleccione las que quiere mostrar aca, asi en cada refresh pueden ir rotando las que se muestran y hacemos una vision única para cada usuario.",
+      "createdAt": "2026-10-29T17:35:48.464Z",
+      "status": "resolved",
+      "sentAt": "2026-10-29T17:36:25.871Z",
+      "resolvedAt": "2026-10-29T17:39:28.230Z"
+    },
+    {
+      "id": "8qck8fkt",
+      "file": "01-vitrina-personal.html",
+      "selector": "#content > div > div > aside > section:nth-of-type(2)",
+      "excerpt": "Tu próximo objetivo PROPUESTA Un lugar para cada carta Elegí qué querés coleccionar. Explorar objetivos Por expansión, Pokémon o ilustrador. Sin progreso ficticio.",
+      "comment": "Me encanta esto de poner objetivos que inclusive podríamos nosotros sugerirlas, con opción de generar otra. Pero cuando vas a la pestaña de objetivos, dice que es en \"colecciones\" pero no veo nada en colección que me permita agregar/modificar los próximos objetivos.",
+      "createdAt": "2026-10-29T17:41:24.137Z",
+      "status": "resolved",
+      "sentAt": "2026-10-29T17:41:24.178Z",
+      "resolvedAt": "2026-10-29T17:43:19.363Z"
+    }
+  ]
+}

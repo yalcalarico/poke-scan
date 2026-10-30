@@ -1,0 +1,27 @@
+{
+  "title": "PokéScan · Variantes de Vitrina",
+  "brief": "Vitrina original con todos los cambios aprobados, más dos variantes: una más colorida y animada y otra cómic. Mismos flujos de búsqueda, colecciones, cuenta, objetivos y destacados. Paleta derivada sólo de tokens existentes; sin implementar producción.",
+  "artboards": [
+    {
+      "file": "01-vitrina-original.html",
+      "title": "Vitrina original · Referencia",
+      "tradeoff": "Base editorial aprobada y sin efectos nuevos; menor expresividad visual.",
+      "width": 1440,
+      "height": 1100
+    },
+    {
+      "file": "02-vitrina-orbita.html",
+      "title": "Vitrina Órbita",
+      "tradeoff": "Escenario central, luces de color y cartas flotantes; ocupa más alto y tiene mayor carga visual.",
+      "width": 1440,
+      "height": 1100
+    },
+    {
+      "file": "03-vitrina-comic.html",
+      "title": "Vitrina Viñeta",
+      "tradeoff": "Paneles narrativos, tramas y tinta marcada; más personalidad, menos neutralidad visual.",
+      "width": 1440,
+      "height": 1100
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "title": "PokéScan · Tu colección viva",
+  "brief": "Tres direcciones responsive para escanear cartas Pokémon TCG, construir y compartir colecciones, proponer intercambios y comprender su valor e historia. Prototipos aislados: no implementación de producción.",
+  "artboards": [
+    {
+      "file": "01-vitrina-personal.html",
+      "title": "Vitrina personal",
+      "tradeoff": "Emoción y cartas protagonistas; menor densidad para gestionar inventario.",
+      "width": 1440,
+      "height": 1100
+    },
+    {
+      "file": "02-atlas-de-coleccion.html",
+      "title": "Atlas de colección",
+      "tradeoff": "Objetivos y archivo visual; más estructura y menos impacto editorial.",
+      "width": 1440,
+      "height": 1100
+    },
+    {
+      "file": "03-mesa-de-intercambio.html",
+      "title": "Mesa de intercambio",
+      "tradeoff": "Ofrecer y buscar en paralelo; requiere elegir explícitamente qué compartir.",
+      "width": 1440,
+      "height": 1100
+    }
+  ]
+}

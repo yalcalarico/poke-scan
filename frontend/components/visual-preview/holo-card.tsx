@@ -3,11 +3,12 @@
 import { useEffect, useRef, type ReactNode } from 'react';
 import { CardTilt } from '@/components/cards/card-tilt';
 import { cn } from '@/lib/cn';
-import { useAppVisuals } from './visual-preview';
+import { useAppVisuals, useVisualMotionPaused } from './visual-preview';
 import styles from './visual-preview.module.css';
 
 export function HoloCard({ children, variant = 'detail', className }: { children: ReactNode; variant?: 'detail' | 'catalog'; className?: string }) {
   const ref = useRef<HTMLDivElement>(null);
+  const paused=useVisualMotionPaused();
   useEffect(() => {
     const node = ref.current;
     if (!node) return;
@@ -22,7 +23,7 @@ export function HoloCard({ children, variant = 'detail', className }: { children
       for (const property of ['--rx', '--ry', '--mx', '--my']) node.style.removeProperty(property);
     };
     const availability = () => {
-      node.dataset.paused = String(!visible || document.hidden || media.matches);
+      node.dataset.paused = String(!visible || document.hidden || media.matches || paused);
       if (node.dataset.paused === 'true') reset();
     };
     const observer = typeof IntersectionObserver === 'undefined' ? null : new IntersectionObserver(([entry]) => { visible = entry.isIntersecting; availability(); });
@@ -31,7 +32,7 @@ export function HoloCard({ children, variant = 'detail', className }: { children
       if (event.pointerType === 'touch' && event.isPrimary && variant === 'detail') touch = { id: event.pointerId, x: event.clientX, y: event.clientY };
     };
     const move = (event: PointerEvent) => {
-      if (!visible || document.hidden || media.matches) return;
+      if (!visible || document.hidden || media.matches || paused) return;
       const box = node.getBoundingClientRect();
       if (!box.width || !box.height) return;
       let x = (event.clientX - box.left) / box.width * 2 - 1;
@@ -68,7 +69,7 @@ export function HoloCard({ children, variant = 'detail', className }: { children
       exits.forEach((event) => node.removeEventListener(event, reset));
       document.removeEventListener('visibilitychange', availability); media.removeEventListener('change', availability);
     };
-  }, [variant]);
+  }, [variant,paused]);
   return <div ref={ref} data-holo-card={variant} className={cn(styles.holoStage, className)}><div className={styles.holoSurface}>{children}<span aria-hidden="true" className={styles.rainbow} /><span aria-hidden="true" className={styles.glare} /></div></div>;
 }
 

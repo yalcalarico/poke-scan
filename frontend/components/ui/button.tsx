@@ -113,6 +113,7 @@ export function Button({
   return (
     <button
       {...props}
+      data-ui="button"
       type={type}
       disabled={isDisabled || loading}
       aria-busy={loading || undefined}

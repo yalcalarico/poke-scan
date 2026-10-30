@@ -7,6 +7,7 @@ sin pedido humano.
 
 | Feature | Estado y alcance |
 |---|---|
+| [Viñeta — producto](tasks/vineta-product.md) | Implementación verificada: objetivos, vitrina privada, cuenta y diseño único; preview local, estrategia feature-branch-chain elegida; sin publicación |
 | [Consolidación documental](tasks/documentation-consolidation.md) | Finalizada; limpieza reversible, sin producto, servicios ni configuración externa |
 | [Migración de contexto](tasks/gentle-context-migration.md) | Finalizada según cierre histórico recuperado desde Git; no acredita configuración externa actual |
 

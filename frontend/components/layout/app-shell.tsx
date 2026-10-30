@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { AppVisualsProvider } from '@/components/visual-preview/visual-preview';
+import { AppVisualsProvider, MotionControl } from '@/components/visual-preview/visual-preview';
 
 import { BottomNav } from '@/components/layout/bottom-nav';
 import { OfflineToast } from '@/components/layout/offline-toast';
@@ -16,6 +16,7 @@ import { OfflineToast } from '@/components/layout/offline-toast';
  */
 export function AppShell({ children }: { children: ReactNode }) {
   const content = <>
+    <div className="flex justify-end px-4 pt-3 lg:hidden"><MotionControl/></div>
     {children}
     <BottomNav />
     <OfflineToast />

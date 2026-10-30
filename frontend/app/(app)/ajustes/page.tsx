@@ -10,6 +10,7 @@ import {
   RequireAuth,
   SessionSettings,
 } from '@/components/settings';
+import { AccountControls } from '@/components/settings/account-controls';
 import { ShareLinksSection } from '@/components/share/share-links-section';
 
 /**
@@ -47,6 +48,7 @@ export default function SettingsPage() {
         <RequireAuth>
           <div className="flex flex-col gap-6 sm:gap-8">
             <IdentityCard />
+            <AccountControls />
             <div className="grid items-start gap-4 md:grid-cols-2">
               <AppearanceSettings />
               <CurrencySettings />

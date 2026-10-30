@@ -40,6 +40,17 @@ export class UsersService {
     return user;
   }
 
+  async updateDisplayName(
+    id: string,
+    displayName: string,
+  ): Promise<PublicUser> {
+    return this.prisma.user.update({
+      where: { id },
+      data: { displayName },
+      select: publicUserSelect,
+    });
+  }
+
   /**
    * Guarda la preferencia de moneda del usuario. Reusa `publicUserSelect` para
    * devolver exactamente el mismo shape sanitizado que `GET /users/me`.
