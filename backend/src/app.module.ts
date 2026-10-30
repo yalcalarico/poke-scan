@@ -13,6 +13,7 @@ import { JobsModule } from './jobs/jobs.module.js';
 import { AuthModule } from './modules/auth/auth.module.js';
 import { CardsModule } from './modules/cards/cards.module.js';
 import { CollectionsModule } from './modules/collections/collections.module.js';
+import { CollectionGoalsModule } from './modules/collection-goals/collection-goals.module.js';
 import { CurrencyModule } from './modules/currency/currency.module.js';
 import { FriendsModule } from './modules/friends/friends.module.js';
 import { ShareModule } from './modules/share/share.module.js';
@@ -44,6 +45,7 @@ import { MetricsModule } from './modules/metrics/metrics.module.js';
     UsersModule,
     CardsModule,
     CollectionsModule,
+    CollectionGoalsModule,
     ShareModule,
     CurrencyModule,
     FriendsModule,
