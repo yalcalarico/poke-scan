@@ -1,0 +1,139 @@
+<!doctype html><html lang="es-AR"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Sistema visual · PokéScan</title><style>:root{
+
+  --canvas: #f4f4f6;
+  --surface: #ffffff;
+  --surface-2: #f8f8fa;
+  --surface-3: #eeeef2;
+  --overlay: rgb(11 11 15 / 0.55);
+
+
+  --text-primary: #0b0b0f;
+  --text-secondary: #5c5c68;
+
+  --text-tertiary: #6f6f7a;
+  --text-disabled: #b4b4bd;
+  --text-inverse: #ffffff;
+
+
+  --border-subtle: #eeeef2;
+  --border-default: #e4e4e9;
+  --border-strong: #d0d0d8;
+
+
+  --border-control: #8a8a96;
+
+
+  --focus-ring: #e01f26;
+
+
+  --focus-ring-on-media: #ffffff;
+
+
+  --switch-track-off: #8e8e9a;
+
+
+  --brand: #d81c23;
+  --brand-hover: #c2161c;
+  --brand-press: #9e1217;
+  --brand-soft: #fff0f0;
+  --brand-border: #ffc9c9;
+  --on-brand: #ffffff;
+
+
+  --positive: #117a47;
+  --positive-soft: #e7f6ee;
+  --positive-border: #b7e3cb;
+  --negative: #d01a21;
+  --negative-soft: #fdeeee;
+  --negative-border: #f5c2c2;
+  --warning: #b45309;
+  --warning-soft: #fdf4e3;
+  --warning-border: #f0d9ae;
+  --info: #1d4ed8;
+  --info-soft: #eef2fe;
+  --info-border: #c9d5fa;
+
+
+  --on-media: rgb(11 11 15 / 0.72);
+  --on-media-text: #ffffff;
+
+
+  --shimmer-from: #dcdce4;
+  --shimmer-to: #f2f2f5;
+--radius-control:12px;--radius-surface:16px;--radius-panel:20px;--radius-sheet:28px;--shadow-xs:0 1px 2px rgb(11 11 15 / 0.05);--shadow-sm:0 1px 3px rgb(11 11 15 / 0.07), 0 1px 2px -1px rgb(11 11 15 / 0.05);--shadow-md:0 4px 12px -2px rgb(11 11 15 / 0.09), 0 2px 4px -2px rgb(11 11 15 / 0.05);--shadow-lg:0 14px 32px -10px rgb(11 11 15 / 0.16), 0 4px 10px -4px rgb(11 11 15 / 0.06);--shadow-xl:0 28px 60px -20px rgb(11 11 15 / 0.22);} .dark{
+  --canvas: #0b0b0f;
+  --surface: #15151b;
+  --surface-2: #1d1d24;
+  --surface-3: #26262f;
+  --overlay: rgb(0 0 0 / 0.7);
+
+  --text-primary: #f5f5f7;
+  --text-secondary: #a1a1ae;
+  --text-tertiary: #8a8a95;
+  --text-disabled: #4a4a54;
+  --text-inverse: #0b0b0f;
+
+  --border-subtle: #1d1d24;
+  --border-default: #2a2a33;
+  --border-strong: #3c3c48;
+
+
+  --border-control: #6a6a76;
+  --focus-ring: #ff4a4f;
+
+  --focus-ring-on-media: #ffffff;
+  --switch-track-off: #6a6a76;
+
+  --brand: #ff4a4f;
+  --brand-hover: #ff6a6e;
+  --brand-press: #e01f26;
+  --brand-soft: rgb(255 74 79 / 0.14);
+  --brand-border: rgb(255 74 79 / 0.32);
+  --on-brand: #1a0506;
+
+  --positive: #34d399;
+  --positive-soft: rgb(52 211 153 / 0.14);
+  --positive-border: rgb(52 211 153 / 0.3);
+  --negative: #ff6a6e;
+  --negative-soft: rgb(255 106 110 / 0.14);
+  --negative-border: rgb(255 106 110 / 0.3);
+  --warning: #fbbf24;
+  --warning-soft: rgb(251 191 36 / 0.14);
+  --warning-border: rgb(251 191 36 / 0.3);
+  --info: #7ba1ff;
+  --info-soft: rgb(123 161 255 / 0.14);
+  --info-border: rgb(123 161 255 / 0.3);
+
+  --on-media: rgb(0 0 0 / 0.66);
+  --on-media-text: #ffffff;
+
+  --shimmer-from: #23232b;
+  --shimmer-to: #2b2b35;
+}*{box-sizing:border-box}body{margin:0;background:var(--canvas);color:var(--text-primary);font:15px/22px system-ui,sans-serif}main{max-width:1440px;margin:auto;padding:32px}h1{font-size:32px;line-height:34px}h2{font-size:20px;line-height:26px}section{margin:32px 0}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px}.swatch{padding:16px;background:var(--surface);border:1px solid var(--border-default);border-radius:var(--radius-surface)}.sample{height:48px;border:1px solid var(--border-strong);border-radius:var(--radius-control);margin-bottom:8px}code{font:12px/16px ui-monospace,monospace;overflow-wrap:anywhere}button{min-height:44px;padding:12px 16px;background:var(--brand);color:var(--on-brand);border:0;border-radius:var(--radius-control);font:inherit;cursor:pointer}:focus-visible{outline:2px solid var(--focus-ring);outline-offset:2px}.row{display:flex;gap:16px;flex-wrap:wrap}.secondary{background:var(--surface);color:var(--text-primary);border:1px solid var(--border-control)}@media(max-width:600px){main{padding:16px}}</style><body><main><header><p>POKÉSCAN / SISTEMA EXISTENTE</p><h1>Una identidad, muchas formas.</h1><p>Tokens del CSS actual · fallback de sistema · sin recursos externos.</p><button id="theme">Cambiar tema</button></header><section><h2>Color semántico</h2><div class="grid"><article class="swatch"><div class="sample" style="background:var(--canvas)"></div><code>--canvas<br>#f4f4f6</code></article><article class="swatch"><div class="sample" style="background:var(--surface)"></div><code>--surface<br>#ffffff</code></article><article class="swatch"><div class="sample" style="background:var(--surface-2)"></div><code>--surface-2<br>#f8f8fa</code></article><article class="swatch"><div class="sample" style="background:var(--surface-3)"></div><code>--surface-3<br>#eeeef2</code></article><article class="swatch"><div class="sample" style="background:var(--overlay)"></div><code>--overlay<br>rgb(11 11 15 / 0.55)</code></article><article class="swatch"><div class="sample" style="background:var(--text-primary)"></div><code>--text-primary<br>#0b0b0f</code></article><article class="swatch"><div class="sample" style="background:var(--text-secondary)"></div><code>--text-secondary<br>#5c5c68</code></article><article class="swatch"><div class="sample" style="background:var(--text-tertiary)"></div><code>--text-tertiary<br>#6f6f7a</code></article><article class="swatch"><div class="sample" style="background:var(--text-disabled)"></div><code>--text-disabled<br>#b4b4bd</code></article><article class="swatch"><div class="sample" style="background:var(--text-inverse)"></div><code>--text-inverse<br>#ffffff</code></article><article class="swatch"><div class="sample" style="background:var(--border-subtle)"></div><code>--border-subtle<br>#eeeef2</code></article><article class="swatch"><div class="sample" style="background:var(--border-default)"></div><code>--border-default<br>#e4e4e9</code></article><article class="swatch"><div class="sample" style="background:var(--border-strong)"></div><code>--border-strong<br>#d0d0d8</code></article><article class="swatch"><div class="sample" style="background:var(--border-control)"></div><code>--border-control<br>#8a8a96</code></article><article class="swatch"><div class="sample" style="background:var(--focus-ring)"></div><code>--focus-ring<br>#e01f26</code></article><article class="swatch"><div class="sample" style="background:var(--focus-ring-on-media)"></div><code>--focus-ring-on-media<br>#ffffff</code></article><article class="swatch"><div class="sample" style="background:var(--switch-track-off)"></div><code>--switch-track-off<br>#8e8e9a</code></article><article class="swatch"><div class="sample" style="background:var(--brand)"></div><code>--brand<br>#d81c23</code></article><article class="swatch"><div class="sample" style="background:var(--brand-hover)"></div><code>--brand-hover<br>#c2161c</code></article><article class="swatch"><div class="sample" style="background:var(--brand-press)"></div><code>--brand-press<br>#9e1217</code></article><article class="swatch"><div class="sample" style="background:var(--brand-soft)"></div><code>--brand-soft<br>#fff0f0</code></article><article class="swatch"><div class="sample" style="background:var(--brand-border)"></div><code>--brand-border<br>#ffc9c9</code></article><article class="swatch"><div class="sample" style="background:var(--on-brand)"></div><code>--on-brand<br>#ffffff</code></article><article class="swatch"><div class="sample" style="background:var(--positive)"></div><code>--positive<br>#117a47</code></article><article class="swatch"><div class="sample" style="background:var(--positive-soft)"></div><code>--positive-soft<br>#e7f6ee</code></article><article class="swatch"><div class="sample" style="background:var(--positive-border)"></div><code>--positive-border<br>#b7e3cb</code></article><article class="swatch"><div class="sample" style="background:var(--negative)"></div><code>--negative<br>#d01a21</code></article><article class="swatch"><div class="sample" style="background:var(--negative-soft)"></div><code>--negative-soft<br>#fdeeee</code></article><article class="swatch"><div class="sample" style="background:var(--negative-border)"></div><code>--negative-border<br>#f5c2c2</code></article><article class="swatch"><div class="sample" style="background:var(--warning)"></div><code>--warning<br>#b45309</code></article><article class="swatch"><div class="sample" style="background:var(--warning-soft)"></div><code>--warning-soft<br>#fdf4e3</code></article><article class="swatch"><div class="sample" style="background:var(--warning-border)"></div><code>--warning-border<br>#f0d9ae</code></article><article class="swatch"><div class="sample" style="background:var(--info)"></div><code>--info<br>#1d4ed8</code></article><article class="swatch"><div class="sample" style="background:var(--info-soft)"></div><code>--info-soft<br>#eef2fe</code></article><article class="swatch"><div class="sample" style="background:var(--info-border)"></div><code>--info-border<br>#c9d5fa</code></article><article class="swatch"><div class="sample" style="background:var(--on-media)"></div><code>--on-media<br>rgb(11 11 15 / 0.72)</code></article><article class="swatch"><div class="sample" style="background:var(--on-media-text)"></div><code>--on-media-text<br>#ffffff</code></article><article class="swatch"><div class="sample" style="background:var(--shimmer-from)"></div><code>--shimmer-from<br>#dcdce4</code></article><article class="swatch"><div class="sample" style="background:var(--shimmer-to)"></div><code>--shimmer-to<br>#f2f2f5</code></article></div></section><section><h2>Escala tipográfica</h2><p style="font-size: 40px;
+  line-height: 42px;
+  font-weight: 800;
+  letter-spacing: -0.03em;">display-lg · Tu colección viva</p><p style="font-size: 32px;
+  line-height: 34px;
+  font-weight: 800;
+  letter-spacing: -0.025em;">display · Tu colección viva</p><p style="font-size: 26px;
+  line-height: 30px;
+  font-weight: 700;
+  letter-spacing: -0.02em;">h1 · Tu colección viva</p><p style="font-size: 20px;
+  line-height: 26px;
+  font-weight: 700;
+  letter-spacing: -0.015em;">h2 · Tu colección viva</p><p style="font-size: 17px;
+  line-height: 22px;
+  font-weight: 600;
+  letter-spacing: -0.01em;">h3 · Tu colección viva</p><p style="font-size: 15px;
+  line-height: 22px;
+  font-weight: 400;">body · Tu colección viva</p><p style="font-size: 15px;
+  line-height: 22px;
+  font-weight: 600;">body-strong · Tu colección viva</p><p style="font-size: 13px;
+  line-height: 18px;
+  font-weight: 500;">label · Tu colección viva</p><p style="font-size: 12px;
+  line-height: 16px;
+  font-weight: 400;">caption · Tu colección viva</p><p style="font-size: 11px;
+  line-height: 14px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;">overline · Tu colección viva</p></section><section><h2>Espaciado</h2><div class="row"><div><div style="height:4px;width:4px;background:var(--brand)"></div><p>4 px</p></div><div><div style="height:8px;width:8px;background:var(--brand)"></div><p>8 px</p></div><div><div style="height:12px;width:12px;background:var(--brand)"></div><p>12 px</p></div><div><div style="height:16px;width:16px;background:var(--brand)"></div><p>16 px</p></div><div><div style="height:20px;width:20px;background:var(--brand)"></div><p>20 px</p></div><div><div style="height:24px;width:24px;background:var(--brand)"></div><p>24 px</p></div><div><div style="height:32px;width:32px;background:var(--brand)"></div><p>32 px</p></div><div><div style="height:40px;width:40px;background:var(--brand)"></div><p>40 px</p></div></div></section><section><h2>Radios y sombras</h2><div class="grid"><article class="swatch" style="border-radius:var(--radius-control)"><code>--radius-control<br>12px</code></article><article class="swatch" style="border-radius:var(--radius-surface)"><code>--radius-surface<br>16px</code></article><article class="swatch" style="border-radius:var(--radius-panel)"><code>--radius-panel<br>20px</code></article><article class="swatch" style="border-radius:var(--radius-sheet)"><code>--radius-sheet<br>28px</code></article><article class="swatch" style="box-shadow:var(--shadow-xs)"><code>--shadow-xs<br>0 1px 2px rgb(11 11 15 / 0.05)</code></article><article class="swatch" style="box-shadow:var(--shadow-sm)"><code>--shadow-sm<br>0 1px 3px rgb(11 11 15 / 0.07), 0 1px 2px -1px rgb(11 11 15 / 0.05)</code></article><article class="swatch" style="box-shadow:var(--shadow-md)"><code>--shadow-md<br>0 4px 12px -2px rgb(11 11 15 / 0.09), 0 2px 4px -2px rgb(11 11 15 / 0.05)</code></article><article class="swatch" style="box-shadow:var(--shadow-lg)"><code>--shadow-lg<br>0 14px 32px -10px rgb(11 11 15 / 0.16), 0 4px 10px -4px rgb(11 11 15 / 0.06)</code></article><article class="swatch" style="box-shadow:var(--shadow-xl)"><code>--shadow-xl<br>0 28px 60px -20px rgb(11 11 15 / 0.22)</code></article></div></section><section><h2>Componentes esenciales</h2><div class="row"><button>Escanear carta</button><button class="secondary">Ver colección</button><div class="swatch">Surface · contenido y borde</div></div><p>Controles de 44 px · foco visible · navegación inferior mobile y superior desktop.</p></section></main><script>document.getElementById("theme").onclick=()=>document.documentElement.classList.toggle("dark");</script></body></html>

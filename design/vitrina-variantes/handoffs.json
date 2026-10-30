@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "chosen": "03-vitrina-comic.html",
+  "handoffs": {
+    "03-vitrina-comic.html": {
+      "status": "in_progress",
+      "queued": false,
+      "sentAt": "2026-10-29T18:03:16.047Z",
+      "startedAt": "2026-10-30T13:39:40.878Z",
+      "implementedAt": null,
+      "note": "Base funcional integrada y probada; fidelidad visual exacta NO acreditada. El usuario reporta animaciones lentas y diferencias de cartas, iconos y secciones. Nueva secuencia: primero PR general con estado actual; después corregir y validar sólo Home en otro PR, sin mezclar otras pantallas. El cierre previo implemented fue demasiado amplio.",
+      "previewUrl": "http://127.0.0.1:3000/inicio"
+    }
+  }
+}
