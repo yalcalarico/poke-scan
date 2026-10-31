@@ -11,12 +11,14 @@ export const payload = { cardId: card.id, variant: 'holofoil', condition: 'NM', 
 const paginate = (data: CollectionItemDto[]) => ({ data, total: data.length, page: 1, pageSize: 12, totalPages: data.length ? 1 : 0 });
 type Catalog = {
   search: 'results' | 'empty' | 'error'; failSave: boolean;
+  /** Cotización fabricada exclusivamente para probar el catálogo, nunca inventario real. */
+  marketPriceUsd: number | null;
   writes: unknown[]; locationReads: unknown[]; itemReads: CollectionItemDto[][];
 };
 
 export const test = base.extend<{ catalog: Catalog }>({
   catalog: [async ({ context, baseURL }, use) => {
-    const state: Catalog = { search: 'results', failSave: false, writes: [], locationReads: [], itemReads: [] };
+    const state: Catalog = { search: 'results', failSave: false, marketPriceUsd: null, writes: [], locationReads: [], itemReads: [] };
     let item: CollectionItemDto | null = null;
     await context.route('**/*', async (route) => {
       const request = route.request();
@@ -43,7 +45,7 @@ export const test = base.extend<{ catalog: Catalog }>({
           && params.get('searchBy') === 'name' && params.get('page') === '1' && params.get('pageSize') === '24'
           && params.get('sort') === 'name' && params.get('direction') === 'asc') {
           if (state.search === 'error') return json({ statusCode: 503, message: 'Búsqueda sintética no disponible' }, 503);
-          const data = state.search === 'empty' || !params.has('q') ? [] : [card];
+          const data = state.search === 'empty' || !params.has('q') ? [] : [{ ...card, marketPriceUsd: state.marketPriceUsd }];
           return json({ data, total: data.length, page: 1, pageSize: 24, totalPages: data.length ? 1 : 0 });
         }
         if (path === `/api/cards/${card.id}/prices` && !url.search) return json({ card, prices: [] });

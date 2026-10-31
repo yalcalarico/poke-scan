@@ -12,6 +12,34 @@ La dirección elegida es `design/vitrina-variantes/03-vitrina-comic.html`. Se ad
 | Cuenta | [Datos y clave](account-controls.md), con sesiones reales y sin billing ficticio |
 | Accesibilidad | Temas claro/oscuro, foco visible, reduced-motion y forced-colors |
 
+## Buscar fiel al diseño
+
+`/buscar` reproduce `searchView()` de Viñeta: trama de 8 px, área de 1280 px,
+guía de 200 px separada por 32 px y campo de hasta 480 px. Paneles con borde de
+tinta de 2 px y filtros en dos columnas, también en móvil; la guía se oculta a
+700 px. Comparte tipografía system-ui 15/22 y espaciado de Inicio, sin modificarlo.
+La carga conserva el mismo encabezado, guía, tarjetas y columnas.
+
+El campo «Buscar por nombre» está dentro de la tarjeta de filtros, junto con set,
+orden y sentido. No se muestra búsqueda por colección ni un aviso de indisponibilidad.
+«Más opciones» es otra tarjeta debajo de «Explorar con intención», con los modos
+nombre/número/artista y las rarezas siempre visibles. En escritorio los modos se
+apilan y las etiquetas largas se ajustan al ancho de la tarjeta. En móvil sólo se
+oculta la guía: las opciones quedan después de los filtros y antes de los resultados.
+«Ver objetivos» lleva a Colecciones, donde vive cada objetivo.
+Con texto, el backend ordena por relevancia: orden y sentido quedan deshabilitados.
+Sin texto se conservan nombre, precio, rareza y número. «Limpiar filtros» conserva la búsqueda;
+«Limpiar búsqueda» vacía sólo el texto. Los chips permiten quitar set y rareza.
+Los resultados conservan sus acciones previas de limpieza completa.
+
+Cada resultado muestra el precio abajo a la derecha, junto al set y fuera de la
+imagen; nombre y rareza siguen a la izquierda. Usa `Money` con la moneda elegida
+y `marketPriceUsd` de la misma respuesta de búsqueda, sin requests por carta.
+Si falta, muestra exactamente `--` con nombre accesible «Sin precio»; cero sí se
+formatea. Es una referencia local TCGCSV: el máximo de las últimas cotizaciones
+market por variante, no el valor de una copia del inventario. Este tratamiento
+es optativo de Buscar: no cambia Inicio ni los guiones de otras tarjetas.
+
 ## Movimiento
 
 `AppVisualsProvider` conserva una sola fuente de estado para pausa manual y preferencia del sistema. El botón «Pausar efectos» está en el chrome mobile y en la navegación desktop; no agrega un sexto destino. Con movimiento reducido del sistema, el control informa esa preferencia y no la anula.

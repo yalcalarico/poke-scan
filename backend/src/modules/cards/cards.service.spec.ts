@@ -377,6 +377,79 @@ describe('CardsService', () => {
     });
   });
 
+  describe('marketPriceUsd sólo en búsqueda (fixtures sintéticos)', () => {
+    const SET = 'test-search-market';
+    const ids = ['quoted', 'zero', 'missing', 'null-latest'].map((suffix) => `${SET}-${suffix}`);
+    let activeService: CardsService;
+    let activeModule: TestingModule;
+
+    beforeAll(async () => {
+      activeModule = await Test.createTestingModule({ providers: [
+        CardsService,
+        { provide: PrismaService, useValue: prismaClient },
+        { provide: PRICE_PROVIDER, useValue: { id: 'tcgcsv', defaultSource: 'tcgplayer', defaultCurrency: 'USD' } },
+        { provide: SyncPricesService, useValue: { getPricesForCard: vi.fn() } },
+        { provide: CurrencyService, useValue: { getCachedRate: vi.fn() } },
+      ] }).compile();
+      activeService = activeModule.get(CardsService);
+      await prismaClient.cardSet.create({ data: { id: SET, name: 'Set sintético de precios' } });
+      await prismaClient.card.createMany({ data: ids.map((id, index) => ({
+        id, setId: SET, name: `Sintética ${index}`, number: String(index), supertype: 'Pokémon',
+        imageSmall: 'https://example.test/s.png', imageLarge: 'https://example.test/l.png', rawJson: {},
+      })) });
+      const observation = (cardId: string, market: number | null, extra: Partial<Prisma.CardPriceCreateManyInput> = {}) => ({
+        cardId, variant: 'normal', market, provider: 'tcgcsv', source: 'tcgplayer', currency: 'USD',
+        fetchedAt: new Date('2024-02-01T00:00:00.000Z'), ...extra,
+      });
+      await prismaClient.cardPrice.createMany({ data: [
+        observation(ids[0]!, 12.5),
+        observation(ids[0]!, 20, { variant: 'holofoil' }),
+        observation(ids[0]!, 999, { fetchedAt: new Date('2024-01-01T00:00:00.000Z') }),
+        observation(ids[1]!, 0),
+        observation(ids[2]!, 999, { provider: 'tcgdex' }),
+        observation(ids[2]!, 999, { provider: null }),
+        observation(ids[2]!, 999, { currency: 'EUR' }),
+        observation(ids[2]!, 999, { source: 'other' }),
+        observation(ids[3]!, 99, { fetchedAt: new Date('2024-01-01T00:00:00.000Z') }),
+        observation(ids[3]!, null, { mid: 88 }),
+      ] });
+    });
+
+    afterAll(async () => {
+      await prismaClient.card.deleteMany({ where: { setId: SET } });
+      await prismaClient.cardSet.deleteMany({ where: { id: SET } });
+      await activeModule.close();
+    });
+
+    it.each([{}, { q: 'Sintética' }, { sort: 'price' as const, direction: 'desc' as const }])('enriquece la página %j con MAX actual, cero y ausencia sin fallback', async (query) => {
+      const result = await activeService.search(search({ setId: SET, pageSize: 10, ...query }));
+      expect(result.total).toBe(4);
+      expect(new Map(result.data.map((card) => [card.id, card.marketPriceUsd]))).toEqual(new Map([
+        [ids[0], 20], [ids[1], 0], [ids[2], null], [ids[3], null],
+      ]));
+      expect(JSON.parse(JSON.stringify(result)).data).toEqual(result.data);
+    });
+
+    it('enriquece una página completa con una sola consulta adicional', async () => {
+      const queries = vi.spyOn(prismaClient, '$queryRaw');
+      try {
+        const result = await activeService.search(search({ setId: SET, pageSize: 10 }));
+        expect(result.data).toHaveLength(4);
+        expect(queries).toHaveBeenCalledTimes(3);
+      } finally { queries.mockRestore(); }
+    });
+
+    it('omite el enriquecimiento en ficha y binder y no consulta precios en página vacía', async () => {
+      expect(await activeService.getById(ids[0]!)).not.toHaveProperty('marketPriceUsd');
+      expect((await activeService.getSetCards(SET)).cards[0]).not.toHaveProperty('marketPriceUsd');
+      const queries = vi.spyOn(prismaClient, '$queryRaw');
+      try {
+        expect((await activeService.search(search({ setId: SET, page: 2, pageSize: 10 }))).data).toEqual([]);
+        expect(queries).toHaveBeenCalledTimes(2);
+      } finally { queries.mockRestore(); }
+    });
+  });
+
   it('findAllSets devuelve los sets ordenados por releaseDate descendente', async () => {    const sets = await service.findAllSets();
     const expected = await prismaClient.cardSet.count();
 

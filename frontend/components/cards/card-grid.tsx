@@ -104,6 +104,8 @@ export interface CardGridProps {
   /** Azúcar para `entries`: solo catálogo. */
   cards?: readonly CardDto[];
   variant?: CardGridVariant;
+  /** Opt-in de Buscar; no modifica el precio de otros consumidores. */
+  searchPrice?: boolean;
   /** Cuántas celdas van con `priority` (LCP). Default 5, o 0 en laColección. */
   priorityCount?: number;
   /** `ul`/`li` para vistas públicas (`/share/[slug]`), `div` para la app. */
@@ -208,6 +210,7 @@ export function CardGrid({
   entries,
   cards,
   variant = 'catalog',
+  searchPrice = false,
   priorityCount,
   as = 'div',
   label,
@@ -248,6 +251,7 @@ export function CardGrid({
             variant={variant}
             quantity={entry.quantity}
             priceUsd={entry.priceUsd}
+            searchPrice={searchPrice}
             priority={index < resolvedPriority}
             action={entry.action}
             /*

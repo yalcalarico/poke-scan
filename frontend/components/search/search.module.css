@@ -1,0 +1,70 @@
+.canvas {
+  background-color: var(--canvas);
+  background-image: radial-gradient(var(--border-strong) .8px, transparent .8px);
+  background-size: 8px 8px;
+  min-height: 100dvh;
+}
+.page.page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-width: 1280px;
+  padding: calc(var(--nav-height) + 32px) 32px 32px;
+  font-family: system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 22px;
+  animation: none;
+}
+.header { display: flex; justify-content: space-between; align-items: end; gap: 20px; padding-bottom: 24px; border-bottom: 2px solid var(--text-primary); }
+.intro { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.intro h1 { font-size: 32px; line-height: 34px; letter-spacing: -.025em; font-weight: 800; font-style: italic; text-transform: uppercase; }
+.intro p { margin-top: 8px; max-width: 580px; color: var(--text-secondary); }
+.eyebrow { font-size: 11px; line-height: 14px; letter-spacing: .08em; text-transform: uppercase; font-weight: 600; color: var(--text-secondary); }
+.action.action { flex-shrink: 0; border: 2px solid var(--text-primary); font-weight: 600; font-size: 13px; line-height: 18px; }
+.workspace { display: grid; grid-template-columns: 200px minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); gap: 24px 32px; align-items: start; min-width: 0; }
+.panel { background: var(--surface); border: 2px solid var(--text-primary); border-radius: var(--radius-surface); padding: 20px; box-shadow: var(--shadow-sm); min-width: 0; }
+.sidebar { grid-column: 1; grid-row: 1 / span 2; display: flex; flex-direction: column; gap: 24px; min-width: 0; }
+.guide, .options { display: flex; flex-direction: column; gap: 16px; }
+.guide h2, .options h2 { font-size: 20px; line-height: 26px; font-weight: 700; letter-spacing: -.015em; font-style: italic; }
+.guide .action { width: 100%; margin-top: 12px; }
+.caption { font-size: 12px; line-height: 16px; color: var(--text-secondary); }
+.content { grid-column: 2; grid-row: 1; display: flex; flex-direction: column; gap: 24px; min-width: 0; }
+.fullRow, .searchField { grid-column: 1 / -1; }
+.searchField { display: flex; flex-direction: column; gap: 8px; max-width: 480px; width: 100%; min-width: 0; }
+.input input { font: inherit; }
+.input input::placeholder { color: var(--text-secondary); }
+.input input::-webkit-search-cancel-button { appearance: none; }
+.filters { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.filters label { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.filters select { min-width: 0; width: 100%; min-height: 44px; padding: 10px 16px; background: var(--surface-2); color: var(--text-primary); border: 1px solid var(--border-control); border-radius: var(--radius-control); font: inherit; }
+.filters select:disabled { color: var(--text-secondary); border-color: var(--border-default); cursor: default; }
+.filters select:focus { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+.reset.reset { grid-column: 1; width: 100%; align-self: start; border: 2px solid var(--text-primary); font-weight: 600; font-style: italic; }
+.extraControls { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.options .modes { flex-direction: column; }
+.options .modes button { flex: none; }
+.options .rarities button, .options .raritySkeleton { width: 100%; min-width: 0; height: auto; min-height: 44px; white-space: normal; overflow-wrap: anywhere; }
+.options .modeSkeleton { height: 44px; min-width: 0; }
+.options .raritySkeleton { display: flex; align-items: center; padding: 8px 14px; border: 1px solid var(--border-default); border-radius: var(--radius-control); font-size: 13px; line-height: 18px; font-weight: 500; }
+.raritySkeleton span { visibility: hidden; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; min-width: 0; }
+.results { grid-column: 2; grid-row: 2; min-width: 0; }
+@media (min-width: 1600px) { .page.page { padding-top: calc(var(--nav-height) + 40px); } }
+@media (max-width: 1023px) { .page.page { padding: 24px 24px calc(124px + env(safe-area-inset-bottom)); } }
+@media (max-width: 700px) {
+  .page.page { padding-inline: 16px; }
+  .header { flex-direction: column; align-items: start; gap: 16px; padding-bottom: 20px; }
+  .intro h1 { font-size: 26px; line-height: 30px; letter-spacing: -.02em; }
+  .workspace { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+  /* El orden de lectura y foco coincide con búsqueda → opciones → resultados. */
+  .content { grid-column: 1; grid-row: 1; }
+  .sidebar { grid-column: 1; grid-row: 2; }
+  .guide { display: none; }
+  .results { grid-column: 1; grid-row: 3; }
+  .options .modes { flex-direction: row; }
+  .options .modes button, .options .modeSkeleton { flex: 1; }
+  .options .rarities button, .options .raritySkeleton { width: auto; }
+  .filters { gap: 12px; }
+  .filters label, .filters > div > span { font-size: 13px; line-height: 18px; }
+  .filters select { padding: 10px 8px; }
+}

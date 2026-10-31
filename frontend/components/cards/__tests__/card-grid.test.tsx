@@ -1,6 +1,9 @@
 // @vitest-environment jsdom
 import { render, screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+import { formatPrice } from '@/lib/format';
+
+vi.mock('@/hooks/use-currency', () => ({ useCurrency: () => ({ formatMoney: formatPrice }) }));
 
 import { CardGrid } from '../card-grid';
 import type { CardDto } from '@/types/api';
@@ -108,6 +111,43 @@ describe('CardGrid: la variante ul', () => {
     const { container } = render(<CardGrid as="ul" cards={CARDS} />);
     expect(container.querySelectorAll('li')).toHaveLength(CARDS.length);
     expect(screen.getAllByRole('listitem')).toHaveLength(CARDS.length);
+  });
+});
+
+describe('CardGrid: precio optativo de Buscar', () => {
+  it.each([12.5, 0])('muestra %s con Money en el pie derecho, fuera de la imagen', (priceUsd) => {
+    render(<CardGrid searchPrice entries={[{ card: CARDS[0], priceUsd }]} />);
+    const price = screen.getByText(priceUsd === 0 ? '$0.00' : '$12.50');
+    const footer = price.closest('[data-search-price-footer]');
+    expect(footer).not.toBeNull();
+    expect(footer).toHaveTextContent('base1');
+    expect(footer).not.toContainElement(screen.getByRole('img'));
+    expect(price.parentElement).toHaveClass('text-right');
+  });
+
+  it.each([12.5, 0, null])('la caja de %s elimina la línea base y se alinea al pie', (priceUsd) => {
+    const { container } = render(<CardGrid searchPrice entries={[{ card: CARDS[0], priceUsd }]} />);
+    const amount = container.querySelector('[data-search-price-amount]');
+    expect(amount).not.toBeNull();
+    expect(amount).toHaveClass('flex', 'items-end', 'justify-end', 'text-right');
+    expect(amount?.parentElement).toHaveAttribute('data-search-price-footer');
+    expect(amount).toHaveTextContent(priceUsd === null ? '--' : formatPrice(priceUsd));
+  });
+
+  it('sin cotización muestra exactamente -- y anuncia Sin precio', () => {
+    render(<CardGrid searchPrice entries={[{ card: CARDS[0], priceUsd: null }]} />);
+    expect(screen.getByLabelText('Sin precio')).toHaveTextContent(/^--$/);
+  });
+
+  it('sin opt-in conserva el guion largo ante null', () => {
+    render(<CardGrid entries={[{ card: CARDS[0], priceUsd: null }]} />);
+    expect(screen.getByLabelText('Sin precio')).toHaveTextContent(/^—$/);
+  });
+
+  it('el precio omitido sigue sin dibujar una fila, incluso con opt-in', () => {
+    const { container } = render(<CardGrid searchPrice cards={[CARDS[0]]} />);
+    expect(screen.queryByLabelText('Sin precio')).not.toBeInTheDocument();
+    expect(container.querySelector('[data-search-price-footer]')).toBeNull();
   });
 });
 

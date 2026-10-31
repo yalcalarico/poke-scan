@@ -34,6 +34,8 @@ export interface CardDto {
   set?: SetDto;
   imageSmall: string;
   imageLarge: string;
+  /** Sólo búsqueda: referencia market USD local, null si no hay cotización. */
+  marketPriceUsd?: number | null;
 }
 
 // ─── Búsqueda de cartas (GET /api/cards/search) ───

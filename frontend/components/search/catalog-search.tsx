@@ -622,8 +622,10 @@ function CardResults({
         <div ref={gridRef}>
           <MotionGrid>
           <CardGrid
+            searchPrice
             entries={itemsToRender.map((card) => ({
               card,
+              priceUsd: card.marketPriceUsd ?? null,
               href: `/carta/${encodeURIComponent(card.id)}?returnTo=${encodeURIComponent(returnHref)}`,
             }))}
             label="Resultados de la búsqueda"

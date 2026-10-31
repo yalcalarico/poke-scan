@@ -5,7 +5,7 @@ import type { ReactNode } from 'react';
 import { cn } from '@/lib/cn';
 import type { CardDto } from '@/types/api';
 
-import { ShowOrDash } from './money';
+import { Money, ShowOrDash } from './money';
 import { VisualCard } from '@/components/visual-preview/holo-card';
 import Link from 'next/link';
 import { rarityAccent } from './rarity-accent';
@@ -80,12 +80,12 @@ export interface CardTileProps {
    *
    * - número → se muestra en `text-positive`.
    * - `null` → sabemos que no tiene precio: `—` con `aria-label="Sin precio"`.
-   * - **omitido** → no se dibuja la fila de precio. `/cards/search` no devuelve
-   *   precios, y pedir 20 `/cards/:id/prices` para pintar una grilla es 20
-   *   requests contra el rate limit de pokemontcg.io (`AGENTS.md` §3.1). La
-   *   fila aparece sola en las pantallas que ya traen el precio en la respuesta.
+   * - **omitido** → no se dibuja la fila de precio. Se usa sólo el valor que
+   *   ya trajo la pantalla; el tile nunca pide cotizaciones por carta.
    */
   priceUsd?: number | null;
+  /** Sólo Buscar: precio en el pie derecho y ausencia literal `--`. */
+  searchPrice?: boolean;
   /** `true` solo en las primeras 5: son las del LCP. */
   priority?: boolean;
   /**
@@ -204,7 +204,7 @@ export interface CardTileProps {
  * decorativa CardTilt. La navegación y el control accesible siguen acá.
  *
  * @example
- * // Catálogo: la fila de precio no aparece porque el endpoint no la trae.
+ * // Sin precio explícito: la fila no aparece.
  * <CardTile card={card} priority={index < 5} />
  *
  * @example
@@ -220,6 +220,7 @@ export function CardTile({
   variant = 'catalog',
   quantity,
   priceUsd,
+  searchPrice = false,
   priority = false,
   href,
   onSelect,
@@ -335,12 +336,29 @@ export function CardTile({
             </p>
           ) : null}
 
-          <p className="truncate text-caption text-tertiary" title={setName}>
-            {setName}
-          </p>
-          {showPrice ? (
-            <ShowOrDash usd={priceUsd} tone="positive" size="md" className="mt-0.5 block" />
-          ) : null}
+          {searchPrice && showPrice ? (
+            <div data-search-price-footer className="flex min-w-0 items-end justify-between gap-2">
+              <p className="min-w-0 flex-1 truncate text-caption text-tertiary" title={setName}>
+                {setName}
+              </p>
+              <span data-search-price-amount className="flex min-w-0 max-w-full items-end justify-end break-all text-right tabular-nums">
+                {priceUsd === null ? (
+                  <span aria-label="Sin precio" className="text-label text-tertiary">--</span>
+                ) : (
+                  <Money usd={priceUsd} tone="positive" size="md" />
+                )}
+              </span>
+            </div>
+          ) : (
+            <>
+              <p className="truncate text-caption text-tertiary" title={setName}>
+                {setName}
+              </p>
+              {showPrice ? (
+                <ShowOrDash usd={priceUsd} tone="positive" size="md" className="mt-0.5 block" />
+              ) : null}
+            </>
+          )}
         </div>
       ) : null}
 

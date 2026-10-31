@@ -84,7 +84,9 @@ alta NM, tres copias e intercambio; confirmación y lectura posterior tras recar
 la ficha y abrir Administrar. Un 503 de alta mantiene el formulario y sus valores,
 no anuncia éxito y sigue sin ubicación al recargar. No modifica el caso 409.
 
-El catálogo `e2e/catalog.json` es sintético y no tiene precios. El preload exclusivo
+El catálogo `e2e/catalog.json` es sintético y no tiene precios. El mock de búsqueda
+agrega `marketPriceUsd` (null por defecto); los escenarios de precio pueden usar
+12,50 USD fabricados exclusivamente para esa prueba, no una cotización real. El preload exclusivo
 de Next responde sólo dos GET exactos: la carta `browser-card` y relacionadas del
 set `browser-set`. `DEV_API_PROXY_TARGET` se fija a loopback :3100 sólo en el runner;
 no se conecta a la API. Otros requests `/api/` desde Next terminan el proceso.
@@ -100,6 +102,32 @@ se comprueba también en payload y respuestas de ubicación/items. Esto acredita
 integración del cliente con respuestas simuladas, no persistencia PostgreSQL,
 ownership del backend ni idempotencia. No usa inventario, API ni precios reales;
 no agrega capturas, traces o videos.
+
+### Fidelidad de Buscar Viñeta
+
+Pruebas focales: `pnpm --dir frontend exec vitest run components/search/__tests__/search-controls.test.tsx components/search/__tests__/search-page.test.tsx`.
+Cubren composición compartida de carga, etiquetas, callbacks, chips, modos,
+rareza inmediata, reset sin borrar texto y orden por relevancia. Comprueban también
+la ausencia del filtro de colección, la búsqueda dentro del panel y la tarjeta
+«Más opciones» separada debajo de la guía.
+No acreditan píxeles desde jsdom.
+
+Precio de Buscar: `pnpm --dir frontend exec vitest run lib/api/schema.search-price.test.ts components/cards/__tests__/card-grid.test.tsx components/search/__tests__/catalog-price.test.tsx --no-file-parallelism`.
+Cubre número, cero, `--` accesible, saneamiento del contrato y defaults sin opt-in
+(precio omitido sin fila y null con guion largo). La geometría se comprueba con
+`pnpm --dir frontend run test:browser --grep 'búsqueda precio'`: a 390/1440 px,
+precio numérico/ausente debajo de la imagen, alineado al borde inferior derecho
+del pie y sin desborde. Conserva las guardias de tráfico y usa sólo fixtures
+sintéticos. Agregar estos casos no acredita haberlos ejecutado; el gate requiere
+runtime coordinado y suites serializadas.
+
+`pnpm --dir frontend run test:browser --grep 'búsqueda Viñeta'` mide escritorio
+1440 px y móvil 390 px en claro/oscuro: sin desborde horizontal, guía 200 px/gap
+32 px, campo ≤480 px dentro del panel, dos columnas de filtros, tinta de 2 px,
+trama, tipografía y foco/recorrido de teclado. Verifica «Más opciones» debajo de
+la guía en escritorio y entre filtros/resultados en móvil, sin recortar rarezas
+largas. Usa el mismo catálogo sintético y guardias de tráfico;
+no crea capturas, videos ni traces. No reemplaza una comparación visual humana.
 
 ## Edición por navegador
 

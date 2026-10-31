@@ -213,6 +213,7 @@ export function toCardDto(raw: unknown): CardDto | null {
     set: toSetDto(raw.set) ?? undefined,
     imageSmall: str(raw.imageSmall) ?? '',
     imageLarge: str(raw.imageLarge) ?? '',
+    ...(raw.marketPriceUsd === undefined ? {} : { marketPriceUsd: num(raw.marketPriceUsd) }),
   };
 }
 
