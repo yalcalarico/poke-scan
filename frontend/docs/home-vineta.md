@@ -4,6 +4,9 @@ Home sigue la composición de [Vitrina Viñeta](../../design/vitrina-variantes/0
 hero de dos paneles, abanico superpuesto, galería y compartir a la izquierda,
 valor y objetivos a la derecha. En móvil se apilan, sin cambiar otras rutas.
 
+Detalles: [marca visible](brand.md), [valor y USD/ARS](home-value-panel.md),
+[próximo objetivo](home-goal-panel.md).
+
 ## Datos y acciones
 
 - La vitrina autenticada conserva selección, rotación y ranking reales.
