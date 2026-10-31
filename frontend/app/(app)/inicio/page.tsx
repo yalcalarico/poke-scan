@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { AppMark } from "@/components/brand";
+import { AppMark, AppWordmark } from "@/components/brand";
 import { ScreenContainer } from "@/components/layout/screen-container";
 import { HomeCta, ScanSessionResume, fetchPreviewCards } from "@/components/home";
 import { PersonalShowcase } from "@/components/home/personal-showcase";
@@ -21,7 +21,7 @@ export default async function HomePage() {
   const previewCards = await fetchPreviewCards();
   return (
     <ScreenContainer labelledBy="home-title" className={styles.home}>
-      <header className={styles.mobileHeader}><AppMark size={36} /><span>PokéScan</span></header>
+      <header className={styles.mobileHeader}><AppMark size={36} /><AppWordmark /></header>
       <ScanSessionResume />
       <section className={styles.hero} aria-labelledby="home-title">
         <div className={styles.copy}>

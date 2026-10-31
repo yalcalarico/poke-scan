@@ -1,0 +1,19 @@
+.mark {
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  border: 2px solid var(--text-primary);
+  border-radius: var(--radius-control);
+  background: var(--brand);
+  color: var(--on-media-text);
+  transform: rotate(-6deg);
+  font-family: system-ui, sans-serif;
+  font-weight: 800;
+  line-height: 1;
+}
+.wordmark {
+  color: var(--text-primary);
+  font: italic 800 20px/24px system-ui, sans-serif;
+  letter-spacing: -.015em;
+  text-transform: uppercase;
+}

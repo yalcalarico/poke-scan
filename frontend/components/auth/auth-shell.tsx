@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 
-import { AppMark } from '@/components/brand';
+import { AppMark, AppWordmark } from '@/components/brand';
 import { ScreenContainer } from '@/components/layout/screen-container';
 import { Surface } from '@/components/ui';
 
@@ -44,7 +44,7 @@ export function AuthShell({ title, description, children, footer }: AuthShellPro
       <div className="flex w-full max-w-md flex-col gap-6">
         <div className="flex flex-col items-center gap-3 text-center">
           <AppMark size={56} className="shadow-sm" />
-          <p className="text-h3 text-primary">PokéScan</p>
+          <AppWordmark />
         </div>
 
         <Surface as="section" className="flex flex-col gap-5 rounded-panel p-5 sm:p-6">

@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 import { MotionControl } from '@/components/visual-preview/visual-preview';
-import { AppMark } from '@/components/brand';
+import { AppMark, AppWordmark } from '@/components/brand';
 import { HomeNavIcon } from '@/components/home/home-icons';
 import { NAV_ITEMS, isNavItemActive } from '@/components/nav';
 import { cn } from '@/lib/cn';
@@ -62,7 +62,7 @@ export function BottomNav() {
           className="hidden shrink-0 items-center gap-2 rounded-control focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--focus-ring)] lg:flex"
         >
           <AppMark size={32} />
-          <span className="text-body-strong text-primary">PokéScan</span>
+          <AppWordmark />
         </Link>
 
         <ul
