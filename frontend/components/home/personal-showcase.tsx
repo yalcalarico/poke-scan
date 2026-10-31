@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { CardTile } from "@/components/cards/card-tile";
+import { HomeFan } from "./home-fan";
+import styles from "./home-screen.module.css";
 import { Money } from "@/components/cards/money";
 import { ErrorState, Surface, buttonVariants } from "@/components/ui";
 import { useAuth } from "@/hooks/use-auth";
@@ -9,7 +10,7 @@ import { useAsync } from "@/hooks/use-async";
 import { getShowcase } from "@/lib/api/showcase";
 import { variantLabel } from "@/lib/variants";
 import type { CardDto } from "@/types/api";
-import { AppPreview } from "./app-preview";
+
 import { rotateShowcase, showcaseVisit } from "./showcase-rotation";
 
 export function PersonalShowcase({
@@ -22,7 +23,7 @@ export function PersonalShowcase({
   if (!isAuthenticated || !user)
     return (
       <div data-vineta-showcase>
-        <AppPreview cards={guestCards} />
+        {guestCards.length ? <HomeFan cards={guestCards} /> : <p>El catálogo no está disponible por ahora.</p>}
         <p className="mt-3 text-caption text-secondary">
           Un vistazo al catálogo. Iniciá sesión para ver tu colección.
         </p>
@@ -58,20 +59,7 @@ function OwnedShowcase({ userId }: { userId: string }) {
           onRetry={result.reload}
         />
       ) : result.data?.cards.length ? (
-        <ul className="grid grid-cols-3 gap-3" data-vineta-shelf>
-          {result.data.cards.map((entry) => (
-            <li key={entry.card.id} className="min-w-0">
-              <CardTile card={entry.card} variant="collection" />
-              <p className="mt-2 text-caption text-secondary">
-                {variantLabel(entry.variant)}
-              </p>
-              <Money usd={entry.market} tone="positive" />
-              {entry.market === null ? (
-                <p className="text-caption text-secondary">Sin referencia</p>
-              ) : null}
-            </li>
-          ))}
-        </ul>
+        <HomeFan cards={result.data.cards.map((entry) => entry.card)} />
       ) : (
         <Surface className="flex flex-col gap-3">
           <h2 className="text-h2 text-primary">
@@ -91,15 +79,22 @@ function OwnedShowcase({ userId }: { userId: string }) {
           ? "Tu selección rota al recargar, hasta tres cartas por visita."
           : "Tus tres cartas con mayor referencia unitaria disponible, sin multiplicar por cantidad."}
       </p>
-      <p className="text-caption text-secondary">
-        Referencia TCGplayer vía TCGCSV; no equivale a una oferta de compra.
-      </p>
-      <Link
-        href="/inicio/vitrina"
-        className={buttonVariants({ variant: "secondary" })}
-      >
-        Personalizar vitrina
-      </Link>
+      <details className={styles.showcaseCaption}>
+        <summary>Referencias TCGplayer vía TCGCSV</summary>
+        <p>No equivale a una oferta de compra.</p>
+        {result.data?.cards.map((entry) => (
+          <p key={entry.card.id}>
+            {entry.card.name} · {variantLabel(entry.variant)} ·{" "}
+            <Money usd={entry.market} tone="positive" />
+            {entry.market === null ? " · Sin referencia" : ""}
+          </p>
+        ))}
+      </details>
+      {!result.data?.cards.length && (
+        <Link href="/inicio/vitrina" className={buttonVariants({ variant: "secondary" })}>
+          Personalizar vitrina
+        </Link>
+      )}
     </section>
   );
 }

@@ -2,7 +2,7 @@ import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { ArrowRight } from 'lucide-react';
 
-import { AppMark } from '@/components/brand';
+import { AppMark, AppWordmark } from '@/components/brand';
 import { buttonVariants } from '@/components/ui';
 import { cn } from '@/lib/cn';
 
@@ -17,7 +17,7 @@ export function MarketingShell({ children }: { children: ReactNode }) {
             className="flex shrink-0 items-center gap-2 rounded-control focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--focus-ring)]"
           >
             <AppMark size={36} />
-            <span className="text-body-strong text-primary">PokéScan</span>
+            <AppWordmark />
           </Link>
 
           <nav aria-label="Navegación del sitio" className="hidden items-center gap-6 md:flex">
@@ -58,7 +58,7 @@ export function MarketingShell({ children }: { children: ReactNode }) {
           <div className="flex items-center gap-2">
             <AppMark size={32} />
             <div>
-              <p className="text-label text-primary">PokéScan</p>
+              <AppWordmark />
               <p className="text-caption text-tertiary">Tu colección, más clara.</p>
             </div>
           </div>

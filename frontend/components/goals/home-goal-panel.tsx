@@ -14,6 +14,7 @@ import { useAsync } from "@/hooks/use-async";
 import { listCollections } from "@/lib/api/collections";
 import { listGoals } from "@/lib/api/goals";
 import type { CollectionDto } from "@/types/api";
+import { HomeGoalReference } from "./home-goal-reference";
 
 export function CollectionGoalPanel({
   collectionId,
@@ -141,20 +142,23 @@ function HomeCollectionPicker({
       .id,
   );
   return (
-    <div className="flex min-w-0 flex-col gap-4" data-vineta-home-goal>
-      <Field id="home-goal-collection" label="Objetivos de la colección">
-        <Select
-          id="home-goal-collection"
-          aria-label="Objetivos de la colección"
-          value={selectedId}
-          onChange={setSelectedId}
-          options={collections.map((collection) => ({
-            value: collection.id,
-            label: collection.name,
-          }))}
-        />
-      </Field>
-      <CollectionGoalPanel key={selectedId} collectionId={selectedId} />
-    </div>
+    <HomeGoalReference
+      key={selectedId}
+      collection={collections.find((collection) => collection.id === selectedId)!}
+      picker={
+        <Field id="home-goal-collection" label="Objetivos de la colección">
+          <Select
+            id="home-goal-collection"
+            aria-label="Objetivos de la colección"
+            value={selectedId}
+            onChange={setSelectedId}
+            options={collections.map((collection) => ({
+              value: collection.id,
+              label: collection.name,
+            }))}
+          />
+        </Field>
+      }
+    />
   );
 }

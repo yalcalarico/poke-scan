@@ -12,8 +12,8 @@ const { auth, getShowcase } = vi.hoisted(() => ({
 }));
 vi.mock("@/hooks/use-auth", () => ({ useAuth: () => auth }));
 vi.mock("@/lib/api/showcase", () => ({ getShowcase }));
-vi.mock("./app-preview", () => ({
-  AppPreview: () => <p>Vista del catálogo</p>,
+vi.mock("./home-fan", () => ({
+  HomeFan: () => <p>Vista del catálogo</p>,
 }));
 beforeEach(() => {
   auth.user = null;
@@ -24,7 +24,7 @@ beforeEach(() => {
 describe("Vitrina de inicio", () => {
   it("conserva el catálogo de invitado sin pedir datos privados", () => {
     render(<PersonalShowcase guestCards={[]} />);
-    expect(screen.getByText("Vista del catálogo")).toBeInTheDocument();
+    expect(screen.getByText("El catálogo no está disponible por ahora.")).toBeInTheDocument();
     expect(getShowcase).not.toHaveBeenCalled();
   });
   it("espera el bootstrap de sesión", () => {
