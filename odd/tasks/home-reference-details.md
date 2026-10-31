@@ -13,7 +13,7 @@ Entrega: continuar el PR de Home, sin issue ni merge. Tres unidades independient
 
 - **D1** [S1-S4] — Implementar los tres detalles. Ruta: parent inline tras dos workers disjuntos fallidos (ambos assistant reported an error, sin relanzar); reconciliación de parciales y pruebas observadas por parent. Estado: done — parent observó focal36/36 y tsc0; marca y paneles implementados. Commit: `d6c2cbf` marca, `b5169ae` valor, `160ccfb` objetivo, cada uno con pruebas/guía. Allowed surfaces de cada writer derivadas por parent, sin solaparse; parent integra mocks/guías comunes al volver.
 - **D2** [S1-S4] — Validar integración, comparación Home/referencia claro/oscuro móvil/escritorio, USD/ARS/cotización ausente, sugerencia/editor/guardado real aislado, pnpm run check y evaluación nativa por candidato. Ruta: parent; verificador independiente sólo si aparece Risk item concreto. Estado: done — job6 navegador5/5 y pnpmruncheck completo0; capturasfinales revisadas. Revisión nativa aprobada y consumida; APIs del navegador sintéticas explícitas. Commit: `d6c2cbf`, `b5169ae`, `160ccfb`. No repetir suites intactas ni afirmar fidelidad por tests jsdom.
-- **D3** [S1-S4] — Registrar evidencia, commits revisables y actualizar PR24 sin issue/merge; informar diferencias/límites y checks remotos. Ruta: parent. Estado: in_progress — tres commits funcionales creados y validados; falta subir y actualizar PR24. Commit: cierre de feature.
+- **D3** [S1-S4] — Registrar evidencia, commits revisables y actualizar PR24 sin issue/merge; informar diferencias/límites y checks remotos. Ruta: parent. Estado: done — job7 push y actualización de PR24 terminaron0; OPEN/base master/head b0d1d59 verificados, sinissue/sinmerge. Commit: `b0d1d59` evidencia y cierre documental en esta unidad.
 
 ## Log
 
@@ -52,3 +52,8 @@ Job6exit0:5/5navegador(4comparaciones +visitanteARSsinrate) y pnpmruncheck compl
 **L7 — Commits por comportamiento**
 
 `d6c2cbf` marca (78adiciones/61borrados); `b5169ae` valor(399/29); `160ccfb` objetivo(455/15). Conteo de~400esheurística: panelobjetivoincluye editor/estados/aislamiento/pruebas completo, no se recortan tests para encajar. D2done/D3in_progress hasta publicarestoscommits y evidencia enPR24. La marca cambió enauth/marketingporpedidoexplícitodelogoapp; no se rediseñan esas pantallas. Sin .env/secrets, nuevos iconoslauncher, vídeos/traces/capturastracked ni merge.
+
+
+**L8 — Entrega observada**
+
+Job7exit0: push0fe328c..b0d1d59 y edición dePR24. APIremota confirmaOPEN/base master/headb0d1d59a5f2e675b2d4ed6015c1d47b47a3d5b5a; checks[] todavía no reportados, no se declaran verdes. GitHub advierte30vulnerabilidades preexistentesendefault(10high/16moderate/4low), fuera delscopeysin cambiosdedependencias. Se sube este cierre documental sin repetir checksdeproducto intactos; fuente validada/revisada no cambia. D1-D3done. No restart de web/API tras tests por falta de ownership/configoriginalprobados; puertosya estabanlibres antes delrunnerpropio. Pendiente únicamenteCIremoto/revisiónhumana, no mergeautorizado. Risk:none en las tres unidadesnuevas: cambios de marcaapp/panelessolicitados; interfaces/guards/helpers compartidos de moneda/editor/API conservados.
