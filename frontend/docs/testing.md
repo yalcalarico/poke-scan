@@ -129,6 +129,25 @@ la guía en escritorio y entre filtros/resultados en móvil, sin recortar rareza
 largas. Usa el mismo catálogo sintético y guardias de tráfico;
 no crea capturas, videos ni traces. No reemplaza una comparación visual humana.
 
+### Ficha editorial Viñeta
+
+`pnpm --dir frontend exec vitest run components/cards/__tests__/card-detail.test.tsx`
+comprueba el DOM de la ruta de servidor: encabezado único, slots de imagen,
+precio y acciones, datos y símbolos, omisiones, fallback de logo, retorno
+validado, metadatos, caché y enlaces relacionados. Los hijos interactivos de
+precio/acciones/VisualCard están simulados: no acredita sus flujos ni movimiento.
+
+`pnpm --dir frontend run test:browser --grep 'ficha Viñeta'` cubre 1440/390 px en
+claro/oscuro, columnas y separación de paneles, navegación de retorno, datos e
+íconos visibles y ausencia de desborde. Otro caso verifica pointermove con límites
+de 14 grados, pausa y movimiento reducido. Lee toda la geometría en un único
+frame. Reutiliza el catálogo sintético sin precios y admite sólo sus dos URLs
+exactas de logo/símbolo, respondidas con el ícono local, sin descargar proveedores.
+El flujo de alta existente comprueba además el ícono FolderPlus de «Añadir».
+Estos casos requieren ejecución coordinada del padre; agregarlos no acredita
+haber pasado el gate. No generan capturas, traces ni videos ni reemplazan la
+comparación visual humana.
+
 ## Edición por navegador
 
 `e2e/search-save.spec.ts` también recorre Administrar sobre el alta sintética:

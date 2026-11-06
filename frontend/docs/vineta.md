@@ -40,6 +40,21 @@ formatea. Es una referencia local TCGCSV: el máximo de las últimas cotizacione
 market por variante, no el valor de una copia del inventario. Este tratamiento
 es optativo de Buscar: no cambia Inicio ni los guiones de otras tarjetas.
 
+## Ficha editorial
+
+`/carta/[id]` adapta `detail()` con un único encabezado «Ficha editorial», nombre,
+set, número y rareza reales, y «Volver» al catálogo validado de origen. Comparte
+la trama de 8 px, ancho de 1280 px y tipografía de Buscar. Debajo del separador de
+2 px hay dos columnas iguales con gap de 24 px; a 700 px pasan a una sola.
+La imagen animada, de hasta 300 px y sin recortar el halo, queda dentro del panel
+izquierdo con el logo del set también visible en móvil.
+
+A la derecha siguen la referencia real y su historial, «Elegí dónde guardarla»
+con las acciones existentes y todos los datos de la carta, incluido el símbolo
+del set. No hay selector de colección ficticio ni cifras o textos de muestra.
+Se conservan inclinación, holo, pausa, movimiento reducido y las cartas
+relacionadas. La carga usa el mismo marco y anuncia que está cargando.
+
 ## Colecciones: álbumes primero
 
 El listado usa el encabezado «Coleccioná a tu manera.» y portadas con cartas reales

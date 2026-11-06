@@ -1,3 +1,4 @@
+import { resolve } from 'node:path';
 import type { CollectionDto, CollectionItemDto } from '../../types/api';
 import { test as base, expect } from './browser';
 import card from '../catalog.json';
@@ -23,6 +24,10 @@ export const test = base.extend<{ catalog: Catalog }>({
     await context.route('**/*', async (route) => {
       const request = route.request();
       const url = new URL(request.url());
+      // Únicamente los dos medios del set sintético; nunca se descarga el host.
+      if (request.method() === 'GET' && [card.set.logoUrl, card.set.symbolUrl].includes(url.href)) {
+        return route.fulfill({ contentType: 'image/png', path: resolve(__dirname, '../../public/icons/icon-192.png') });
+      }
       if (url.origin !== baseURL) return route.fallback();
       const path = url.pathname;
       const method = request.method();

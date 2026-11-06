@@ -1,0 +1,40 @@
+.canvas {
+  min-height: 100dvh;
+  background-color: var(--canvas);
+  background-image: radial-gradient(var(--border-strong) .8px, transparent .8px);
+  background-size: 8px 8px;
+}
+.page.page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-width: 1280px;
+  padding: calc(var(--nav-height) + 32px) 32px 32px;
+  font: 400 15px/22px system-ui, sans-serif;
+  animation: none;
+}
+.header { display: flex; justify-content: space-between; align-items: end; gap: 20px; padding-bottom: 24px; border-bottom: 2px solid var(--text-primary); }
+.intro { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.intro h1 { font-size: 32px; line-height: 34px; letter-spacing: -.025em; font-weight: 800; font-style: italic; text-transform: uppercase; overflow-wrap: anywhere; }
+.eyebrow { font-size: 11px; line-height: 14px; letter-spacing: .08em; text-transform: uppercase; font-weight: 600; color: var(--text-secondary); }
+.subtitle { max-width: 580px; color: var(--text-secondary); overflow-wrap: anywhere; }
+.back.back { flex-shrink: 0; border: 2px solid var(--text-primary); font-size: 13px; line-height: 18px; font-weight: 600; }
+.workspace { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; gap: 24px; }
+.panel.panel { min-width: 0; padding: 20px; border: 2px solid var(--text-primary); border-radius: var(--radius-surface); background: var(--surface); box-shadow: var(--shadow-sm); }
+/* El marco no recorta el halo, la inclinación ni los indicadores de foco. */
+.imagePanel.imagePanel { display: flex; flex-direction: column; align-items: center; gap: 24px; }
+.art { width: 100%; max-width: 300px; }
+.logo { max-width: 160px; }
+.content, .prices { display: flex; flex-direction: column; gap: 24px; min-width: 0; }
+/* PriceHero ya posee su Surface: no se agrega otra tarjeta alrededor. */
+.prices > [data-ui="surface"], .prices > div > section[data-ui="surface"] { border: 2px solid var(--text-primary); border-radius: var(--radius-surface); box-shadow: var(--shadow-sm); }
+.sectionTitle { margin-bottom: 16px; font-size: 20px; line-height: 26px; letter-spacing: -.015em; font-weight: 700; font-style: italic; }
+@media (max-width: 1023px) {
+  .page.page { padding: 24px 32px calc(124px + env(safe-area-inset-bottom)); }
+}
+@media (max-width: 700px) {
+  .page.page { padding-inline: 16px; }
+  .header { flex-direction: column; align-items: start; gap: 16px; }
+  .intro h1 { font-size: 26px; line-height: 30px; letter-spacing: -.02em; }
+  .workspace { grid-template-columns: minmax(0, 1fr); }
+}

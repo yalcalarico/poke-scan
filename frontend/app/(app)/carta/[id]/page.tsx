@@ -9,10 +9,9 @@ import { VisualCard } from '@/components/visual-preview/holo-card';
 import Link from 'next/link';
 import { CardTile } from '@/components/cards/card-tile';
 import { SetLogo, SetSymbol } from '@/components/cards/set-media';
-import { ScreenContainer } from '@/components/layout/screen-container';
-import { ScreenHeader } from '@/components/layout/screen-header';
+import { CardDetailLayout } from '@/components/cards/card-detail-layout';
+import styles from '@/components/cards/card-detail.module.css';
 import { CardPriceSection } from '@/components/prices';
-import { Surface } from '@/components/ui';
 import { catalogReturnHref } from '@/lib/catalog-navigation';
 import { getApiBaseUrl } from '@/lib/api/api-client';
 import { toCardDto, toCardList } from '@/lib/api/schema';
@@ -202,17 +201,12 @@ export default async function CardDetailPage({ params, searchParams }: {
   const subtypes = subtypeLabels(card.subtypes);
 
   return (
-    <>
-      <ScreenHeader
-        title={card.name}
-        subtitle={setName}
-        back={{ href: backHref, label: 'el catálogo' }}
-      />
-
-      <ScreenContainer labelledBy="titulo-carta">
-        <div className="grid grid-cols-1 items-start gap-5 md:grid-cols-2 md:gap-8">
-          <div className="flex flex-col items-center gap-3 md:sticky md:top-20 md:gap-5 lg:top-36">
-            <div className="relative w-full max-w-80 rounded-panel bg-surface-2 px-4 py-5 md:max-w-sm md:px-6">
+    <CardDetailLayout
+      title={card.name}
+      subtitle={<p><span>{setName}</span> · {formatCardNumber(card.number, setTotal)}{card.rarity ? ` · ${card.rarity}` : ''}</p>}
+      backHref={backHref}
+      image={<>
+            <div className={styles.art}>
               {image ? (
                 <VisualCard className="mx-auto max-w-xs">
                   <div className="overflow-hidden rounded-surface shadow-xl">
@@ -239,26 +233,11 @@ export default async function CardDetailPage({ params, searchParams }: {
 
             </div>
 
-            {set ? <SetLogo logoUrl={set.logoUrl} name={set.name} className="hidden max-w-40 md:block" /> : null}
-          </div>
-
-          <div className="flex min-w-0 flex-col gap-5">
-            <div className="flex flex-col gap-1">
-              <h1 id="titulo-carta" className="break-words text-h1 text-primary">{card.name}</h1>
-              <p className="text-body text-secondary">{setName}</p>
-              <p className="text-caption text-secondary tabular-nums">
-                {formatCardNumber(card.number, setTotal)}{card.rarity ? ` · ${card.rarity}` : ''}
-              </p>
-            </div>
-            {/* La carga del precio vive en cliente: un refresh externo lento no
-                retrasa el render de la carta, y el hero muestra su skeleton. */}
-            <CardPriceSection key={`${card.id}:price`} cardId={card.id} showComparison />
-
-
-            <CardActions key={`${card.id}:actions`} cardId={card.id} cardName={card.name} />
-
-            <Surface as="section" padded={false} className="px-4 py-1">
-              <h2 className="pt-3 text-h3 text-primary">Datos de la carta</h2>
+            {set ? <SetLogo logoUrl={set.logoUrl} name={set.name} className={styles.logo} /> : null}
+      </>}
+      prices={<CardPriceSection key={`${card.id}:price`} cardId={card.id} showComparison />}
+      actions={<CardActions key={`${card.id}:actions`} cardId={card.id} cardName={card.name} />}
+      data={
               <dl>
                 <DataRow
                   label="Set"
@@ -289,10 +268,8 @@ export default async function CardDetailPage({ params, searchParams }: {
                 <DataRow label="Artista" value={card.artist} />
                 <DataRow label="Lanzamiento" value={formatDate(set?.releaseDate)} />
               </dl>
-            </Surface>
-          </div>
-        </div>
-
+      }
+    >
         {/*
           La frontera envuelve **solo** el scroller de relacionadas, que es
           contenido complementario: el nombre, la imagen, los datos y el precio
@@ -309,7 +286,6 @@ export default async function CardDetailPage({ params, searchParams }: {
         <Suspense key={card.id} fallback={null}>
           <RelatedCardsSection setId={card.setId} excludeId={card.id} setName={setName} backHref={backHref} />
         </Suspense>
-      </ScreenContainer>
-    </>
+    </CardDetailLayout>
   );
 }

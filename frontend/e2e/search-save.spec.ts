@@ -190,7 +190,9 @@ for (const marketPriceUsd of [12.5, null]) {
 }
 
 async function fillAdd(page: Page) {
-  await page.getByRole('button', { name: 'Añadir', exact: true }).click();
+  const add = page.getByRole('button', { name: 'Añadir', exact: true });
+  await expect(add.locator('svg.lucide-folder-plus')).toBeVisible();
+  await add.click();
   const sheet = page.getByRole('dialog', { name: 'Añadir a colección', exact: true });
   await expect(sheet).toBeVisible();
   await expect(sheet.getByRole('combobox', { name: 'Colección', exact: true })).toHaveText('Colección sintética (principal)');
