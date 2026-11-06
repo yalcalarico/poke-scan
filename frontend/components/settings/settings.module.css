@@ -1,0 +1,46 @@
+.canvas { min-height: 100dvh; background: var(--canvas); background-image: radial-gradient(var(--border-strong) .8px, transparent .8px); background-size: 8px 8px; }
+.page.page { display: flex; flex-direction: column; gap: 24px; max-width: 1280px; padding: calc(var(--nav-height) + 32px) 32px 32px; font: 400 15px/22px system-ui, sans-serif; animation: none; }
+.header { display: flex; justify-content: space-between; align-items: end; gap: 20px; padding-bottom: 24px; border-bottom: 2px solid var(--text-primary); }
+.intro { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.intro h1 { font-size: 32px; line-height: 34px; letter-spacing: -.025em; font-weight: 800; font-style: italic; text-transform: uppercase; overflow-wrap: anywhere; }
+.intro p, .description { color: var(--text-secondary); }
+.eyebrow { font-size: 11px; line-height: 14px; letter-spacing: .08em; text-transform: uppercase; font-weight: 600; color: var(--text-secondary); }
+.back.back { flex-shrink: 0; border: 2px solid var(--text-primary); font-size: 13px; line-height: 18px; font-weight: 600; }
+.columns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; align-items: start; }
+.stack { display: flex; flex-direction: column; gap: 24px; min-width: 0; }
+.panel.panel { display: flex; flex-direction: column; gap: 16px; min-width: 0; padding: 20px; border: 2px solid var(--text-primary); border-radius: var(--radius-surface); background: var(--surface); box-shadow: var(--shadow-sm); }
+.panel h2 { font-size: 20px; line-height: 26px; letter-spacing: -.015em; font-weight: 700; font-style: italic; }
+.panel h3 { font-size: 17px; line-height: 22px; font-weight: 600; }
+.row { display: flex; align-items: center; justify-content: space-between; gap: 16px; border-top: 1px solid var(--border-default); padding: 16px 0; }
+.row:first-of-type { border: 0; }
+.row p { margin-top: 4px; }
+.row a { flex-shrink: 0; }
+.caption { font-size: 12px; line-height: 16px; color: var(--text-secondary); }
+.between { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.badge { padding: 4px 8px; border: 1px solid var(--text-primary); border-radius: var(--radius-control); font-size: 11px; line-height: 14px; letter-spacing: .08em; }
+.pro.pro { background: var(--info-soft); }
+.collectionList { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.collectionList a { width: 100%; justify-content: space-between; min-width: 0; }
+.collectionList a span:first-child { overflow-wrap: anywhere; }
+.embedded { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+/* Sólo se aplana el marco anidado: los controles y sus handlers no cambian. */
+.embedded > [data-ui="surface"] { border: 0; padding: 0; box-shadow: none; background: transparent; }
+.embedded > [data-ui="surface"] + [data-ui="surface"] { border-top: 1px solid var(--border-default); padding-top: 20px; }
+.embedded h2 { font-size: 17px; line-height: 22px; }
+.identity.identity { flex-direction: row; align-items: center; gap: 16px; }
+.avatar.avatar { border: 2px solid var(--text-primary); border-radius: var(--radius-surface); transform: rotate(-5deg); }
+.identityCopy { min-width: 0; overflow-wrap: anywhere; }
+.identityMeta { margin-left: auto; }
+.panel summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; color: var(--text-secondary); }
+.panel summary:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+@media (min-width: 1600px) { .page.page { padding-top: calc(var(--nav-height) + 40px); } }
+@media (max-width: 1023px) { .page.page { padding: 24px 24px calc(124px + env(safe-area-inset-bottom)); } }
+@media (max-width: 700px) {
+  .page.page { padding-inline: 16px; }
+  .header { flex-direction: column; align-items: start; gap: 16px; padding-bottom: 20px; }
+  .intro h1 { font-size: 26px; line-height: 30px; }
+  .columns { grid-template-columns: minmax(0, 1fr); }
+  .row { flex-wrap: wrap; }
+  .identity.identity { flex-wrap: wrap; }
+  .identityMeta { margin-left: 0; width: 100%; }
+}

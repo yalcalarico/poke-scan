@@ -172,6 +172,18 @@ sintéticos, con tráfico cerrado y sin escrituras de producto; no prueban
 persistencia PostgreSQL. Las mediciones se toman en una sola lectura y no se
 generan capturas, videos ni traces.
 
+## Ajustes Viñeta
+
+```sh
+pnpm --dir frontend exec vitest run components/settings/__tests__/settings-vineta.test.tsx
+pnpm --dir frontend run test:browser --grep 'ajustes Viñeta'
+```
+
+Se comprueban identidad, columnas, accesos de cuenta, preferencias y enlaces
+compartidos en claro/oscuro a 1440 y 390 px, con cuenta sintética y tráfico
+cerrado. No se invoca logout ni eliminación real. El enlace de revisión conserva
+el destino del flujo protegido. No se generan capturas, videos ni traces.
+
 ## Alcance
 
 La suite también cubre los componentes, cliente HTTP, rutas del service worker, hooks y utilidades existentes. `public/sw.js` purga cachés antiguas con su versión; el reconocimiento necesita conexión y no existe un motor del navegador offline. El smoke `pnpm run verify:app` usa HTTP real, no reemplaza una prueba de navegación y cámara en un navegador.

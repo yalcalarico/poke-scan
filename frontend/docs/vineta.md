@@ -53,6 +53,18 @@ intercambio se agrupan a la derecha y se apilan en móvil. Tener repetidas no la
 publica ni las marca automáticamente para intercambio. No se copian los filtros,
 etiquetas ni participantes ficticios de la maqueta.
 
+## Ajustes: composición de Viñeta
+
+La identidad de la cuenta ocupa el ancho superior. Debajo, la columna izquierda
+reúne perfil/seguridad y colecciones; la derecha reúne PRO, privacidad y
+preferencias/cuenta. Tema, moneda, enlaces compartidos, cierre de sesión y
+eliminación conservan los componentes y flujos existentes.
+
+PRO y las políticas mantienen su indisponibilidad real: sus detalles no simulan
+facturación, consentimiento ni publicación. No se agrega el checkbox de privacidad
+de la demo; la visibilidad se administra con los enlaces compartidos reales.
+Los datos personales siguen detrás de `RequireAuth`, sin cambiar sus permisos.
+
 ## Movimiento
 
 `AppVisualsProvider` conserva una sola fuente de estado para pausa manual y preferencia del sistema. El botón «Pausar efectos» está en el chrome mobile y en la navegación desktop; no agrega un sexto destino. Con movimiento reducido del sistema, el control informa esa preferencia y no la anula.

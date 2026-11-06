@@ -1,45 +1,26 @@
 'use client';
 
-import { Avatar, StatRow, Surface } from '@/components/ui';
+import { Avatar, Surface } from '@/components/ui';
 import { useAuth } from '@/hooks/use-auth';
 import { formatDate } from '@/lib/format';
+import styles from './settings.module.css';
 
-import { SettingsSection } from './settings-section';
-
-/**
- * Quién sos.
- *
- * **Acá se usa `UserDto.avatarUrl`, que estaba en el contrato desde el
- * principio y nunca se había pintado**: antes se hardcodeaba la inicial
- * (`profile-view.tsx`) con un `div` y clases sueltas.
- *
- * El email se muestra sin problema: esta es la pantalla de la cuenta del
- * propio usuario, detrás de la sesión, y es el único lugar donde tiene sentido
- * verlo.
- */
+/** Identidad de la cuenta propia; el guard de Ajustes protege estos datos. */
 export function IdentityCard() {
   const { user } = useAuth();
-
-  // Sin sesión el guard no deja llegar acá, pero los tipos no lo saben: se
-  // escribe el caso igual y no se rompe la pantalla.
   if (!user) return null;
-
   return (
-    <SettingsSection title="Identidad" description="Así te ven los demás cuando compartís una colección.">
-      <div className="flex items-center gap-4">
-        <Avatar src={user.avatarUrl} name={user.displayName} size="xl" />
-        <div className="min-w-0">
-          <p className="truncate text-h3 text-primary">{user.displayName}</p>
-          <p className="truncate text-caption text-secondary">{user.email}</p>
-          <p className="mt-0.5 truncate text-caption text-tertiary">@{user.username}</p>
-        </div>
+    <Surface as="section" aria-label="Identidad de la cuenta" className={`${styles.panel} ${styles.identity}`}>
+      <Avatar src={user.avatarUrl} name={user.displayName} size="xl" className={styles.avatar} />
+      <div className={styles.identityCopy}>
+        <h2>{user.displayName}</h2>
+        <p className={styles.caption}>{user.email}</p>
+        <p className={styles.caption}>@{user.username}</p>
       </div>
-
-      <Surface className="bg-surface-2 shadow-none">
-        <dl>
-          <StatRow title="Miembro desde" value={formatDate(user.createdAt)} />
-        </dl>
-      </Surface>
-    </SettingsSection>
+      <dl className={styles.identityMeta}>
+        <dt className={styles.caption}>Miembro desde</dt>
+        <dd>{formatDate(user.createdAt)}</dd>
+      </dl>
+    </Surface>
   );
 }
