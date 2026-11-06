@@ -159,6 +159,19 @@ ownership backend, inventario real ni dispositivos físicos.
 
 La identidad visual se valida además contra fotos y el índice real mediante `pnpm run scanner:evaluate` y la API autenticada. La cámara física y permisos de iPhone no se simulan en Node: hay que probarlos en el dispositivo.
 
+## Colecciones Viñeta
+
+```sh
+pnpm --dir frontend exec vitest run components/collections/__tests__/collections-vineta.test.tsx components/collections/__tests__/collection-card.test.tsx --no-file-parallelism
+pnpm --dir frontend run test:browser --grep 'colecciones Viñeta'
+```
+
+Se comprueban columnas, prioridad de álbumes, acceso al detalle, filtros y controles
+conservados en claro/oscuro a 1440, 900 y 390 px. Las cuentas y álbumes son
+sintéticos, con tráfico cerrado y sin escrituras de producto; no prueban
+persistencia PostgreSQL. Las mediciones se toman en una sola lectura y no se
+generan capturas, videos ni traces.
+
 ## Alcance
 
 La suite también cubre los componentes, cliente HTTP, rutas del service worker, hooks y utilidades existentes. `public/sw.js` purga cachés antiguas con su versión; el reconocimiento necesita conexión y no existe un motor del navegador offline. El smoke `pnpm run verify:app` usa HTTP real, no reemplaza una prueba de navegación y cámara en un navegador.

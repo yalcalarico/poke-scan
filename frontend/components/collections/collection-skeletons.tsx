@@ -1,128 +1,53 @@
-import { CardGridSkeleton, Skeleton, Surface } from '@/components/ui';
-import { cn } from '@/lib/cn';
-
+import { CardGridSkeleton, Skeleton } from '@/components/ui';
+import { CollectionWorkspace } from './collections-layout';
 import { COLLECTION_PAGE_SIZE } from './collection-options';
+import styles from './collections.module.css';
 
-/**
- * Los skeletons de las dos pantallas, con **la forma real** del contenido
- * (§9.1). Server Component: no tienen estado ni handlers, así que ni el
- * `loading.tsx` ni los cuerpos client los obligan a arrastrar `'use client'`.
- *
- * Viven acá y no duplicados en los `loading.tsx` porque los dos lados del mismo
- * hueco —el `loading.tsx` del segmento y el `status === 'loading'` del cuerpo
- * client— tienen que medir exactamente lo mismo: dos skeletons de la misma
- * pantalla que no coinciden son un salto de layout esperando a aparecer (es lo
- * que hace `SearchFallback` en `/buscar`).
- */
-
-function CardSkeleton() {
-  return (
-    <Surface padded={false} className="overflow-hidden">
-      <Skeleton variant="block" className="h-44 rounded-none" />
-      <div className="flex flex-col gap-2 p-4">
-        <Skeleton variant="text" className="h-3.5 w-3/5" />
-        <Skeleton variant="text" className="w-1/3" />
-        <Skeleton variant="text" className="w-2/3" />
-        <Skeleton variant="text" className="mt-2 w-2/5" />
-      </div>
-      {/*
-        La franja del link "Progreso por set" que la `CollectionCard` real
-        agrega abajo. Sin esta línea el skeleton mide 60 px menos que la tarjeta
-        y la grilla salta justo cuando llegan los datos, que es lo que §9.1
-        prohíbe. Mismo `p-2` que el link real; el alto va fijo en 44 y no en el
-        `min-h-11` del link porque acá no hay texto que pueda partirse en dos
-        líneas, y `h-11` además pisa el `h-24` del `variant="block"`.
-      */}
-      <div className="border-t border-line-subtle p-2">
-        <Skeleton variant="block" className="h-11 w-full rounded-control" />
-      </div>
-    </Surface>
-  );
-}
-
-/**
- * El skeleton de `/colecciones`: la línea del contador, tres tarjetas con
- * mosaic, nombre, cantidad y valor, y la línea del total combinado.
- */
+/** El mismo cuerpo para la ruta y la espera de datos del cliente. */
 export function CollectionsListSkeleton({ count = 3 }: { count?: number }) {
-  return (
-    <div className="flex flex-col gap-6" aria-busy="true">
-      <div role="status" aria-label="Cargando tus colecciones" className="flex flex-col gap-4">
-        <Skeleton variant="text" className="w-40" />
-
-        <div className="flex justify-start">
-          <Skeleton variant="text" className="w-48" />
-        </div>
-
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
-          {Array.from({ length: count }, (_, index) => (
-            <CardSkeleton key={index} />
-          ))}
-        </div>
-
-
-      </div>
+  return <div role="status" aria-label="Cargando tus colecciones" aria-busy="true" className={styles.stack}>
+    <Skeleton variant="text" className="w-48" />
+    <div className="flex flex-wrap gap-3" aria-hidden="true">
+      <Skeleton variant="block" className="h-11 w-64" />
+      <Skeleton variant="block" className="h-11 w-40" />
     </div>
-  );
+    <div className={styles.albums}>
+      {Array.from({ length: count }, (_, index) => <div key={index} className={styles.album}>
+        <div className={styles.cover}>
+          <Skeleton variant="block" className="h-24 w-16" />
+          <Skeleton variant="block" className="h-24 w-16" />
+        </div>
+        <Skeleton variant="text" className="h-6 w-3/4" />
+        <Skeleton variant="text" className="w-1/2" />
+        <Skeleton variant="text" className="w-2/3" />
+        <Skeleton variant="text" className="w-1/3" />
+        <div className={styles.albumFooter}>
+          {Array.from({ length: 4 }, (_, action) => <Skeleton key={action} variant="block" className="h-11 w-full" />)}
+        </div>
+      </div>)}
+    </div>
+  </div>;
 }
 
-function ChipSkeleton({ width }: { width: string }) {
-  return <Skeleton variant="text" className={cn('h-11 shrink-0 rounded-full', width)} />;
-}
-
-/** Cabecera adaptable, cuatro conteos, controles y grilla de cartas. */
+/** Grilla a la izquierda y paneles a la derecha, sin nombres ni objetivos inventados. */
 export function CollectionDetailSkeleton() {
-  return (
-    <div className="flex flex-col gap-6" aria-busy="true">
-      <div role="status" aria-label="Cargando la colección" className="flex flex-col gap-5">
-        <Surface className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex min-w-0 items-center gap-3">
-            <Skeleton variant="block" className="size-11 shrink-0 rounded-control" />
-            <div className="flex min-w-0 flex-col gap-1.5">
-              <Skeleton variant="text" className="h-4 w-40" />
-              <Skeleton variant="text" className="w-28" />
-            </div>
-          </div>
-          <div className="flex shrink-0 flex-col items-start gap-1.5 sm:items-end">
-            <Skeleton variant="text" className="w-14" />
-            <Skeleton variant="block" className="h-7 w-28 rounded-control" />
-          </div>
-        </Surface>
-
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-          {Array.from({ length: 4 }, (_, index) => (
-            <Skeleton
-              key={index}
-              variant="block"
-              className={cn(
-                'h-[4.5rem] rounded-control',
-              )}
-            />
-          ))}
-        </div>
+  return <div role="status" aria-label="Cargando la colección" aria-busy="true">
+    <CollectionWorkspace sidebar={<>
+      {Array.from({ length: 3 }, (_, index) => <div key={index} className={styles.loadingPanel} aria-hidden="true">
+        <Skeleton variant="text" className="h-6 w-3/4" />
+        <Skeleton variant="block" className="h-24 w-full" />
+        <Skeleton variant="text" className="w-2/3" />
+      </div>)}
+    </>}>
+      <div className="grid grid-cols-4 gap-2" aria-hidden="true">
+        {Array.from({ length: 4 }, (_, index) => <Skeleton key={index} variant="block" className="h-16" />)}
       </div>
-
-      {/*
-        Scroller de la fila de filtros, con la misma forma que
-        `collection-filters.tsx`. **Sin `py-1` a propósito, y no es un olvido:**
-        acá no hay `Chip`s reales sino `Skeleton`s que no son enfocables, así que
-        no hay `outline` que se recorte. Y el alto de esta fila tiene que
-        *matchear* la fila real de filtros: si el skeleton mide 4 px menos, la
-        grilla de cartas salta cuando llega el contenido (§9.1). El `py-1` que
-        necesita el `outline` se lo pone el componente real, no el skeleton.
-      */}
-      <div className="-mx-4 flex gap-2 overflow-hidden px-4 sm:mx-0 sm:px-6" aria-hidden="true">
-        <ChipSkeleton width="w-16" />
-        <ChipSkeleton width="w-24" />
-        <ChipSkeleton width="w-32" />
-        <ChipSkeleton width="w-14" />
+      <Skeleton variant="block" className="h-11 w-full" />
+      <div className="flex flex-wrap gap-2" aria-hidden="true">
+        {Array.from({ length: 4 }, (_, index) => <Skeleton key={index} variant="block" className="h-11 w-20" />)}
       </div>
-
-      <CardGridSkeleton
-        count={COLLECTION_PAGE_SIZE}
-        variant="collection"
-        label="Cargando las cartas de la colección"
-      />
-    </div>
-  );
+      <Skeleton variant="block" className="h-11 w-40" />
+      <CardGridSkeleton count={COLLECTION_PAGE_SIZE} variant="catalog" className={styles.cards} label="Cargando las cartas de la colección" />
+    </CollectionWorkspace>
+  </div>;
 }

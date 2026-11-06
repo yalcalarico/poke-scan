@@ -40,6 +40,19 @@ formatea. Es una referencia local TCGCSV: el máximo de las últimas cotizacione
 market por variante, no el valor de una copia del inventario. Este tratamiento
 es optativo de Buscar: no cambia Inicio ni los guiones de otras tarjetas.
 
+## Colecciones: álbumes primero
+
+El listado usa el encabezado «Coleccioná a tu manera.» y portadas con cartas reales
+de cada álbum. La grilla aparece antes del valor y el historial: esas funciones
+siguen disponibles, pero ya no compiten con la entrada a las colecciones.
+Se conservan creación, búsqueda, orden y accesos a objetivos y progreso por set.
+
+El detalle conserva sus filtros, edición, selección, paginación, exportación y
+compartir. Las cartas quedan a la izquierda; objetivos, valor e intención de
+intercambio se agrupan a la derecha y se apilan en móvil. Tener repetidas no las
+publica ni las marca automáticamente para intercambio. No se copian los filtros,
+etiquetas ni participantes ficticios de la maqueta.
+
 ## Movimiento
 
 `AppVisualsProvider` conserva una sola fuente de estado para pausa manual y preferencia del sistema. El botón «Pausar efectos» está en el chrome mobile y en la navegación desktop; no agrega un sexto destino. Con movimiento reducido del sistema, el control informa esa preferencia y no la anula.

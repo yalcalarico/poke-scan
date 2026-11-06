@@ -120,6 +120,23 @@ describe('CollectionCard: el mosaico de portada', () => {
   });
 });
 
+describe('CollectionCard: acciones del álbum Viñeta (S1, S2)', () => {
+  it('ofrece abrir, objetivos, sumar y progreso sin perder el enlace por nombre', () => {
+    render(<CollectionCard collection={collection({ id: 'album /local', name: 'Álbum sintético' })} cover={coverOf(2)} />);
+
+    const destination = '/colecciones/album%20%2Flocal';
+    expect(screen.getByRole('link', { name: 'Álbum sintético' })).toHaveAttribute('href', destination);
+    expect(screen.getByRole('link', { name: /Abrir colección/ })).toHaveAttribute('href', destination);
+    expect(screen.getByRole('link', { name: 'Ver objetivos de Álbum sintético' })).toHaveAttribute('href', `${destination}/objetivos`);
+    expect(screen.getByRole('link', { name: 'Sumar cartas a Álbum sintético' })).toHaveAttribute('href', '/escanear');
+    expect(screen.getByRole('link', { name: 'Progreso por set de Álbum sintético' })).toHaveAttribute('href', `${destination}/sets`);
+    expect(screen.getByText('12 cartas')).toBeInTheDocument();
+    expect(screen.getByText('9 únicas · 3 duplicadas')).toBeInTheDocument();
+    expect(screen.getAllByTestId('cover-image')).toHaveLength(2);
+    for (const link of screen.getAllByRole('link')) expect(link.querySelector('a')).toBeNull();
+  });
+});
+
 describe('CollectionCard: valuación compacta', () => {
   const valuation = (amount: number | null, pricedCopies: number, totalCopies: number) => ({
     amount,
