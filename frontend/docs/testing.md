@@ -166,6 +166,21 @@ ownership backend, inventario real ni dispositivos físicos.
 
 ## Escáner visual
 
+Comprobación focal del marco editorial y preservación de flujos:
+`pnpm --dir frontend exec vitest run components/scanner/__tests__/scanner-layout.test.tsx components/scanner/__tests__/scan-page-camera.test.tsx components/scanner/__tests__/scan-page-gallery.test.tsx hooks/__tests__/mobile-camera.test.tsx --no-file-parallelism`.
+Cubre encabezado/retorno, paneles, pasos, callbacks, modos, carga honesta,
+foto/fase reales y cámara fuera del marco, además de las aserciones previas de
+captura, cancelación, revisión, diagnóstico y sesión. No mide píxeles en jsdom.
+
+`pnpm --dir frontend run test:browser --grep 'escáner Viñeta'` agrega mediciones
+1440/390 px en claro/oscuro: columnas iguales hasta 960 px y gap 32 px en
+escritorio, columna única móvil, borde de 2 px, escenario oscuro, contención del
+encabezado/navegación, ausencia de desborde y foco de acciones. Cada caso lee
+la geometría en un único evaluate síncrono. Conserva las cuatro pruebas de foco
+incluido forced-colors y los flujos de login/subida, sin ampliar la guardia de
+tráfico, navegar a Inicio ni generar capturas/traces/videos. Agregar casos no
+acredita ejecutarlos: el padre coordina ese gate y la comparación visual.
+
 - `camera-visual.test.ts`: elige el #1, conserva su set, consulta precio solo para su ID y tolera falta de precios.
 - `scan-page-camera.test.tsx`: la cámara principal automática suma a la sesión y sigue abierta sin selector.
 - `scan-page-gallery.test.tsx`: las fotos subidas usan DINOv2, seleccionan el #1 y cancelan respuestas obsoletas.

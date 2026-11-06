@@ -75,6 +75,22 @@ it('vincula captura, corrección manual y guardado al mismo diagnóstico descarg
   expect(html).toContain('manual_result_confirmed');
   expect(html).toContain('identity_confirmed');
 });
+it('muestra la foto real y la fase en el mismo marco editorial mientras reconoce', async () => {
+  mocks.recognize.mockImplementationOnce(() => new Promise(() => {}));
+  render(<ScanPage />);
+  await screen.findByText('Sesión: 0');
+  expect(screen.getByRole('heading', { name: 'De carta a colección.' })).toBeInTheDocument();
+  expect(screen.getByRole('link', { name: 'Volver' })).toHaveAttribute('href', '/inicio');
+  upload();
+  await screen.findByRole('heading', { name: 'Buscando coincidencias visuales…' });
+  expect(screen.getByRole('region', { name: 'Encuadre de captura' })).toContainElement(screen.getByAltText('Foto que estamos leyendo'));
+  expect(screen.getByAltText('Foto que estamos leyendo')).toHaveAttribute('src', 'blob:foto');
+  expect(screen.getByRole('status')).toHaveTextContent('Comparando la imagen con las cartas del catálogo.');
+  expect(screen.queryByText('Encuadre ilustrado · Cámara apagada')).not.toBeInTheDocument();
+  expect(JSON.stringify(sessionStorage)).not.toContain('blob:foto');
+  expect(JSON.stringify(sessionStorage)).not.toContain('data:image');
+});
+
 it('la foto subida usa DINOv2, suma el candidato elegido y libera la imagen original', async () => {
   mocks.recognize.mockResolvedValue(selected('me55-59'));
   render(<ScanPage />);
@@ -132,6 +148,10 @@ it('permite descargar el recorte enviado cuando falla el reconocimiento, pero no
   await screen.findByText('Sesión: 0');
   upload();
   await screen.findByText('El motor se interrumpió.');
+  expect(screen.getByRole('heading', { name: 'De carta a colección.' })).toBeInTheDocument();
+  expect(screen.getByAltText('Foto que estamos leyendo')).toHaveAttribute('src', 'blob:foto');
+  expect(screen.getByRole('button', { name: 'Subir una foto' })).toBeEnabled();
+  expect(screen.getByRole('button', { name: 'Buscar a mano' })).toBeEnabled();
   fireEvent.click(screen.getByRole('button', { name: 'Descargar diagnóstico' }));
   expect(mocks.download).toHaveBeenCalledWith(expect.objectContaining({ image: 'data:image/png;base64,YQ==', error: 'El motor se interrumpió.' }), 'diagnostic');
   mocks.prepare.mockRejectedValueOnce(new Error('Foto inválida.'));

@@ -55,6 +55,21 @@ del set. No hay selector de colección ficticio ni cifras o textos de muestra.
 Se conservan inclinación, holo, pausa, movimiento reducido y las cartas
 relacionadas. La carga usa el mismo marco y anuncia que está cargando.
 
+## Recorrido de escaneo
+
+`/escanear` adapta `scan()` sin trasladar sus acciones de muestra: encabezado
+editorial, retorno al inicio, escenario oscuro con dibujo local y columnas de
+hasta 960 px/gap 32 px; una columna a 700 px. El dibujo indica explícitamente
+que la cámara está apagada. La tarjeta abstracta Rayo / Estudio visual no es
+identidad reconocida, inventario ni cotización. Cámara sólo en teléfono, subida
+y búsqueda conservan sus acciones reales. Capturá / Revisá / Guardá acompañan
+el recorrido sin reemplazar la revisión y organización existentes.
+
+La carga comparte el marco; galería ocupada/error usa la foto real y su estado.
+La cámara fullscreen queda deliberadamente afuera para conservar guía y controles.
+Diagnóstico y avisos se mantienen debajo del panel, sin modificar reconocimiento,
+precios ni guardado. Ver [escáner](scanner.md) para capacidades y límites.
+
 ## Colecciones: álbumes primero
 
 El listado usa el encabezado «Coleccioná a tu manera.» y portadas con cartas reales

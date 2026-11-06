@@ -1,0 +1,52 @@
+.canvas {
+  min-height: 100dvh;
+  background-color: var(--canvas);
+  background-image: radial-gradient(var(--border-strong) .8px, transparent .8px);
+  background-size: 8px 8px;
+}
+.page.page { display: flex; flex-direction: column; gap: 24px; max-width: 1280px; padding: calc(var(--nav-height) + 32px) 32px 32px; font: 400 15px/22px system-ui, sans-serif; animation: none; }
+.header { display: flex; justify-content: space-between; align-items: end; gap: 20px; padding-bottom: 24px; border-bottom: 2px solid var(--text-primary); }
+.intro { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.intro h1 { font-size: 32px; line-height: 34px; letter-spacing: -.025em; font-weight: 800; font-style: italic; text-transform: uppercase; overflow-wrap: anywhere; }
+.eyebrow { font-size: 11px; line-height: 14px; letter-spacing: .08em; text-transform: uppercase; font-weight: 600; color: var(--text-secondary); }
+.subtitle { max-width: 580px; color: var(--text-secondary); }
+.back.back { flex-shrink: 0; border: 2px solid var(--text-primary); font-size: 13px; line-height: 18px; font-weight: 600; }
+.workspace { width: 100%; max-width: 960px; margin-inline: auto; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px; align-items: center; }
+/* La tinta oscura no depende de la inversión de texto del tema. No es video. */
+.stage { min-width: 0; min-height: 440px; padding: 24px; background: var(--scanner-stage); color: var(--on-media-text); border: 2px solid var(--text-primary); border-radius: var(--radius-panel); box-shadow: var(--shadow-sm); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; position: relative; --scanner-stage: var(--text-primary); }
+:global(.dark) .stage { --scanner-stage: var(--surface); }
+.controls { display: flex; flex-direction: column; gap: 24px; min-width: 0; }
+.controls h2 { font-size: 20px; line-height: 26px; font-weight: 700; letter-spacing: -.015em; }
+.description { color: var(--text-secondary); }
+.badge { align-self: start; padding: 4px 8px; border: 1px solid var(--text-primary); border-radius: var(--radius-control); background: var(--surface); font-size: 11px; line-height: 14px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
+/* La superficie opaca evita que la trama interfiera con el contraste del foco. */
+.actions { display: flex; flex-wrap: wrap; gap: 12px; padding: 4px; background: var(--canvas); border-radius: var(--radius-control); }
+.actions > button { flex: 1 1 160px; border: 2px solid var(--text-primary); font: 600 13px/18px system-ui, sans-serif; }
+.primary.primary { flex-basis: 100%; }
+.hint { font-size: 12px; line-height: 16px; color: var(--text-secondary); }
+.process { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; list-style: none; padding: 0; }
+.process li { min-width: 0; padding: 16px; background: var(--surface-2); border-radius: var(--radius-control); }
+.process b { display: block; margin-bottom: 4px; }
+.process span { font-size: 12px; line-height: 16px; color: var(--text-secondary); }
+.guide { position: absolute; inset: 28px; border: 2px solid var(--on-media-text); border-radius: var(--radius-panel); pointer-events: none; }
+.illustration { position: relative; width: 100%; max-width: 200px; aspect-ratio: 63 / 88; padding: 12px; border: 2px solid var(--text-primary); border-radius: var(--radius-control); background: var(--warning-soft); color: var(--text-primary); box-shadow: var(--shadow-lg); transform: rotate(-5deg); display: flex; flex-direction: column; justify-content: space-between; }
+/* La base sigue opaca aunque warning-soft sea translúcido en oscuro. */
+.cardBase { background: var(--surface); width: min(200px, 100%); border-radius: var(--radius-control); transform: rotate(-5deg); }
+.cardBase .illustration { transform: none; }
+.illustration svg { position: absolute; inset: 12%; width: 76%; height: 76%; color: var(--warning); }
+.cardLabel { font-size: 13px; line-height: 18px; font-weight: 600; }
+.cardFoot { display: flex; justify-content: space-between; align-items: end; font-size: 11px; line-height: 14px; letter-spacing: .08em; text-transform: uppercase; }
+.caption { position: relative; text-align: center; font-size: 12px; line-height: 16px; }
+.preview.preview { width: min(240px, 100%); max-width: 100%; height: 320px; }
+.supplement { display: flex; flex-direction: column; gap: 24px; width: 100%; max-width: 960px; margin-inline: auto; min-width: 0; }
+@media (max-width: 1023px) { .page.page { padding: 24px 24px calc(124px + env(safe-area-inset-bottom)); } }
+@media (max-width: 700px) {
+  .page.page { padding-inline: 16px; }
+  .header { flex-direction: column; align-items: start; gap: 16px; }
+  .intro h1 { font-size: 26px; line-height: 30px; letter-spacing: -.02em; }
+  .workspace { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+  .stage { min-height: 360px; }
+  .process { grid-template-columns: minmax(0, 1fr); }
+  .process li { display: flex; gap: 12px; align-items: baseline; }
+}
+@media (forced-colors: active) { .stage, .guide, .illustration { border-color: CanvasText; } }

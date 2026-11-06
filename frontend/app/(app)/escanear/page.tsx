@@ -4,13 +4,13 @@ import { readMaxSessionRunId, sessionRecoveryNotice } from '@/components/scanner
 
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
-import { ScreenContainer } from '@/components/layout/screen-container';
-import { ScreenHeader } from '@/components/layout/screen-header';
+import { ScannerCaptureLayout, ScannerLayout, ScannerProcess } from '@/components/scanner/scanner-layout';
+import styles from '@/components/scanner/scanner.module.css';
 import { CameraView, IdlePanel, OrganizeSheet, PHASE_DETAIL, PHASE_HEADLINE,
   ScanPreview, appendSessionEntry, cameraNoticeCopy, clearSession, formatCount,
   isCameraStage, readSession, writeSession, type CameraNoticeKind, type CaptureSource,
   type ScanPhase, type ScanStage, type SessionEntry } from '@/components/scanner';
-import { Alert, Button, Sheet, Surface, useToast } from '@/components/ui';
+import { Alert, Button, Sheet, useToast } from '@/components/ui';
 import { isCameraSupported, isSecureContextForCamera } from '@/lib/scanner/camera';
 import { useAuth } from '@/hooks/use-auth';
 import { useMobileCamera } from '@/hooks/use-mobile-camera';
@@ -373,16 +373,15 @@ export default function ScanPage() {
       <CaptureReviewActions review={captureReview} open={reviewOpen} onOpenChange={setReviewOpen} />
     </> : null;
   return <>
-    {showShell ? <>
-      <ScreenHeader title="Escanear" back={{ href: '/buscar', label: 'buscar' }} />
-      <ScreenContainer className="flex flex-col gap-4">
+    {showShell ? <ScannerLayout>
         {stage === 'idle' ? <>
-          <DiagnosticPanel session={diagnosticView} onChange={changeDiagnostic} />
-          {!isAuthLoading && !isAuthenticated ? <Alert tone="info" title="Iniciá sesión para reconocer cartas">Podés explorar el catálogo sin cuenta. Para usar el escáner, entrá a tu cuenta primero.</Alert> : null}
           <IdlePanel visualCamera showCamera={mobileCamera} cameraAvailable={cameraAvailable}
             sessionCount={session.length} onScan={openCamera}
             onPickFromGallery={() => { if (isAuthLoading) return; if (!isAuthenticated) { router.push('/login?next=escanear'); return; } fileInputRef.current?.click(); }}
             onManualSearch={goManualSearch} onOrganize={() => openOrganize('idle')} />
+          <div className={styles.supplement}>
+          {!isAuthLoading && !isAuthenticated ? <Alert tone="info" title="Iniciá sesión para reconocer cartas">Podés explorar el catálogo sin cuenta. Para usar el escáner, entrá a tu cuenta primero.</Alert> : null}
+          <DiagnosticPanel session={diagnosticView} onChange={changeDiagnostic} />
           {detected && captureReview?.runId === detected.runId ? <VisualScanResult entry={detected} onReview={() => setReviewOpen(true)} /> : null}
           {cameraNotice ? <Alert tone="error" title={cameraNoticeCopy(cameraNotice.kind).title}>
             <p>{cameraNoticeCopy(cameraNotice.kind).hint}</p>
@@ -399,27 +398,30 @@ export default function ScanPage() {
             <p className="text-caption text-tertiary">{formatCount(session.length)} {session.length === 1 ? 'lectura pendiente' : 'lecturas pendientes'} de guardar en una colección.</p>
             <Button variant="ghost" onClick={handleDiscardAll} fullWidth>Descartar la sesión</Button>
           </div> : null}
+          </div>
         </> : null}
-        {stage === 'processing' ? <Surface className="flex flex-col items-center gap-4 rounded-panel px-4 py-8">
-          <ScanPreview url={previewUrl} className="h-40 w-32" />
+        {stage === 'processing' ? <ScannerCaptureLayout preview={<ScanPreview url={previewUrl} className={styles.preview} />}>
           <div role="status" aria-live="polite" className="flex w-full max-w-sm flex-col gap-2">
-            <p className="text-body-strong text-primary">{headline}</p>
+            <h2>{headline}</h2>
             <p className="text-caption text-secondary">{PHASE_DETAIL[phase]}</p>
           </div>
-        </Surface> : null}
-        {stage === 'error' ? <>
+          <ScannerProcess />
+        </ScannerCaptureLayout> : null}
+        {stage === 'error' ? <ScannerCaptureLayout preview={<ScanPreview url={previewUrl} className={styles.preview} />}>
           <Alert tone="error" title={errorTitle}><p>{errorMessage}</p></Alert>
-          <div className="flex flex-col gap-2 sm:flex-row">
+          <div className={styles.actions}>
             {cameraAvailable && captureMode === 'camera' ? <Button size="lg" onClick={openCamera} className="flex-1">Volver a escanear</Button>
               : <Button size="lg" onClick={() => fileInputRef.current?.click()} className="flex-1">Subir una foto</Button>}
             <Button variant="secondary" size="lg" onClick={goManualSearch} className="flex-1">Buscar a mano</Button>
           </div>
-        </> : null}
+          <ScannerProcess />
+        </ScannerCaptureLayout> : null}
+        <div className={styles.supplement}>
         {persistenceNotice ? <Alert tone="warning" title="Revisá el borrador de esta pestaña">{persistenceNotice}</Alert> : null}
         {captureMode === 'gallery' && stage !== 'processing' ? <CaptureQualityNotice quality={captureReview?.quality} /> : null}
         {reviewActions}
-      </ScreenContainer>
-    </> : null}
+        </div>
+    </ScannerLayout> : null}
     {showCamera ? <CameraView autoVisual reviewOpen={reviewOpen || exitPending} onReview={captureReview?.runId === detected?.runId ? () => setReviewOpen(true) : undefined}
       diagnosticStatus={diagnosticView ? { label: `${diagnosticView.finalized ? 'Diagnóstico cerrado' : diagnosticView.pendingOperations ? `Diagnóstico · ${diagnosticView.pendingOperations} tarea(s) pendiente(s)` : diagnosticView.suspended ? 'Diagnóstico pausado por límite' : 'Diagnóstico activo'} · ${diagnosticView.readings.length} lecturas · Ver opciones`, onOpen: () => setStage('idle') } : null}
       autoCapturePaused={reviewOpen || matchPending || exitPending} reviewActions={reviewActions} liveResult={errorMessage} busy={stage === 'processing'} detected={detected}

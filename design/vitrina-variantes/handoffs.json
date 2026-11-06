@@ -5,11 +5,11 @@
     "03-vitrina-comic.html": {
       "status": "in_progress",
       "queued": false,
-      "sentAt": "2026-10-31T17:05:23.788Z",
-      "startedAt": "2026-10-31T17:49:57.355Z",
+      "sentAt": "2026-11-06T00:38:36.495Z",
+      "startedAt": "2026-11-06T12:52:32.902Z",
       "implementedAt": null,
-      "note": "Home validado e intacto. Buscar verificado: sin filtro colección, Más opciones en card lateral, nombre dentro del panel, precio local TCGCSV al pie derecho o --. Check completo y 12 pruebas navegador aprobados; resto de páginas fuera del lote.",
-      "previewUrl": "http://127.0.0.1:3000/buscar"
+      "note": "Home y Buscar validados. Ficha editorial, escáner, Colecciones (listado/detalle) y Ajustes raíz adaptados con funciones reales conservadas. Gate global verde; 750 tests frontend y navegador 31 casos previos + 10 nuevos verdes en dos corridas. Comentario x9nt9vvy aplicado y resuelto. Sin PR creada.",
+      "previewUrl": "http://127.0.0.1:3000/escanear"
     }
   }
 }
