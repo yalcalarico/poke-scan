@@ -69,7 +69,7 @@ const NUMERIC_NUMBER = NUMERIC_CARD_NUMBER;
  * `DISTINCT ON` dos veces. Con ~60 cartas cotizadas sobre 20.670 del catálogo,
  * esa diferencia es la que separa dos round-trips de cuatro.
  */
-function currentCardMarketPrices(provider: PriceProvider): Prisma.Sql {
+function currentCardMarketPrices(provider: PriceProvider, cardIds?: readonly string[]): Prisma.Sql {
   return Prisma.sql`
     SELECT latest."cardId", MAX(latest.market) AS price
     FROM (
@@ -79,6 +79,7 @@ function currentCardMarketPrices(provider: PriceProvider): Prisma.Sql {
       WHERE p.provider = ${provider.id}
         AND p.source = ${provider.defaultSource}
         AND p.currency = ${provider.defaultCurrency}
+        ${cardIds === undefined ? Prisma.empty : Prisma.sql`AND p."cardId" IN (${Prisma.join(cardIds)})`}
       ORDER BY p."cardId", p.variant, p."fetchedAt" DESC
     ) latest
     WHERE latest.market IS NOT NULL
@@ -111,6 +112,8 @@ export interface CardDto {
   set?: SetDto;
   imageSmall: string;
   imageLarge: string;
+  /** Sólo búsqueda: MAX market de las últimas observaciones activas por variante. */
+  marketPriceUsd?: number | null;
 }
 
 export interface CardPriceDto {
@@ -616,8 +619,14 @@ export class CardsService {
           })
         : await run(this.prisma, true);
 
+    // Sólo los IDs de esta página: una lectura local en lote, nunca por carta.
+    const prices = rows.length === 0 ? [] : await this.prisma.$queryRaw<{
+      cardId: string; price: Prisma.Decimal | null;
+    }[]>(currentCardMarketPrices(this.priceProvider, rows.map((row) => row.id)));
+    const marketById = new Map(prices.map((price) => [price.cardId, toNumber(price.price)]));
+
     return {
-      data: rows.map((row) => this.toCardDto(row)),
+      data: rows.map((row) => ({ ...this.toCardDto(row), marketPriceUsd: marketById.get(row.id) ?? null })),
       page,
       pageSize,
       total,

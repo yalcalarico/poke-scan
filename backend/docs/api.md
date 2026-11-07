@@ -456,6 +456,7 @@ interface CardDto {
   set?: SetDto;          // presente salvo en items anidados
   imageSmall: string;
   imageLarge: string;
+  marketPriceUsd?: number | null; // sólo /cards/search; referencia local USD
 }
 
 interface SetDto {
@@ -530,12 +531,22 @@ que el orden tiene que evitar.
 Este `DISTINCT ON` **sí** es global a propósito —no tiene forma de anclarse a
 una carta porque el filtro de precio es justamente el que todavía no está
 decidido— y por eso es la forma más cara del archivo. Solo se paga cuando el
-cliente pidió `sort=price`; el resto de las búsquedas no lo incluyen. Ver
+cliente pidió `sort=price`; las demás búsquedas sólo leen precios de los IDs
+que devuelve la página, en una consulta adicional en lote. Ver
 [gotchas.md](gotchas.md) §22.
 
 **Las cartas sin precio van siempre al final**, en las dos direcciones: son
 ~20.600 de 20.670 y en `desc` el default de Postgres (`NULLS FIRST`) las
 pondría arriba, que es lo opuesto de "más caras primero".
+
+Cada carta de búsqueda incluye `marketPriceUsd: number | null`, tanto con texto
+como con `sort=price`. Usa la misma selección: última observación por variante
+del proveedor activo TCGCSV, fuente TCGplayer y moneda USD; luego `MAX(market)`
+entre variantes. No representa una variante específica ni el valor de una copia
+concreta del inventario. Cero es un precio conocido; ausencia es `null`, sin
+rescate de filas anteriores, `mid`, otros proveedores ni legacy. La lectura es
+local y no descarga precios. Una página vacía no consulta cotizaciones.
+Los demás endpoints de catálogo omiten este campo opcional.
 
 Respuesta `Paginated<CardDto>`:
 
@@ -558,6 +569,7 @@ curl 'http://localhost:3001/api/cards/search?q=charizard&pageSize=2'
       "id": "base1-4", "name": "Charizard", "supertype": "Pokémon",
       "subtypes": ["Stage 2"], "hp": "120", "types": ["Fire"], "number": "4",
       "rarity": "Rare", "artist": "Ken Sugimori", "setId": "base1",
+      "marketPriceUsd": null,
       "imageSmall": "https://images.pokemontcg.io/.../base1-4.png",
       "imageLarge": "https://images.pokemontcg.io/.../base1-4_hires.png",
       "set": { "id": "base1", "name": "Base", "series": "Base",

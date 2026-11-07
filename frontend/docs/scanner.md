@@ -34,6 +34,30 @@ La [corrección del 20/10](../../docs/evaluations/scanner-crop-fix-2026-10-20.md
 acredita galería real y guardado aislado para el recorte reportado, que pasa del
 puesto 563 al 3 (Luxray todavía primero), sin certificar precisión general.
 
+## Presentación editorial Viñeta
+
+`/escanear` adapta el recorrido aprobado de Viñeta: un único encabezado
+«De carta a colección.», retorno a `/inicio` y dos columnas iguales de hasta
+960 px, separadas por 32 px. A 700 px pasan a una sola columna. La trama,
+tipografía system-ui y bordes de tinta usan los tokens de la aplicación.
+
+El encuadre inicial es un dibujo abstracto local, rotulado «Encuadre ilustrado ·
+Cámara apagada»: no es una carta reconocida ni un video, y no solicita permisos.
+En teléfono se conserva «Escanear carta»; escritorio ofrece «Subir una foto».
+Subida y búsqueda manual siguen disponibles en ambos modos con sus gates previos.
+Capturá / Revisá / Guardá explican etapas distintas, no simulan resultados.
+
+Carga, procesamiento de galería y errores comparten el marco. Mientras se procesa
+se muestra la foto elegida y la fase real, no la ilustración. Avisos de sesión,
+seguridad, calidad, preservación y el diagnóstico opcional siguen disponibles
+debajo del panel principal. La cámara viva permanece fullscreen fuera de este
+marco: no se cambia su guía, recorte, controles ni permisos. La comparativa y
+Organizar conservan sus Sheets y sus operaciones existentes.
+
+Las pruebas DOM no acreditan equivalencia de píxeles, reconocimiento general ni
+precisión de cámara física. La geometría de navegador requiere el gate coordinado
+descrito en [testing](testing.md); no reemplaza revisar el diseño visualmente.
+
 ## Flujo de uso
 
 ### Señales orientativas de calidad — experimental, 6 de octubre

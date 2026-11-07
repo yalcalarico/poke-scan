@@ -5,11 +5,11 @@
     "03-vitrina-comic.html": {
       "status": "in_progress",
       "queued": false,
-      "sentAt": "2026-10-29T18:03:16.047Z",
-      "startedAt": "2026-10-30T13:39:40.878Z",
+      "sentAt": "2026-11-06T00:38:36.495Z",
+      "startedAt": "2026-11-06T12:52:32.902Z",
       "implementedAt": null,
-      "note": "Base funcional integrada y probada; fidelidad visual exacta NO acreditada. El usuario reporta animaciones lentas y diferencias de cartas, iconos y secciones. Nueva secuencia: primero PR general con estado actual; después corregir y validar sólo Home en otro PR, sin mezclar otras pantallas. El cierre previo implemented fue demasiado amplio.",
-      "previewUrl": "http://127.0.0.1:3000/inicio"
+      "note": "Home y Buscar validados. Ficha editorial, escáner, Colecciones (listado/detalle) y Ajustes raíz adaptados con funciones reales conservadas. Gate global verde; 750 tests frontend y navegador 31 casos previos + 10 nuevos verdes en dos corridas. Comentario x9nt9vvy aplicado y resuelto. Sin PR creada.",
+      "previewUrl": "http://127.0.0.1:3000/escanear"
     }
   }
 }

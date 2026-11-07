@@ -30,6 +30,74 @@ for (const colorScheme of ['light', 'dark'] as const) {
   }
 }
 
+for (const width of [1440, 390]) {
+  for (const colorScheme of ['light', 'dark'] as const) {
+    test(`escáner Viñeta: ${width}px ${colorScheme}`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 1100 });
+      await page.emulateMedia({ colorScheme });
+      await page.goto('/escanear');
+      await expect(page.getByRole('heading', { name: 'Una captura. Una decisión clara.' })).toBeVisible();
+      await expect(page.getByText('Iniciá sesión para reconocer cartas', { exact: true })).toBeVisible();
+      await expect(page.getByRole('link', { name: 'Volver', exact: true })).toHaveAttribute('href', '/inicio');
+      // Todas las medidas pertenecen al mismo frame; no se navega fuera de la guardia.
+      const geometry = await page.evaluate(() => {
+        const main = document.querySelector('main')!;
+        const header = main.querySelector('header')!;
+        const workspace = main.querySelector('[data-scanner-workspace]')!;
+        const [stage, controls] = Array.from(workspace.children);
+        const rect = (element: Element) => {
+          const { x, y, width, height, right, bottom } = element.getBoundingClientRect();
+          return { x, y, width, height, right, bottom };
+        };
+        const navs = Array.from(document.querySelectorAll('nav')).map(rect);
+        return {
+          viewport: innerWidth, overflow: document.documentElement.scrollWidth > innerWidth,
+          main: rect(main), header: rect(header), workspace: rect(workspace), stage: rect(stage), controls: rect(controls), navs,
+          gap: getComputedStyle(workspace).columnGap,
+          border: getComputedStyle(stage).borderTopWidth,
+          background: getComputedStyle(stage).backgroundColor,
+          font: getComputedStyle(main).fontFamily,
+          title: getComputedStyle(main.querySelector('h1')!).fontSize,
+          processColumns: getComputedStyle(main.querySelector('ol')!).gridTemplateColumns.split(' ').length,
+        };
+      });
+      expect(geometry.overflow).toBe(false);
+      expect(geometry.workspace.width).toBeLessThanOrEqual(960);
+      expect(geometry.border).toBe('2px');
+      expect(geometry.background).toBe(colorScheme === 'light' ? 'rgb(11, 11, 15)' : 'rgb(21, 21, 27)');
+      expect(geometry.font).toContain('system-ui');
+      expect(geometry.header.x).toBeGreaterThanOrEqual(0);
+      expect(geometry.header.right).toBeLessThanOrEqual(width);
+      for (const nav of geometry.navs) {
+        expect(nav.x).toBeGreaterThanOrEqual(0);
+        expect(nav.right).toBeLessThanOrEqual(width);
+        if (nav.y < 100) expect(geometry.header.y).toBeGreaterThanOrEqual(nav.bottom);
+      }
+      if (width > 700) {
+        expect(geometry.workspace.width).toBe(960);
+        expect(geometry.gap).toBe('32px');
+        expect(geometry.stage.width).toBe(geometry.controls.width);
+        expect(geometry.controls.x - geometry.stage.right).toBe(32);
+        expect(geometry.stage.height).toBeGreaterThanOrEqual(440);
+        expect(geometry.processColumns).toBe(3);
+      } else {
+        expect(geometry.controls.y).toBeGreaterThanOrEqual(geometry.stage.bottom + 24);
+        expect(geometry.stage.width).toBe(geometry.controls.width);
+        expect(geometry.stage.height).toBeGreaterThanOrEqual(360);
+        expect(geometry.main.x + 16).toBe(geometry.stage.x);
+        expect(geometry.title).toBe('26px');
+        expect(geometry.processColumns).toBe(1);
+      }
+      for (const name of ['Subir una foto', 'Buscar a mano']) {
+        const button = page.getByRole('button', { name, exact: true });
+        await tabTo(page, button);
+        await expectKeyboardOutline(button, colorScheme, false);
+      }
+      await expect(page.getByRole('button', { name: 'Usar muestra' })).toHaveCount(0);
+    });
+  }
+}
+
 test('subida anónima requiere login antes de abrir archivos o reconocer', async ({ page, traffic }) => {
   let choosers = 0;
   page.on('filechooser', () => { choosers += 1; });
@@ -64,7 +132,7 @@ test('login sintético vuelve al escáner y restaura la sesión al recargar', as
   await tabTo(page, page.getByRole('button', { name: 'Entrar', exact: true }));
   await page.keyboard.press('Enter');
   await expect(page).toHaveURL('/escanear');
-  await expect(page.getByRole('heading', { name: 'Reconocer una carta', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Una captura. Una decisión clara.', exact: true })).toBeVisible();
   await expect(page.getByText('Iniciá sesión para reconocer cartas', { exact: true })).toHaveCount(0);
   expect(traffic).toEqual({ allowLogin: true, login: 1, refresh: 0, me: 0 });
   const restored = page.waitForResponse((response) =>

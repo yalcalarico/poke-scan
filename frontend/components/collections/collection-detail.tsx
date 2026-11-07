@@ -6,8 +6,6 @@ import Link from 'next/link';
 import { ArrowLeftRight, Layers, ListChecks, Search, Trash2 } from 'lucide-react';
 
 import { CardGrid, type CardGridEntry } from '@/components/cards/card-grid';
-import { ScreenContainer } from '@/components/layout/screen-container';
-import { ScreenHeader } from '@/components/layout/screen-header';
 import {
   Alert,
   Button,
@@ -53,6 +51,8 @@ import { CollectionStats, CollectionSummary } from './collection-summary';
 import { ItemSheet } from './item-sheet';
 import { MotionGrid } from '@/components/visual-preview/effects';
 import { CollectionGoalPanel } from '@/components/goals/home-goal-panel';
+import { CollectionsFrame, CollectionWorkspace } from './collections-layout';
+import styles from './collections.module.css';
 
 /**
  * El copy de la acción masiva, en un solo lugar.
@@ -325,41 +325,16 @@ export function CollectionDetailScreen({ collectionId }: CollectionDetailScreenP
 
   return (
     <>
-      <ScreenHeader
-        title={
-          /*
-            El `ScreenHeader` pinta el título adentro de un `<p>`, así que el
-            placeholder del loading tiene que ser un `<span>`: el `Skeleton` del
-            design system es un `<div>` y un bloque adentro de un `<p>` es HTML
-            inválido — el browser cierra la `<p>` antes de tiempo y el centrado
-            del título se rompe. Mismo shimmer, otro elemento.
-          */
-          collection ? (
-            collection.name
-          ) : (
-            <span
-              aria-hidden="true"
-              className="mx-auto block h-4 w-32 rounded-full bg-shimmer animate-shimmer"
-            />
-          )
-        }
-        back={{ href: '/colecciones', label: 'las colecciones' }}
-        action={
-          collection ? (
-            <IconButton
-              icon={Trash2}
-              label="Eliminar colección"
-              className="text-negative"
-              onClick={() => setIsDeleteOpen(true)}
-            />
-          ) : null
-        }
-      />
-
-      <ScreenContainer labelledBy="titulo-coleccion">
-        <h1 id="titulo-coleccion" className="sr-only">
-          {collection?.name ?? 'Colección'}
-        </h1>
+      <CollectionsFrame
+        label="Tu colección"
+        title={collection?.name ?? 'Colección'}
+        description={collection ? `${formatCount(collection.itemCount)} ${pluralize(collection.itemCount, 'carta', 'cartas')} · creada el ${formatDate(collection.createdAt)}` : undefined}
+        actions={<>
+          {collection ? <CollectionActions collection={collection} onEdit={() => setIsSettingsOpen(true)} /> : null}
+          <Link href="/colecciones" className={buttonVariants({ variant: 'secondary' })}>Todas las colecciones</Link>
+          {collection ? <IconButton icon={Trash2} label="Eliminar colección" className="text-negative" onClick={() => setIsDeleteOpen(true)} /> : null}
+        </>}
+      >
 
         {/* 1 · loading */}
         {isLoading ? <CollectionDetailSkeleton /> : null}
@@ -420,7 +395,22 @@ export function CollectionDetailScreen({ collectionId }: CollectionDetailScreenP
         ) : null}
 
         {/* 5 · datos del encabezado */}
-        <div className="flex flex-col gap-4">
+        <CollectionWorkspace sidebar={collection && stats ? <>
+          <CollectionGoalPanel key={collectionId} collectionId={collectionId} />
+          <CollectionSummary
+            name={collection.name}
+            subtitle={`${formatCount(collection.itemCount)} ${pluralize(collection.itemCount, 'carta', 'cartas')} · creada el ${formatDate(collection.createdAt)}`}
+            valuation={stats.valuation}
+            isDefault={collection.isDefault}
+          />
+          <CollectionPriceRefresh collectionIds={[collectionId]} needsRefresh={collection.itemCount > 0 && Boolean(stats.valuation?.coverage.unpricedCopies || stats.valuation?.recency?.freshness !== 'fresh')} onRefresh={refreshPrices} />
+          <section className={styles.trade} aria-labelledby="intencion-intercambio">
+            <p className={styles.eyebrow}>Intercambios</p>
+            <h2 id="intencion-intercambio">Repetida no es disponible</h2>
+            <p className="text-secondary">Elegí expresamente qué cartas querés intercambiar. Tener varias copias no las publica.</p>
+            <p className="text-caption text-secondary">Abrí una carta para marcarla o usá Seleccionar para cambiar varias. El filtro Intercambio muestra las que ya marcaste.</p>
+          </section>
+        </> : undefined}>
           {collection && stats ? (
             <div className="flex flex-col gap-4">
               {/*
@@ -445,26 +435,7 @@ export function CollectionDetailScreen({ collectionId }: CollectionDetailScreenP
                 </Alert>
               ) : null}
 
-              <CollectionSummary
-                name={collection.name}
-                subtitle={`${formatCount(collection.itemCount)} ${pluralize(
-                  collection.itemCount,
-                  'carta',
-                  'cartas',
-                )} · creada el ${formatDate(collection.createdAt)}`}
-                valuation={stats.valuation}
-                isDefault={collection.isDefault}
-              />
-
-              <CollectionActions collection={collection} onEdit={() => setIsSettingsOpen(true)} />
-
-              <CollectionGoalPanel key={collectionId} collectionId={collectionId} />
-
-              <CollectionPriceRefresh collectionIds={[collectionId]} needsRefresh={collection.itemCount > 0 && Boolean(stats.valuation?.coverage.unpricedCopies || stats.valuation?.recency?.freshness !== 'fresh')} onRefresh={refreshPrices} />
-
               <CollectionStats stats={stats} />
-
-              <CollectionComparisonPanel collectionId={collectionId} refreshKey={comparisonRevision} />
 
               {/*
                 Este contador mide cartas distintas, mientras que la cobertura
@@ -532,8 +503,9 @@ export function CollectionDetailScreen({ collectionId }: CollectionDetailScreenP
             />
           ) : null}
 
-        </div>
-      </ScreenContainer>
+          {collection && stats ? <CollectionComparisonPanel collectionId={collectionId} refreshKey={comparisonRevision} /> : null}
+        </CollectionWorkspace>
+      </CollectionsFrame>
 
       {collection ? <CollectionDeleteSheet
         key={collection.id}
@@ -1170,6 +1142,7 @@ function CollectionItems({
             variant="catalog"
             entries={entries}
             label="Cartas de la colección"
+            className={styles.cards}
             showSelection={isSelecting || selectedCount > 0 || isBulkRunning}
           />
           </MotionGrid>

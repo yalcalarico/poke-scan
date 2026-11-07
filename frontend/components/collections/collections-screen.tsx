@@ -4,13 +4,10 @@ import { useCallback, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Check, Layers, Plus, Search } from 'lucide-react';
 
-import { ScreenContainer } from '@/components/layout/screen-container';
-import { ScreenHeader } from '@/components/layout/screen-header';
 import {
   Button,
   EmptyState,
   ErrorState,
-  IconButton,
   Input,
   Field,
   Select,
@@ -31,8 +28,8 @@ import { CollectionCreateSheet } from './collection-create-sheet';
 import { formatCount } from './collection-options';
 import { CollectionsListSkeleton } from './collection-skeletons';
 
-/** Grilla de §7.1: 1 col en mobile, 3 en `lg`. */
-const GRID = 'grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3';
+import { CollectionsFrame } from './collections-layout';
+import styles from './collections.module.css';
 
 /**
  * `/colecciones` — la lista de colecciones.
@@ -117,23 +114,16 @@ export function CollectionsScreen() {
 
   return (
     <>
-      <ScreenHeader
-        title="Portafolio"
-        action={
-          isAuthenticated ? (
-            <IconButton
-              icon={Plus}
-              label="Nueva colección"
-              onClick={() => setIsCreateOpen(true)}
-            />
-          ) : null
-        }
-      />
-
-      <ScreenContainer labelledBy="titulo-colecciones">
-        <h1 id="titulo-colecciones" className="sr-only">
-          Colecciones
-        </h1>
+      <CollectionsFrame
+        label="Tus colecciones"
+        title="Coleccioná a tu manera."
+        description="Cada colección tiene su propio nombre. Armá tus álbumes con las cartas que quieras."
+        actions={isAuthenticated && collections.length > 0 ? (
+          <Button onClick={() => setIsCreateOpen(true)}>
+            <Plus aria-hidden="true" className="size-4" />Crear colección
+          </Button>
+        ) : null}
+      >
 
         {/* 1 · loading */}
         {isLoading ? <CollectionsListSkeleton /> : null}
@@ -183,8 +173,6 @@ export function CollectionsScreen() {
             <CollectionCapabilities labelledBy="que-abre-una-coleccion" label="Con una colección podés" />
           </div>
         ) : null}
-
-        {isAuthenticated && status === 'ready' ? <div className="mb-6 flex flex-col gap-4"><CollectionPriceRefresh collectionIds={collections.map((collection) => collection.id)} needsRefresh={collections.some((collection) => collection.itemCount > 0 && Boolean(collection.valuation?.coverage.unpricedCopies || collection.valuation?.recency?.freshness !== 'fresh'))} onRefresh={refreshPrices} /><PortfolioOverview refreshKey={priceRevision} /><CollectionComparisonPanel collectionId={null} refreshKey={priceRevision} /></div> : null}
 
         {/* 4 · vacío con sesión */}
         {isAuthenticated && status === 'ready' && collections.length === 0 ? (
@@ -241,16 +229,23 @@ export function CollectionsScreen() {
               </Field>
             </div>
             {visibleCollections.length === 0 ? <p role="status" className="text-body text-secondary">No encontramos colecciones con ese nombre.</p> : null}
-            <div className={GRID}>
+            <section className={styles.albums} aria-label="Tus álbumes">
               {visibleCollections.map((collection) => (
                 <CollectionCard key={collection.id} collection={collection} cover={collection.cover} />
               ))}
-            </div>
-
-
+            </section>
           </div>
         ) : null}
-      </ScreenContainer>
+
+        {isAuthenticated && status === 'ready' ? (
+          <section className={styles.finance} aria-label="Valor e historial de tus colecciones">
+            <h2 className="text-h2 italic">Valor e historial</h2>
+            <CollectionPriceRefresh collectionIds={collections.map((collection) => collection.id)} needsRefresh={collections.some((collection) => collection.itemCount > 0 && Boolean(collection.valuation?.coverage.unpricedCopies || collection.valuation?.recency?.freshness !== 'fresh'))} onRefresh={refreshPrices} />
+            <PortfolioOverview refreshKey={priceRevision} />
+            <CollectionComparisonPanel collectionId={null} refreshKey={priceRevision} />
+          </section>
+        ) : null}
+      </CollectionsFrame>
 
       <CollectionCreateSheet
         open={isCreateOpen}

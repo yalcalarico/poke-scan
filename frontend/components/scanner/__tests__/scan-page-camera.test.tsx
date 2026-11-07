@@ -43,6 +43,8 @@ it('la cámara principal reconoce automáticamente y conserva carta/precio sin p
   render(<ScanPage />);
   fireEvent.click(await screen.findByRole('button', { name: 'Escanear carta' }));
   expect(mocks.unlockCoinSound).toHaveBeenCalledTimes(1);
+  expect(screen.queryByRole('heading', { name: 'De carta a colección.' })).not.toBeInTheDocument();
+  expect(screen.queryByRole('region', { name: 'Encuadre de captura' })).not.toBeInTheDocument();
   expect(screen.getByText('Cámara automática')).toBeInTheDocument();
   fireEvent.click(screen.getByRole('button', { name: 'Carta estable' }));
   await screen.findByText('me55-59 · 1.5');
